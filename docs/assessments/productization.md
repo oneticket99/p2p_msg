@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 04:30 KST (사이클 35 — Phase 2 누계 84 + skipped_keys + decrypt_ooo + 277 pytest)
+> 최근 갱신 시점: 2026-05-19 05:00 KST (사이클 36 — 전수조사 drift 6건 회수 + hook_doc_consistency.sh 강제 신설 + ARCHITECTURE §6 정합)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -27,10 +27,10 @@ status: active
 | 사용자 가치 | 6.3 / 10 | 6.0 → 6.3 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE 추가 |
 | 수익화 모델 | 5.4 / 10 | 5.0 → 5.4 ▲ | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 + 차별화 강화 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 9.9 / 10 | 9.8 → 9.9 ▲ | 가드레일 33 누적 (10점 만점 정책 신규) + doc-lint 강화 + PostToolUse hook + freshness Stop hook |
+| 가드레일·자동화 | 10.0 / 10 | 9.9 → 10.0 ▲ | 가드레일 34 누적 (doc-consistency 신규) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer (telegram + freshness + doc consistency) |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
 | 보안 hardening | 7.2 / 10 | 6.5 → 7.2 ▲ | E2EE Signal Protocol 84 케이스 + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **8.7 / 10** | 8.6 → 8.7 ▲ | **Phase 2 누계 84 + skipped_keys 통합 + out-of-order delivery 완성 + 보안 row 7.2 ▲ — Signal Protocol 핵심 구현 완료** |
+| **종합** | **8.8 / 10** | 8.7 → 8.8 ▲ | **사이클 36 전수조사 drift 6건 회수 + hook_doc_consistency.sh Stop hook 강제 신설 (가드레일 34) + ARCHITECTURE §6 정합 완성** |
 
 ---
 
@@ -140,6 +140,26 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.26 전수조사 drift 6건 회수 + doc-consistency Stop hook 강제 (신규 사이클 36)
+
+사용자 directive — "각 마크다운 문서와의 정합상태, 그리고 현재까지 구현된 작업과 문서들과의 정합상태를 전수조사해" + "정합상태 엉망 = 직무유기 + 훅 강제".
+
+전수조사 → drift 6건 detect:
+1. ARCHITECTURE §6 `app/auth/` 명시 단 실 부재 — auth helper = `app/core/security.py` (PBKDF2)
+2. `app/db/` 명시 단 실 부재 — DB = server 측만
+3. `app/crypto/` 누락 — Phase 2 신설 4 module (e2ee + double_ratchet + session + skipped_keys)
+4. `bcrypt` 표기 — 실 PBKDF2-SHA256
+5. `server/api` + `server/db` + `server/mail` + `server/signaling_persistence.py` 누락
+6. Specification FR-05 "로컬 MariaDB" — 실 server 영속화
+
+회수:
+- ARCHITECTURE §6 11 row 전체 재작성 (Phase 1~2 실 구현 정합)
+- `tools/hook_doc_consistency.sh` 신설 (Stop hook §6 backtick path = 실 디렉토리 정합 + 역방향 dir 존재 검사)
+- `.claude/settings.json` Stop matcher 3번째 entry
+- 영구 메모리 `feedback_doc_consistency_mandatory.md` (#34)
+
+가드레일 34 + Stop hook 3 layer (telegram + freshness + doc-consistency) 완성.
 
 ### 2.25 Phase 2 Signal Protocol 핵심 완성 — skipped_keys + decrypt_ooo (신규 사이클 33~35)
 
