@@ -269,10 +269,15 @@ Phase 2 진입과 동시에 §4 의 "악성 시그널링 서버 MitM = 미보장
 
 | 항목 | 정책 |
 |---|---|
-| TLS | 강제 (port 587 STARTTLS 또는 465 TLS) — 평문 25 절대 금지 |
-| 자격증명 | `.env.local` 격리 (`SMTP_USER` / `SMTP_PASS`) — commit 절대 금지 |
-| 발신 도메인 | SPF + DKIM + DMARC 설정 (운영 단계) |
-| Reply-To | `no-reply@tootalk.example` (운영 도메인 결정 후) |
+| 서버 | 데모 서버 (`114.207.112.73`) 안 **자체 postfix** 설치 (사용자 directive 2026-05-17 "smtp 서버는 사전에 명시했던 테스트서버에 설치해") |
+| TLS | 강제 (port 587 STARTTLS) + Let's Encrypt 인증서 — 평문 25 절대 금지 |
+| 자격증명 | `.env.local` 격리 (`SMTP_USER=tootalk-otp@<domain>` / `SMTP_PASS=<saslpasswd2>`) — commit 절대 금지 |
+| 발신 도메인 인증 | SPF TXT (ip4 + `-all`) + DKIM (opendkim RSA 2048) + DMARC TXT (`p=quarantine` → `p=reject` 점진) — 의무 |
+| rDNS PTR | 114.207.112.73 → `mail.<domain>` (ISP UI 의무 — residential IP 의 PTR 설정 불가능 시 SendGrid fallback) |
+| client | `aiosmtplib` async (TooTalk Python + qasync 정합) |
+| fallback | SendGrid relay (free 100/day) — 자체 spam reputation 부족 시 즉시 전환 |
+| Reply-To | `noreply@<tootalk-domain>` (운영 도메인 결정 후) |
+| 절차 본문 | [docs/references/smtp-setup.md](docs/references/smtp-setup.md) — postfix + DKIM + DMARC 설치 13 섹션 |
 
 ### 9-2.4 아이디·비밀번호 찾기 보안
 
