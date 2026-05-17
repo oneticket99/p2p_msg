@@ -2,110 +2,51 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<!-- TooTalk 저장소 구조 문서 HTML 변환본 - Structure.md 동일 내용 -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="title" content="TooTalk 저장소 구조">
 <meta name="owner" content="oneticket99">
 <meta name="last_verified" content="2026-05-17">
 <meta name="status" content="active">
 <title>Structure.md — TooTalk(p2p_msg) 저장소 구조</title>
-<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true});</script>
 <style>
-/* 한국어 가독성 우선 최소 CSS */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem 1.25rem;
-  line-height: 1.65;
-  color: #1f2937;
-  background: #ffffff;
-  word-break: keep-all;
-}
-h1, h2, h3, h4 {
-  font-weight: 700;
-  line-height: 1.3;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-}
-h1 { font-size: 1.9rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.4rem; }
-h2 { font-size: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3rem; }
-h3 { font-size: 1.2rem; }
-h4 { font-size: 1.05rem; }
-p { margin: 0.75rem 0; }
-a { color: #2563eb; text-decoration: none; }
-a:hover { text-decoration: underline; }
-code {
-  font-family: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
-  font-size: 0.92em;
-  background: #f3f4f6;
-  padding: 0.1em 0.35em;
-  border-radius: 3px;
-}
-pre {
-  background: #f6f8fa;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 0.9rem 1rem;
-  overflow-x: auto;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-pre code {
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-}
-pre.mermaid {
-  background: #fafafa;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 1rem;
-  text-align: center;
-  overflow-x: auto;
-}
-blockquote {
-  border-left: 4px solid #2563eb;
-  background: #eff6ff;
-  margin: 1rem 0;
-  padding: 0.6rem 1rem;
-  color: #1e3a8a;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-  font-size: 0.93rem;
-}
-th, td {
-  border: 1px solid #d1d5db;
-  padding: 0.5rem 0.7rem;
-  text-align: left;
-  vertical-align: top;
-}
-th { background: #f3f4f6; font-weight: 600; }
-tbody tr:nth-child(even) { background: #fafafa; }
-hr {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 2rem 0;
-}
-ul, ol { padding-left: 1.5rem; }
-li { margin: 0.25rem 0; }
-strong { font-weight: 700; }
+  :root { color-scheme: light; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    max-width: 1100px; margin: 2rem auto; padding: 0 1.25rem;
+    line-height: 1.65; color: #1f2937; background: #fff;
+  }
+  h1, h2, h3, h4 { line-height: 1.3; margin-top: 1.6em; }
+  h1 { border-bottom: 2px solid #2563eb; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #e5e7eb; padding-bottom: 0.2em; }
+  blockquote { border-left: 4px solid #d1d5db; margin: 0.8em 0; padding: 0.25em 1em; color: #4b5563; background: #f9fafb; }
+  table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.94em; }
+  th, td { border: 1px solid #d1d5db; padding: 6px 10px; vertical-align: top; text-align: left; }
+  thead th { background: #f3f4f6; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  code { background: #f3f4f6; padding: 1px 5px; border-radius: 3px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.88em; line-height: 1.5; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  pre.mermaid { background: #fff; color: inherit; border: 1px solid #e5e7eb; padding: 0.8em; text-align: center; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 2em 0; }
+  ul, ol { padding-left: 1.4em; }
+  li { margin: 0.2em 0; }
 </style>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "default", securityLevel: "loose" });
+</script>
 </head>
 <body>
-
-<!-- frontmatter 영역은 head 의 meta 태그로 변환 완료 -->
 
 <h1>Structure.md — TooTalk(p2p_msg) 저장소 구조</h1>
 
 <blockquote>
 <p>본 문서는 TooTalk(코드명 <code>p2p_msg</code>) 저장소의 <strong>파일 트리 · 모듈 책임 · 데이터 흐름 · ERD</strong> 를 한 곳에 모은 운영 문서다.<br>
 신규 파일·DB 테이블·메시지 흐름이 추가되거나 변경되면 본 문서를 먼저 갱신한 뒤 코드 작업을 진행한다 (M1 — Document First).<br>
-정본 정합: <a href="CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> §D (Doc Gardener 담당 매핑 · <code>@structure-agent</code>) · §E (Router → Service → Model 계층) · §K (루트 18 동결).<br>
-저장소 맵: <a href="AGENTS.md">AGENTS.md</a> · 아키텍처: <a href="ARCHITECTURE.md">ARCHITECTURE.md</a>.</p>
+정본 정합: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> §D (Doc Gardener 담당 매핑 · <code>@structure-agent</code>) · §E (Router → Service → Model 계층) · §K (루트 18 동결).<br>
+저장소 맵: <a href="../../AGENTS.md">AGENTS.md</a> · 아키텍처: <a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a>.</p>
 </blockquote>
 
 <hr>
@@ -114,7 +55,7 @@ strong { font-weight: 700; }
 
 <p>본 문서는 (1) <strong>어디에 무엇이 있는가</strong> (파일 트리), (2) <strong>각 파일이 무엇을 하는가</strong> (1~3행 책임 표), (3) <strong>어떻게 데이터가 흐르는가</strong> (mermaid 순서도 4종), (4) <strong>로컬 DB 가 어떻게 생겼는가</strong> (mermaid ERD) 4가지에 한 번에 답한다.</p>
 
-<p>본 문서는 저장소 단일 진실 공급원이며 <code>@structure-agent</code> 가 매 PR 단계에서 실제 트리와의 정합성을 검증한다 (<a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a>). 코드 영역 새 파일 추가 시 §3 트리·§4~§9 표·필요 시 §10 흐름도·§11 ERD 가 동시에 갱신되어야 한다. 본 문서가 다루지 않는 것: 정책 결정 (→ 9 정책 문서), 작업 계획 (→ <a href="PLANS.md">PLANS.md</a>), 변경 이력 (→ <code>README.md</code> · <code>History.md</code> — 작성 예정).</p>
+<p>본 문서는 저장소 단일 진실 공급원이며 <code>@structure-agent</code> 가 매 PR 단계에서 실제 트리와의 정합성을 검증한다 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a>). 코드 영역 새 파일 추가 시 §3 트리·§4~§9 표·필요 시 §10 흐름도·§11 ERD 가 동시에 갱신되어야 한다. 본 문서가 다루지 않는 것: 정책 결정 (→ 9 정책 문서), 작업 계획 (→ <a href="../../PLANS.md">PLANS.md</a>), 변경 이력 (→ <code>README.md</code> · <code>History.md</code> — 작성 예정).</p>
 
 <hr>
 
@@ -160,7 +101,7 @@ flowchart LR
 
 <p>본 트리는 <code>__pycache__</code> · <code>.git</code> · <code>.venv</code> 를 제외한 모든 추적 대상 파일을 포함한다. 깊이 4 이상까지 전개. 본 트리에 등재되지 않은 파일이 생기는 즉시 본 문서를 갱신한다.</p>
 
-<pre><code class="language-text">p2p_msg/
+<pre><code>p2p_msg/
 ├── .claude/
 │   └── agents/
 │       ├── doc-gardener-agent.md
@@ -249,13 +190,16 @@ flowchart LR
 <tr><td><code>app/core/</code></td><td>상태 머신 + 환경변수 로딩 (Qt 의존성 없음) · 외부 의존 없음 · 단위 테스트 가능</td></tr>
 <tr><td><code>app/net/</code></td><td>aiohttp WS 시그널링 클라 · <code>app/core/</code> 콜백 · 9종 envelope 송수신</td></tr>
 <tr><td><code>app/rtc/</code></td><td>aiortc WebRTC PeerConnection + DataChannel 송수신 · <code>app/core/</code> 콜백 · 5종 파일 메시지</td></tr>
+<tr><td><code>app/auth/</code></td><td>회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17) · server/auth API 호출</td></tr>
+<tr><td><code>app/db/</code></td><td>MariaDB 스키마·마이그레이션 (asyncmy 드라이버) · <code>app/core/</code> 영속화</td></tr>
 <tr><td><code>server/</code></td><td>aiohttp 시그널링 서버 · Router → Service → Model 단방향 · SDP/ICE 만 통과</td></tr>
+<tr><td><code>server/auth/</code></td><td>회원가입/로그인/OTP 발송/비번 재설정 (bcrypt 12 rounds + aiosmtplib + secrets.choice)</td></tr>
 <tr><td><code>docs/exec-plans/active/</code></td><td>활성 실행 계획 (<code>YYYY-MM-DD-&lt;slug&gt;.md</code>) · PLANS.md 인덱스 · 완료 시 <code>completed/</code> 이동</td></tr>
 <tr><td><code>tools/</code></td><td>운영 스크립트 (텔레그램 브리지 · 문서 린트) · <code>data/wbs.sqlite</code> 등 추후 추가</td></tr>
 </tbody>
 </table>
 
-<p><strong>금지 의존</strong>: <code>app/ui/</code> → <code>app/net/</code> · <code>app/rtc/</code> 직접 호출, <code>server/room.py</code> → <code>signaling.py</code> 역방향, <code>server/protocol.py</code> → <code>room.py</code> 역방향. PR 단계에서 <code>@reviewer-agent</code> 가 차단 (<a href="ARCHITECTURE.md">ARCHITECTURE.md §4</a>).</p>
+<p><strong>금지 의존</strong>: <code>app/ui/</code> → <code>app/net/</code> · <code>app/rtc/</code> 직접 호출, <code>server/room.py</code> → <code>signaling.py</code> 역방향, <code>server/protocol.py</code> → <code>room.py</code> 역방향. PR 단계에서 <code>@reviewer-agent</code> 가 차단 (<a href="../../ARCHITECTURE.md">ARCHITECTURE.md §4</a>).</p>
 
 <hr>
 
@@ -294,7 +238,7 @@ flowchart LR
 
 <h2>6. <code>server/</code> 모듈 표 (Router → Service → Model)</h2>
 
-<p><code>server/</code> 는 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a> "Backend: <code>Router → Service → Model</code> 계층 분리, 비동기 전용" 규약을 직접 구현한다. 실 데이터 페이로드는 본 서버를 통과하지 않으며, SDP/ICE 만 9종 envelope 안에서 중계된다.</p>
+<p><code>server/</code> 는 <a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a> "Backend: <code>Router → Service → Model</code> 계층 분리, 비동기 전용" 규약을 직접 구현한다. 실 데이터 페이로드는 본 서버를 통과하지 않으며, SDP/ICE 만 9종 envelope 안에서 중계된다.</p>
 
 <blockquote>
 <p><code>server/__init__.py</code> (docstring + <code>__version__</code>) · <code>server/requirements.txt</code> (aiohttp · python-dotenv) · <code>server/README.md</code> (영역 README) 는 보일러플레이트로 본 표 생략.</p>
@@ -369,7 +313,7 @@ flowchart LR
 </table>
 
 <blockquote>
-<p>문서 담당 4 에이전트 (<code>@spec-agent</code> · <code>@structure-agent</code> · <code>@checklist-agent</code> · <code>@history-agent</code>) 매핑은 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a> 참조. 본 시점 디스크에는 <code>history-agent.md</code> 만 존재하고 나머지 3개는 <code>doc-gardener-agent.md</code> 가 통합 운영한다.</p>
+<p>문서 담당 4 에이전트 (<code>@spec-agent</code> · <code>@structure-agent</code> · <code>@checklist-agent</code> · <code>@history-agent</code>) 매핑은 <a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a> 참조. 본 시점 디스크에는 <code>history-agent.md</code> 만 존재하고 나머지 3개는 <code>doc-gardener-agent.md</code> 가 통합 운영한다.</p>
 </blockquote>
 
 <hr>
@@ -378,7 +322,7 @@ flowchart LR
 
 <h3>9.1 <code>docs/</code> 트리</h3>
 
-<pre><code class="language-text">docs/
+<pre><code>docs/
 └── exec-plans/
     └── active/
         └── 2026-05-17-tootalk-phase1-mvp.md
@@ -415,7 +359,7 @@ flowchart LR
 
 <h2>10. 데이터 흐름 순서도 (mermaid)</h2>
 
-<p>본 §10 은 4개의 핵심 흐름을 별도 mermaid sequenceDiagram 으로 분리한다. 모든 도식은 <a href="ARCHITECTURE.md">ARCHITECTURE.md §5</a> 의 거시 시퀀스를 본 저장소 구조 시점에서 재구성한 것이다.</p>
+<p>본 §10 은 4개의 핵심 흐름을 별도 mermaid sequenceDiagram 으로 분리한다. 모든 도식은 <a href="../../ARCHITECTURE.md">ARCHITECTURE.md §5</a> 의 거시 시퀀스를 본 저장소 구조 시점에서 재구성한 것이다.</p>
 
 <h3>10.1 시그널링 연결 수립 (JOIN → PEERS → OFFER → ANSWER → ICE)</h3>
 
@@ -480,7 +424,7 @@ sequenceDiagram
 
 <h3>10.3 파일 송수신 양방향 (FILE_META → CHUNK → ACK → END → DONE)</h3>
 
-<p><code>app/rtc/protocol.py</code> 의 5종 메시지로 운반되며, <code>bufferedAmount</code> 기반 backpressure 가 송신 큐 폭주를 막는다 (<a href="app/rtc/README.md">app/rtc/README.md §5</a>).</p>
+<p><code>app/rtc/protocol.py</code> 의 5종 메시지로 운반되며, <code>bufferedAmount</code> 기반 backpressure 가 송신 큐 폭주를 막는다 (<a href="../../app/rtc/README.md">app/rtc/README.md §5</a>).</p>
 
 <pre class="mermaid">
 sequenceDiagram
@@ -550,7 +494,7 @@ sequenceDiagram
 
 <h2>11. ERD — MariaDB 로컬 스키마 (mermaid)</h2>
 
-<p>클라 영역 MariaDB (환경변수 <code>DB_HOST</code>/<code>DB_PORT</code>/<code>DB_USER</code>/<code>DB_PASS</code>/<code>DB_NAME</code> — <a href="app/README.md">app/README.md §2</a>, 사용자 directive 2026-05-17) 의 4 테이블. 본 시점 스키마 정의 코드 (<code>app/db/</code>) 미생성·본 ERD 가 단일 진실 공급원. 신규 컬럼·테이블은 본 도식을 먼저 갱신. 마이그레이션 정본은 <code>MIGRATION_MARIADB.md</code> (작성 예정 — 운영 8/8).</p>
+<p>클라 영역 MariaDB (환경변수 <code>DB_HOST</code>/<code>DB_PORT</code>/<code>DB_USER</code>/<code>DB_PASS</code>/<code>DB_NAME</code> — <a href="../../app/README.md">app/README.md §2</a>, 사용자 directive 2026-05-17) 의 4 테이블. 본 시점 스키마 정의 코드 (<code>app/db/</code>) 미생성·본 ERD 가 단일 진실 공급원. 신규 컬럼·테이블은 본 도식을 먼저 갱신. 마이그레이션 정본은 <code>MIGRATION_MARIADB.md</code> (작성 예정 — 운영 8/8).</p>
 
 <pre class="mermaid">
 erDiagram
@@ -611,7 +555,7 @@ erDiagram
 
 <h3>11.2 마이그레이션 정합</h3>
 
-<p>4 테이블은 <code>MIGRATION_MARIADB.md</code> (예정) 의 <code>tables</code> 배열 FK 순서 (<code>rooms</code> → <code>peers</code> → <code>file_meta</code> → <code>messages</code>) 와 일치한다. DB 모델 추가 시 본 §11 ERD 와 <code>MIGRATION_MARIADB.md</code> 동시 갱신 (<a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §N</a>).</p>
+<p>4 테이블은 <code>MIGRATION_MARIADB.md</code> (예정) 의 <code>tables</code> 배열 FK 순서 (<code>rooms</code> → <code>peers</code> → <code>file_meta</code> → <code>messages</code>) 와 일치한다. DB 모델 추가 시 본 §11 ERD 와 <code>MIGRATION_MARIADB.md</code> 동시 갱신 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §N</a>).</p>
 
 <hr>
 
@@ -635,7 +579,7 @@ erDiagram
 </table>
 
 <blockquote>
-<p><strong>한글 정책 (M4)</strong>: 모든 코드 파일의 주석·docstring 본문에 한국어 1자 이상 포함. 변수·함수·클래스 식별자는 영문 유지. 상세 판정은 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §J</a>.</p>
+<p><strong>한글 정책 (M4)</strong>: 모든 코드 파일의 주석·docstring 본문에 한국어 1자 이상 포함. 변수·함수·클래스 식별자는 영문 유지. 상세 판정은 <a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §J</a>.</p>
 </blockquote>
 
 <hr>
@@ -664,25 +608,25 @@ erDiagram
 <h3>14.1 정본·맵·정책</h3>
 
 <ul>
-<li><a href="CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> — Watcher 정본 · §D Doc Gardener 매핑 · §E 계층 분리 · §K 루트 18 동결</li>
-<li><a href="AGENTS.md">AGENTS.md</a> — 저장소 맵 · 7대 규칙 요약 · 정보 구조 인덱스</li>
-<li>정책 9 문서: <a href="ARCHITECTURE.md">ARCHITECTURE.md</a> · <a href="DESIGN.md">DESIGN.md</a> · <a href="FRONTEND.md">FRONTEND.md</a> · <a href="PLANS.md">PLANS.md</a> · <a href="PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="QUALITY_SCORE.md">QUALITY_SCORE.md</a> · <a href="RELIABILITY.md">RELIABILITY.md</a> · <a href="SECURITY.md">SECURITY.md</a></li>
+<li><a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> — Watcher 정본 · §D Doc Gardener 매핑 · §E 계층 분리 · §K 루트 18 동결</li>
+<li><a href="../../AGENTS.md">AGENTS.md</a> — 저장소 맵 · 7대 규칙 요약 · 정보 구조 인덱스</li>
+<li>정책 9 문서: <a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a> · <a href="../../DESIGN.md">DESIGN.md</a> · <a href="../../FRONTEND.md">FRONTEND.md</a> · <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a> · <a href="../../RELIABILITY.md">RELIABILITY.md</a> · <a href="../../SECURITY.md">SECURITY.md</a></li>
 </ul>
 
 <h3>14.2 실행계획·영역 README</h3>
 
 <ul>
-<li><a href="docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a> — Phase 1 MVP</li>
-<li><a href="server/README.md">server/README.md</a> · <a href="app/README.md">app/README.md</a> · <a href="app/rtc/README.md">app/rtc/README.md</a></li>
+<li><a href="../../docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a> — Phase 1 MVP</li>
+<li><a href="../../server/README.md">server/README.md</a> · <a href="../../app/README.md">app/README.md</a> · <a href="../../app/rtc/README.md">app/rtc/README.md</a></li>
 </ul>
 
 <h3>14.3 코드 영역 직접 참조</h3>
 
 <ul>
-<li>서버: <a href="server/signaling.py">server/signaling.py</a> · <a href="server/room.py">server/room.py</a> · <a href="server/protocol.py">server/protocol.py</a> · <a href="server/main.py">server/main.py</a></li>
-<li>클라 진입·코어·네트: <a href="app/main.py">app/main.py</a> · <a href="app/core/app_state.py">app/core/app_state.py</a> · <a href="app/core/config.py">app/core/config.py</a> · <a href="app/net/signaling_client.py">app/net/signaling_client.py</a></li>
-<li>클라 UI 5 위젯: <a href="app/ui/main_window.py">app/ui/main_window.py</a> · <a href="app/ui/chat_view.py">app/ui/chat_view.py</a> · <a href="app/ui/message_bubble.py">app/ui/message_bubble.py</a> · <a href="app/ui/status_bar.py">app/ui/status_bar.py</a> · <a href="app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a></li>
-<li>클라 RTC 5 모듈: <a href="app/rtc/peer.py">app/rtc/peer.py</a> · <a href="app/rtc/protocol.py">app/rtc/protocol.py</a> · <a href="app/rtc/file_sender.py">app/rtc/file_sender.py</a> · <a href="app/rtc/file_receiver.py">app/rtc/file_receiver.py</a> · <a href="app/rtc/image_processor.py">app/rtc/image_processor.py</a></li>
+<li>서버: <a href="../../server/signaling.py">server/signaling.py</a> · <a href="../../server/room.py">server/room.py</a> · <a href="../../server/protocol.py">server/protocol.py</a> · <a href="../../server/main.py">server/main.py</a></li>
+<li>클라 진입·코어·네트: <a href="../../app/main.py">app/main.py</a> · <a href="../../app/core/app_state.py">app/core/app_state.py</a> · <a href="../../app/core/config.py">app/core/config.py</a> · <a href="../../app/net/signaling_client.py">app/net/signaling_client.py</a></li>
+<li>클라 UI 5 위젯: <a href="../../app/ui/main_window.py">app/ui/main_window.py</a> · <a href="../../app/ui/chat_view.py">app/ui/chat_view.py</a> · <a href="../../app/ui/message_bubble.py">app/ui/message_bubble.py</a> · <a href="../../app/ui/status_bar.py">app/ui/status_bar.py</a> · <a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a></li>
+<li>클라 RTC 5 모듈: <a href="../../app/rtc/peer.py">app/rtc/peer.py</a> · <a href="../../app/rtc/protocol.py">app/rtc/protocol.py</a> · <a href="../../app/rtc/file_sender.py">app/rtc/file_sender.py</a> · <a href="../../app/rtc/file_receiver.py">app/rtc/file_receiver.py</a> · <a href="../../app/rtc/image_processor.py">app/rtc/image_processor.py</a></li>
 </ul>
 
 <hr>

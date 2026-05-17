@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="title" content="FRONTEND.md — TooTalk PyQt6 UI 표준">
+<meta name="description" content="TooTalk(p2p_msg) 데스크탑 클라이언트 PyQt6 프런트엔드 표준 정의서">
+<meta name="author" content="TooTalk Project">
+<meta name="generator" content="docs/html FRONTEND.html (FRONTEND.md 변환)">
 <title>FRONTEND.md — TooTalk PyQt6 UI 표준</title>
 <script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true});</script>
 <style>
@@ -175,18 +179,78 @@ flowchart TD
 <tr><th>변수명</th><th>라이트 임시값</th><th>다크 임시값</th><th>용도</th></tr>
 </thead>
 <tbody>
-<tr><td><code>--primary</code></td><td>미확정 후크</td><td>미확정 후크</td><td>보내기 버튼 · 강조 액션</td></tr>
-<tr><td><code>--bg</code></td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#1e1e1e"></span><code>#1e1e1e</code></td><td>윈도우 배경</td></tr>
-<tr><td><code>--fg</code></td><td><span class="swatch" style="background:#1a1a1a"></span><code>#1a1a1a</code></td><td><span class="swatch" style="background:#e5e5e5"></span><code>#e5e5e5</code></td><td>본문 텍스트</td></tr>
-<tr><td><code>--bubble-self</code></td><td><span class="swatch" style="background:#dcf8c6"></span><code>#dcf8c6</code></td><td><span class="swatch" style="background:#2d5a3f"></span><code>#2d5a3f</code></td><td>내가 발신한 버블 배경 (self)</td></tr>
-<tr><td><code>--bubble-other</code></td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#2a2a2a"></span><code>#2a2a2a</code></td><td>상대가 발신한 버블 배경 (peer)</td></tr>
-<tr><td><code>--bubble-border</code></td><td><span class="swatch" style="background:#dddddd"></span><code>#dddddd</code></td><td><span class="swatch" style="background:#3a3a3a"></span><code>#3a3a3a</code></td><td>버블 경계선</td></tr>
-<tr><td><code>--text-timestamp</code></td><td><span class="swatch" style="background:#888888"></span><code>#888888</code></td><td><span class="swatch" style="background:#9a9a9a"></span><code>#9a9a9a</code></td><td>타임스탬프 회색</td></tr>
-<tr><td><code>--text-sender</code></td><td><span class="swatch" style="background:#555555"></span><code>#555555</code></td><td><span class="swatch" style="background:#b5b5b5"></span><code>#b5b5b5</code></td><td>발신자 라벨</td></tr>
-<tr><td><code>--status-connected</code></td><td><span class="swatch" style="background:#22c55e"></span><code>#22c55e</code></td><td><span class="swatch" style="background:#22c55e"></span><code>#22c55e</code></td><td>연결 정상</td></tr>
-<tr><td><code>--status-error</code></td><td><span class="swatch" style="background:#dc2626"></span><code>#dc2626</code></td><td><span class="swatch" style="background:#ef4444"></span><code>#ef4444</code></td><td>연결 오류</td></tr>
-<tr><td><code>--progress-acked</code></td><td>미확정 후크</td><td>미확정 후크</td><td>ACK 누적 진행 막대</td></tr>
-<tr><td><code>--progress-inflight</code></td><td>미확정 후크</td><td>미확정 후크</td><td>송신 큐 대기 막대</td></tr>
+<tr>
+<td><code>--primary</code></td>
+<td>미확정 후크</td>
+<td>미확정 후크</td>
+<td>보내기 버튼 · 강조 액션</td>
+</tr>
+<tr>
+<td><code>--bg</code></td>
+<td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
+<td><span class="swatch" style="background:#1e1e1e;"></span><code>#1e1e1e</code></td>
+<td>윈도우 배경</td>
+</tr>
+<tr>
+<td><code>--fg</code></td>
+<td><span class="swatch" style="background:#1a1a1a;"></span><code>#1a1a1a</code></td>
+<td><span class="swatch" style="background:#e5e5e5;"></span><code>#e5e5e5</code></td>
+<td>본문 텍스트</td>
+</tr>
+<tr>
+<td><code>--bubble-self</code></td>
+<td><span class="swatch" style="background:#dcf8c6;"></span><code>#dcf8c6</code></td>
+<td><span class="swatch" style="background:#2d5a3f;"></span><code>#2d5a3f</code></td>
+<td>내가 발신한 버블 배경 (self)</td>
+</tr>
+<tr>
+<td><code>--bubble-other</code></td>
+<td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
+<td><span class="swatch" style="background:#2a2a2a;"></span><code>#2a2a2a</code></td>
+<td>상대가 발신한 버블 배경 (peer)</td>
+</tr>
+<tr>
+<td><code>--bubble-border</code></td>
+<td><span class="swatch" style="background:#dddddd;"></span><code>#dddddd</code></td>
+<td><span class="swatch" style="background:#3a3a3a;"></span><code>#3a3a3a</code></td>
+<td>버블 경계선</td>
+</tr>
+<tr>
+<td><code>--text-timestamp</code></td>
+<td><span class="swatch" style="background:#888888;"></span><code>#888888</code></td>
+<td><span class="swatch" style="background:#9a9a9a;"></span><code>#9a9a9a</code></td>
+<td>타임스탬프 회색</td>
+</tr>
+<tr>
+<td><code>--text-sender</code></td>
+<td><span class="swatch" style="background:#555555;"></span><code>#555555</code></td>
+<td><span class="swatch" style="background:#b5b5b5;"></span><code>#b5b5b5</code></td>
+<td>발신자 라벨</td>
+</tr>
+<tr>
+<td><code>--status-connected</code></td>
+<td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
+<td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
+<td>연결 정상</td>
+</tr>
+<tr>
+<td><code>--status-error</code></td>
+<td><span class="swatch" style="background:#dc2626;"></span><code>#dc2626</code></td>
+<td><span class="swatch" style="background:#ef4444;"></span><code>#ef4444</code></td>
+<td>연결 오류</td>
+</tr>
+<tr>
+<td><code>--progress-acked</code></td>
+<td>미확정 후크</td>
+<td>미확정 후크</td>
+<td>ACK 누적 진행 막대</td>
+</tr>
+<tr>
+<td><code>--progress-inflight</code></td>
+<td>미확정 후크</td>
+<td>미확정 후크</td>
+<td>송신 큐 대기 막대</td>
+</tr>
 </tbody>
 </table>
 
@@ -510,6 +574,61 @@ flowchart LR
 </table>
 
 <p>본 wireframe 은 <strong>레이아웃 의도</strong>만 정의한다. 실제 픽셀·색상값은 <code>app/ui/theme.qss</code> (Phase 1 후반 신설 예정) 와 <code>app/ui/*.py</code> 구현 본문이 따른다.</p>
+
+<h3>14.6 회원가입 화면 (사용자 directive 2026-05-17, FR-11)</h3>
+
+<pre class="mermaid">
+flowchart TB
+    subgraph SIGNUP["SignupDialog 480 x 600"]
+        direction TB
+        T1["타이틀 — TooTalk 회원가입"]
+        E1[이메일 입력 필드 *필수<br/>placeholder: you@example.com]
+        E2[아이디 입력 필드 *필수<br/>placeholder: 4-32자 영문/숫자/_]
+        E3[비밀번호 입력 필드 *필수<br/>type=password, 최소 8자]
+        OTP[OTP 6자리 입력 필드<br/>3분 카운트다운 타이머<br/>가입 버튼 클릭 후 노출]
+        E4[닉네임 선택 필드<br/>placeholder: 미입력 시 아이디 사용]
+        E5[아바타 업로드 버튼<br/>선택, 시스템 기본 SVG]
+        BTN[가입 버튼 primary]
+        LINK[이미 가입함? 로그인 →]
+    end
+    T1 --> E1 --> E2 --> E3 --> OTP --> E4 --> E5 --> BTN --> LINK
+    classDef required fill:#fef3c7,stroke:#d97706
+    classDef otp fill:#dbeafe,stroke:#2563eb
+    class E1,E2,E3,BTN required
+    class OTP otp
+</pre>
+
+<h3>14.7 로그인 화면 (FR-12)</h3>
+
+<pre class="mermaid">
+flowchart TB
+    subgraph LOGIN["LoginDialog 400 x 360"]
+        direction TB
+        L1["타이틀 — TooTalk 로그인"]
+        F1[이메일 입력]
+        F2[비밀번호 입력]
+        F3[로그인 유지 체크박스]
+        BTN1[로그인 버튼 primary]
+        L2[아이디/비밀번호 찾기 →]
+        L3[회원가입 →]
+    end
+    L1 --> F1 --> F2 --> F3 --> BTN1 --> L2 --> L3
+</pre>
+
+<h3>14.8 아이디·비밀번호 찾기 화면 (FR-13)</h3>
+
+<pre class="mermaid">
+flowchart TB
+    subgraph FORGOT["ForgotDialog 400 x 320"]
+        direction TB
+        FG1["타이틀 — 비밀번호 찾기"]
+        FF1[아이디 username 입력]
+        FF2[가입 시 사용한 이메일 입력]
+        FBTN[비밀번호 재설정 메일 발송 버튼]
+        FMSG["응답 메시지 영역<br/>email 미존재 → xxx@xxx.com 으로 가입된 내역이 없습니다.<br/>일치 → 재설정 링크 발송 완료, 30분 내 확인"]
+    end
+    FG1 --> FF1 --> FF2 --> FBTN --> FMSG
+</pre>
 
 <hr>
 
