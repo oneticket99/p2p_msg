@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 19:20 (commit `ba970d2` 직후 — 본 세션 누계 35 commit 반영, 사이클 8)
+> 최근 갱신 시점: 2026-05-17 20:25 (commit `d3d5f75` 직후 — 본 세션 누계 40 commit 반영, 사이클 9)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -125,16 +125,20 @@ status: active
 - AGPLv3 = Phase 2 이후 옵션 (network use clause)
 - 영구 메모리 2 신설 — `project_license_gpl.md` + `project_visibility_transition.md`
 
-### 2.15 누계 drift 회수 4 cycle — 정책 본문 정합 100% (신규 사이클 8)
+### 2.15 누계 drift 회수 8 cycle — 정책 본문 정합 100% (사이클 8 신규 — 사이클 9 확장)
 
-직전 누계 4 cycle 의 drift 회수 의 완료:
+누계 8 cycle 의 drift 회수 완료:
 
 - **사이클 5**: PLANS.md §3~§10 — Phase 3 원격 데스크탑 제어 + §10.1/§10.2 에이전트 수 정정
 - **사이클 6**: Specification §12 TBD-01 + SECURITY §12.4/§12.5 — GPLv3 + visibility 정합
 - **사이클 7**: Structure §9.2 + ARCHITECTURE §6 — hook 2건 + LICENSE + settings.json.disabled
 - **사이클 8**: docs/policies/ adoption + execution-harness — Enforcement Layer 5단 의 본 저장소 sketch column
+- **사이클 9 (a)**: AGENTS §3 문서 맵 4 row + §10 금지사항 13 → 18 row
+- **사이클 9 (b)**: CLAUDE.md §7 영구 가드레일 인덱스 9 → 22 row
+- **사이클 9 (c)**: CheckList §2 신규 2 row + §10 TBD-01 + TBD-06 ✅ 해소
+- **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
-누계 commit = 1107382 + cba0e2f + 586248b + ba970d2. 정책 본문 + 운영 문서 의 라이선스/visibility/hook 정합 100% 충족.
+누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
 ### 2.14 BPE script trigger sketch — enforcement layer 사전 명시 (사이클 7 신규 — 사이클 8 유지)
 

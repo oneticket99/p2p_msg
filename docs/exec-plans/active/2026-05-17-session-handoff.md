@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 19:30 (사이클 6 갱신 — 본 세션 누계 commit 38+ 반영, drift 회수 4 cycle + snapshot 사이클 8 추가). 최신 commit `ba970d2`.
+> 본 인계 시점: 2026-05-17 20:30 (사이클 7 갱신 — 본 세션 누계 commit 43+ 반영, drift 회수 누계 8 cycle + snapshot 사이클 9 추가). 최신 commit `d3d5f75`.
 
 ---
 
@@ -26,7 +26,7 @@ status: active
 - **Phase 3 막바지 원격 데스크탑 제어 차별화** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어, [[project-phase2-remote-control-differentiator]])
 - **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
 - **HTML 동시 정리 6종** — Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding
-- **평가 snapshot 2종** — productization (3.95/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 6 완료)
+- **평가 snapshot 2종** — productization (3.95/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 9 완료)
 - **CI 8 job GREEN** — self-hosted macOS arm64 runner 등록 + workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN
 - **wine cross-compile** — Windows 빌드 = GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker (Windows self-hosted runner 의무 영구 회수)
 - **fork PR strict** — `all_external_contributors` (gh API 자동 적용)
@@ -398,6 +398,27 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - execution-harness §3 Enforcement Layer — 본 저장소 sketch column 신규 (L0 + L1 Stop hook 명시)
 - snapshot 사이클 8 — productization §2.15 누계 drift 회수 4 cycle 신규 + vibe-coding §2.19 자체 drift detect 패턴 신규
 - HTML 2종 sub-agent 병렬 재생성 (사이클 8 정합)
+
+### 8.26 AGENTS §3 + §10 + CLAUDE §7 drift 회수 (사이클 7 신규)
+
+- AGENTS §3 문서 맵 — 4 row 신규 (LICENSE + 인프라 + snapshot + enforcement sketch)
+- AGENTS §10 금지사항 — 13 → 18 row (BPE/대명사/텔레그램/LICENSE/settings.json.disabled)
+- CLAUDE.md §7 영구 가드레일 인덱스 — 9 → 22 row (신규 13)
+
+### 8.27 CheckList + phase1-mvp + EXTENSION_GUIDE drift 회수 (사이클 7 신규)
+
+- CheckList §2 신규 2 row (enforcement layer sketch + 영구 메모리 22/22)
+- CheckList §10 TBD-01 (라이선스) + TBD-06 (runner) ✅ 해소
+- phase1-mvp §7 결정 로그 8 → 11 row (GPLv3 + visibility + CI runner + SMTP + enforcement)
+- EXTENSION_GUIDE §3 영역별 용도 + 저장소 루트 직접 파일 표 신규
+- EXTENSION_GUIDE §7 정책 변경 필수 정합 4 row 추가
+
+### 8.28 snapshot 사이클 9 + HTML 2 (사이클 7 신규)
+
+- productization 3.95 (=) + §2.15 누계 drift 회수 8 cycle 확장
+- vibe-coding 4.85 (=) + §2.19 자체 drift detect 8 cycle 패턴 확장
+- §3.1 pivot 사이클 9 row 추가
+- HTML 2종 sub-agent 병렬 재생성 (사이클 9 정합)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -449,4 +470,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 19:30 — 사이클 6 (본 세션 누계 commit 60+ + 사이클 6 의 5 신규 commit `1107382` (PLANS drift) + `cba0e2f` (Spec/SECURITY drift) + `586248b` (Struct/ARCH drift) + `ba970d2` (policies drift) + snapshot 8 cycle 반영, 가드레일 22, 텔레그램 송신 37건, HTML 6 + sub-agent 24 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch + **drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies)** 신규, snapshot 사이클 8 — productization 3.95 + vibe-coding 4.85)
+마지막 갱신: 2026-05-17 20:30 — 사이클 7 (본 세션 누계 commit 65+ + 사이클 7 의 5 신규 commit `2c898d6` (AGENTS) + `841a0aa` (CLAUDE §7) + `9f12756` (History) + `537d968` (CheckList) + `d3d5f75` (phase1-mvp + EXTENSION_GUIDE) + snapshot 9 + HTML 2 cycle 반영, 가드레일 22, 텔레그램 송신 41건, HTML 6 + sub-agent 26 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch + drift 회수 누계 8 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies + AGENTS + CLAUDE §7 + CheckList + phase1-mvp + EXTENSION_GUIDE) + **추가 7 문서 (DESIGN/FRONTEND/RELIABILITY/PRODUCT_SENSE/QUALITY_SCORE/MIGRATION_MARIADB/doc-gardening) drift 부재 확인** 신규, snapshot 사이클 9 — productization 3.95 + vibe-coding 4.85)
