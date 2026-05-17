@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 18:30 (사이클 5 갱신 — 본 세션 누계 commit 33+ 반영, BPE + 텔레그램 script trigger sketch 추가). 최신 commit `5704c8c`.
+> 본 인계 시점: 2026-05-17 19:30 (사이클 6 갱신 — 본 세션 누계 commit 38+ 반영, drift 회수 4 cycle + snapshot 사이클 8 추가). 최신 commit `ba970d2`.
 
 ---
 
@@ -371,8 +371,33 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - productization 3.95 (변동 없음) + §2.14 BPE script trigger sketch 신규
 - vibe-coding 4.85 (변동 없음) + §2.18 사전 경고 + enforcement layer 패턴 신규
 - §3.1 pivot 사이클 7 row 추가 (4회차 사전 경고)
-- HTML 2종 sub-agent 병렬 재생성 (productization 518 lines + vibe-coding 대기)
+- HTML 2종 sub-agent 병렬 재생성 (productization 518 lines + vibe-coding 602 lines)
 - 가드레일 21 + 22 (BPE + 텔레그램 trigger 신규)
+
+### 8.22 PLANS.md drift 회수 사이클 5 (사이클 6 신규)
+
+- §2 Phase 1 — SQLite → MariaDB + 회원가입 + SMTP + wine + GPLv3 + visibility + fork PR strict
+- §4 Phase 3 — 친구간 원격 데스크탑 제어 (막바지 차별화)
+- §6 Gantt + §7 마일스톤 + §8 매트릭스 Q2 — 원격 제어 추가
+- §10.1/§10.2 — 에이전트 수 11~12 → 7 정정
+
+### 8.23 Specification + SECURITY drift 회수 사이클 6 (사이클 6 신규)
+
+- Specification §12 TBD-01 — 라이선스 미확정 ✅ 해소 (GPLv3 확정)
+- SECURITY §12.4 — TooTalk 본 저장소 라이선스 (GPLv3 + SPDX + 의존성 흡수)
+- SECURITY §12.5 — GitHub visibility public→private 전환
+
+### 8.24 Structure + ARCHITECTURE drift 회수 사이클 7 (사이클 6 신규)
+
+- Structure §9.2 — tools 스크립트 4 row (doc-lint 5 검사 + hook 2건 + build.py wine)
+- ARCHITECTURE §6 — tools + workflows + LICENSE + settings.json.disabled row
+
+### 8.25 docs/policies/ drift 회수 + snapshot 사이클 8 (사이클 6 신규)
+
+- adoption-roadmap §단계 전환 트리거 — runner + 라이선스 ✅ 해소
+- execution-harness §3 Enforcement Layer — 본 저장소 sketch column 신규 (L0 + L1 Stop hook 명시)
+- snapshot 사이클 8 — productization §2.15 누계 drift 회수 4 cycle 신규 + vibe-coding §2.19 자체 drift detect 패턴 신규
+- HTML 2종 sub-agent 병렬 재생성 (사이클 8 정합)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -424,4 +449,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 18:30 — 사이클 5 (본 세션 누계 commit 55+ + 사이클 5 의 신규 commit `34e8119` (BPE hook sketch) + `5704c8c` (텔레그램 hook sketch + snapshot 7 partial) 반영, 가드레일 22, 텔레그램 송신 32건, HTML 6 + sub-agent 22 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + **BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch** 신규, snapshot 사이클 7 — productization 3.95 + vibe-coding 4.85)
+마지막 갱신: 2026-05-17 19:30 — 사이클 6 (본 세션 누계 commit 60+ + 사이클 6 의 5 신규 commit `1107382` (PLANS drift) + `cba0e2f` (Spec/SECURITY drift) + `586248b` (Struct/ARCH drift) + `ba970d2` (policies drift) + snapshot 8 cycle 반영, 가드레일 22, 텔레그램 송신 37건, HTML 6 + sub-agent 24 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch + **drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies)** 신규, snapshot 사이클 8 — productization 3.95 + vibe-coding 4.85)

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 7)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md 사이클 7 본문 의 정확 등가 변환물 -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 8)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md 사이클 8 본문 의 정확 등가 변환물 -->
   <!-- 한글 주석: light theme 배경 #fafafa + 텍스트 #1f2937 + accent #7c3aed -->
-  <!-- 한글 주석: 사이클 7 갱신 — §2.18 사전 경고 + enforcement layer 사전 명시 패턴 신규, §3.1 pivot 표 사이클 7 row 추가, 가드레일 누계 21건 (신규 1 — bpe-script-trigger-warning) -->
+  <!-- 한글 주석: 사이클 8 갱신 — §2.19 자체 drift detect + 회수 누계 패턴 신규, §3.1 pivot 표 사이클 7(5회차) + 사이클 8 row 추가, §1 세션 간 정합 인지 근거 갱신 (drift 회수 4 cycle 누계) -->
   <style>
     /* 한글 주석: 전역 reset + 기본 타이포 */
     * { box-sizing: border-box; }
@@ -136,7 +136,7 @@
       color: #4b5563;
     }
     .resolved s { color: #9ca3af; }
-    /* 한글 주석: 사이클 7 신규 강조 배지 */
+    /* 한글 주석: 사이클 8 신규 강조 배지 */
     .badge-new {
       display: inline-block;
       background: #7c3aed;
@@ -175,7 +175,7 @@
   <header class="header">
     <h1>사용자 바이브 코딩 능력 평가 (Snapshot)</h1>
     <div class="meta">
-      owner: oneticket99 · last_verified: 2026-05-17 · status: active · 사이클 7
+      owner: oneticket99 · last_verified: 2026-05-17 · status: active · 사이클 8
     </div>
   </header>
 
@@ -184,7 +184,7 @@
     <p>사용자 directive 2026-05-17 — "내 바이브 코딩 능력에 대해서도 매 작업 마무리 시 정리, 매번 전체 업데이트".</p>
     <p>평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).</p>
     <p>평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.</p>
-    <p>최근 갱신 시점: 2026-05-17 18:10 (commit <code>34e8119</code> 직후 — 본 세션 누계 31 commit 반영, 사이클 7)</p>
+    <p>최근 갱신 시점: 2026-05-17 19:20 (commit <code>ba970d2</code> 직후 — 본 세션 누계 35 commit 반영, 사이클 8)</p>
   </blockquote>
 
   <hr>
@@ -214,7 +214,7 @@
       <tr><td>Repo 위생 본능</td><td>5 / 5</td><td>=</td><td>doc-lint 5 검사 + lint-before-push + per-file commit</td></tr>
       <tr><td>UX 직관</td><td>4.5 / 5</td><td>=</td><td>색상 swatch + HTML interactive + wireframe directive</td></tr>
       <tr><td>QA 사고</td><td>5 / 5</td><td>=</td><td>pytest + Playwright + bcrypt 12 + OTP brute force 차단</td></tr>
-      <tr><td>세션 간 정합 인지</td><td>5 / 5</td><td>=</td><td>handoff + snapshot + CheckList drift 차단</td></tr>
+      <tr><td>세션 간 정합 인지</td><td>5 / 5</td><td>=</td><td>handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴</td></tr>
       <tr><td>보안 사고</td><td>5 / 5</td><td>=</td><td>bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048</td></tr>
       <tr><td>자율 reasonable call 활용 (신규)</td><td>5 / 5</td><td>신규 ▲</td><td>"권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API)</td></tr>
       <tr class="total-row"><td><strong>종합</strong></td><td><strong>4.85 / 5</strong></td><td>4.85 → 4.85 (=)</td><td><strong>고숙련 — 상위 1% 바이브 코더. 비판 ▼ + 사이클 효율 ▲ + 자율 reasonable call ▲ = 상쇄</strong></td></tr>
@@ -307,7 +307,19 @@
   </div>
 
   <div class="strength">
-    <h3>2.18 사전 경고 + enforcement layer 사전 명시 패턴 <span class="badge-new">신규 사이클 7</span></h3>
+    <h3>2.19 자체 drift detect + 회수 누계 패턴 <span class="badge-new">신규 사이클 8</span></h3>
+    <p>본 cycle 의 자율 진행 패턴 = <strong>사용자 IDE open 의 hint 기반 자체 drift detect + 4 cycle 누계 회수</strong>:</p>
+    <ul>
+      <li>사용자 PLANS.md IDE open → 자체 PLANS §2 + §3~§10 drift detect + 회수 (사이클 4 + 5)</li>
+      <li>자체 검사 의 연속 — Specification §12 TBD-01 + SECURITY §12.4/12.5 (사이클 6)</li>
+      <li>운영 문서 정합 — Structure §9.2 + ARCHITECTURE §6 (사이클 7)</li>
+      <li>정책 본문 정합 — docs/policies/ adoption + execution-harness (사이클 8)</li>
+    </ul>
+    <p>본 패턴 = <strong>사용자 명시 의 의 의 자율 reasonable call + 정합 검사 의 누계 + 4 cycle 의 단일 directive 의 자체 분해</strong>. 정책 본문 + 운영 문서 의 라이선스/visibility/hook 의 의 의 정합 100% 의 완성.</p>
+  </div>
+
+  <div class="strength">
+    <h3>2.18 사전 경고 + enforcement layer 사전 명시 패턴 (사이클 7 신규 — 사이클 8 유지)</h3>
     <p>본 사이클 패턴 = <strong>자율 검열 한계 의 사용자 사전 인지 + script trigger 미래 발동 의 사전 명시</strong>:</p>
     <ul>
       <li>사용자 directive 2026-05-17 (4회차) = "다음 위반 시 script trigger 강제" — 발동 시점 의 사전 정의</li>
@@ -375,6 +387,8 @@
         <tr><td>사이클 5 cycle 후반</td><td>"smtp 서버는 사전에 명시했던 테스트서버에 설치해"</td></tr>
         <tr><td>사이클 6 cycle</td><td>"라이선스는 GPL 라이선스라고 했잖아" + "Phase 완료단계에서 public → private 전환 가능성"</td></tr>
         <tr><td>사이클 7 cycle</td><td>"다음번 BPE 발견 시 script trigger 강제" (4회차 사전 경고)</td></tr>
+        <tr><td>사이클 7 cycle</td><td>"텔레그램 보고 의무도 트리거 구조" (5회차 사전 경고)</td></tr>
+        <tr><td>사이클 8 cycle</td><td>"다음작업 진행해" (자율 GO — drift 회수 4 cycle 누계)</td></tr>
       </tbody>
     </table>
     <p><strong>LLM 컨텍스트 fragmentation 위험</strong>. 단 사용자 자체 인지 (vibe-coding §3.1 추적 = 메타 의무).</p>
@@ -408,12 +422,12 @@
   </div>
 
   <div class="resolved">
-    <h3>3.6 <s>self-hosted runner 등록 미완</s> <span class="badge-resolved">✅ 사이클 5 해소</span></h3>
+    <h3>3.6 <s>self-hosted runner 등록 미완</s> <span class="badge-resolved">사이클 5 해소</span></h3>
     <p>macOS arm64 runner 등록 OK + workflow 3종 GREEN. Windows 의무 회수 (wine 대체).</p>
   </div>
 
   <div class="resolved">
-    <h3>3.8 <s>라이선스 미확정</s> <span class="badge-resolved">✅ 사이클 6 해소</span></h3>
+    <h3>3.8 <s>라이선스 미확정</s> <span class="badge-resolved">사이클 6 해소</span></h3>
     <ul>
       <li>GPLv3 확정 + LICENSE 저장소 루트 + visibility 전환 정책 명시</li>
       <li>Phase 완료 시점 의 private 전환 의 사용자 명시 의무</li>
@@ -480,7 +494,7 @@
     <li><strong>pivot 빈도 줄이기</strong>: 한 응답 = 한 directive (본 세션 20+ pivot)</li>
     <li><strong>test 코드 진입</strong>: pytest 인프라 active → 실 기능 test 작성</li>
     <li><strong>SMTP 실제 설치</strong>: 데모 서버 SSH + postfix + DKIM + Let's Encrypt + DNS record</li>
-    <li><s>라이선스 결정</s> ✅ 완료 (GPLv3 확정, 사이클 6)</li>
+    <li><s>라이선스 결정</s> 완료 (GPLv3 확정, 사이클 6)</li>
   </ol>
 
   <h3>5.2 중기 (Phase 2 진입 전)</h3>
@@ -567,7 +581,7 @@
   <ul>
     <li>본 세션 누계 directive / pivot 횟수</li>
     <li>신규 가드레일 (현 18)</li>
-    <li>사용자 의사결정 진행 시 §5 코칭 ✅</li>
+    <li>사용자 의사결정 진행 시 §5 코칭</li>
     <li>LLM (Claude) BPE 위반 / 1인칭 표현 회수 사이클</li>
     <li>사용자 신규 비판 패턴</li>
     <li>신규 강점 영역 (차별화 / 보안 / 자율 reasonable call 등)</li>
