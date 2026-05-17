@@ -164,7 +164,9 @@ sequenceDiagram
 | `app/net/` | 시그널링 WS 클라이언트·재연결·백오프 | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net 계층 |
 | `app/rtc/` | aiortc 래퍼·DataChannel·청크 송수신 | `aiortc` · `app/core/` 콜백 | 클라이언트 RTC 계층 |
 | `app/db/` | MariaDB 스키마·마이그레이션 (사용자 directive 2026-05-17) | `asyncmy` 드라이버 | 클라이언트 영속화 |
+| `app/auth/` | 회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17) | `aiohttp` (server/auth API 호출) + `app/core/` 세션 | 클라이언트 Auth 계층 |
 | `server/signaling.py` | WebSocket 핸들러·5종 메시지 라우팅 | `server/room.py` · `server/protocol.py` | 서버 Router |
+| `server/auth/` | 회원가입/로그인/OTP 발송/비번 재설정 (사용자 directive 2026-05-17) | `bcrypt` · `aiosmtplib` · `asyncmy` · users/email_verification/password_reset 테이블 | 서버 Auth Service |
 | `server/room.py` | `Peer`·`Room`·`RoomRegistry` 상태 관리 | `server/protocol.py` | 서버 Service |
 | `server/protocol.py` | TypedDict envelope·오류 코드 상수 | (없음) | 서버 Model |
 | `server/main.py` | entry point·env 로딩·`AppRunner` | 위 3개 + `dotenv` | 서버 부트스트랩 |

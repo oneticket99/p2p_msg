@@ -366,6 +366,61 @@ flowchart LR
 
 본 wireframe 은 **레이아웃 의도**만 정의한다. 실제 픽셀·색상값은 `app/ui/theme.qss` (Phase 1 후반 신설 예정) 와 `app/ui/*.py` 구현 본문이 따른다.
 
+### 14.6 회원가입 화면 (사용자 directive 2026-05-17, FR-11)
+
+```mermaid
+flowchart TB
+    subgraph SIGNUP["SignupDialog 480 x 600"]
+        direction TB
+        T1["타이틀 — TooTalk 회원가입"]
+        E1[이메일 입력 필드 *필수<br/>placeholder: you@example.com]
+        E2[아이디 입력 필드 *필수<br/>placeholder: 4-32자 영문/숫자/_]
+        E3[비밀번호 입력 필드 *필수<br/>type=password, 최소 8자]
+        OTP[OTP 6자리 입력 필드<br/>3분 카운트다운 타이머<br/>가입 버튼 클릭 후 노출]
+        E4[닉네임 선택 필드<br/>placeholder: 미입력 시 아이디 사용]
+        E5[아바타 업로드 버튼<br/>선택, 시스템 기본 SVG]
+        BTN[가입 버튼 primary]
+        LINK[이미 가입함? 로그인 →]
+    end
+    T1 --> E1 --> E2 --> E3 --> OTP --> E4 --> E5 --> BTN --> LINK
+    classDef required fill:#fef3c7,stroke:#d97706
+    classDef otp fill:#dbeafe,stroke:#2563eb
+    class E1,E2,E3,BTN required
+    class OTP otp
+```
+
+### 14.7 로그인 화면 (FR-12)
+
+```mermaid
+flowchart TB
+    subgraph LOGIN["LoginDialog 400 x 360"]
+        direction TB
+        L1["타이틀 — TooTalk 로그인"]
+        F1[이메일 입력]
+        F2[비밀번호 입력]
+        F3[로그인 유지 체크박스]
+        BTN1[로그인 버튼 primary]
+        L2[아이디/비밀번호 찾기 →]
+        L3[회원가입 →]
+    end
+    L1 --> F1 --> F2 --> F3 --> BTN1 --> L2 --> L3
+```
+
+### 14.8 아이디·비밀번호 찾기 화면 (FR-13)
+
+```mermaid
+flowchart TB
+    subgraph FORGOT["ForgotDialog 400 x 320"]
+        direction TB
+        FG1["타이틀 — 비밀번호 찾기"]
+        FF1[아이디 username 입력]
+        FF2[가입 시 사용한 이메일 입력]
+        FBTN[비밀번호 재설정 메일 발송 버튼]
+        FMSG["응답 메시지 영역<br/>email 미존재 → xxx@xxx.com 으로 가입된 내역이 없습니다.<br/>일치 → 재설정 링크 발송 완료, 30분 내 확인"]
+    end
+    FG1 --> FF1 --> FF2 --> FBTN --> FMSG
+```
+
 ---
 
 ## 15. 참조

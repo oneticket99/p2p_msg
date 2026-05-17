@@ -149,7 +149,10 @@ p2p_msg/
 | `app/core/` | 상태 머신 + 환경변수 로딩 (Qt 의존성 없음) · 외부 의존 없음 · 단위 테스트 가능 |
 | `app/net/` | aiohttp WS 시그널링 클라 · `app/core/` 콜백 · 9종 envelope 송수신 |
 | `app/rtc/` | aiortc WebRTC PeerConnection + DataChannel 송수신 · `app/core/` 콜백 · 5종 파일 메시지 |
+| `app/auth/` | 회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17) · server/auth API 호출 |
+| `app/db/` | MariaDB 스키마·마이그레이션 (asyncmy 드라이버) · `app/core/` 영속화 |
 | `server/` | aiohttp 시그널링 서버 · Router → Service → Model 단방향 · SDP/ICE 만 통과 |
+| `server/auth/` | 회원가입/로그인/OTP 발송/비번 재설정 (bcrypt 12 rounds + aiosmtplib + secrets.choice) |
 | `docs/exec-plans/active/` | 활성 실행 계획 (`YYYY-MM-DD-<slug>.md`) · PLANS.md 인덱스 · 완료 시 `completed/` 이동 |
 | `tools/` | 운영 스크립트 (텔레그램 브리지 · 문서 린트) · `data/wbs.sqlite` 등 추후 추가 |
 

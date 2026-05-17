@@ -39,22 +39,28 @@ status: active
 ```yaml
 # MIGRATION_MARIADB.md — tables FK 순서 정본 (2026-05-17 시점)
 tables:
-  - rooms        # 의존 없음 (루트)
-  - peers        # FK: peers.room_id → rooms.id
-  - file_meta    # 의존 없음 (messages.file_meta_id 가 본 테이블을 가리킴)
-  - messages     # FK: messages.room_id → rooms.id
-                 #     messages.sender_peer_id → peers.id
-                 #     messages.file_meta_id → file_meta.id
+  - users                # 의존 없음 (auth 루트, 사용자 directive 2026-05-17)
+  - email_verification   # 의존 없음 (email 참조 — string 매칭, FK 없음)
+  - password_reset       # FK: password_reset.user_id → users.id
+  - rooms                # 의존 없음 (대화 루트)
+  - peers                # FK: peers.room_id → rooms.id
+  - file_meta            # 의존 없음 (messages.file_meta_id 가 본 테이블을 가리킴)
+  - messages             # FK: messages.room_id → rooms.id
+                         #     messages.sender_peer_id → peers.id
+                         #     messages.file_meta_id → file_meta.id
 ```
 
 ### 2.1 순서 근거
 
 | 순서 | 테이블 | 외래키 의존 |
 |---|---|---|
-| 1 | `rooms` | 없음 — 다른 테이블이 본 테이블을 참조 |
-| 2 | `peers` | `room_id` → `rooms.id` (CASCADE) |
-| 3 | `file_meta` | 없음 — `messages` 가 본 테이블을 참조 (이미지·파일 옵션) |
-| 4 | `messages` | `room_id` → `rooms.id` · `sender_peer_id` → `peers.id` · `file_meta_id` → `file_meta.id` (NULL 허용) |
+| 1 | `users` | 없음 — auth 루트 (사용자 directive 2026-05-17 회원가입 도입) |
+| 2 | `email_verification` | 없음 — email 의 string 매칭 (FK 없음) |
+| 3 | `password_reset` | `user_id` → `users.id` (CASCADE) |
+| 4 | `rooms` | 없음 — 대화 루트 |
+| 5 | `peers` | `room_id` → `rooms.id` (CASCADE) |
+| 6 | `file_meta` | 없음 — `messages` 가 본 테이블을 참조 (이미지·파일 옵션) |
+| 7 | `messages` | `room_id` → `rooms.id` · `sender_peer_id` → `peers.id` · `file_meta_id` → `file_meta.id` (NULL 허용) |
 
 ### 2.2 적용 순서 규약
 
@@ -65,9 +71,59 @@ tables:
 
 ---
 
-## 3. DDL — 4 테이블 (MariaDB 호환 InnoDB · utf8mb4)
+## 3. DDL — 7 테이블 (MariaDB 호환 InnoDB · utf8mb4)
 
 본 절의 DDL 은 MariaDB 10.11 LTS 호환 InnoDB · `utf8mb4_unicode_ci` 콜레이션 기준이다. [Structure.md §11](Structure.md) ERD 와 1:1 정합한다.
+
+### 3.0 `users` (auth 루트 — 사용자 directive 2026-05-17)
+
+```sql
+CREATE TABLE users (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(254) NOT NULL UNIQUE,
+  username VARCHAR(32) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  nickname VARCHAR(64) DEFAULT NULL,
+  avatar_url VARCHAR(512) DEFAULT NULL,
+  verified TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_users_email (email),
+  INDEX idx_users_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 3.0a `email_verification` (OTP 3분)
+
+```sql
+CREATE TABLE email_verification (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(254) NOT NULL,
+  otp_code CHAR(6) NOT NULL,
+  attempts INT NOT NULL DEFAULT 0,
+  expires_at DATETIME NOT NULL,
+  consumed_at DATETIME DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_email_verif_email_expires (email, expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 3.0b `password_reset` (UUID4 + 30분 유효)
+
+```sql
+CREATE TABLE password_reset (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  reset_token CHAR(36) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  consumed_at DATETIME DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_password_reset_user_id
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX idx_password_reset_token (reset_token)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 ### 3.1 `rooms`
 
