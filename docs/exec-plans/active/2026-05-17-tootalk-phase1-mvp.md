@@ -141,15 +141,17 @@ Phase 1 MVP 종료 조건. 아래 10 항목 모두 체크되어야 `status: comp
 
 | 날짜       | 결정                                              | 이유                                                                                       | 영향                                                              |
 |------------|---------------------------------------------------|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| 2026-05-17 | GUI 프레임워크 = PyQt6                            | Tk·wxPython 대비 위젯 완성도·QSS 테마·signal/slot 모델 우위. qasync 통합 안정성 검증됨.    | 빌드 라이선스 GPL 영향 검토 (상용 변경 시 PySide6 전환 가능)      |
+| 2026-05-17 | GUI 프레임워크 = PyQt6                            | Tk·wxPython 대비 위젯 완성도·QSS 테마·signal/slot 모델 우위. qasync 통합 안정성 검증됨.    | TooTalk 라이선스 = GPLv3 확정 (PyQt6 GPLv3 직접 호환). LICENSE 저장소 루트. AGPLv3 = Phase 2 이후 옵션 |
 | 2026-05-17 | Python 버전 = 3.13                                | PyInstaller 6.x · aiortc 1.10+ · qasync 0.27+ 모두 3.13 호환. 최신 asyncio 성능 개선.       | CI 매트릭스 단일 버전, 사용자 환경 강제                            |
 | 2026-05-17 | 시그널링 = `aiohttp` WebSocket                    | FastAPI WS 대비 의존 가벼움, 단일 파일 배포 가능, asyncio 네이티브.                         | `server/signaling.py` 약 200~300 LOC 예상                          |
 | 2026-05-17 | 그룹 채팅 보류 (Phase 2 이후)                     | mesh n^2 또는 SFU 도입 모두 Phase 1 범위 초과. 1:1 안정성 확보가 선행.                      | M3·M4 task 단순화, Phase 2 에서 mediasoup 도입 검토                 |
 | 2026-05-17 | E2EE Signal Protocol 보류                         | DataChannel DTLS 가 transport 암호 제공. Phase 1 위협 모델 (악성 시그널링 서버) 에는 충분. | Phase 2 에서 Double Ratchet + X3DH 도입 시 envelope 호환 필요       |
 | 2026-05-17 | 빌드 = PyInstaller + zip (인증서 미사용)          | Phase 1 데모 단계, 코드 서명 비용·심사 시간 회피. 사용자 우회 안내로 대체.                  | macOS Gatekeeper · Windows SmartScreen 첫 실행 우회 README 명시 의무|
-| 2026-05-17 | GitHub repo 가시성 = public                       | OSS 데모 + 채용 포트폴리오 겸용. 시크릿은 `.env` + GitHub Actions Secrets 분리.             | `.gitignore` 에 `.env.local` · `.env.telegram` 명시 의무            |
+| 2026-05-17 | GitHub repo 가시성 = public (Phase 완료 시 private 전환 가능성) | OSS 데모 + 채용 포트폴리오 겸용. Phase 완료 시점 사용자 명시 시 private 전환 ([[project-visibility-transition]]). 시크릿은 `.env` + GitHub Actions Secrets 분리. | `.gitignore` 에 `.env.local` · `.env.telegram` 명시 의무 + self-hosted runner 의 quota 회피 정합            |
 | 2026-05-17 | 서비스명 = TooTalk · 코드명 = p2p_msg             | UI/빌드 산출물은 브랜드 노출, import 경로·repo 명은 코드 식별자 유지.                       | `AGENTS.md §1` 명명 규약 명문화, About 다이얼로그·User-Agent 적용  |
-| 2026-05-17 | CI runner = self-hosted (사용자 directive)        | GitHub-hosted runner 미사용. macOS arm64 + Windows x64 self-hosted 매트릭스. 비용 0.       | workflow `runs-on` 라벨 배열 사용, runner 등록은 사용자 직접 수행 |
+| 2026-05-17 | CI runner = self-hosted macOS arm64 (활성) + GitHub-hosted Ubuntu (Windows wine 빌드, Phase 1 후반) | Windows self-hosted runner 의무 영구 회수 → wine cross-compile (cdrx docker) 대체. macOS arm64 id=2 online 등록 OK. | ci.yml 8 job GREEN. Windows matrix entry 영구 비활성 ([[project-windows-build-via-wine]]) |
+| 2026-05-17 | SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 | 사용자 directive — 외부 relay 비용 0 + 데이터 통제 우위. SendGrid relay = fallback (spam reputation 부족 시) | `docs/references/smtp-setup.md` 13 섹션. 실제 설치 = 사용자 직접 SSH ([[project-smtp-demo-server]]) |
+| 2026-05-17 | enforcement layer sketch (BPE + 텔레그램 hook) | 사용자 사전 경고 4+5회차 — 자체 검열 한계 + 다음 위반/누락 발견 시 script trigger 강제 | `.claude/settings.json.disabled` + `tools/hook_*.sh` 2건 (executable + self-test PASS). 활성 = `mv` ([[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]]) |
 
 ---
 

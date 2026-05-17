@@ -103,6 +103,15 @@ status: draft | active | review | completed | deprecated
 | `docs/generated/` | 자동 생성 산출물 (수동 편집 금지) |
 | `docs/exec-plans/active/` | 진행 중 실행계획 |
 | `docs/exec-plans/completed/` | 완료된 실행계획 (Phase 종료 시 이동) |
+| `docs/assessments/` | 평가 snapshot (productization + vibe-coding, 매 task 종료 시 전체 rewrite) |
+| `docs/html/` | HTML 동시 정리 6종 (.md ↔ .html 동기 갱신 의무, CLAUDE.md §10-6) |
+
+**저장소 루트 직접 파일 (의무)**:
+
+| 파일 | 용도 |
+|---|---|
+| `LICENSE` | GPLv3 표준 본문 (GNU 674 lines, 사용자 directive 2026-05-17) |
+| `.claude/settings.json.disabled` | enforcement layer sketch (PreToolUse BPE 차단 + Stop 텔레그램 자동 송신, 미활성 패턴) |
 
 ---
 
@@ -206,6 +215,9 @@ flowchart LR
 
 - 정책 본문 변경 → 정본 §N/§K/§Q 의 해당 절 동시 수정
 - [AGENTS.md](AGENTS.md) §3 (문서 맵) · §10 (금지사항) 정합
+- 가드레일 추가/변경 → 영구 메모리 `~/.claude/projects/.../memory/<name>.md` + `MEMORY.md` 인덱스 + [CLAUDE.md §7](CLAUDE.md) 가드레일 인덱스 + [AGENTS.md §10](AGENTS.md) 금지사항 4 위치 동시 갱신
+- hook script 신설/변경 → `tools/hook_*.sh` (executable + M4 한글 주석 + self-test) + `.claude/settings.json.disabled` 의 matcher 정의 + 영구 메모리 sketch 본문 + [docs/policies/execution-harness.md](docs/policies/execution-harness.md) §3 Enforcement Layer 5단 의 본 저장소 sketch column 동시 갱신
+- 라이선스 변경 → [LICENSE](LICENSE) 저장소 루트 + 영구 메모리 [[project-license-gpl]] + AGENTS §1 + handoff §5 + CheckList §10 TBD + README §9 + SECURITY §12.4 + SPDX header convention 의 모든 source file 의 동시 정합
 - 한쪽만 갱신된 모순 상태 금지 ([정본 §Q-7](CLAUDE_HARNESS_IMPORTANT.md))
 
 ---
