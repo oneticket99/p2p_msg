@@ -38,6 +38,7 @@ from .protocol import (
     wire_to_internal,
 )
 from .room import Peer, RoomRegistry
+from .signaling_persistence import persist_peer_join, persist_peer_leave
 
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,21 @@ async def _handle_join(
     new_peer.peer_id = peer_id
     new_peer.ws = ws
 
+    # 사이클 26 — DB 영속화 dependency injection (db_pool=None 시 silent skip)
+    user_id = payload.get("user_id")
+    if isinstance(user_id, int):
+        new_peer.user_id = user_id
+
     await registry.join(room_id, new_peer)
+
+    # 인증된 user_id + db_room_id mapping 의 영속화 (Phase 1 = room 영속화 = 별도 cycle)
+    app = ws._req.app if hasattr(ws, "_req") and ws._req else None
+    db_pool = app.get("db_pool") if app else None
+    if new_peer.user_id is not None and new_peer.db_room_id is not None:
+        await persist_peer_join(
+            db_pool, room_id=new_peer.db_room_id, user_id=new_peer.user_id
+        )
+
     return new_peer
 
 
@@ -191,6 +206,14 @@ async def _handle_leave(
     await registry.leave(room_id, peer_id)
     # 핸들러 안에서 peer 객체의 room_id 도 None 으로 되돌려 둠
     peer.room_id = None
+
+    # 사이클 26 — DB peers.left_at 갱신 (인증 + DB 활성 시 만)
+    app = ws._req.app if hasattr(ws, "_req") and ws._req else None
+    db_pool = app.get("db_pool") if app else None
+    if peer.user_id is not None and peer.db_room_id is not None:
+        await persist_peer_leave(
+            db_pool, room_id=peer.db_room_id, user_id=peer.user_id
+        )
 
 
 async def _handle_relay(
