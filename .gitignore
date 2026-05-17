@@ -1,0 +1,54 @@
+# 비밀 측 환경변수 — 절대 commit 금지
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.eggs/
+*.egg-info/
+*.egg
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# PyQt / Qt 측 부산물
+*.pyc
+*.qm
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 로컬 SQLite 측 메시지 DB
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+data/
+
+# 빌드 결과
+*.exe
+*.app
+*.dmg
+*.AppImage
+
+# 미디어 캐시 (수신 측 임시 파일)
+media_cache/
+tmp/
