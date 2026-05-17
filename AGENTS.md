@@ -22,7 +22,7 @@
 | STUN | `stun.l.google.com:19302` |
 | 로컬 저장 | MariaDB (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) |
 | Python | 3.13 |
-| 배포 | macOS + Windows · PyInstaller + zip · 인증서 미사용 · GitHub Actions **self-hosted** 매트릭스 |
+| 배포 | macOS arm64 native (self-hosted runner) + Windows x64 wine cross-compile (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker) · PyInstaller + zip · 인증서 미사용 |
 | Remote | https://github.com/oneticket99/p2p_msg.git (public) |
 | Branch 전략 | feature branch + PR · `main` 직접 push 금지 |
 | 라이선스 | 미확정 (사용자 응답 대기) |
