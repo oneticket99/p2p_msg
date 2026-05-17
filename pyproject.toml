@@ -1,0 +1,75 @@
+# =============================================================================
+# pyproject.toml — TooTalk(p2p_msg) pytest + coverage 설정
+# -----------------------------------------------------------------------------
+# 사용자 directive 2026-05-17 — "qa 단계에서는 pytest 당연히 필요해"
+# DESIGN.md §10 (단위 테스트 / 통합 테스트 / 커버리지 80%) 정합.
+#
+# 실행:
+#   pytest                              # 기본 (unit only, integration 제외)
+#   pytest -m integration               # integration 단독
+#   pytest -m "not integration"         # unit 단독 (기본 동작)
+#   pytest --cov                        # 커버리지 측정
+#
+# 의존성 설치:
+#   pip install -r app/requirements-dev.txt
+#   pip install -r server/requirements-dev.txt
+# =============================================================================
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tootalk-p2p-msg"
+version = "0.1.0-phase1"
+description = "TooTalk — PyQt6 P2P 메신저 (WebRTC DataChannel + aiortc)"
+requires-python = ">=3.13"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "-m", "not integration and not e2e",
+]
+markers = [
+    "integration: 통합 테스트 — server + client 의 실제 연결 필요 (DESIGN.md §10.2 정합)",
+    "e2e: Playwright 기반 E2E 테스트 — 시그널링 server + HTML 등가 시각 회귀 (DESIGN.md §10.6 정합, 사용자 directive 2026-05-17)",
+    "slow: 5초 이상 소요 테스트 — CI nightly 전용",
+    "windows: Windows runner 전용",
+    "macos: macOS runner 전용",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:aiohttp.*",
+    "ignore::DeprecationWarning:aiortc.*",
+]
+
+[tool.coverage.run]
+source = ["app", "server"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/main.py",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.coverage.html]
+directory = "build/coverage-html"

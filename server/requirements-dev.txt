@@ -1,0 +1,13 @@
+# 서버 개발 의존성 — pytest + coverage
+# 사용자 directive 2026-05-17 — "qa 단계에서는 pytest 당연히 필요해"
+
+-r requirements.txt
+
+pytest>=7.4
+pytest-asyncio>=0.23
+pytest-cov>=4.1
+pytest-mock>=3.12
+pytest-aiohttp>=1.0
+# Playwright E2E (DESIGN.md §10.6 — 사용자 directive 2026-05-17)
+pytest-playwright>=0.5
+playwright>=1.42

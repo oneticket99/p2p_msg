@@ -288,9 +288,133 @@ sequenceDiagram
 - 단위: 라인 커버리지 80% 이상 (`app/core`, `server/protocol.py` 는 95% 이상).
 - 통합: 시나리오 커버리지 — JOIN/LEAVE/OFFER/ANSWER/ICE 5종 + 오류 6종 (`ERR_*`) 전부.
 
+### 10.6 E2E 테스트 (Playwright — 사용자 directive 2026-05-17)
+
+**사용자 directive**: "qa 단계에 반드시 playwright 를 이용한 테스트도 명시해"
+
+PyQt6 데스크탑 위젯 직접 자동화는 Playwright 영역 외 (`pytest-qt` `QTest` 사용). Playwright 의 다음 3 영역 적용:
+
+| 영역 | 도구 | 검증 대상 |
+|---|---|---|
+| 시그널링 서버 WebSocket E2E | `playwright.async_api` + 브라우저 WebSocket client | JOIN/OFFER/ANSWER/ICE 흐름 + 오류 6종 응답 |
+| HTML 등가 시각 회귀 | `page.screenshot()` + `page.locator()` | `docs/html/` 6 HTML 의 swatch + mermaid SVG 렌더 + console error 0 |
+| GitHub Release zip 첫 실행 capture | Phase 2+ deferred | PyInstaller zip 다운 + 첫 화면 screenshot + 파일 송수신 회귀 |
+
+**구성**:
+
+- 마커: `@pytest.mark.e2e` 필수 — 기본 실행 의 제외 (수동 또는 CI nightly 전용)
+- 위치: `tests/e2e/` — 단위 `tests/app/` · `tests/server/` 와 분리
+- 의존성: `pytest-playwright>=0.5` + `playwright>=1.42` (`app/requirements-dev.txt` + `server/requirements-dev.txt`)
+- 픽스처: `tests/e2e/conftest.py` 의 `signaling_server_url` + `html_docs_base` (file:// base)
+
+**실행**:
+
+```bash
+# 사전 설치 (1회)
+pip install -r app/requirements-dev.txt
+playwright install --with-deps chromium
+
+# E2E 단독 실행
+pytest -m e2e
+
+# unit + integration + e2e 전체
+pytest -m "integration or e2e or not (integration or e2e)"
+```
+
+**한계 영역 (Playwright 부적합)**:
+
+- PyQt6 메인 윈도우 의 위젯 클릭 = `pytest-qt` `QTest.mouseClick` 사용
+- aiortc DataChannel 의 binary 전송 검증 = `pytest-asyncio` + 직접 client 호출
+- 시스템 트레이 / OS 알림 = `pyautogui` 또는 OS 별 자동화 (Phase 4+ 모바일 의 별도)
+
 ---
 
-## 11. 참조
+## 11. UI 디자인 시스템 (사용자 directive 2026-05-17)
+
+본 섹션은 UI 컴포넌트 카드 + 상태 + 변이체 + 레이아웃 그리드 정의. [FRONTEND.md](FRONTEND.md) §3 위젯 계층 트리 + §4 색상 변수 + §14 wireframe 의 동기. `app/ui/theme.qss` (Phase 1 후반 신설) 의 정식 변수로 이관 예정.
+
+### 11.1 컴포넌트 인벤토리
+
+| 컴포넌트 | 위치 | 핵심 책임 |
+|---|---|---|
+| `MainWindow` | `app/ui/main_window.py` | `QMainWindow` 컨테이너. 메뉴바 + ChatView + 입력바 + StatusBar 결합 |
+| `ChatView` | `app/ui/chat_view.py` | `QScrollArea` + `QVBoxLayout`. MessageBubble 누적 + 자동 스크롤 |
+| `MessageBubble` | `app/ui/message_bubble.py` | 단일 메시지 표시. 내/상대 좌우 정렬 + 배경색 분기 + 타임스탬프 |
+| `InputBar` | `app/ui/input_bar.py` (예정) | 텍스트 입력 + 파일 첨부 버튼 + Enter 송신 + Shift+Enter 줄바꿈 |
+| `FileProgressWidget` | `app/ui/file_progress_widget.py` | 송수신 양방향 ProgressBar (회색 sent + 파란 acked) |
+| `StatusBar` | `app/ui/status_bar.py` | 시그널링 연결 상태 + peer 수 + 현재 방 |
+| `OnboardingDialog` | `app/ui/onboarding_dialog.py` (예정) | 첫 실행 nickname 입력 + STUN/시그널링 안내 |
+| `RoomJoinDialog` | `app/ui/room_join_dialog.py` (예정) | room id + peer_id 입력 모달 |
+
+### 11.2 컴포넌트 상태 (interaction state)
+
+모든 interactive 컴포넌트 (Button, Input, MessageBubble) 의 적용:
+
+| 상태 | 시각 효과 | 트리거 |
+|---|---|---|
+| `default` | 기본 색상 + 1px border | 마우스/포커스 없음 |
+| `hover` | 배경 +5% 명도 + 커서 pointer | mouseover |
+| `active` | 배경 −5% 명도 (눌림 효과) | mousedown |
+| `focused` | 2px outline `--status-connected` | Tab 키 or click |
+| `disabled` | opacity 0.4 + 커서 not-allowed | `setEnabled(False)` |
+| `error` | border 색상 `--status-error` + 흔들림 30ms | invalid 입력 |
+
+### 11.3 컴포넌트 변이체 (variant)
+
+| 변이체 | 용도 | 예시 컴포넌트 |
+|---|---|---|
+| `primary` | 핵심 액션 (보내기 / JOIN / 확인) | Button.primary |
+| `secondary` | 보조 액션 (취소 / 뒤로) | Button.secondary |
+| `ghost` | 텍스트만 (메뉴 항목 / 링크) | Button.ghost |
+| `danger` | 파괴적 액션 (LEAVE / 삭제) | Button.danger |
+
+### 11.4 레이아웃 그리드 (spacing scale)
+
+4px base unit. 모든 padding / margin / gap 의 본 스케일 사용:
+
+| 토큰 | 값 (px) | 용도 |
+|---|---|---|
+| `--space-xs` | 4 | 컴포넌트 내부 micro (icon ↔ text) |
+| `--space-sm` | 8 | 컴포넌트 내부 base (input padding) |
+| `--space-md` | 12 | 컴포넌트 간 base (bubble ↔ bubble) |
+| `--space-lg` | 16 | 섹션 간 base (ChatView padding) |
+| `--space-xl` | 24 | 큰 섹션 분리 (MainWindow padding) |
+| `--space-2xl` | 32 | 모달 padding |
+| `--space-3xl` | 48 | dialog inner section 분리 |
+
+### 11.5 elevation / shadow (Phase 1 후반 정의)
+
+| 토큰 | 그림자 값 | 용도 |
+|---|---|---|
+| `--elev-0` | `none` | 평면 (default 배경) |
+| `--elev-1` | `0 1px 2px rgba(0,0,0,0.08)` | MessageBubble + Button |
+| `--elev-2` | `0 2px 4px rgba(0,0,0,0.12)` | Dialog + Dropdown |
+| `--elev-3` | `0 8px 16px rgba(0,0,0,0.16)` | Modal overlay |
+
+### 11.6 motion (transition curve + duration)
+
+- `--motion-fast` = `120ms cubic-bezier(0.4, 0, 0.2, 1)` (hover / focus 전환)
+- `--motion-base` = `200ms cubic-bezier(0.4, 0, 0.2, 1)` (drawer / dialog open)
+- `--motion-slow` = `400ms cubic-bezier(0.4, 0, 0.2, 1)` (페이지 전환 — Phase 2+)
+- 사용자 OS "Reduce Motion" 설정 의 모두 0ms 적용 (접근성 — [FRONTEND.md §11](FRONTEND.md) 정합)
+
+### 11.7 dark mode 동기 정합
+
+- 라이트 ↔ 다크 = `--bg` · `--fg` · `--bubble-self` · `--bubble-other` · `--bubble-border` · `--text-timestamp` · `--text-sender` 7 변수 토글
+- `--status-connected` / `--status-error` = 라이트/다크 동일 (의미 색상 안정성)
+- `--primary` / `--progress-acked` / `--progress-inflight` = Phase 1 후반 후크 확정
+- 자동 감지 = `palette().windowText().lightness() < 128` 의 dark 판정 (`app/ui/theme.py` 예정)
+
+### 11.8 다국어 + 타이포 (FRONTEND.md §5 + §10 정합)
+
+- system font stack 우선 (한글 가독성 확보)
+- 폰트 크기 토큰 = `--text-xs` 11 / `--text-sm` 13 / `--text-base` 15 / `--text-lg` 18 / `--text-xl` 22
+- line-height = 1.5 base + 1.3 (heading)
+- 한국어 line-break = `word-break: keep-all` (어절 단위 break 유지)
+
+---
+
+## 12. 참조
 
 - 정본 — [CLAUDE_HARNESS_IMPORTANT.md §E](CLAUDE_HARNESS_IMPORTANT.md) (코딩 불변 규칙)
 - 정본 — [CLAUDE_HARNESS_IMPORTANT.md §J](CLAUDE_HARNESS_IMPORTANT.md) (M4 한글 주석 규약)

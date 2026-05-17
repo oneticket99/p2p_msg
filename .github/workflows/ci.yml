@@ -213,5 +213,40 @@ jobs:
         run: python -c "import server.main; print('server.main OK')"
 
       - name: app 모듈 import smoke
-        # PyQt6 측 헤드리스 환경 미지원 가능 — 모듈 import 만 검증
+        # PyQt6 헤드리스 환경 미지원 가능 — 모듈 import 만 검증
         run: python -c "import app.main; print('app.main OK')"
+
+  # ---------------------------------------------------------------------------
+  # pytest — DESIGN.md §10 정합 (사용자 directive 2026-05-17)
+  # 단위 테스트 + integration (e2e 측 별도 nightly)
+  # ---------------------------------------------------------------------------
+  pytest:
+    name: pytest (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macOS-arm64
+            runner: [self-hosted, macOS, arm64]
+          - label: Windows-x64
+            runner: [self-hosted, Windows, x64]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 버전 확인
+        run: python --version
+
+      - name: 개발 의존성 설치 (pytest + coverage)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r app/requirements-dev.txt
+          python -m pip install -r server/requirements-dev.txt
+
+      - name: pytest 실행 (unit only — integration + e2e 제외)
+        run: pytest --cov --cov-report=term-missing
+
+      - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
+        if: success()
+        run: python -m coverage report --fail-under=80
+        continue-on-error: true

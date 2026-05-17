@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DESIGN.md — TooTalk (p2p_msg) 설계 정책</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: #1a1a1a;
+    background: #ffffff;
+    word-break: keep-all;
+  }
+  h1, h2, h3, h4 { line-height: 1.3; margin-top: 1.8em; }
+  h1 { border-bottom: 2px solid #ddd; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+  blockquote {
+    border-left: 4px solid #ccc;
+    padding: 0.4em 1em;
+    margin: 1em 0;
+    color: #555;
+    background: #f9f9f9;
+  }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    background: #f3f4f6;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  pre {
+    background: #f6f8fa;
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  pre code { background: transparent; padding: 0; }
+  pre.mermaid {
+    background: #fafafa;
+    text-align: center;
+    border: 1px solid #eee;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.5em 0.75em;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f3f4f6; }
+  tr:nth-child(even) td { background: #fafafa; }
+  hr { border: 0; border-top: 1px solid #ddd; margin: 2em 0; }
+  ul, ol { padding-left: 1.5em; }
+  li { margin: 0.25em 0; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>DESIGN.md — TooTalk (p2p_msg) 설계 정책</h1>
+
+<blockquote>
+  <p>본 문서는 <strong>TooTalk</strong> (저장소명 <code>p2p_msg</code>) 의 코드·인터페이스·데이터 흐름 설계 원칙을 정의한다.<br>
+  정본 <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> §E 코딩 불변 규칙을 본 문서 전반에 반영한다.<br>
+  본 문서는 "어떻게 만드는가"의 정책이며, "무엇을 만드는가"는 <a href="../../Specification.md">Specification.md</a>, 모듈 경계는 <a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a>, UI 표현은 <a href="../../FRONTEND.md">FRONTEND.md</a> 가 담당한다.</p>
+</blockquote>
+
+<hr>
+
+<h2>1. 문서 목적</h2>
+
+<p>본 문서는 다음 질문에 대해 단일 정답을 제공한다.</p>
+
+<ul>
+  <li>모듈을 신규로 추가할 때 어떤 계층에 두는가</li>
+  <li>비동기/동기 코드를 어디서 섞을 수 있는가 (정답: 섞지 않는다)</li>
+  <li>환경 설정은 어떻게 외부화되는가</li>
+  <li>데이터 객체의 소유자(owner) 는 누구인가, 해제 책임은 어디에 있는가</li>
+  <li>어떤 패턴을 안티패턴으로 명시 금지하는가</li>
+  <li>테스트를 어떻게 단위/통합으로 분리하는가</li>
+</ul>
+
+<p>본 정책은 <strong>AI 에이전트가 코드를 읽고 패턴을 재현할 수 있는 수준</strong>으로 구체적이어야 한다. 추상적 가이드라인은 금지한다.</p>
+
+<hr>
+
+<h2>2. 설계 원칙 (10대)</h2>
+
+<ol>
+  <li><strong>단일 책임 (SRP)</strong> — 한 모듈/클래스는 한 가지 변화 축에 응답한다. <code>server/protocol.py</code> 는 메시지 구조만, <code>server/room.py</code> 는 라우팅 상태만, <code>server/signaling.py</code> 는 WebSocket 프레임 디스패치만 책임진다.</li>
+  <li><strong>명시적 의존성 (Explicit DI)</strong> — 전역 변수·모듈 레벨 mutable 금지. 의존성은 생성자/함수 인자로 주입한다. <code>RoomRegistry</code> 가 <code>aiohttp.Application</code> 에 <code>APP_KEY_REGISTRY</code> 키로 바인딩되는 방식이 정답 예시.</li>
+  <li><strong>비동기 전용 (Async-First)</strong> — 모든 IO 는 <code>async def</code>. 동기 IO 는 <code>app.core</code> (Qt 비의존 단위 테스트 계층) 와 순수 데이터 변환 함수에만 허용된다.</li>
+  <li><strong>환경변수 외부화</strong> — 설정값은 <code>.env</code> 또는 DB 상수 테이블로만 관리한다. 코드 안 하드코딩은 정본 §E 위반. <code>app/core/config.py</code> 의 <code>_DEFAULT_*</code> 상수는 폴백 전용이며 운영 값은 <code>.env</code> 가 단일 진실.</li>
+  <li><strong>계층 분리 (Router → Service → Model)</strong> — 외부 입력 검증은 Router 계층이, 비즈니스 규칙은 Service 가, 데이터 정의는 Model 이 책임진다. 역방향 의존(Model 이 Router 를 import 하는 행위) 금지.</li>
+  <li><strong>불변 데이터 우선</strong> — 설정/메시지/스냅샷은 <code>frozen=True</code> dataclass · <code>TypedDict</code> · <code>frozenset</code> 으로 표현. 가변 컨테이너는 lock 으로 보호하는 컴포넌트(<code>Room._peers</code>, <code>RoomRegistry._rooms</code>) 내부에 한정.</li>
+  <li><strong>한글 주석 의무 (M4)</strong> — 모든 코드 파일의 모듈/클래스/메서드 docstring 과 주요 분기 주석은 한국어. 변수·함수·클래스 이름은 영어 (도구 호환성).</li>
+  <li><strong>외부 입력 격리</strong> — 외부에서 들어온 dict/JSON 은 화이트리스트로만 통과시킨다. <code>protocol.is_valid_client_type</code> · <code>Config._normalize_scheme</code> 패턴 참조.</li>
+  <li><strong>이벤트 루프 통합 정책</strong> — Qt UI 와 asyncio 는 <code>qasync</code> 단일 이벤트 루프로 통합한다. 별도 스레드에서 Qt 위젯을 건드리는 행위 금지.</li>
+  <li><strong>싱글톤 최소화</strong> — 싱글톤은 <code>AppState</code> 한 개로 한정한다. 모든 신규 컴포넌트는 인스턴스 주입 우선, 전역 접근 최후.</li>
+</ol>
+
+<hr>
+
+<h2>3. 명명 규약</h2>
+
+<table>
+  <thead>
+    <tr><th>대상</th><th>규칙</th><th>예시</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>서비스명</td><td><strong>TooTalk</strong> (PascalCase)</td><td>About 다이얼로그, <code>TooTalk.app</code>, <code>TooTalk-{ver}-{os}.zip</code></td></tr>
+    <tr><td>코드/저장소명</td><td><strong>p2p_msg</strong> (snake_case)</td><td>import 경로, 디렉토리, GitHub repo</td></tr>
+    <tr><td>모듈 파일</td><td>snake_case <code>.py</code></td><td><code>app_state.py</code>, <code>signaling.py</code></td></tr>
+    <tr><td>클래스</td><td>PascalCase</td><td><code>RoomRegistry</code>, <code>AppState</code>, <code>Config</code></td></tr>
+    <tr><td>함수/메서드</td><td>snake_case</td><td><code>load_config</code>, <code>cleanup_peer</code></td></tr>
+    <tr><td>비공개 멤버</td><td><code>_</code> prefix</td><td><code>_rooms</code>, <code>_DEFAULT_SIGNAL_HOST</code></td></tr>
+    <tr><td>상수</td><td>UPPER_SNAKE + <code>Final</code></td><td><code>MSG_JOIN</code>, <code>APP_KEY_REGISTRY</code></td></tr>
+    <tr><td>환경변수</td><td><code>UPPER_SNAKE</code></td><td><code>SIGNAL_SERVER_HOST</code>, <code>STUN_URL</code></td></tr>
+    <tr><td>와이어 키 vs 내부 키</td><td>와이어 <code>from</code> ↔ 내부 <code>from_</code></td><td><code>wire_to_internal</code>/<code>internal_to_wire</code> 가 변환 흡수</td></tr>
+  </tbody>
+</table>
+
+<ul>
+  <li><strong>이름은 영어, 주석·문자열은 한국어</strong> — 이중 언어 정책 (M4 §J).</li>
+  <li>변수명에 한글 사용 금지 (툴체인 호환).</li>
+  <li>메시지 타입 식별자는 <code>MSG_*</code> prefix, 오류 코드는 <code>ERR_*</code> prefix.</li>
+</ul>
+
+<hr>
+
+<h2>4. 인터페이스 설계 패턴</h2>
+
+<h3>4.1 PyQt6 — Signal/Slot</h3>
+
+<ul>
+  <li>위젯 간 통신은 Qt <strong>Signal/Slot</strong> 으로만 한다. 부모 위젯이 자식 위젯의 메서드를 직접 호출하는 양방향 의존 금지.</li>
+  <li>Signal 은 명사 과거형, Slot 은 동사 현재형으로 명명한다 (<code>peer_joined</code> Signal → <code>on_peer_joined</code> Slot).</li>
+</ul>
+
+<h3>4.2 asyncio — async generator + coroutine</h3>
+
+<ul>
+  <li>메시지 루프는 <code>async for msg in ws:</code> 패턴 (<code>signaling.py:handle_ws</code> 참조).</li>
+  <li>외부 IO 는 항상 <code>await</code>. 콜백 지옥 회피.</li>
+  <li>동시 송신이 발생할 수 있는 자원은 <code>asyncio.Lock</code> 으로 보호 (<code>Peer.send_lock</code>, <code>Room._mutex</code>).</li>
+</ul>
+
+<h3>4.3 TypedDict 기반 메시지 모델</h3>
+
+<ul>
+  <li>와이어 envelope 는 <code>TypedDict</code> 로 선언 (<code>server/protocol.py</code> 참조). 런타임 검증은 <code>is_valid_client_type</code> + 필드별 isinstance 가드.</li>
+  <li>외부 IO 도구(JSON serializer) 에 넘기기 직전에만 <code>internal_to_wire</code> 로 변환.</li>
+  <li>새 메시지 타입 추가 시: ① <code>protocol.py</code> 에 TypedDict + <code>MSG_*</code> 상수 추가 → ② <code>CLIENT_MSG_TYPES</code> frozenset 갱신 → ③ Router 라우팅 분기 추가 → ④ Service 메서드 추가.</li>
+</ul>
+
+<h3>4.4 dataclass — 설정·런타임 객체</h3>
+
+<ul>
+  <li>설정은 <code>frozen=True, slots=True</code> dataclass (<code>Config</code>).</li>
+  <li>런타임 mutable 상태는 일반 dataclass 또는 일반 클래스 (<code>Peer</code>, <code>Room</code>).</li>
+  <li><code>field(default_factory=...)</code> 사용 — mutable 기본값 직접 선언 금지.</li>
+</ul>
+
+<hr>
+
+<h2>5. 데이터 흐름과 소유권 (Ownership)</h2>
+
+<pre class="mermaid">
+flowchart LR
+    USER[사용자 입력]
+    UI[PyQt6 위젯<br/>app/ui]
+    STATE[AppState 싱글톤<br/>app/core]
+    CFG[Config<br/>load_config]
+    ENV[.env]
+    SIGCLI[SignalingClient<br/>app/net]
+    WS[aiohttp WebSocket]
+    ROUTER[signaling.py<br/>Router]
+    SVC[RoomRegistry<br/>Service]
+    MDL[protocol.py<br/>Model]
+    PEER[Peer 객체]
+    ROOM[Room 객체]
+
+    USER --> UI
+    UI --> STATE
+    ENV --> CFG
+    CFG --> SIGCLI
+    UI --> SIGCLI
+    SIGCLI <--> WS
+    WS --> ROUTER
+    ROUTER --> SVC
+    SVC --> MDL
+    SVC --> ROOM
+    ROOM --> PEER
+
+    classDef owner fill:#dbeafe,stroke:#2563eb
+    classDef ext fill:#fef3c7,stroke:#d97706
+    class STATE,SVC,ROOM owner
+    class ENV,WS ext
+</pre>
+
+<h3>소유권 표</h3>
+
+<table>
+  <thead>
+    <tr><th>객체</th><th>생성자</th><th>소유자</th><th>해제 시점</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Config</code></td><td><code>load_config()</code></td><td>모듈 main</td><td>프로세스 종료</td></tr>
+    <tr><td><code>AppState</code></td><td>싱글톤 진입점 <code>instance()</code></td><td>프로세스 전역</td><td>프로세스 종료 (테스트는 <code>_reset_for_tests</code>)</td></tr>
+    <tr><td><code>RoomRegistry</code></td><td><code>main.py</code> 부트스트랩</td><td><code>aiohttp.Application[APP_KEY_REGISTRY]</code></td><td><code>shutdown()</code> 단일 진입점</td></tr>
+    <tr><td><code>Room</code></td><td><code>RoomRegistry.join</code> 안 lazy 생성</td><td><code>RoomRegistry._rooms</code></td><td><code>is_empty()</code> 시 자동 GC</td></tr>
+    <tr><td><code>Peer</code></td><td><code>signaling._handle_join</code></td><td>동일 WebSocket 핸들러 코루틴 로컬</td><td>핸들러 <code>finally</code> 안 <code>cleanup_peer</code></td></tr>
+    <tr><td>WebSocket</td><td>aiohttp 프레임워크</td><td>코루틴 로컬</td><td><code>finally</code> 안 <code>ws.close()</code></td></tr>
+  </tbody>
+</table>
+
+<p><strong>핵심 규칙</strong>: 생성한 코루틴이 해제도 담당한다. <code>try/finally</code> 로 자원 해제를 보장하고, 다른 코루틴에 자원을 넘길 때는 소유권 이전을 명시적으로 한다.</p>
+
+<hr>
+
+<h2>6. 오류 처리 방침</h2>
+
+<h3>6.1 try/except 사용 범위</h3>
+
+<ul>
+  <li><strong>외부 입력 (네트워크·파일·사용자) 만 try/except</strong> 로 감싼다.</li>
+  <li><strong>내부 invariant 는 <code>assert</code></strong> 또는 명시적 raise. 정상 흐름에서 발생할 수 없는 상태는 빠르게 실패시킨다.</li>
+  <li><strong>try/pass 금지</strong> — 모든 예외는 로그·복구·재던지기 중 하나로 처리한다.</li>
+</ul>
+
+<h3>6.2 예외 분류</h3>
+
+<table>
+  <thead>
+    <tr><th>구분</th><th>예시</th><th>처리</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>외부 형식 오류</td><td><code>json.JSONDecodeError</code>, <code>ValueError</code> (정수 변환 실패)</td><td>로그 + 안전 기본값 폴백 또는 ERROR 응답</td></tr>
+    <tr><td>외부 연결 단절</td><td><code>ConnectionResetError</code>, <code>RuntimeError</code> (<code>ws.send_str</code> 실패)</td><td>로그 + cleanup 진입점 호출</td></tr>
+    <tr><td>내부 invariant</td><td>빈 <code>room_id</code>, 허용 외 <code>connection_state</code></td><td><code>ValueError</code> raise — 호출자 책임으로 위임</td></tr>
+    <tr><td>프로그래밍 오류</td><td>싱글톤 직접 생성</td><td><code>RuntimeError</code> raise</td></tr>
+  </tbody>
+</table>
+
+<h3>6.3 로그 형식</h3>
+
+<ul>
+  <li>정본 §E 규약: <code>[YYYY-mm-dd H:i:s]</code>.</li>
+  <li>모듈 단위 <code>logger = logging.getLogger(__name__)</code>.</li>
+  <li>외부 IO 결과는 항상 로그 1행. 보안 민감 필드(SDP 본문, 자격증명) 는 로그 금지.</li>
+  <li>로그 메시지는 한국어 + 영어 식별자 혼합 허용 (<code>"peer 송신 실패 peer_id=%s err=%s"</code>).</li>
+  <li><code>print()</code> 디버깅 금지 — 모든 진단 출력은 <code>logger</code> 경유.</li>
+</ul>
+
+<hr>
+
+<h2>7. 환경변수 명세</h2>
+
+<p>본 시점 누계 (<code>.env.example</code> 정합). 신규 환경변수 추가 시 본 표와 <code>app/core/config.py</code> <code>_DEFAULT_*</code> 상수, <code>Config</code> dataclass 필드를 <strong>동시</strong> 갱신해야 한다.</p>
+
+<table>
+  <thead>
+    <tr><th>키</th><th>기본값</th><th>용도</th><th>정규화</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>SIGNAL_SERVER_HOST</code></td><td><code>114.207.112.73</code></td><td>시그널링 서버 호스트</td><td>빈 문자열 → 기본값</td></tr>
+    <tr><td><code>SIGNAL_SERVER_WS_PORT</code></td><td><code>8765</code></td><td>시그널링 서버 WebSocket 포트</td><td>정수 변환 실패 → 기본값</td></tr>
+    <tr><td><code>SIGNAL_SERVER_WS_SCHEME</code></td><td><code>ws</code></td><td><code>ws</code> 또는 <code>wss</code></td><td>그 외 → <code>ws</code> 폴백</td></tr>
+    <tr><td><code>STUN_URL</code></td><td><code>stun:stun.l.google.com:19302</code></td><td>WebRTC ICE 수집용 STUN</td><td>빈 문자열 → 기본값</td></tr>
+    <tr><td><code>TURN_URL</code></td><td><code>""</code></td><td>선택. 비면 TURN 미사용</td><td>—</td></tr>
+    <tr><td><code>TURN_USERNAME</code></td><td><code>""</code></td><td>TURN 자격증명</td><td>—</td></tr>
+    <tr><td><code>TURN_CREDENTIAL</code></td><td><code>""</code></td><td>TURN 비밀값</td><td>—</td></tr>
+    <tr><td><code>USER_NICKNAME</code></td><td><code>guest</code></td><td>클라이언트 표시명</td><td>—</td></tr>
+    <tr><td><code>LOG_LEVEL</code></td><td><code>INFO</code></td><td>로깅 레벨</td><td>허용 외 → <code>INFO</code></td></tr>
+    <tr><td><code>DB_HOST</code></td><td><code>127.0.0.1</code></td><td>MariaDB 호스트 (사용자 directive 2026-05-17)</td><td>—</td></tr>
+    <tr><td><code>DB_PORT</code></td><td><code>3306</code></td><td>MariaDB 포트</td><td>정수 변환 실패 → 기본값</td></tr>
+    <tr><td><code>DB_USER</code></td><td><code>tootalk</code></td><td>MariaDB 사용자</td><td>—</td></tr>
+    <tr><td><code>DB_PASS</code></td><td><code>""</code></td><td>MariaDB 비밀번호 (<code>.env.local</code> 격리)</td><td>—</td></tr>
+    <tr><td><code>DB_NAME</code></td><td><code>tootalk</code></td><td>MariaDB 스키마</td><td>—</td></tr>
+    <tr><td><code>MEDIA_CACHE_DIR</code></td><td><code>./media_cache</code></td><td>이미지·파일 캐시 디렉토리</td><td>—</td></tr>
+    <tr><td><code>SIGNAL_SERVER_BIND</code></td><td><code>0.0.0.0</code></td><td>시그널링 서버 바인드 주소 (서버 전용)</td><td>—</td></tr>
+    <tr><td><code>SIGNAL_SERVER_LOG_FILE</code></td><td><code>./logs/signaling.log</code></td><td>서버 로그 출력 경로</td><td>—</td></tr>
+    <tr><td><code>SIGNAL_HEARTBEAT_SEC</code></td><td><code>30</code></td><td>WebSocket heartbeat 주기(초)</td><td>정수 변환 실패 → 기본값</td></tr>
+    <tr><td><code>MAX_PEERS_PER_ROOM</code></td><td><code>2</code></td><td>방당 peer 상한 (Phase 1 = 2)</td><td>정수 변환 실패 → 기본값</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>8. 코드 스타일</h2>
+
+<h3>8.1 타입 힌트</h3>
+
+<ul>
+  <li><strong>타입 힌트 100% 강제</strong> — 모든 public 함수/메서드 매개변수와 반환값에 타입 어노테이션 필수.</li>
+  <li><code>from __future__ import annotations</code> 모듈 상단 의무 (Python 3.13 호환성·forward reference).</li>
+  <li><code>Any</code> 사용은 외부 dict (<code>payload: dict[str, Any]</code>) 와 호환성 헬퍼 한정.</li>
+</ul>
+
+<h3>8.2 async 강제</h3>
+
+<ul>
+  <li>IO 를 수행하는 함수는 예외 없이 <code>async def</code>.</li>
+  <li>동기 헬퍼는 순수 변환(<code>wire_to_internal</code>, <code>_normalize_scheme</code>) 또는 dataclass property 에 한정.</li>
+</ul>
+
+<h3>8.3 docstring 한국어</h3>
+
+<ul>
+  <li>모듈/클래스/함수 docstring 은 한국어 (M4 §J).</li>
+  <li>첫 줄은 한 문장 요약, 두 번째 줄 공백, 본문 상세.</li>
+  <li>Sphinx/numpy 스타일 둘 다 허용 (정합만 유지).</li>
+</ul>
+
+<h3>8.4 Import 순서</h3>
+
+<ol>
+  <li><code>from __future__ import ...</code></li>
+  <li>표준 라이브러리</li>
+  <li>서드파티</li>
+  <li>내부 패키지 (상대 import 우선)</li>
+</ol>
+
+<p>각 그룹 사이 빈 줄 1개.</p>
+
+<h3>8.5 짧은 예시 (5줄 이하)</h3>
+
+<pre><code class="language-python"># 외부 입력 화이트리스트 — 정본 §E 정합 패턴
+if not is_valid_client_type(msg_type):
+    await _send_error(ws, ERR_UNKNOWN_TYPE, f"허용되지 않은 타입: {msg_type!r}")
+    return peer
+</code></pre>
+
+<hr>
+
+<h2>9. 안티패턴 (명시 금지)</h2>
+
+<ol>
+  <li><strong>동기 IO 호출</strong> — <code>requests.get</code>, <code>time.sleep</code>, blocking 파일 IO. 비동기 등가물 사용.</li>
+  <li><strong>하드코딩 설정값</strong> — host/port/path 를 코드 상수로 박는 행위. <code>.env</code> + <code>Config</code> 경유.</li>
+  <li><strong><code>try: ... except: pass</code></strong> — 모든 예외는 로그 + 처리. 의도적 무시는 주석으로 명시 + 좁은 예외 타입 한정.</li>
+  <li><strong><code>print()</code> 디버깅</strong> — <code>logger</code> 경유. 임시 디버깅도 commit 금지.</li>
+  <li><strong>전역 mutable</strong> — 모듈 레벨 dict/list 의 mutation 금지. lock 보호된 컴포넌트 안에 캡슐화.</li>
+  <li><strong>순환 import</strong> — Router → Service → Model 일방향. 역방향 import 발생 시 인터페이스 분리.</li>
+  <li><strong>Qt 위젯 백그라운드 스레드 접근</strong> — qasync 단일 루프 경유. 별도 스레드 접근 금지.</li>
+  <li><strong>싱글톤 남발</strong> — <code>AppState</code> 외 신규 싱글톤 금지. 인스턴스 주입 우선.</li>
+  <li><strong><code>Any</code> 남용</strong> — 외부 dict 경계 외에는 정확한 타입 명시.</li>
+  <li><strong>한국어 의존명사 단독 사용 금지</strong> — 합성어(관측·측면·추측·좌측·우측) 만 허용한다. 영어 직역체("server-side", "client-side") 를 한글 의존명사 단독으로 옮기는 표현 금지. "서버에서·클라이언트에서·서버 계층·클라이언트 계층" 같은 명확한 대체어를 사용한다.</li>
+</ol>
+
+<hr>
+
+<h2>10. 테스트 설계</h2>
+
+<h3>10.1 단위 테스트 (pytest 기본)</h3>
+
+<ul>
+  <li>위치: <code>tests/unit/test_&lt;module&gt;.py</code></li>
+  <li>대상: 순수 함수, Service 계층 단일 클래스, dataclass 변환.</li>
+  <li>외부 IO 금지 — 네트워크·파일·DB 모두 fake/stub.</li>
+  <li><code>app/core</code> 는 Qt 의존성 없이 전부 단위 테스트 가능해야 한다 (정본 §E 정합).</li>
+</ul>
+
+<h3>10.2 통합 테스트 (<code>@pytest.mark.integration</code>)</h3>
+
+<ul>
+  <li>위치: <code>tests/integration/test_&lt;scenario&gt;.py</code></li>
+  <li>대상: aiohttp WebSocket 라운드트립, qasync 이벤트 루프 통합, 시그널링 ↔ DataChannel 연결.</li>
+  <li>마커: <code>@pytest.mark.integration</code> 필수 — 기본 실행에서 제외, CI 별도 job 으로 실행.</li>
+</ul>
+
+<h3>10.3 시퀀스 — JOIN 시나리오</h3>
+
+<pre class="mermaid">
+sequenceDiagram
+    participant A as Client A
+    participant R as Router (signaling.py)
+    participant Svc as RoomRegistry
+    participant Room as Room(r1)
+    participant B as Client B (existing)
+
+    A->>R: WS TEXT {type:JOIN, room:r1, peer_id:a}
+    R->>R: JSON decode + is_valid_client_type
+    R->>Svc: join(r1, Peer(a))
+    Svc->>Room: add_peer(a)
+    Room-->>Svc: existing=[b]
+    Svc-->>A: PEERS {peers:[b]}
+    Svc->>Room: broadcast_except({PEER_JOINED, a}, a)
+    Room->>B: PEER_JOINED {peer_id:a}
+</pre>
+
+<h3>10.4 테스트 데이터 명명</h3>
+
+<ul>
+  <li>픽스처: <code>conftest.py</code> 안 <code>@pytest.fixture</code> 로 정의.</li>
+  <li>room_id/peer_id 는 <code>r1</code>, <code>peer-a</code>, <code>peer-b</code> 같은 짧은 명시적 식별자.</li>
+  <li>무작위 ID 가 필요한 경우 <code>uuid.uuid4()</code> 직접 호출, <code>random.seed</code> 고정 금지.</li>
+</ul>
+
+<h3>10.5 커버리지 목표</h3>
+
+<ul>
+  <li>단위: 라인 커버리지 80% 이상 (<code>app/core</code>, <code>server/protocol.py</code> 는 95% 이상).</li>
+  <li>통합: 시나리오 커버리지 — JOIN/LEAVE/OFFER/ANSWER/ICE 5종 + 오류 6종 (<code>ERR_*</code>) 전부.</li>
+</ul>
+
+<h3>10.6 E2E 테스트 (Playwright — 사용자 directive 2026-05-17)</h3>
+
+<p><strong>사용자 directive</strong>: "qa 단계에 반드시 playwright 를 이용한 테스트도 명시해"</p>
+
+<p>PyQt6 데스크탑 위젯 직접 자동화는 Playwright 영역 외 (<code>pytest-qt</code> <code>QTest</code> 사용). Playwright 의 다음 3 영역 적용:</p>
+
+<table>
+  <thead>
+    <tr><th>영역</th><th>도구</th><th>검증 대상</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>시그널링 서버 WebSocket E2E</td><td><code>playwright.async_api</code> + 브라우저 WebSocket client</td><td>JOIN/OFFER/ANSWER/ICE 흐름 + 오류 6종 응답</td></tr>
+    <tr><td>HTML 등가 시각 회귀</td><td><code>page.screenshot()</code> + <code>page.locator()</code></td><td><code>docs/html/</code> 6 HTML 의 swatch + mermaid SVG 렌더 + console error 0</td></tr>
+    <tr><td>GitHub Release zip 첫 실행 capture</td><td>Phase 2+ deferred</td><td>PyInstaller zip 다운 + 첫 화면 screenshot + 파일 송수신 회귀</td></tr>
+  </tbody>
+</table>
+
+<p><strong>구성</strong>:</p>
+
+<ul>
+  <li>마커: <code>@pytest.mark.e2e</code> 필수 — 기본 실행 의 제외 (수동 또는 CI nightly 전용)</li>
+  <li>위치: <code>tests/e2e/</code> — 단위 <code>tests/app/</code> · <code>tests/server/</code> 와 분리</li>
+  <li>의존성: <code>pytest-playwright&gt;=0.5</code> + <code>playwright&gt;=1.42</code> (<code>app/requirements-dev.txt</code> + <code>server/requirements-dev.txt</code>)</li>
+  <li>픽스처: <code>tests/e2e/conftest.py</code> 의 <code>signaling_server_url</code> + <code>html_docs_base</code> (file:// base)</li>
+</ul>
+
+<p><strong>실행</strong>:</p>
+
+<pre><code class="language-bash"># 사전 설치 (1회)
+pip install -r app/requirements-dev.txt
+playwright install --with-deps chromium
+
+# E2E 단독 실행
+pytest -m e2e
+
+# unit + integration + e2e 전체
+pytest -m "integration or e2e or not (integration or e2e)"
+</code></pre>
+
+<p><strong>한계 영역 (Playwright 부적합)</strong>:</p>
+
+<ul>
+  <li>PyQt6 메인 윈도우 의 위젯 클릭 = <code>pytest-qt</code> <code>QTest.mouseClick</code> 사용</li>
+  <li>aiortc DataChannel 의 binary 전송 검증 = <code>pytest-asyncio</code> + 직접 client 호출</li>
+  <li>시스템 트레이 / OS 알림 = <code>pyautogui</code> 또는 OS 별 자동화 (Phase 4+ 모바일 의 별도)</li>
+</ul>
+
+<hr>
+
+<h2>11. UI 디자인 시스템 (사용자 directive 2026-05-17)</h2>
+
+<p>본 섹션은 UI 컴포넌트 카드 + 상태 + 변이체 + 레이아웃 그리드 정의. <a href="../../FRONTEND.md">FRONTEND.md</a> §3 위젯 계층 트리 + §4 색상 변수 + §14 wireframe 의 동기. <code>app/ui/theme.qss</code> (Phase 1 후반 신설) 의 정식 변수로 이관 예정.</p>
+
+<h3>11.1 컴포넌트 인벤토리</h3>
+
+<table>
+  <thead>
+    <tr><th>컴포넌트</th><th>위치</th><th>핵심 책임</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>MainWindow</code></td><td><code>app/ui/main_window.py</code></td><td><code>QMainWindow</code> 컨테이너. 메뉴바 + ChatView + 입력바 + StatusBar 결합</td></tr>
+    <tr><td><code>ChatView</code></td><td><code>app/ui/chat_view.py</code></td><td><code>QScrollArea</code> + <code>QVBoxLayout</code>. MessageBubble 누적 + 자동 스크롤</td></tr>
+    <tr><td><code>MessageBubble</code></td><td><code>app/ui/message_bubble.py</code></td><td>단일 메시지 표시. 내/상대 좌우 정렬 + 배경색 분기 + 타임스탬프</td></tr>
+    <tr><td><code>InputBar</code></td><td><code>app/ui/input_bar.py</code> (예정)</td><td>텍스트 입력 + 파일 첨부 버튼 + Enter 송신 + Shift+Enter 줄바꿈</td></tr>
+    <tr><td><code>FileProgressWidget</code></td><td><code>app/ui/file_progress_widget.py</code></td><td>송수신 양방향 ProgressBar (회색 sent + 파란 acked)</td></tr>
+    <tr><td><code>StatusBar</code></td><td><code>app/ui/status_bar.py</code></td><td>시그널링 연결 상태 + peer 수 + 현재 방</td></tr>
+    <tr><td><code>OnboardingDialog</code></td><td><code>app/ui/onboarding_dialog.py</code> (예정)</td><td>첫 실행 nickname 입력 + STUN/시그널링 안내</td></tr>
+    <tr><td><code>RoomJoinDialog</code></td><td><code>app/ui/room_join_dialog.py</code> (예정)</td><td>room id + peer_id 입력 모달</td></tr>
+  </tbody>
+</table>
+
+<h3>11.2 컴포넌트 상태 (interaction state)</h3>
+
+<p>모든 interactive 컴포넌트 (Button, Input, MessageBubble) 의 적용:</p>
+
+<table>
+  <thead>
+    <tr><th>상태</th><th>시각 효과</th><th>트리거</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>default</code></td><td>기본 색상 + 1px border</td><td>마우스/포커스 없음</td></tr>
+    <tr><td><code>hover</code></td><td>배경 +5% 명도 + 커서 pointer</td><td>mouseover</td></tr>
+    <tr><td><code>active</code></td><td>배경 −5% 명도 (눌림 효과)</td><td>mousedown</td></tr>
+    <tr><td><code>focused</code></td><td>2px outline <code>--status-connected</code></td><td>Tab 키 or click</td></tr>
+    <tr><td><code>disabled</code></td><td>opacity 0.4 + 커서 not-allowed</td><td><code>setEnabled(False)</code></td></tr>
+    <tr><td><code>error</code></td><td>border 색상 <code>--status-error</code> + 흔들림 30ms</td><td>invalid 입력</td></tr>
+  </tbody>
+</table>
+
+<h3>11.3 컴포넌트 변이체 (variant)</h3>
+
+<table>
+  <thead>
+    <tr><th>변이체</th><th>용도</th><th>예시 컴포넌트</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>primary</code></td><td>핵심 액션 (보내기 / JOIN / 확인)</td><td>Button.primary</td></tr>
+    <tr><td><code>secondary</code></td><td>보조 액션 (취소 / 뒤로)</td><td>Button.secondary</td></tr>
+    <tr><td><code>ghost</code></td><td>텍스트만 (메뉴 항목 / 링크)</td><td>Button.ghost</td></tr>
+    <tr><td><code>danger</code></td><td>파괴적 액션 (LEAVE / 삭제)</td><td>Button.danger</td></tr>
+  </tbody>
+</table>
+
+<h3>11.4 레이아웃 그리드 (spacing scale)</h3>
+
+<p>4px base unit. 모든 padding / margin / gap 의 본 스케일 사용:</p>
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>값 (px)</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--space-xs</code></td><td>4</td><td>컴포넌트 내부 micro (icon ↔ text)</td></tr>
+    <tr><td><code>--space-sm</code></td><td>8</td><td>컴포넌트 내부 base (input padding)</td></tr>
+    <tr><td><code>--space-md</code></td><td>12</td><td>컴포넌트 간 base (bubble ↔ bubble)</td></tr>
+    <tr><td><code>--space-lg</code></td><td>16</td><td>섹션 간 base (ChatView padding)</td></tr>
+    <tr><td><code>--space-xl</code></td><td>24</td><td>큰 섹션 분리 (MainWindow padding)</td></tr>
+    <tr><td><code>--space-2xl</code></td><td>32</td><td>모달 padding</td></tr>
+    <tr><td><code>--space-3xl</code></td><td>48</td><td>dialog inner section 분리</td></tr>
+  </tbody>
+</table>
+
+<h3>11.5 elevation / shadow (Phase 1 후반 정의)</h3>
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>그림자 값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--elev-0</code></td><td><code>none</code></td><td>평면 (default 배경)</td></tr>
+    <tr><td><code>--elev-1</code></td><td><code>0 1px 2px rgba(0,0,0,0.08)</code></td><td>MessageBubble + Button</td></tr>
+    <tr><td><code>--elev-2</code></td><td><code>0 2px 4px rgba(0,0,0,0.12)</code></td><td>Dialog + Dropdown</td></tr>
+    <tr><td><code>--elev-3</code></td><td><code>0 8px 16px rgba(0,0,0,0.16)</code></td><td>Modal overlay</td></tr>
+  </tbody>
+</table>
+
+<h3>11.6 motion (transition curve + duration)</h3>
+
+<ul>
+  <li><code>--motion-fast</code> = <code>120ms cubic-bezier(0.4, 0, 0.2, 1)</code> (hover / focus 전환)</li>
+  <li><code>--motion-base</code> = <code>200ms cubic-bezier(0.4, 0, 0.2, 1)</code> (drawer / dialog open)</li>
+  <li><code>--motion-slow</code> = <code>400ms cubic-bezier(0.4, 0, 0.2, 1)</code> (페이지 전환 — Phase 2+)</li>
+  <li>사용자 OS "Reduce Motion" 설정 의 모두 0ms 적용 (접근성 — <a href="../../FRONTEND.md">FRONTEND.md §11</a> 정합)</li>
+</ul>
+
+<h3>11.7 dark mode 동기 정합</h3>
+
+<ul>
+  <li>라이트 ↔ 다크 = <code>--bg</code> · <code>--fg</code> · <code>--bubble-self</code> · <code>--bubble-other</code> · <code>--bubble-border</code> · <code>--text-timestamp</code> · <code>--text-sender</code> 7 변수 토글</li>
+  <li><code>--status-connected</code> / <code>--status-error</code> = 라이트/다크 동일 (의미 색상 안정성)</li>
+  <li><code>--primary</code> / <code>--progress-acked</code> / <code>--progress-inflight</code> = Phase 1 후반 후크 확정</li>
+  <li>자동 감지 = <code>palette().windowText().lightness() &lt; 128</code> 의 dark 판정 (<code>app/ui/theme.py</code> 예정)</li>
+</ul>
+
+<h3>11.8 다국어 + 타이포 (FRONTEND.md §5 + §10 정합)</h3>
+
+<ul>
+  <li>system font stack 우선 (한글 가독성 확보)</li>
+  <li>폰트 크기 토큰 = <code>--text-xs</code> 11 / <code>--text-sm</code> 13 / <code>--text-base</code> 15 / <code>--text-lg</code> 18 / <code>--text-xl</code> 22</li>
+  <li>line-height = 1.5 base + 1.3 (heading)</li>
+  <li>한국어 line-break = <code>word-break: keep-all</code> (어절 단위 break 유지)</li>
+</ul>
+
+<hr>
+
+<h2>12. 참조</h2>
+
+<ul>
+  <li>정본 — <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md §E</a> (코딩 불변 규칙)</li>
+  <li>정본 — <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md §J</a> (M4 한글 주석 규약)</li>
+  <li>정본 — <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md §R</a> (M5 즉시 commit/push)</li>
+  <li>저장소 맵 — <a href="../../AGENTS.md">AGENTS.md</a></li>
+  <li>모듈 경계 — <a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a></li>
+  <li>UI 표현 정책 — <a href="../../FRONTEND.md">FRONTEND.md</a></li>
+  <li>신뢰성 (장애·재연결) — <a href="../../RELIABILITY.md">RELIABILITY.md</a></li>
+  <li>보안 (외부 입력 hardening) — <a href="../../SECURITY.md">SECURITY.md</a></li>
+  <li>실행 계획 — <a href="../../PLANS.md">PLANS.md</a> → <a href="../exec-plans/active/">docs/exec-plans/active/</a></li>
+  <li>코드 참조 — <a href="../../server/protocol.py">server/protocol.py</a>, <a href="../../server/room.py">server/room.py</a>, <a href="../../server/signaling.py">server/signaling.py</a>, <a href="../../app/core/app_state.py">app/core/app_state.py</a>, <a href="../../app/core/config.py">app/core/config.py</a></li>
+</ul>
+
+<hr>
+
+<p>마지막 갱신: 2026-05-17 (DESIGN.md 신설)</p>
+
+</body>
+</html>

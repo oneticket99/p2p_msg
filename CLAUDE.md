@@ -237,10 +237,11 @@ SKIP_PREPUSH=1 git push origin main
 3. **가드레일 추가/변경 시** — `~/.claude/projects/.../memory/MEMORY.md` 인덱스 갱신 → 본 문서 §7 표 행 추가 → 우선순위(§6) 반영 확인.
 4. **워크플로우 단계 변경** — 본 문서 §2 mermaid · [AGENTS.md §4](AGENTS.md) · [정본 §B](CLAUDE_HARNESS_IMPORTANT.md) 3 위치 동시 갱신. 정본 단독 모순 금지.
 5. **본 문서 자체 변경 직후** — `README.md` "변경 이력" 한 줄 prepend (M2) + `History.md` 역순 prepend (M3) + 즉시 `SKIP_PREPUSH=1 git push origin main` (M5).
-6. **HTML 동시 유지 의무 5종** (사용자 directive 2026-05-17) — 다음 문서는 `.md` 갱신 시점에 `docs/html/<name>.html` 도 동시 rewrite 의무. 한쪽만 갱신 금지.
+6. **HTML 동시 유지 의무 6종** (사용자 directive 2026-05-17) — 다음 문서는 `.md` 갱신 시점에 `docs/html/<name>.html` 도 동시 rewrite 의무. 한쪽만 갱신 금지.
    - `Structure.md` ↔ `docs/html/Structure.html`
    - `ARCHITECTURE.md` ↔ `docs/html/ARCHITECTURE.html`
    - `FRONTEND.md` ↔ `docs/html/FRONTEND.html`
+   - `DESIGN.md` ↔ `docs/html/DESIGN.html` (사용자 directive 2026-05-17 — UI 디자인 시스템 §11 추가 정합)
    - `docs/assessments/productization.md` ↔ `docs/html/productization.html`
    - `docs/assessments/vibe-coding.md` ↔ `docs/html/vibe-coding.html`
 7. **평가 snapshot 동시 갱신 의무** (사용자 directive 2026-05-17) — 각 task 완료 시 `docs/assessments/productization.md` + `docs/assessments/vibe-coding.md` 두 snapshot 전체 rewrite (히스토리성 prepend 금지). 동시에 `docs/html/` 디렉토리 두 HTML 도 rewrite.
