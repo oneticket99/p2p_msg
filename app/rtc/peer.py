@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """``RTCPeerConnection`` 래퍼 — aiortc + Qt signal 통합.
 
 본 모듈은 aiortc 의 ``RTCPeerConnection`` 를 한 단계 감싸 ``app.net.

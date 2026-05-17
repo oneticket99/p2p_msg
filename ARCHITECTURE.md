@@ -151,7 +151,7 @@ sequenceDiagram
 
 - 시그널링 단계는 9개 envelope 안에서만 진행 ([server/protocol.py](server/protocol.py) 5종 클라→서버, 4종 서버→클라).
 - DataChannel envelope 은 별도 스키마이며 시그널링 envelope 와 절대 섞이지 않는다.
-- 파일 송수신은 `CHUNK_ACK` 기반 backpressure 로 흐름 제어. 송신측 윈도우 크기는 `.env` `RTC_CHUNK_WINDOW` 로 외부화.
+- 파일 송수신은 `CHUNK_ACK` 기반 backpressure 로 흐름 제어. 청크 크기 + buffer 상/하한 + ACK 간격 = `.env` `FILE_CHUNK_SIZE` / `FILE_BUFFER_HIGH` / `FILE_BUFFER_LOW` / `FILE_ACK_INTERVAL_BYTES` 외부화 (Agent #16 정합, §7 표).
 
 ---
 
@@ -194,8 +194,14 @@ sequenceDiagram
 | `DB_USER` | 클라 | `tootalk` | [AGENTS.md](AGENTS.md) 부록 B |
 | `DB_PASS` | 클라 | (비움) | `.env.local` 주입 |
 | `DB_NAME` | 클라 | `tootalk` | [AGENTS.md](AGENTS.md) 부록 B |
-| `RTC_CHUNK_SIZE` | 클라 | `16384` | 본 문서 §5 (파일 전송 backpressure) |
-| `RTC_CHUNK_WINDOW` | 클라 | `64` | 본 문서 §5 |
+| `FILE_CHUNK_SIZE` | 클라 | `16384` | 본 문서 §5 (파일 전송 청크 크기 — Agent #16 정합) |
+| `FILE_BUFFER_HIGH` | 클라 | `16777216` (16 MiB) | `app/rtc/file_sender.py` (backpressure 상한 — 16 MiB 이상 시 송신 대기) |
+| `FILE_BUFFER_LOW` | 클라 | `4194304` (4 MiB) | `app/rtc/file_sender.py` (backpressure 하한 — 4 MiB 이하 시 송신 재개) |
+| `FILE_BACKPRESSURE_POLL_MS` | 클라 | `50` | `app/rtc/file_sender.py` (`bufferedAmount` 폴링 간격) |
+| `FILE_ACK_INTERVAL_BYTES` | 클라 | `524288` (512 KiB) | `app/rtc/file_receiver.py` (수신 ACK 발송 간격) |
+| `FILE_RECEIVE_DIR` | 클라 | `~/Downloads/TooTalk` | `app/rtc/file_receiver.py` (수신 파일 저장 디렉토리) |
+| `THUMB_MAX_PX` | 클라 | `200` | `app/rtc/image_processor.py` (Pillow 썸네일 최대 픽셀) |
+| `THUMB_QUALITY` | 클라 | `80` | `app/rtc/image_processor.py` (JPEG 품질) |
 
 **금지**:
 

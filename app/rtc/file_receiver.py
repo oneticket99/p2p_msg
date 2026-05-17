@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """파일 수신기 — 청크 누적 + 주기적 ACK + Qt progress 신호.
 
 본 모듈은 수신자 입장의 파일 전송 흐름을 캡슐화한다:

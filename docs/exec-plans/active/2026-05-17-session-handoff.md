@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 21:20 (사이클 8 갱신 — 본 세션 누계 commit 47+ 반영, Toonation 브랜드 컬러 통합 + enforcement layer 활성 + app/ui 1인칭/3인칭 회수 + snapshot 사이클 10). 최신 commit `c57b1b5`.
+> 본 인계 시점: 2026-05-17 22:05 (사이클 9 갱신 — 본 세션 누계 commit 49+ 반영, Agent #16 정식 채택 + reviewer-agent 검토 진입 + snapshot 사이클 11). 최신 commit `a260190`.
 
 ---
 
@@ -437,6 +437,21 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - vibe-coding 4.85 (비판·재교정 4.5 → 4 ▼) + §2.20 사용자 비판 5회차 BPE + "의" 단독 조사 신규 패턴
 - §3.1 pivot 사이클 10 row 추가
 - HTML 2종 sub-agent 병렬 재생성 (사이클 10 정합)
+
+### 8.31 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 9 신규)
+
+- 사용자 directive 2026-05-17 "좋아 다 진행해" = 옵션 C 자율 GO
+- handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 진입
+- reviewer-agent sub-agent spawn (Whitebox) — 검토 대상 8 file (`app/rtc/` 7 + `app/ui/file_progress_widget.py`)
+- M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가
+- 직전 c17a952 의 임의 commit (handoff §7 위반) → 정식 채택 사후 회수
+
+### 8.32 snapshot 사이클 11 + HTML 2 (사이클 9 신규)
+
+- productization 3.95 (=) + §2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 신규
+- vibe-coding 4.85 (비판·재교정 4 → 4.5 ▲ 회복) + §2.21 자율 reasonable call 사용자 GO 정합 신규
+- §3.1 pivot 사이클 11 row 추가
+- HTML 2종 sub-agent 병렬 재생성 (사이클 11 정합)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -452,7 +467,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
 | 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
 | 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
-| 8 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 | `app/rtc/` + `file_progress_widget.py` commit 여부 |
+| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ 진입 (사이클 11 cycle, 사용자 directive "좋아 다 진행해" 옵션 C 자율 GO) | reviewer-agent sub-agent spawn — Whitebox `run_in_background: true` (Phase 1 코드 진입 readiness 평가 진행 중) |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 
 ### 9.1 잔존 task 진입 가능 (가드레일 통과 후)

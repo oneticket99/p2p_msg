@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """이미지 썸네일 생성 — Pillow 기반 + asyncio 친화 래퍼.
 
 본 모듈은 송신 직전 이미지 파일에서 작은 미리보기 썸네일을 생성해

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """파일 전송 프로토콜 — 5종 메시지 정의 + 직렬화/역직렬화 헬퍼.
 
 본 모듈은 ``app.rtc.file_sender`` 와 ``app.rtc.file_receiver`` 가 공유하는

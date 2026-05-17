@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk WebRTC DataChannel 계층 — aiortc 기반 P2P 데이터 전송.
 
 본 서브패키지는 시그널링 계층(``app.net.signaling_client``) 위에 얹혀

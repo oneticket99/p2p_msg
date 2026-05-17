@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 21:15 (commit `c57b1b5` 직후 — 본 세션 누계 46 commit 반영, 사이클 10 — Toonation 브랜드 컬러 통합 + enforcement layer 활성)
+> 최근 갱신 시점: 2026-05-17 22:00 (commit `a260190` 직후 — 본 세션 누계 48 commit 반영, 사이클 11 — Agent #16 정식 채택 + reviewer-agent 검토 진입)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -140,7 +140,16 @@ status: active
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
-### 2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (신규 사이클 10)
+### 2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (신규 사이클 11)
+
+- **사용자 directive 2026-05-17** — "좋아 다 진행해" = **옵션 C 자율 GO** (Agent #16 산출물 정식 채택)
+- handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입
+- 검토 대상 = `app/rtc/` 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + `__init__`) + `app/ui/file_progress_widget.py` = 8 file 누계 ~96 KB
+- reviewer-agent sub-agent spawn (Whitebox `run_in_background: true`) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가
+- 직전 c17a952 의 `git add app/` wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 의 의 의 사후 회수
+- Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입
+
+### 2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (사이클 10 신규 — 사이클 11 유지)
 
 - **사용자 directive 2026-05-17** — Toonation 공식 BI 가이드 본문 직접 반영
 - FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — `--primary` (#0066FF Toonation Blue + #0052FF Deep) + `--progress-acked` (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + `--progress-inflight` (#0F172A Deep Navy + #1E293B 변형)

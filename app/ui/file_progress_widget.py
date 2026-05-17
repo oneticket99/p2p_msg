@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """FileProgressWidget — 송신/수신 양방향 ProgressBar 위젯.
 
 본 위젯은 1 개 파일 전송의 진행률을 시각화한다. ``role`` 인자에 따라 두

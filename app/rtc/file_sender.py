@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """파일 송신기 — 청크 스트리밍 + backpressure + Qt progress 신호.
 
 본 모듈은 송신자 입장의 파일 전송 흐름을 캡슐화한다:
