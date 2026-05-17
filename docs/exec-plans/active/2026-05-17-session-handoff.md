@@ -118,14 +118,14 @@ status: active
 | **차별화** | Phase 3 막바지 친구간 원격 데스크탑 제어 (패턴 A 도움 + 패턴 B 제어, P5/P6 OBS 도움 시나리오) | 2026-05-17 |
 | 빌드 | macOS arm64 native (self-hosted runner) + Windows x64 wine cross-compile (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker) · PyInstaller + zip · 인증서 미사용 | 2026-05-17 |
 | CI | **self-hosted macOS arm64** (id=2, online, 활성) + **GitHub-hosted Ubuntu** (Windows wine 빌드, Phase 1 후반). Windows self-hosted 의무 = **영구 회수** | 2026-05-17 |
-| GitHub | `oneticket99/p2p_msg` **public** | 2026-05-17 |
+| GitHub | `oneticket99/p2p_msg` **public** (Phase 완료 시 private 전환 가능성 — [[project-visibility-transition]]) | 2026-05-17 |
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
 | HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
 | 평가 snapshot | 2종 (productization 3.85/5 + vibe-coding 4.85/5, 사이클 5 완료) | 2026-05-17 |
 | fork PR 승인 정책 | `all_external_contributors` (gh API 자동 적용, 사이클 3) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
-| 라이선스 | 미확정 (Phase 1 후반 확정) | — |
+| **라이선스** | **GPLv3** (LICENSE 저장소 루트 — PyQt6 GPLv3 정합 + SPDX header 의무, [[project-license-gpl]]) | 2026-05-17 |
 | **SMTP 서버** | 데모 서버 (`114.207.112.73`) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib client + SendGrid fallback. 절차 = `docs/references/smtp-setup.md`. 실제 설치 = 사용자 직접 SSH | 2026-05-17 |
 
 ---
@@ -336,7 +336,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 3 | ~~잔존 BPE 위반 정정 — CLAUDE_HARNESS_IMPORTANT.md~~ | ✅ 완료 | 전수 0건 도달 (400bd0c) |
 | 4 | ~~fork PR 승인 정책 strict 적용~~ | ✅ 완료 (2026-05-17 cycle) | gh API + `all_external_contributors` 자동. ci-self-hosted-setup.md §5.1 |
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
-| 6 | 라이선스 결정 — LICENSE 신설 | 🟡 사용자 직접 | OSS / 상용 분기. contributor 진입 가능 시점 |
+| 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
 | 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
 | 8 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 | `app/rtc/` + `file_progress_widget.py` commit 여부 |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |

@@ -23,9 +23,9 @@
 | 로컬 저장 | MariaDB (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) |
 | Python | 3.13 |
 | 배포 | macOS arm64 native (self-hosted runner) + Windows x64 wine cross-compile (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker) · PyInstaller + zip · 인증서 미사용 |
-| Remote | https://github.com/oneticket99/p2p_msg.git (public) |
+| Remote | https://github.com/oneticket99/p2p_msg.git (**public** — Phase 완료 시 private 전환 가능성, 사용자 directive 2026-05-17) |
 | Branch 전략 | feature branch + PR · `main` 직접 push 금지 |
-| 라이선스 | 미확정 (사용자 응답 대기) |
+| 라이선스 | **GPLv3** (사용자 directive 2026-05-17 — PyQt6 GPLv3 정합 + LICENSE 저장소 루트) |
 
 ---
 
