@@ -36,16 +36,18 @@ Claude (어시스턴트) 자율 진행 의 4 전형 실패 패턴 (false positiv
 
 ## 3. Enforcement Layer 5단 (정본 §S-1)
 
-| Layer | 위치 | 트리거 | 작동 |
-|---|---|---|---|
-| **L0 PreToolUse** | Claude 의 hook | 도구 호출 직전 | BPE detect + 1인칭/3인칭 detect + 위험 명령 차단 |
-| **L1 Stop** | Claude 의 hook | 응답 종료 시 | BPE grep + telegram 송신 + 미해소 위반 경고 |
-| **L1 SubagentStop** | Claude 의 hook | sub-agent 완료 시 | 자동 telegram 송신 + 결과 본문 일부 인용 |
-| **L2 pre-commit** | git hook | commit 직전 | markdownlint + doc-lint.sh + M2/M3 검증 |
-| **L3 post-commit** | git hook | commit 직후 | WBS row INSERT + telegram 송신 + History.md SHA 자동 갱신 |
-| **L4 pre-push** | git hook | push 직전 | CI workflow 사전 검증 (선택) + 분류기 우회 prefix 자동 부여 |
+| Layer | 위치 | 트리거 | 작동 | 본 저장소 sketch |
+|---|---|---|---|---|
+| **L0 PreToolUse** | Claude 의 hook | 도구 호출 직전 | BPE detect + 1인칭/3인칭 detect + 위험 명령 차단 | `tools/hook_check_bpe_token_input.sh` 신설 (self-test PASS) + `.claude/settings.json.disabled` (4회차 사전 경고) |
+| **L1 Stop** | Claude 의 hook | 응답 종료 시 | BPE grep + telegram 송신 + 미해소 위반 경고 | `tools/hook_telegram_report_stop.sh` 신설 + `.claude/settings.json.disabled` Stop matcher (5회차 사전 경고) |
+| **L1 SubagentStop** | Claude 의 hook | sub-agent 완료 시 | 자동 telegram 송신 + 결과 본문 일부 인용 | 미구현 (정본 §S-1 의 본 저장소 추가 의무) |
+| **L2 pre-commit** | git hook | commit 직전 | markdownlint + doc-lint.sh + M2/M3 검증 | 미구현 (수동 lint 의 직접 의무) |
+| **L3 post-commit** | git hook | commit 직후 | WBS row INSERT + telegram 송신 + History.md SHA 자동 갱신 | 미구현 |
+| **L4 pre-push** | git hook | push 직전 | CI workflow 사전 검증 (선택) + 분류기 우회 prefix 자동 부여 | `SKIP_PREPUSH=1` prefix 패턴 (정본 §S-3) |
 
-> 본 hook 5종 = Phase 2 의 자동화 도입 예정. Phase 1 시점 = `tools/doc-lint.sh` + `SKIP_PREPUSH=1` prefix 로 부분 적용.
+> 본 hook 5종 = Phase 2 의 자동화 도입 예정. Phase 1 시점 = `tools/doc-lint.sh` + `SKIP_PREPUSH=1` prefix + `.claude/settings.json.disabled` sketch (L0 + L1 Stop 의 미활성 — 다음 위반/누락 발견 시 `mv` 의 즉시 활성) 부분 적용.
+>
+> sketch 활성 절차: `mv .claude/settings.json.disabled .claude/settings.json` — 즉시 PreToolUse + Stop hook 의 enforcement layer 강제 발동. 정합 메모리: [[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]].
 
 ---
 

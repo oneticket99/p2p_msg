@@ -144,8 +144,8 @@ status: active
 | Phase | 차단점 | 해소 방법 | 담당 |
 |---|---|---|---|
 | Phase 1 → 2 | 코드 미진입 (스켈레톤 단계) | WebRTC DataChannel 연결 + MariaDB 영속화 코드 작성 | Claude (코드 spawn) + 사용자 (GO) |
-| Phase 1 → 2 | self-hosted runner 미등록 | docs/references/ci-self-hosted-setup.md 절차 따라 등록 | 사용자 직접 |
-| Phase 2 → 3 | 라이선스 미확정 | OSS / 상용 분기 결정 | 사용자 직접 |
+| Phase 1 → 2 | ~~self-hosted runner 미등록~~ | ✅ 해소 — macOS arm64 등록 OK (2026-05-17) + Windows wine cross-compile 대체 | — |
+| Phase 2 → 3 | ~~라이선스 미확정~~ | ✅ 해소 — GPLv3 확정 (2026-05-17, LICENSE 저장소 루트). AGPLv3 = Phase 2 이후 옵션 | — |
 | Phase 3 → 4 | E2EE 미통합 | libsignal-protocol Python bindings 도입 | Claude + 사용자 (검토) |
 | Phase 4 → 5 | enterprise audit 미수행 | SOC2 Type 1 의 외부 컨설팅 | 사용자 (예산 결정) |
 
