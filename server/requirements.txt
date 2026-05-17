@@ -1,0 +1,5 @@
+# TooTalk(p2p_msg) Phase 1 MVP 시그널링 서버 의존성
+# Python 3.13 기준. 의존성 최소화 — aiohttp + python-dotenv 만 사용.
+
+aiohttp>=3.11
+python-dotenv>=1.0
