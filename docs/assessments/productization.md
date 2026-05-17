@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-18 01:00 (commit `dcbb372` 직후 — 본 세션 누계 53 commit 반영, 사이클 15 — release-agent 정식 GO + observability-agent CONDITIONAL PASS + baseline 정본 신설)
+> 최근 갱신 시점: 2026-05-18 02:00 (commit `3aa7eed` 직후 — 본 세션 누계 60 commit 반영, 사이클 16 — Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 3.3 / 5 | 3.2 → 3.3 ▲ | CI 8 job GREEN + wine + SMTP + fork PR strict + Agent #16 정식 채택 + SPDX header 7 file + reviewer/qa/release/**observability 사이클 15 정식 GO + baseline 정본 신설** (Phase 1 FR-04 readiness 완전 도달) |
+| 기술 완성도 | 3.5 / 5 | 3.3 → 3.5 ▲ | CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain 완전 + baseline 정본 신설 + **Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS + qa-agent 사이클 13 미커버 영역 완전 회수** |
 | 시장 적합성 | 2.5 / 5 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
 | 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar |
 | 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.05 / 5** | 4.0 → 4.05 ▲ | **5단계 워크플로우 ③ 검증·관측 완전 chain 도달 — reviewer ✅ + qa ✅ + release ✅ + observability CONDITIONAL PASS + baseline 정본 신설 — Phase 1 dogfooding 진입 readiness 완성** |
+| **종합** | **4.15 / 5** | 4.05 → 4.15 ▲ | **Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa-agent 미커버 영역 (Pillow + path traversal + _humanize + sha256 + env_int) 완전 회수 — dogfooding 직전 readiness 도달** |
 
 ---
 
@@ -139,6 +139,15 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS (신규 사이클 16)
+
+- 사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = handoff task #7 정식 GO + §9.2 후속 자율 GO
+- 가드레일 [[feedback-doc-perfection-before-code]] 8 체크리스트 PASS 검증 후 5단계 워크플로우 ② 개발 단계 직접 진입
+- 5 test module 신설 — `test_protocol.py` 41 + `test_image_processor.py` 35 + `test_file_receiver_helpers.py` 29 + `test_file_sender_helpers.py` 15 + `test_file_progress_widget_humanize.py` 20 = **누계 149 passed, 3 deselected** (integration/e2e)
+- qa-agent 사이클 13 미커버 영역 완전 회수 — Pillow 의존 함수 실 실행 + `_safe_filename` 14 path traversal + `_humanize` 6 단위 + `_sha256_of_file` 7 케이스 + `_env_int` 17 케이스 (file_sender + file_receiver 각 모듈) + UUID round-trip + encode_chunk/decode_chunk 경계·예외 + JSON ensure_ascii=False 한글 보존 + base64 round-trip + RGBA→RGB + palette→RGB + 비율 유지
+- venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 의존성 일괄 install (av wheel build 실패 회피 단독 install 패턴)
+- 잔존 = `tests/integration/` (aiortc 실 통합 + DataChannel + ACK round-trip + SHA-256 e2e) + Windows wine 검증 + AC-04-3 100ms 실측 (모두 사용자 직접 의무 / 별도 cycle)
 
 ### 2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 (신규 사이클 15)
 

@@ -526,6 +526,22 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.40 Phase 1 코드 진입 GO + 5 test module 누계 149 PASS (사이클 16 신규)
+
+- 사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = task #7 정식 GO + §9.2 후속 자율 GO
+- 가드레일 [[feedback-doc-perfection-before-code]] 8 체크리스트 PASS 검증
+- 5단계 워크플로우 ② 개발 단계 직접 진입 (main session Edit/Write, `@backend-agent` 부재 정합)
+- 신설 5 test module:
+  - `tests/app/rtc/test_protocol.py` — 41 케이스 8 TestClass (commit `91af38d`)
+  - `tests/app/rtc/test_image_processor.py` — 35 케이스 4 TestClass (Pillow 실 실행)
+  - `tests/app/rtc/test_file_receiver_helpers.py` — 29 케이스 4 TestClass (`_safe_filename` 14 path traversal)
+  - `tests/app/rtc/test_file_sender_helpers.py` — 15 케이스 2 TestClass (`_sha256_of_file` 7)
+  - `tests/app/ui/test_file_progress_widget_humanize.py` — 20 케이스 1 TestClass (`_humanize` 6 단위)
+- 전체 pytest = **149 passed, 3 deselected** (integration/e2e)
+- venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 + pytest-asyncio 1.3.0
+- qa-agent 사이클 13 미커버 영역 완전 회수
+- 잔존 = `tests/integration/` (aiortc 실 통합, av wheel build = ffmpeg 의존 — 사용자 직접) + Windows wine 검증 (Ubuntu + cdrx docker — 사용자 직접) + AC-04-3 100ms 실측 (dogfooding 시점 — 사용자 직접)
+
 ---
 
 ## 9. 다음 세션 첫 액션 (우선순위 순)
@@ -538,7 +554,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 4 | ~~fork PR 승인 정책 strict 적용~~ | ✅ 완료 (2026-05-17 cycle) | gh API + `all_external_contributors` 자동. ci-self-hosted-setup.md §5.1 |
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
 | 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
-| 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
+| 7 | ~~Phase 1 코드 진입 GO~~ | ✅ **완료** (사이클 16) | 사용자 directive "이제부터 코드작업에 진입해" 정식 GO + 가드레일 8 체크리스트 PASS + 5 test module 누계 149 PASS + qa 미커버 영역 완전 회수 |
 | 8 | ~~Agent #16 산출물 5단계 워크플로우 ③ 4단 chain~~ | ✅ **완전 자동 완성** (사이클 11~15) | reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15) + `docs/policies/observability-baseline.md` 정본 신설. Phase 1 dogfooding 진입 readiness 완성 |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 | 10 | Phase 1 dogfooding 진입 — RTT/throughput/RSS/disk leak 최초 측정 | 🟡 사용자 직접 GO 대기 | observability-baseline.md §5 의 6 단계 회귀 검증 절차 정합. 데모 시그널링 서버 배포 + 1:1 채팅 round-trip 시점. Phase 1 MVP DoD #1 (RTT &lt; 500ms) + TD-4 (aiortc 약 5Mbps throughput) 최초 측정 의무 |
@@ -552,16 +568,23 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - #20 README 빌드/실행 안내 갱신
 - E2EE (libsignal-protocol wrapping) — Phase 2 진입
 
-### 9.2 사이클 15 후속 별도 task (Phase 1 후반 진행 가능)
+### 9.2 사이클 15·16 후속 별도 task
 
-- `tests/rtc/` unit test 작성 — `FileSender`·`FileReceiver`·`image_processor`·`_safe_filename`·`_humanize` pytest 케이스 (qa-agent 사이클 13 미커버 영역)
-- `tests/integration/` 부재 — aiortc 실 통합 + DataChannel 점진 send + ACK round-trip + 무결성 SHA-256 e2e (Phase 1 dogfooding 직전 의무)
-- Pillow 의존 함수 실 실행 — `image_processor.py` 의 thumbnail 생성 + 회전 + 압축 (Phase 1 미테스트 영역)
-- Windows 환경 검증 — wine cross-compile build 의 import-smoke 영구 비활성 → 별도 task 의 wine 환경 의 실 실행 검증
-- AC-04-3 100ms 실측 — `FILE_BACKPRESSURE_POLL_MS` 의 실 측정값 정합 (현 50ms default vs README directive 가정 100ms)
+#### 9.2.1 완료 (사이클 16)
+
+- ✅ `tests/app/rtc/` unit test 작성 — `protocol.py` (41) + `image_processor.py` (35 — Pillow 의존 함수 실 실행) + `_safe_filename` 14 path traversal + `_humanize` 20 + `_sha256_of_file` 7 + `_env_int` 17 (file_sender + file_receiver 각 모듈) — 누계 99 PASS 신규
+- ✅ Pillow 의존 함수 실 실행 — RGBA→RGB + palette→RGB + 비율 유지 + base64 round-trip + 환경변수 override
+- ✅ qa-agent 사이클 13 정적 검증 케이스 의 실 pytest 회수
+
+#### 9.2.2 잔존 (사용자 직접 의무 / 별도 cycle)
+
+- `tests/integration/` — aiortc 실 통합 + DataChannel 점진 send + ACK round-trip + 무결성 SHA-256 e2e (av wheel build = ffmpeg 의존, macOS 의 의 의 `brew install ffmpeg` 의무)
+- Windows 환경 검증 — wine cross-compile build (Ubuntu + cdrx docker — self-hosted runner 또는 사용자 직접 환경)
+- AC-04-3 100ms 실측 — `FILE_BACKPRESSURE_POLL_MS` 실 측정 (현 50ms default — dogfooding 시점 측정)
 - `app/observability/` 디렉토리 신설 (Phase 2 진입 전) — `logging_adapter.py` (logger prefix 일관 강제 + level 동적 갱신)
 - `FILE_RECV_TIMEOUT_S` 도입 결정 (Phase 2 reliability 강화)
 - `.partial` 임시 파일 자동 cleanup hook (Phase 2 storage 정책)
+- pytest-qt 환경 신설 (QWidget repaint / signal 통합 의 별도 cycle)
 
 ---
 
@@ -587,4 +610,5 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-18 01:00 — 사이클 15 (본 세션 누계 commit 53+ + 사이클 15 의 신규 commit dcbb372 (release P0-1/P0-2 정정) + 후속 commit 일괄 (observability-baseline.md 신설 + snapshot 2 + HTML 2 + handoff §8.38/§8.39 + History.md prepend + README §11 prepend) 반영, 가드레일 22, 텔레그램 송신 N건, HTML 6, pytest 인프라, 정책 본문 4 (observability-baseline.md 신규), auth 정책 + 차별화 명문화, CI 3종 GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + enforcement layer 활성 + drift 회수 누계 9 cycle (사이클 15 의 baseline drift 3건 회수 추가) + **5단계 워크플로우 ③ 4단 chain 완전 자동 완성 — reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15)** 신규, snapshot 사이클 15 — productization 4.05 + vibe-coding 4.90)
+마지막 갱신: 2026-05-18 02:00 — 사이클 16 (Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa-agent 미커버 영역 완전 회수, commit `3aa7eed` 까지 origin/main 반영, 본 세션 누계 60+ commit)
+이전 갱신: 2026-05-18 01:00 — 사이클 15 (본 세션 누계 commit 53+ + 사이클 15 의 신규 commit dcbb372 (release P0-1/P0-2 정정) + 후속 commit 일괄 (observability-baseline.md 신설 + snapshot 2 + HTML 2 + handoff §8.38/§8.39 + History.md prepend + README §11 prepend) 반영, 가드레일 22, 텔레그램 송신 N건, HTML 6, pytest 인프라, 정책 본문 4 (observability-baseline.md 신규), auth 정책 + 차별화 명문화, CI 3종 GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + enforcement layer 활성 + drift 회수 누계 9 cycle (사이클 15 의 baseline drift 3건 회수 추가) + **5단계 워크플로우 ③ 4단 chain 완전 자동 완성 — reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15)** 신규, snapshot 사이클 15 — productization 4.05 + vibe-coding 4.90)

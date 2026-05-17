@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 15)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 15 의 등가 렌더링. light theme + 표 zebra stripe + Toonation 브랜드 컬러 변수 5 + §2.21 신규 (5단계 워크플로우 ③ 4단 chain 완전 도달 + observability baseline 정본 신설) + 종합 4.05 / 기술 완성도 3.3 갱신 -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 16)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 16 의 등가 렌더링. light theme + 표 zebra stripe + Toonation 브랜드 컬러 변수 5 + §2.22 신규 (Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa 미커버 영역 완전 회수) + 종합 4.15 / 기술 완성도 3.5 갱신 -->
 <style>
   :root{
     --bg:#fafafa;
@@ -73,10 +73,10 @@
 <body>
 
 <header class="meta">
-  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 15)</h1>
+  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 16)</h1>
   <div class="sub">
-    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span> · 사이클 15 <span class="badge toon">신규</span><br>
-    최근 갱신 시점: 2026-05-18 01:00 — 사이클 15 (commit <code>dcbb372</code> 직후 — release-agent GO 정식 + observability CONDITIONAL PASS + baseline 정본 신설)<br>
+    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span> · 사이클 16 <span class="badge toon">신규</span><br>
+    최근 갱신 시점: 2026-05-18 02:00 — 사이클 16 (commit <code>3aa7eed</code> 직후 — Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS + qa 미커버 영역 완전 회수)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -113,7 +113,7 @@
     <tr><th>항목</th><th class="center">점수 (5점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">3.3 / 5</td><td class="center">3.2 → 3.3 ▲</td><td>CI 8 job GREEN + wine + SMTP + fork PR strict + Agent #16 정식 채택 + SPDX header 7 file + reviewer/qa/release/<strong>observability 사이클 15 정식 GO + baseline 정본 신설</strong> (Phase 1 FR-04 readiness 완전 도달)</td></tr>
+    <tr><td>기술 완성도</td><td class="center">3.5 / 5</td><td class="center">3.3 → 3.5 ▲</td><td>CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain 완전 + baseline 정본 신설 + <strong>Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS + qa-agent 사이클 13 미커버 영역 완전 회수</strong></td></tr>
     <tr><td>시장 적합성</td><td class="center">2.5 / 5</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
     <tr><td>차별화 요소</td><td class="center">4.5 / 5</td><td class="center">=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar</td></tr>
     <tr><td>사용자 가치</td><td class="center">3 / 5</td><td class="center">=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
@@ -121,7 +121,7 @@
     <tr><td>운영 비용</td><td class="center">5 / 5</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch</td></tr>
     <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies)</td></tr>
-    <tr><th>종합</th><th class="center">4.05 / 5</th><th class="center">4.0 → 4.05 ▲</th><th>5단계 워크플로우 ③ 검증·관측 완전 chain 도달 — reviewer ✅ + qa ✅ + release ✅ + observability CONDITIONAL PASS + baseline 정본 신설 — Phase 1 dogfooding 진입 readiness 완성</th></tr>
+    <tr><th>종합</th><th class="center">4.15 / 5</th><th class="center">4.05 → 4.15 ▲</th><th>Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa-agent 미커버 영역 (Pillow + path traversal + _humanize + sha256 + env_int) 완전 회수 — dogfooding 직전 readiness 도달</th></tr>
   </tbody>
 </table>
 
@@ -129,7 +129,17 @@
 
 <h2 id="sec2">2. 강점 (Productization Strengths)</h2>
 
-<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 <span class="new">신규 사이클 15</span></h3>
+<h3>2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS <span class="new">신규 사이클 16</span></h3>
+<ul>
+  <li>사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = handoff task #7 정식 GO + §9.2 후속 자율 GO</li>
+  <li>가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 PASS 검증 후 5단계 워크플로우 ② 개발 단계 직접 진입</li>
+  <li>5 test module 신설 — <code>test_protocol.py</code> 41 + <code>test_image_processor.py</code> 35 + <code>test_file_receiver_helpers.py</code> 29 + <code>test_file_sender_helpers.py</code> 15 + <code>test_file_progress_widget_humanize.py</code> 20 = <strong>누계 149 passed, 3 deselected</strong> (integration/e2e)</li>
+  <li>qa-agent 사이클 13 미커버 영역 완전 회수 — Pillow 의존 함수 실 실행 + <code>_safe_filename</code> 14 path traversal + <code>_humanize</code> 6 단위 + <code>_sha256_of_file</code> 7 케이스 + <code>_env_int</code> 17 케이스 (file_sender + file_receiver 각 모듈) + UUID round-trip + encode_chunk/decode_chunk 경계·예외 + JSON ensure_ascii=False 한글 보존 + base64 round-trip + RGBA→RGB + palette→RGB + 비율 유지</li>
+  <li>venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 의존성 일괄 install (av wheel build 실패 회피 단독 install 패턴)</li>
+  <li>잔존 = <code>tests/integration/</code> (aiortc 실 통합 + DataChannel + ACK round-trip + SHA-256 e2e) + Windows wine 검증 + AC-04-3 100ms 실측 (모두 사용자 직접 의무 / 별도 cycle)</li>
+</ul>
+
+<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 (사이클 15)</h3>
 <ul>
   <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO + release-agent 재호출 + observability-agent 진입</li>
   <li>사이클 14 release-agent FAIL (P0-1 markdownlint + P0-2 30 row) → main session 정정 commit <code>dcbb372</code> → 사이클 15 release-agent 재평가 <strong>GO 정식</strong></li>
@@ -265,7 +275,7 @@
 <ul>
   <li>pytest 7+ + asyncio + coverage 80%</li>
   <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)</li>
-  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3)</li>
+  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3) → 사이클 16 누계 149 PASS 도달</li>
 </ul>
 
 <h3>2.7 색상 가시화</h3>
@@ -366,7 +376,7 @@
 
 <h3>3.6 코드 진입 미완</h3>
 <ul>
-  <li>Phase 1 MVP 실 코드 미작성 (config.py + tests 12건 + Agent #16 산출물 ~96 KB tracked)</li>
+  <li>Phase 1 MVP 실 코드 미작성 (config.py + tests 12건만)</li>
   <li>문서 91% + 코드 9% 비율 (직전 90%/10% 의 약간 감소 — auth/SMTP 정책 추가)</li>
   <li><code>feedback-doc-perfection-before-code</code> 8 체크리스트 통과 + 사용자 GO 후 진입</li>
 </ul>
@@ -442,7 +452,8 @@
     <tr><td class="center">0</td><td><strong>GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책</strong></td><td class="center"><span class="ok">✅</span> (사이클 6)</td></tr>
     <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 정식 GO + SPDX 7 file + ARCHITECTURE 정정</strong></td><td class="center"><span class="ok">✅</span> (사이클 12)</td></tr>
     <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 PASS (FR-04 AC-04-1~4)</strong></td><td class="center"><span class="ok">✅</span> (사이클 13)</td></tr>
-    <tr><td class="center">0</td><td><strong>release-agent 머지 게이트 정식 GO + observability CONDITIONAL PASS + baseline 정본 신설</strong> <span class="new">신규</span></td><td class="center"><span class="ok">✅</span> (사이클 15)</td></tr>
+    <tr><td class="center">0</td><td><strong>release-agent 머지 게이트 정식 GO + observability CONDITIONAL PASS + baseline 정본 신설</strong></td><td class="center"><span class="ok">✅</span> (사이클 15)</td></tr>
+    <tr><td class="center">0</td><td><strong>Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS + qa 미커버 영역 완전 회수</strong> <span class="new">신규</span></td><td class="center"><span class="ok">✅</span> (사이클 16)</td></tr>
     <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
     <tr><td class="center">2</td><td>Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
     <tr><td class="center">3</td><td>Toonation 통합 시나리오 검토 (옵션 B)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
@@ -510,7 +521,7 @@
     <tr><td><strong>SMTP spam reputation 부족</strong></td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
     <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong></td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
     <tr><td><strong>데모 서버 SSH 차단</strong></td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
-    <tr><td><strong>observability baseline drift</strong> <span class="new">신규 사이클 15</span></td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (observability-baseline.md §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
+    <tr><td><strong>observability baseline drift</strong></td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (observability-baseline.md §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
   </tbody>
 </table>
 
@@ -538,8 +549,10 @@
     <tr><td><strong>mail-tester score</strong> (SMTP)</td><td>≥ 7/10</td><td>미측정 (SSH 설치 후)</td></tr>
     <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK (사이클 5)</td></tr>
     <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6)</td></tr>
-    <tr><td><strong>5단계 워크플로우 ③ chain PASS</strong> <span class="new">신규 사이클 15</span></td><td>4/4 PASS (reviewer + qa + release + observability)</td><td><strong>4/4 PASS ✓ (CONDITIONAL — baseline measurement 의무 Phase 2)</strong></td></tr>
-    <tr><td><strong>observability logger 모듈 적용률</strong> <span class="new">신규 사이클 15</span></td><td>100%</td><td><strong>100% (7/7 모듈 — format §E 일관)</strong></td></tr>
+    <tr><td><strong>5단계 워크플로우 ③ chain PASS</strong></td><td>4/4 PASS (reviewer + qa + release + observability)</td><td><strong>4/4 PASS ✓ (CONDITIONAL — baseline measurement 의무 Phase 2)</strong></td></tr>
+    <tr><td><strong>observability logger 모듈 적용률</strong></td><td>100%</td><td><strong>100% (7/7 모듈 — format §E 일관)</strong></td></tr>
+    <tr><td><strong>tests/app/rtc/·ui/ unit test 누계</strong> <span class="new">신규 사이클 16</span></td><td>≥ 100</td><td><strong>149 PASS ✓ (5 module — protocol 41 + image_processor 35 + file_receiver_helpers 29 + file_sender_helpers 15 + file_progress_widget_humanize 20)</strong></td></tr>
+    <tr><td><strong>qa-agent 미커버 영역 회수율</strong> <span class="new">신규 사이클 16</span></td><td>100%</td><td><strong>100% (Pillow + path traversal + _humanize + sha256 + env_int 완전 회수)</strong></td></tr>
   </tbody>
 </table>
 
@@ -560,7 +573,8 @@
   <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
   <li>SMTP 실제 설치 완료 시 §2.11 + §9 KPI 갱신</li>
   <li>라이선스 확정 시 §3.4 ✅</li>
-  <li><strong>observability baseline measurement 진입 시 §2.21 + §8 신규 리스크 row 갱신</strong> <span class="new">신규</span></li>
+  <li><strong>observability baseline measurement 진입 시 §2.21 + §8 신규 리스크 row 갱신</strong></li>
+  <li><strong>tests/integration/ + Windows wine 검증 + AC-04-3 100ms 실측 완료 시 §2.22 + §9 KPI 갱신</strong> <span class="new">신규 사이클 16</span></li>
 </ul>
 
 <hr>
@@ -570,14 +584,14 @@
   <ul>
     <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
     <li>정책: <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a></li>
-    <li>정책 본문: <a href="../policies/doc-gardening.md">doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a> · <a href="../policies/observability-baseline.md">observability-baseline.md</a> <span class="new">신규 사이클 15</span></li>
+    <li>정책 본문: <a href="../policies/doc-gardening.md">doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a> · <a href="../policies/observability-baseline.md">observability-baseline.md</a></li>
     <li>인프라 절차: <a href="../references/ci-self-hosted-setup.md">ci-self-hosted-setup.md</a> · <a href="../references/smtp-setup.md">smtp-setup.md</a></li>
     <li>실행계획: <a href="../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">tootalk-phase1-mvp.md</a></li>
     <li>세션 인계: <a href="../exec-plans/active/2026-05-17-session-handoff.md">session-handoff.md</a></li>
     <li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a></li>
     <li>md 등가 원본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
-  <p>마지막 갱신: 2026-05-18 01:00 — 사이클 15 (commit <code>dcbb372</code> 직후 — release-agent GO 정식 + observability CONDITIONAL PASS + baseline 정본 신설)</p>
+  <p>마지막 갱신: 2026-05-18 02:00 — 사이클 16 (commit <code>3aa7eed</code> 직후 — Phase 1 코드 진입 GO + 149 PASS 누계 + qa 미커버 영역 완전 회수)</p>
 </footer>
 
 </body>
