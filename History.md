@@ -40,7 +40,8 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
-[2026-05-17 12:24:50] RELIABILITY.md MariaDB 회수 — 13 위반 정정 (handoff §9 우선순위 4번, 가장 큰 회수 작업). SQLite WAL → MariaDB InnoDB redo log + doublewrite buffer 자동 회복. SQLite dump → mysqldump --single-transaction 백업 + binlog PITR. SQLITE_PATH → DB_HOST/PORT/USER/PASS/NAME 5필드. §4.4 트랜잭션 + §7 백업/복구 + §8 카오스 시나리오 + §10.2 트러블슈팅 모두 정합 (커밋 대기)
+[2026-05-17 12:26:29] docs/html/ 5 HTML 신설 — sub-agent 5종 (general-purpose) 병렬 spawn 측 Whitebox run_in_background. Structure.html (693행, mermaid 6) + ARCHITECTURE.html (359행, mermaid 3) + FRONTEND.html (533행, mermaid 6) + productization.html (401행, 표 6) + vibe-coding.html (370행, 표 5). 모두 HTML5 + UTF-8 + mermaid.js CDN. CLAUDE.md §10-6/7 측 .md ↔ .html 동시 갱신 의무 + 평가 snapshot 동시 갱신 의무 명문화 (커밋 대기)
+[2026-05-17 12:24:50] RELIABILITY.md MariaDB 회수 — 13 위반 정정 (handoff §9 우선순위 4번, 가장 큰 회수 작업). SQLite WAL → MariaDB InnoDB redo log + doublewrite buffer 자동 회복. SQLite dump → mysqldump --single-transaction 백업 + binlog PITR. SQLITE_PATH → DB_HOST/PORT/USER/PASS/NAME 5필드. §4.4 트랜잭션 + §7 백업/복구 + §8 카오스 시나리오 + §10.2 트러블슈팅 모두 정합 (87e71e3)
 [2026-05-17 12:22:47] 실행계획 (2026-05-17-tootalk-phase1-mvp.md) MariaDB 회수 — 5 위반 정정. L38 In Scope (SQLite 로컬 히스토리 → MariaDB + asyncmy + 환경변수 5종), L92 M3 마일스톤 (SQLite 영구화 → MariaDB 영속화), L109 task #16 (SQLite 스키마 → MariaDB 스키마), L179 검증 회귀 시나리오, L203 의존성 그래프 mermaid (9477e9c)
 [2026-05-17 12:19:26] docs/assessments/{productization,vibe-coding}.md 신설 — snapshot 패턴 평가 문서 2종 (사용자 directive 2026-05-17 "매 task 종료 시 전체 rewrite"). 제품화 가능성 평가 (10 섹션, 종합 2.3/5 PoC 단계) + 바이브 코딩 능력 평가 (9 섹션, 종합 4.3/5 상위 10%) (6ab9952)
 [2026-05-17 12:12:30] ARCHITECTURE.md MariaDB 회수 — L76 Core 영역 mermaid (SQLite 저장소 → MariaDB 영속화), L163 app/core 모듈 표 (의존성 + app/db 추가), L166 app/db (sqlite3 → asyncmy), L188 환경변수 표 (SQLITE_PATH 단행 → DB_HOST/PORT/USER/PASS/NAME 5행) (aff2cde)

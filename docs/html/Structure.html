@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<!-- TooTalk 저장소 구조 문서 HTML 변환본 - Structure.md 동일 내용 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="title" content="TooTalk 저장소 구조">
+<meta name="owner" content="oneticket99">
+<meta name="last_verified" content="2026-05-17">
+<meta name="status" content="active">
+<title>Structure.md — TooTalk(p2p_msg) 저장소 구조</title>
+<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true});</script>
+<style>
+/* 한국어 가독성 우선 최소 CSS */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+  line-height: 1.65;
+  color: #1f2937;
+  background: #ffffff;
+  word-break: keep-all;
+}
+h1, h2, h3, h4 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+h1 { font-size: 1.9rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.4rem; }
+h2 { font-size: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3rem; }
+h3 { font-size: 1.2rem; }
+h4 { font-size: 1.05rem; }
+p { margin: 0.75rem 0; }
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  font-family: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
+  font-size: 0.92em;
+  background: #f3f4f6;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+pre {
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+pre.mermaid {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+  overflow-x: auto;
+}
+blockquote {
+  border-left: 4px solid #2563eb;
+  background: #eff6ff;
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  color: #1e3a8a;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.93rem;
+}
+th, td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f3f4f6; font-weight: 600; }
+tbody tr:nth-child(even) { background: #fafafa; }
+hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+ul, ol { padding-left: 1.5rem; }
+li { margin: 0.25rem 0; }
+strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- frontmatter 영역은 head 의 meta 태그로 변환 완료 -->
+
+<h1>Structure.md — TooTalk(p2p_msg) 저장소 구조</h1>
+
+<blockquote>
+<p>본 문서는 TooTalk(코드명 <code>p2p_msg</code>) 저장소의 <strong>파일 트리 · 모듈 책임 · 데이터 흐름 · ERD</strong> 를 한 곳에 모은 운영 문서다.<br>
+신규 파일·DB 테이블·메시지 흐름이 추가되거나 변경되면 본 문서를 먼저 갱신한 뒤 코드 작업을 진행한다 (M1 — Document First).<br>
+정본 정합: <a href="CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> §D (Doc Gardener 담당 매핑 · <code>@structure-agent</code>) · §E (Router → Service → Model 계층) · §K (루트 18 동결).<br>
+저장소 맵: <a href="AGENTS.md">AGENTS.md</a> · 아키텍처: <a href="ARCHITECTURE.md">ARCHITECTURE.md</a>.</p>
+</blockquote>
+
+<hr>
+
+<h2>1. 문서 목적</h2>
+
+<p>본 문서는 (1) <strong>어디에 무엇이 있는가</strong> (파일 트리), (2) <strong>각 파일이 무엇을 하는가</strong> (1~3행 책임 표), (3) <strong>어떻게 데이터가 흐르는가</strong> (mermaid 순서도 4종), (4) <strong>로컬 DB 가 어떻게 생겼는가</strong> (mermaid ERD) 4가지에 한 번에 답한다.</p>
+
+<p>본 문서는 저장소 단일 진실 공급원이며 <code>@structure-agent</code> 가 매 PR 단계에서 실제 트리와의 정합성을 검증한다 (<a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a>). 코드 영역 새 파일 추가 시 §3 트리·§4~§9 표·필요 시 §10 흐름도·§11 ERD 가 동시에 갱신되어야 한다. 본 문서가 다루지 않는 것: 정책 결정 (→ 9 정책 문서), 작업 계획 (→ <a href="PLANS.md">PLANS.md</a>), 변경 이력 (→ <code>README.md</code> · <code>History.md</code> — 작성 예정).</p>
+
+<hr>
+
+<h2>2. 트리 시각 인덱스 (mermaid)</h2>
+
+<p>저장소 1-depth 디렉토리·루트 문서 그룹의 관계를 한 장으로. 실제 파일 트리는 §3 에서 나열.</p>
+
+<pre class="mermaid">
+flowchart LR
+    ROOT["저장소 루트<br/>p2p_msg/"]
+    DOTCLAUDE[".claude/agents/<br/>7 에이전트"]
+    APP["app/<br/>PyQt6 클라"]
+    SERVER["server/<br/>aiohttp 시그널링"]
+    DOCS["docs/<br/>exec-plans"]
+    TOOLS["tools/<br/>운영 스크립트"]
+    POLICY["루트 9 정책<br/>AGENTS · ARCHITECTURE · DESIGN<br/>FRONTEND · PLANS · PRODUCT_SENSE<br/>QUALITY_SCORE · RELIABILITY · SECURITY"]
+    OPS["루트 8 운영<br/>CLAUDE · Specification · Structure<br/>CheckList · History · README<br/>EXTENSION_GUIDE · MIGRATION_MARIADB"]
+    HARNESS["CLAUDE_HARNESS_IMPORTANT.md<br/>Watcher 정본 (1)"]
+
+    ROOT --> DOTCLAUDE & APP & SERVER & DOCS & TOOLS & POLICY & OPS & HARNESS
+    APP --> APP_UI["ui/ — 5 위젯"]
+    APP --> APP_CORE["core/ — app_state·config"]
+    APP --> APP_NET["net/ — signaling_client"]
+    APP --> APP_RTC["rtc/ — 5 모듈"]
+    SERVER --> S_SIG["signaling.py — Router"]
+    SERVER --> S_ROOM["room.py — Service"]
+    SERVER --> S_PROTO["protocol.py — Model"]
+    SERVER --> S_MAIN["main.py — Entry"]
+
+    classDef ws fill:#dbeafe,stroke:#2563eb
+    classDef code fill:#dcfce7,stroke:#16a34a
+    classDef policy fill:#fef3c7,stroke:#ca8a04
+    classDef harness fill:#fee2e2,stroke:#dc2626
+    class ROOT,DOTCLAUDE,DOCS,TOOLS ws
+    class APP,SERVER,APP_UI,APP_CORE,APP_NET,APP_RTC,S_SIG,S_ROOM,S_PROTO,S_MAIN code
+    class POLICY,OPS policy
+    class HARNESS harness
+</pre>
+
+<hr>
+
+<h2>3. 저장소 파일 트리 (실제 ls 기반, 2026-05-17 시점)</h2>
+
+<p>본 트리는 <code>__pycache__</code> · <code>.git</code> · <code>.venv</code> 를 제외한 모든 추적 대상 파일을 포함한다. 깊이 4 이상까지 전개. 본 트리에 등재되지 않은 파일이 생기는 즉시 본 문서를 갱신한다.</p>
+
+<pre><code class="language-text">p2p_msg/
+├── .claude/
+│   └── agents/
+│       ├── doc-gardener-agent.md
+│       ├── history-agent.md
+│       ├── observability-agent.md
+│       ├── planning-agent.md
+│       ├── qa-agent.md
+│       ├── release-agent.md
+│       └── reviewer-agent.md
+├── .env.example
+├── .env.local
+├── .env.telegram
+├── .gitignore
+├── .markdownlint.json
+├── AGENTS.md
+├── ARCHITECTURE.md
+├── CLAUDE_HARNESS_IMPORTANT.md
+├── DESIGN.md
+├── FRONTEND.md
+├── PLANS.md
+├── PRODUCT_SENSE.md
+├── QUALITY_SCORE.md
+├── RELIABILITY.md
+├── SECURITY.md
+├── Structure.md                       (본 문서 — 신설)
+├── app/
+│   ├── __init__.py
+│   ├── README.md
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── app_state.py
+│   │   └── config.py
+│   ├── net/
+│   │   ├── __init__.py
+│   │   └── signaling_client.py
+│   ├── rtc/
+│   │   ├── __init__.py
+│   │   ├── README.md
+│   │   ├── file_receiver.py
+│   │   ├── file_sender.py
+│   │   ├── image_processor.py
+│   │   ├── peer.py
+│   │   └── protocol.py
+│   └── ui/
+│       ├── __init__.py
+│       ├── chat_view.py
+│       ├── file_progress_widget.py
+│       ├── main_window.py
+│       ├── message_bubble.py
+│       └── status_bar.py
+├── docs/
+│   └── exec-plans/
+│       └── active/
+│           └── 2026-05-17-tootalk-phase1-mvp.md
+├── server/
+│   ├── __init__.py
+│   ├── README.md
+│   ├── main.py
+│   ├── protocol.py
+│   ├── requirements.txt
+│   ├── room.py
+│   └── signaling.py
+└── tools/
+    ├── claude-telegram.sh
+    └── doc-lint.sh
+</code></pre>
+
+<blockquote>
+<p>본 트리에 없으나 정본·AGENTS.md 가 예고한 파일 (예: <code>Specification.md</code>·<code>CheckList.md</code>·<code>History.md</code>·<code>README.md</code>·<code>CLAUDE.md</code>·<code>EXTENSION_GUIDE.md</code>·<code>MIGRATION_MARIADB.md</code>·<code>docs/policies/</code>·<code>tests/</code>·<code>.github/workflows/</code>·<code>data/wbs.sqlite</code>) 은 §13 에 별도 추적한다.</p>
+</blockquote>
+
+<hr>
+
+<h2>4. 디렉토리 책임 표</h2>
+
+<table>
+<thead>
+<tr><th>디렉토리</th><th>책임 + 의존 방향</th></tr>
+</thead>
+<tbody>
+<tr><td><code>.claude/agents/</code></td><td>7 프로세스 에이전트 개별 사양 (한 파일 1 에이전트) · 정본 §C ↔ AGENTS.md §6</td></tr>
+<tr><td><code>app/</code></td><td>PyQt6 데스크탑 클라 패키지 · UI → Core → {Net, RTC} 단방향 · qasync 단일 이벤트 루프</td></tr>
+<tr><td><code>app/ui/</code></td><td>QWidget 계층 (메인 윈도우·채팅뷰·버블·상태바·진행률 위젯) · <code>app/core/</code> 만 import</td></tr>
+<tr><td><code>app/core/</code></td><td>상태 머신 + 환경변수 로딩 (Qt 의존성 없음) · 외부 의존 없음 · 단위 테스트 가능</td></tr>
+<tr><td><code>app/net/</code></td><td>aiohttp WS 시그널링 클라 · <code>app/core/</code> 콜백 · 9종 envelope 송수신</td></tr>
+<tr><td><code>app/rtc/</code></td><td>aiortc WebRTC PeerConnection + DataChannel 송수신 · <code>app/core/</code> 콜백 · 5종 파일 메시지</td></tr>
+<tr><td><code>server/</code></td><td>aiohttp 시그널링 서버 · Router → Service → Model 단방향 · SDP/ICE 만 통과</td></tr>
+<tr><td><code>docs/exec-plans/active/</code></td><td>활성 실행 계획 (<code>YYYY-MM-DD-&lt;slug&gt;.md</code>) · PLANS.md 인덱스 · 완료 시 <code>completed/</code> 이동</td></tr>
+<tr><td><code>tools/</code></td><td>운영 스크립트 (텔레그램 브리지 · 문서 린트) · <code>data/wbs.sqlite</code> 등 추후 추가</td></tr>
+</tbody>
+</table>
+
+<p><strong>금지 의존</strong>: <code>app/ui/</code> → <code>app/net/</code> · <code>app/rtc/</code> 직접 호출, <code>server/room.py</code> → <code>signaling.py</code> 역방향, <code>server/protocol.py</code> → <code>room.py</code> 역방향. PR 단계에서 <code>@reviewer-agent</code> 가 차단 (<a href="ARCHITECTURE.md">ARCHITECTURE.md §4</a>).</p>
+
+<hr>
+
+<h2>5. 루트 파일 표 (정본 §K 루트 18 동결)</h2>
+
+<p>루트 18 슬롯의 점유 현황 — <strong>점유</strong> <code>예</code> 는 디스크 존재·<code>예정</code> 은 정본·AGENTS.md 예고분 (§13 별도 추적).</p>
+
+<table>
+<thead>
+<tr><th>그룹</th><th>슬롯</th><th>파일 (점유)</th><th>역할 요약</th></tr>
+</thead>
+<tbody>
+<tr><td>정본</td><td>1/1</td><td><code>CLAUDE_HARNESS_IMPORTANT.md</code> (예)</td><td>Watcher 정본 · M1~M7 · §A~§S</td></tr>
+<tr><td>정책</td><td>1/9</td><td><code>AGENTS.md</code> (예)</td><td>저장소 맵·명명·7대 규칙·문서 인덱스</td></tr>
+<tr><td>정책</td><td>2/9</td><td><code>ARCHITECTURE.md</code> (예)</td><td>모듈 경계·계층 분리·Phase 진화·ADR</td></tr>
+<tr><td>정책</td><td>3-4/9</td><td><code>DESIGN.md</code> · <code>FRONTEND.md</code> (예·예)</td><td>UI/UX 설계 원칙·PyQt6 위젯 가이드</td></tr>
+<tr><td>정책</td><td>5-6/9</td><td><code>PLANS.md</code> · <code>PRODUCT_SENSE.md</code> (예·예)</td><td>활성 Exec Plan 인덱스·제품 감각 기준</td></tr>
+<tr><td>정책</td><td>7/9</td><td><code>QUALITY_SCORE.md</code> (예)</td><td>품질 점수 체계·머지 기준</td></tr>
+<tr><td>정책</td><td>8-9/9</td><td><code>RELIABILITY.md</code> · <code>SECURITY.md</code> (예·예)</td><td>신뢰성·장애 대응 · 보안·외부 입력 정책</td></tr>
+<tr><td>운영</td><td>1/8</td><td><code>CLAUDE.md</code> (예정)</td><td>세션 내 서브에이전트 호출 규칙</td></tr>
+<tr><td>운영</td><td>2/8</td><td><code>Specification.md</code> (예정)</td><td>요구사항 명세·UI 와이어프레임</td></tr>
+<tr><td>운영</td><td>3/8</td><td><code>Structure.md</code> (<strong>예 — 본 문서</strong>)</td><td>파일 트리·ERD·순서도 단일 진입점</td></tr>
+<tr><td>운영</td><td>4/8</td><td><code>CheckList.md</code> (예정)</td><td>작업 체크리스트·매핑 테이블</td></tr>
+<tr><td>운영</td><td>5/8</td><td><code>History.md</code> (예정)</td><td>개발 히스토리 (역순 prepend)</td></tr>
+<tr><td>운영</td><td>6/8</td><td><code>README.md</code> (예정)</td><td>변경 이력 최신 30행 캐시 (M2)</td></tr>
+<tr><td>운영</td><td>7/8</td><td><code>EXTENSION_GUIDE.md</code> (예정)</td><td>신규 에이전트·문서·모델 확장 가이드</td></tr>
+<tr><td>운영</td><td>8/8</td><td><code>MIGRATION_MARIADB.md</code> (예정)</td><td>DB 모델·테이블 마이그레이션 정본</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>§K 동결 규칙</strong>: 루트 18 슬롯 외 신규 마크다운은 반드시 <code>docs/</code> 하위. CI <code>ci.yml</code> "Root markdown 개수 동결 확인" 단계에서 차단.</p>
+</blockquote>
+
+<hr>
+
+<h2>6. <code>server/</code> 모듈 표 (Router → Service → Model)</h2>
+
+<p><code>server/</code> 는 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a> "Backend: <code>Router → Service → Model</code> 계층 분리, 비동기 전용" 규약을 직접 구현한다. 실 데이터 페이로드는 본 서버를 통과하지 않으며, SDP/ICE 만 9종 envelope 안에서 중계된다.</p>
+
+<blockquote>
+<p><code>server/__init__.py</code> (docstring + <code>__version__</code>) · <code>server/requirements.txt</code> (aiohttp · python-dotenv) · <code>server/README.md</code> (영역 README) 는 보일러플레이트로 본 표 생략.</p>
+</blockquote>
+
+<table>
+<thead>
+<tr><th>파일</th><th>계층</th><th>책임 1행</th></tr>
+</thead>
+<tbody>
+<tr><td><code>server/main.py</code></td><td>Entry</td><td><code>.env</code> 로딩·로깅 통일·<code>AppRunner</code> 기동·SIGINT/SIGTERM graceful shutdown · 환경변수 4종 (<code>SIGNAL_SERVER_HOST</code> · <code>_WS_PORT</code> · <code>_WS_SCHEME</code> · <code>LOG_LEVEL</code>)</td></tr>
+<tr><td><code>server/signaling.py</code></td><td>Router</td><td>WS upgrade·JSON 디코드·5종 클라 메시지 화이트리스트·<code>RoomRegistry</code> 위임·ERROR 응답 · <code>from</code> 위변조 방어 (정본 §E)</td></tr>
+<tr><td><code>server/room.py</code></td><td>Service</td><td><code>Peer</code> · <code>Room</code> · <code>RoomRegistry</code> 상태 머신·OFFER/ANSWER/ICE 1:1 전달·<code>PEER_JOINED</code>/<code>PEER_LEFT</code> 브로드캐스트·연결 종료 cleanup·<code>send_lock</code> 직렬화</td></tr>
+<tr><td><code>server/protocol.py</code></td><td>Model</td><td>TypedDict envelope 9종 (5+4) · 6종 오류 코드 상수 · <code>wire_to_internal</code>/<code>internal_to_wire</code>/<code>is_valid_client_type</code> 헬퍼 · 외부 IO 없음</td></tr>
+</tbody>
+</table>
+
+<p><strong>의존 단방향</strong>: <code>signaling.py</code> → <code>room.py</code> → <code>protocol.py</code> · 역방향 import 는 PR 단계에서 차단.</p>
+
+<hr>
+
+<h2>7. <code>app/</code> 모듈 표 (UI ← Core ← {Net, RTC})</h2>
+
+<p><code>app/</code> 은 PyQt6 + qasync 단일 스레드 이벤트 루프 안에서 동작한다. <code>ui/</code> 는 위젯 전용·<code>core/</code> 는 Qt 의존성 없는 상태 머신·<code>net/</code> 은 시그널링 WS·<code>rtc/</code> 는 aiortc 래퍼 + 파일 송수신이다.</p>
+
+<blockquote>
+<p><code>__init__.py</code> 4종 (<code>app/</code> · <code>ui/</code> · <code>core/</code> · <code>net/</code> · <code>rtc/</code>) 은 패키지 docstring + 재내보내기만 담당하며 본 표에서 생략.</p>
+</blockquote>
+
+<table>
+<thead>
+<tr><th>파일</th><th>영역</th><th>책임 1행</th></tr>
+</thead>
+<tbody>
+<tr><td><code>app/main.py</code></td><td>공통</td><td><code>QApplication</code> + <code>qasync.QEventLoop</code> 부트스트랩·<code>MainWindow</code> 표시·<code>loop.run_forever()</code></td></tr>
+<tr><td><code>app/requirements.txt</code></td><td>공통</td><td>PyQt6 · qasync · aiohttp · aiortc · Pillow · python-dotenv 고정</td></tr>
+<tr><td><code>app/README.md</code></td><td>공통</td><td>클라 빠른 시작·환경변수·계층 의존도·플랫폼별 주의사항</td></tr>
+<tr><td><code>app/ui/main_window.py</code></td><td>ui</td><td><code>QMainWindow</code> — 메뉴바·ChatView·입력바·StatusBar 결합</td></tr>
+<tr><td><code>app/ui/chat_view.py</code></td><td>ui</td><td><code>QScrollArea</code> + <code>QVBoxLayout</code> — <code>MessageBubble</code> 누적·자동 스크롤</td></tr>
+<tr><td><code>app/ui/message_bubble.py</code></td><td>ui</td><td>단일 메시지 표시 위젯 (본인/타인 좌우 정렬 + 타임스탬프)</td></tr>
+<tr><td><code>app/ui/status_bar.py</code></td><td>ui</td><td>시그널링 연결 상태 + 동일 방 peer 수 표시 (화이트리스트 검증)</td></tr>
+<tr><td><code>app/ui/file_progress_widget.py</code></td><td>ui</td><td>송수신 양방향 ProgressBar (회색 = 송신 큐, 파란 = ACK 누적)</td></tr>
+<tr><td><code>app/core/app_state.py</code></td><td>core</td><td>프로세스 단일 <code>AppState</code> 싱글톤 — room/peer/연결 상태/known_peers</td></tr>
+<tr><td><code>app/core/config.py</code></td><td>core</td><td><code>.env</code> 로딩 + <code>Config</code> dataclass — 시그널링 URL·STUN·로그 레벨·로컬 DB 경로</td></tr>
+<tr><td><code>app/net/signaling_client.py</code></td><td>net</td><td>aiohttp WS 시그널링 클라 — 8 pyqtSignal·9종 envelope 송수신</td></tr>
+<tr><td><code>app/rtc/protocol.py</code></td><td>rtc</td><td>파일 전송 5종 메시지 (FILE_META · CHUNK · ACK · END · DONE) 상수·TypedDict·인코더</td></tr>
+<tr><td><code>app/rtc/peer.py</code></td><td>rtc</td><td><code>RTCPeerConnection</code> 래퍼 — 상태 머신·DataChannel 이벤트 → Qt signal</td></tr>
+<tr><td><code>app/rtc/file_sender.py</code></td><td>rtc</td><td>청크 스트리밍 + bufferedAmount backpressure + 송신 progress 신호</td></tr>
+<tr><td><code>app/rtc/file_receiver.py</code></td><td>rtc</td><td>청크 누적 + 주기적 ACK + SHA-256 점진 검증 + 최종 rename</td></tr>
+<tr><td><code>app/rtc/image_processor.py</code></td><td>rtc</td><td>Pillow 썸네일 (≤200×200 JPEG q80) + base64 — <code>asyncio.to_thread</code> 경유</td></tr>
+<tr><td><code>app/rtc/README.md</code></td><td>rtc</td><td>rtc 영역 README — 프로토콜 5종·환경변수 8종·UI 결선·backpressure 원리</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>8. <code>.claude/agents/</code> — 7 프로세스 에이전트</h2>
+
+<table>
+<thead>
+<tr><th>파일</th><th>역할 1행</th></tr>
+</thead>
+<tbody>
+<tr><td><code>planning-agent.md</code></td><td>요구사항 분석·Exec Plan 초안 (<code>docs/exec-plans/active/*.md</code>)</td></tr>
+<tr><td><code>reviewer-agent.md</code></td><td>코드·설계 리뷰·M1~M7 위반 차단·금지 패턴 검출</td></tr>
+<tr><td><code>qa-agent.md</code></td><td>수동 회귀 체크리스트·스모크 테스트 실행</td></tr>
+<tr><td><code>observability-agent.md</code></td><td>로그·메트릭·성능 회귀 검증·관측성 리포트</td></tr>
+<tr><td><code>release-agent.md</code></td><td>PR 템플릿·머지 게이트·릴리즈 노트·<code>README.md</code> 변경 이력 prepend</td></tr>
+<tr><td><code>doc-gardener-agent.md</code></td><td>주간 drift 감지·자동 보정 PR</td></tr>
+<tr><td><code>history-agent.md</code></td><td><code>History.md</code> 역순 prepend 관리</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>문서 담당 4 에이전트 (<code>@spec-agent</code> · <code>@structure-agent</code> · <code>@checklist-agent</code> · <code>@history-agent</code>) 매핑은 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §D</a> 참조. 본 시점 디스크에는 <code>history-agent.md</code> 만 존재하고 나머지 3개는 <code>doc-gardener-agent.md</code> 가 통합 운영한다.</p>
+</blockquote>
+
+<hr>
+
+<h2>9. <code>docs/</code> 구조 + <code>tools/</code> 스크립트</h2>
+
+<h3>9.1 <code>docs/</code> 트리</h3>
+
+<pre><code class="language-text">docs/
+└── exec-plans/
+    └── active/
+        └── 2026-05-17-tootalk-phase1-mvp.md
+</code></pre>
+
+<table>
+<thead>
+<tr><th>경로</th><th>책임</th></tr>
+</thead>
+<tbody>
+<tr><td><code>docs/exec-plans/active/</code></td><td>활성 실행 계획 (<code>YYYY-MM-DD-&lt;slug&gt;.md</code>) — 큰 작업 1건당 1 파일</td></tr>
+<tr><td><code>docs/exec-plans/completed/</code></td><td>완료된 실행 계획 보관소 (예정 — 본 시점 미생성)</td></tr>
+<tr><td><code>docs/policies/</code></td><td>doc-gardening · adoption · harness 정책 문서 보관소 (예정)</td></tr>
+</tbody>
+</table>
+
+<h3>9.2 <code>tools/</code> 스크립트</h3>
+
+<table>
+<thead>
+<tr><th>파일</th><th>권한</th><th>책임 1행</th></tr>
+</thead>
+<tbody>
+<tr><td><code>tools/claude-telegram.sh</code></td><td>실행</td><td>Claude ↔ Telegram 양방향 채널 브리지 (M7 송수신 인프라)</td></tr>
+<tr><td><code>tools/doc-lint.sh</code></td><td>실행</td><td>문서 린트·BPE 단독 사용 검출·루트 18 동결 검증</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>추가 예정: <code>tools/md_agents.py</code> (M1~M3 검증 본체) · <code>tools/db_init.py</code> (MariaDB 스키마 초기화) · <code>tools/build.py</code> (PyInstaller 래퍼). 본 시점에는 부재.</p>
+</blockquote>
+
+<hr>
+
+<h2>10. 데이터 흐름 순서도 (mermaid)</h2>
+
+<p>본 §10 은 4개의 핵심 흐름을 별도 mermaid sequenceDiagram 으로 분리한다. 모든 도식은 <a href="ARCHITECTURE.md">ARCHITECTURE.md §5</a> 의 거시 시퀀스를 본 저장소 구조 시점에서 재구성한 것이다.</p>
+
+<h3>10.1 시그널링 연결 수립 (JOIN → PEERS → OFFER → ANSWER → ICE)</h3>
+
+<p>WebRTC PeerConnection 이 OPEN 되기 직전까지 서버를 거치는 9종 envelope 의 흐름이다.</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant A as Alice 클라<br/>(app/net/signaling_client)
+    participant S as 시그널링 서버<br/>(server/signaling.py)
+    participant R as RoomRegistry<br/>(server/room.py)
+    participant B as Bob 클라<br/>(app/net/signaling_client)
+
+    A->>S: JOIN room=demo peer_id=alice
+    S->>R: register_peer(alice)
+    S-->>A: PEERS peers=[]
+    B->>S: JOIN room=demo peer_id=bob
+    S->>R: register_peer(bob)
+    S-->>B: PEERS peers=[alice]
+    S-->>A: PEER_JOINED peer_id=bob
+    A->>S: OFFER from=alice to=bob sdp=...
+    S->>R: route_offer
+    R-->>B: OFFER from=alice to=bob sdp=...
+    B->>S: ANSWER from=bob to=alice sdp=...
+    S->>R: route_answer
+    R-->>A: ANSWER from=bob to=alice sdp=...
+    loop ICE 후보 N개 (양방향)
+        A->>S: ICE from=alice to=bob candidate=...
+        S-->>B: ICE
+        B->>S: ICE from=bob to=alice candidate=...
+        S-->>A: ICE
+    end
+    Note over A,B: DataChannel OPEN — 이후는 §10.2~§10.4
+</pre>
+
+<h3>10.2 텍스트 메시지 송수신 (DataChannel 직결 후)</h3>
+
+<p>DataChannel OPEN 이후 시그널링 서버는 트래픽에서 빠진다. <code>app/rtc/peer.py</code> 와 <code>app/ui/chat_view.py</code> 결선 흐름.</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant UA as Alice UI
+    participant CA as Alice Core<br/>(app_state + MariaDB)
+    participant PA as Alice Peer
+    participant PB as Bob Peer
+    participant CB as Bob Core
+    participant UB as Bob UI
+
+    UA->>CA: 입력바 "안녕" Enter
+    CA->>CA: messages INSERT
+    CA->>PA: send_text({type:"TEXT", ts, body, msg_id})
+    PA-->>PB: DataChannel text frame (DTLS-SRTP)
+    PB->>CB: text_message_received signal
+    CB->>CB: messages INSERT
+    CB->>UB: chat_view.add_message(is_self=False)
+    CB->>PB: send_text({type:"ACK", msg_id})
+    PB-->>PA: DataChannel text frame
+    PA->>CA: ack_received signal
+    CA->>UA: bubble 상태 "전송 완료" 갱신
+</pre>
+
+<h3>10.3 파일 송수신 양방향 (FILE_META → CHUNK → ACK → END → DONE)</h3>
+
+<p><code>app/rtc/protocol.py</code> 의 5종 메시지로 운반되며, <code>bufferedAmount</code> 기반 backpressure 가 송신 큐 폭주를 막는다 (<a href="app/rtc/README.md">app/rtc/README.md §5</a>).</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant FS as FileSender<br/>(app/rtc/file_sender)
+    participant DC as DataChannel<br/>(aiortc)
+    participant FR as FileReceiver<br/>(app/rtc/file_receiver)
+    participant UW as FileProgressWidget<br/>(app/ui/file_progress_widget)
+
+    FS->>FS: file_id = UUID4, sha256 = digest(path)
+    FS->>DC: FILE_META {file_id, name, size, total_chunks, sha256}
+    DC-->>FR: FILE_META
+    FR->>FR: tempfile 생성·hash 초기화
+    FR-->>UW: progress(file_id, 0, total) — 0%
+    loop 청크 N개 (16 KiB 기본)
+        FS->>DC: FILE_CHUNK binary [file_id 16B | seq 4B | payload]
+        DC-->>FR: FILE_CHUNK
+        FR->>FR: tempfile.write(payload) + hash.update
+        FR-->>UW: progress(file_id, received_bytes, total)
+        opt 누적 256 KiB
+            FR->>DC: FILE_ACK {file_id, received_bytes, last_seq}
+            DC-->>FS: FILE_ACK
+            FS-->>UW: progress_acked(file_id, acked_bytes, total)
+        end
+        opt bufferedAmount > 16 MiB
+            FS->>FS: asyncio.sleep — low watermark 4 MiB 까지 대기
+        end
+    end
+    FS->>DC: FILE_END {file_id}
+    DC-->>FR: FILE_END
+    FR->>FR: hash 검증 + rename(temp → final)
+    FR->>DC: FILE_DONE {file_id, ok, hash_match}
+    DC-->>FS: FILE_DONE
+    FS-->>UW: completed(file_id, success)
+</pre>
+
+<h3>10.4 이미지 송수신 (썸네일 + 원본)</h3>
+
+<p>이미지는 별도 타입 없음 — <code>FILE_META.mime</code> 가 <code>image/*</code> 이고 <code>thumbnail_base64</code> 가 채워지면 수신자가 원본 도착 전부터 인라인 미리보기를 렌더한다.</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant IP as image_processor
+    participant FS as FileSender
+    participant DC as DataChannel
+    participant FR as FileReceiver
+    participant UW as ChatView 이미지 버블
+    IP->>IP: Pillow load + thumbnail(200x200) + JPEG q80 + base64 (to_thread)
+    IP-->>FS: thumbnail_base64 (≤ 약 6 KiB)
+    FS->>DC: FILE_META {mime:"image/*", thumbnail_base64, size, sha256}
+    DC-->>FR: FILE_META
+    FR-->>UW: 인라인 썸네일 즉시 표시 (원본 미도착)
+    loop 청크 N개
+        FS->>DC: FILE_CHUNK
+        DC-->>FR: FILE_CHUNK
+        FR-->>UW: progress 갱신 (썸네일 위 진행률 띠)
+    end
+    FS->>DC: FILE_END
+    DC-->>FR: FILE_END
+    FR->>FR: hash 검증 + 최종 경로 저장
+    FR->>DC: FILE_DONE {ok:true, hash_match:true}
+    FR-->>UW: 원본 이미지로 교체 (클릭 시 외부 뷰어)
+</pre>
+
+<hr>
+
+<h2>11. ERD — MariaDB 로컬 스키마 (mermaid)</h2>
+
+<p>클라 영역 MariaDB (환경변수 <code>DB_HOST</code>/<code>DB_PORT</code>/<code>DB_USER</code>/<code>DB_PASS</code>/<code>DB_NAME</code> — <a href="app/README.md">app/README.md §2</a>, 사용자 directive 2026-05-17) 의 4 테이블. 본 시점 스키마 정의 코드 (<code>app/db/</code>) 미생성·본 ERD 가 단일 진실 공급원. 신규 컬럼·테이블은 본 도식을 먼저 갱신. 마이그레이션 정본은 <code>MIGRATION_MARIADB.md</code> (작성 예정 — 운영 8/8).</p>
+
+<pre class="mermaid">
+erDiagram
+    rooms ||--o{ peers : "방 안의 참여자"
+    rooms ||--o{ messages : "방 안의 메시지"
+    peers ||--o{ messages : "발신자"
+    messages }o--|| file_meta : "첨부 (옵션)"
+    rooms {
+        INTEGER id PK
+        TEXT name "방 이름 (UNIQUE)"
+        TEXT room_uuid "시그널링 room 식별자 (UNIQUE)"
+        INTEGER created_at "Unix epoch ms"
+    }
+    peers {
+        INTEGER id PK
+        INTEGER room_id FK
+        TEXT peer_uuid "원격 peer_id (JOIN 값)"
+        TEXT nickname "표시명 (옵션)"
+        INTEGER last_seen "Unix epoch ms — PEER_LEFT 시점"
+    }
+    messages {
+        INTEGER id PK
+        INTEGER room_id FK
+        INTEGER sender_peer_id FK
+        INTEGER ts "Unix epoch ms — 송신 시점"
+        TEXT type "text · image · file · system"
+        TEXT body "type=text 본문 / type=system 안내"
+        TEXT msg_uuid "DataChannel msg_id (UNIQUE)"
+        INTEGER file_meta_id FK "옵션 (image/file 한정)"
+        INTEGER acked_at "ACK 수신 시점 (송신자 한정)"
+    }
+    file_meta {
+        INTEGER id PK
+        TEXT file_id "FILE_META.file_id UUID4 hex (UNIQUE)"
+        TEXT name "원본 파일명 (sanitization 후)"
+        INTEGER size "총 바이트"
+        TEXT mime "FILE_META.mime"
+        TEXT sha256 "송신자 산출 해시 (64 hex)"
+        TEXT thumbnail_base64 "image/* 한정 (옵션)"
+        TEXT received_path "수신자 최종 디스크 경로 (송신은 NULL)"
+        TEXT status "pending · transferring · done · failed"
+    }
+</pre>
+
+<h3>11.1 인덱스·제약·NULL 정책</h3>
+
+<table>
+<thead>
+<tr><th>테이블</th><th>인덱스/제약</th><th>NULL/기본값 정책</th></tr>
+</thead>
+<tbody>
+<tr><td><code>rooms</code></td><td><code>UNIQUE(room_uuid)</code> · <code>UNIQUE(name)</code></td><td>시그널링 JOIN 값 충돌 방지</td></tr>
+<tr><td><code>peers</code></td><td><code>UNIQUE(room_id, peer_uuid)</code> · <code>INDEX(last_seen)</code></td><td>동일 방 peer 중복 방지·GC 조회</td></tr>
+<tr><td><code>messages</code></td><td><code>UNIQUE(msg_uuid)</code> · <code>INDEX(room_id, ts)</code></td><td><code>body</code> 는 <code>text</code>·<code>system</code> 한정·<code>image</code>·<code>file</code> 은 NULL · <code>acked_at</code> 송신자만 채움</td></tr>
+<tr><td><code>file_meta</code></td><td><code>UNIQUE(file_id)</code> · <code>INDEX(status)</code></td><td><code>received_path</code> 수신자만 채움 · <code>status</code> 기본 <code>pending</code> → <code>done</code> 전이</td></tr>
+</tbody>
+</table>
+
+<h3>11.2 마이그레이션 정합</h3>
+
+<p>4 테이블은 <code>MIGRATION_MARIADB.md</code> (예정) 의 <code>tables</code> 배열 FK 순서 (<code>rooms</code> → <code>peers</code> → <code>file_meta</code> → <code>messages</code>) 와 일치한다. DB 모델 추가 시 본 §11 ERD 와 <code>MIGRATION_MARIADB.md</code> 동시 갱신 (<a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §N</a>).</p>
+
+<hr>
+
+<h2>12. 네이밍 규약 표</h2>
+
+<table>
+<thead>
+<tr><th>대상</th><th>규약</th><th>예시</th><th>위반 사례</th></tr>
+</thead>
+<tbody>
+<tr><td>디렉토리</td><td>snake_case · 1~2 단어</td><td><code>app/rtc/</code> · <code>docs/exec-plans/</code></td><td><code>AppRtc/</code> · <code>exec-plans-active/</code></td></tr>
+<tr><td>Python 파일</td><td>snake_case <code>.py</code></td><td><code>signaling_client.py</code> · <code>file_sender.py</code></td><td><code>SignalingClient.py</code> · <code>file-sender.py</code></td></tr>
+<tr><td>마크다운 (루트)</td><td>UPPER_SNAKE 또는 PascalCase</td><td><code>AGENTS.md</code> · <code>Structure.md</code></td><td><code>structure.md</code> · <code>agents.md</code></td></tr>
+<tr><td>마크다운 (<code>docs/</code>)</td><td>kebab-case <code>.md</code></td><td><code>2026-05-17-tootalk-phase1-mvp.md</code></td><td><code>Phase1Plan.md</code></td></tr>
+<tr><td>Python 클래스</td><td>PascalCase</td><td><code>RoomRegistry</code> · <code>SignalingClient</code> · <code>FileSender</code></td><td><code>room_registry</code> · <code>signaling_client</code></td></tr>
+<tr><td>Python 함수·변수</td><td>snake_case · 영문</td><td><code>handle_ws</code> · <code>wire_to_internal</code> · <code>peer_id</code></td><td><code>handleWS</code> · <code>한글변수명</code></td></tr>
+<tr><td>상수</td><td>UPPER_SNAKE</td><td><code>MSG_JOIN</code> · <code>FILE_CHUNK_SIZE</code> · <code>ERR_BAD_JSON</code></td><td><code>msgJoin</code> · <code>file_chunk_size</code></td></tr>
+<tr><td>환경변수</td><td>UPPER_SNAKE · 영역 접두</td><td><code>SIGNAL_SERVER_HOST</code> · <code>FILE_BUFFER_HIGH</code></td><td><code>host</code> · <code>bufferHigh</code></td></tr>
+<tr><td>Git 브랜치</td><td><code>feature/&lt;slug&gt;</code> · <code>fix/&lt;slug&gt;</code></td><td><code>feature/structure-md</code></td><td><code>Feature_StructureMD</code></td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>한글 정책 (M4)</strong>: 모든 코드 파일의 주석·docstring 본문에 한국어 1자 이상 포함. 변수·함수·클래스 식별자는 영문 유지. 상세 판정은 <a href="CLAUDE_HARNESS_IMPORTANT.md">정본 §J</a>.</p>
+</blockquote>
+
+<hr>
+
+<h2>13. 향후 추가 예정</h2>
+
+<p>본 시점 부재하나 정본·AGENTS.md·실행계획이 예고한 항목. 생성 즉시 §3 트리·해당 §표·필요 시 §10·§11 도식을 동시 갱신.</p>
+
+<ul>
+<li><strong>루트 운영 (7)</strong>: <code>CLAUDE.md</code> · <code>Specification.md</code> · <code>CheckList.md</code> · <code>History.md</code> · <code>README.md</code> · <code>EXTENSION_GUIDE.md</code> · <code>MIGRATION_MARIADB.md</code></li>
+<li><strong>클라 영역</strong>: <code>app/db/</code> (<code>schema.py</code> · <code>migrations/</code>) — §11 ERD 코드화</li>
+<li><strong>검증·관측</strong>: <code>tests/</code> (pytest) · <code>observability/</code> (로그·메트릭 수집)</li>
+<li><strong>CI</strong>: <code>.github/workflows/</code> (<code>ci.yml</code> · <code>docs-lint.yml</code> · <code>doc-gardener.yml</code> · <code>build.yml</code>) — self-hosted runner 결합 후</li>
+<li><strong>WBS·플랜</strong>: <code>data/wbs.sqlite</code> (M6) · <code>docs/exec-plans/completed/</code> · <code>docs/policies/</code></li>
+<li><strong>도구</strong>: <code>tools/md_agents.py</code> (M1~M3 검증) · <code>tools/db_init.py</code> (MariaDB 초기화) · <code>tools/build.py</code> (PyInstaller 빌드 래퍼)</li>
+</ul>
+
+<blockquote>
+<p>§13 은 §3 트리와 동시 진실 공급원이다. §13 → §3 이동 시 해당 §표(§4~§9) 도 갱신한다.</p>
+</blockquote>
+
+<hr>
+
+<h2>14. 참조 링크</h2>
+
+<h3>14.1 정본·맵·정책</h3>
+
+<ul>
+<li><a href="CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> — Watcher 정본 · §D Doc Gardener 매핑 · §E 계층 분리 · §K 루트 18 동결</li>
+<li><a href="AGENTS.md">AGENTS.md</a> — 저장소 맵 · 7대 규칙 요약 · 정보 구조 인덱스</li>
+<li>정책 9 문서: <a href="ARCHITECTURE.md">ARCHITECTURE.md</a> · <a href="DESIGN.md">DESIGN.md</a> · <a href="FRONTEND.md">FRONTEND.md</a> · <a href="PLANS.md">PLANS.md</a> · <a href="PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="QUALITY_SCORE.md">QUALITY_SCORE.md</a> · <a href="RELIABILITY.md">RELIABILITY.md</a> · <a href="SECURITY.md">SECURITY.md</a></li>
+</ul>
+
+<h3>14.2 실행계획·영역 README</h3>
+
+<ul>
+<li><a href="docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a> — Phase 1 MVP</li>
+<li><a href="server/README.md">server/README.md</a> · <a href="app/README.md">app/README.md</a> · <a href="app/rtc/README.md">app/rtc/README.md</a></li>
+</ul>
+
+<h3>14.3 코드 영역 직접 참조</h3>
+
+<ul>
+<li>서버: <a href="server/signaling.py">server/signaling.py</a> · <a href="server/room.py">server/room.py</a> · <a href="server/protocol.py">server/protocol.py</a> · <a href="server/main.py">server/main.py</a></li>
+<li>클라 진입·코어·네트: <a href="app/main.py">app/main.py</a> · <a href="app/core/app_state.py">app/core/app_state.py</a> · <a href="app/core/config.py">app/core/config.py</a> · <a href="app/net/signaling_client.py">app/net/signaling_client.py</a></li>
+<li>클라 UI 5 위젯: <a href="app/ui/main_window.py">app/ui/main_window.py</a> · <a href="app/ui/chat_view.py">app/ui/chat_view.py</a> · <a href="app/ui/message_bubble.py">app/ui/message_bubble.py</a> · <a href="app/ui/status_bar.py">app/ui/status_bar.py</a> · <a href="app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a></li>
+<li>클라 RTC 5 모듈: <a href="app/rtc/peer.py">app/rtc/peer.py</a> · <a href="app/rtc/protocol.py">app/rtc/protocol.py</a> · <a href="app/rtc/file_sender.py">app/rtc/file_sender.py</a> · <a href="app/rtc/file_receiver.py">app/rtc/file_receiver.py</a> · <a href="app/rtc/image_processor.py">app/rtc/image_processor.py</a></li>
+</ul>
+
+<hr>
+
+<p>마지막 갱신: 2026-05-17 (Structure.md 신설 — 루트 18 동결 슬롯 12/18 채택·5 mermaid 도식·4 ERD 테이블)</p>
+
+</body>
+</html>

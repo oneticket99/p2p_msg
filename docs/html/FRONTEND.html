@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRONTEND.md — TooTalk PyQt6 UI 표준</title>
+<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true});</script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Apple SD Gothic Neo", "Segoe UI", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+  h1, h2, h3, h4 { line-height: 1.3; margin-top: 1.8em; }
+  h1 { border-bottom: 2px solid #ddd; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+  blockquote {
+    border-left: 4px solid #ccc;
+    padding: 0.4em 1em;
+    margin: 1em 0;
+    color: #555;
+    background: #f9f9f9;
+  }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    background: #f3f4f6;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  pre {
+    background: #f6f8fa;
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  pre code { background: transparent; padding: 0; }
+  pre.mermaid {
+    background: #fafafa;
+    text-align: center;
+    border: 1px solid #eee;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.5em 0.75em;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f3f4f6; }
+  tr:nth-child(even) td { background: #fafafa; }
+  hr { border: 0; border-top: 1px solid #ddd; margin: 2em 0; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.25em 0; }
+</style>
+</head>
+<body>
+
+<h1>FRONTEND.md — TooTalk PyQt6 UI 표준</h1>
+
+<blockquote>
+<p>본 문서는 TooTalk(코드명 <code>p2p_msg</code>) 데스크탑 클라이언트의 <strong>프런트엔드 정책</strong> 정의서다.<br>
+정본 정합: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a> §E (L144~150).<br>
+상위 네비게이션: <a href="../../AGENTS.md">AGENTS.md</a> §3 "문서 맵" — UI/UX 설계 항목.<br>
+자매 문서: <a href="../../DESIGN.md">DESIGN.md</a> (UX 컨셉·정보 구조), <a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a> (계층 경계).</p>
+</blockquote>
+
+<hr>
+
+<h2>1. 문서 목적</h2>
+
+<p>본 문서는 <strong>PyQt6 기반 데스크탑 UI 표준</strong>을 정의한다. 구체적으로:</p>
+
+<ul>
+<li>위젯 계층(MainWindow → ChatView → MessageBubble + StatusBar) 의 책임 분할</li>
+<li>색상 변수 / 타이포그래피 / 입력창 UX 의 통일 규칙</li>
+<li>메시지 버블 정렬·타임스탬프 노출 정책</li>
+<li>윈도우 사이즈 / 반응형 그리드 / 다국어·접근성 후크</li>
+<li>XSS 차단을 위한 메시지 escape 규약 (정본 §E 인용)</li>
+</ul>
+
+<p>본 문서는 <strong>정책</strong>이고 <strong>실제 코드 큰 블록은 포함하지 않는다</strong>. 구현은 <a href="../../app/ui/">app/ui/</a> 하위 모듈 본문이 담당하며, 본 문서는 그 본문이 따라야 하는 계약(contract) 만 명문화한다. 정본 §E 와 본 문서가 충돌하면 정본 우선.</p>
+
+<hr>
+
+<h2>2. UI 원칙 (7~10 bullet)</h2>
+
+<ol>
+<li><strong>단순 우선</strong> — 1차 시야(viewport) 안에 채팅 리스트·입력창·상태표시 3 영역만 노출. 부가 패널은 토글로만 진입.</li>
+<li><strong>접근성 기본</strong> — 모든 인터랙티브 위젯에 <code>setAccessibleName</code> / <code>setToolTip</code> 부여 의무. 스크린리더 호환 라벨 필수.</li>
+<li><strong>키보드 단축키</strong> — Ctrl+R(방 입장), Ctrl+Q(종료), Enter(송신), Shift+Enter(개행), Esc(입력창 비우기). 마우스 없이도 핵심 흐름 완주 가능.</li>
+<li><strong>메시지 가독성</strong> — 본문 폰트 14px 이상, 줄간격 1.4, 한 버블 최대 가로 380px. 한 호흡에 읽히는 가로 폭 유지.</li>
+<li><strong>다크모드 후크</strong> — <code>app/ui/theme.qss</code> 단일 파일에서 <code>--bg</code> / <code>--fg</code> / <code>--bubble-*</code> 변수를 토글하면 전 위젯이 일괄 전환되도록 <code>objectName</code> 기반 셀렉터로 위임.</li>
+<li><strong>하드코딩 금지</strong> — 색상·간격·폰트 패밀리 직접 문자열 금지 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a>). 본 문서 §4 변수 표 경유.</li>
+<li><strong>본인/타인 시각 분기</strong> — 좌(타인) / 우(본인) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.</li>
+<li><strong>상태 즉시 가시화</strong> — 시그널링 연결 상태·peer 수·파일 진행률은 항상 화면 1 영역(StatusBar 또는 인라인 위젯)에 노출. 모달로 숨기지 않는다.</li>
+<li><strong>비동기 IO 비차단</strong> — 시그널링·DataChannel·디스크 IO 는 모두 <code>asyncio.create_task</code> 로 예약하고, Qt slot 본문은 UI 업데이트만 수행 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a> 비동기 전용).</li>
+<li><strong>점진적 강조</strong> — 신규 메시지 도착 시 자동 스크롤은 1회용 시그널로 처리해 사용자가 위로 스크롤 중일 때 강제 점프를 피한다.</li>
+</ol>
+
+<hr>
+
+<h2>3. 위젯 계층 트리</h2>
+
+<pre class="mermaid">
+flowchart TD
+    MW[MainWindow<br/>QMainWindow]
+    MB[MenuBar<br/>설정 · 도움말]
+    CV[ChatView<br/>QScrollArea]
+    IN[InputRow<br/>QHBoxLayout]
+    SB[StatusBar<br/>QStatusBar]
+    BU[MessageBubble<br/>QFrame]
+    FP[FileProgressWidget<br/>QWidget]
+    AT[AttachButton<br/>QPushButton]
+    IE[InputEdit<br/>QLineEdit]
+    SN[SendButton<br/>QPushButton]
+    CS[ConnState<br/>QLabel]
+    PC[PeerCount<br/>QLabel]
+
+    MW --> MB
+    MW --> CV
+    MW --> IN
+    MW --> SB
+    CV --> BU
+    CV --> FP
+    IN --> AT
+    IN --> IE
+    IN --> SN
+    SB --> CS
+    SB --> PC
+
+    classDef root fill:#dbeafe,stroke:#2563eb
+    classDef leaf fill:#f3f4f6,stroke:#6b7280
+    class MW root
+    class MB,CV,IN,SB,BU,FP,AT,IE,SN,CS,PC leaf
+</pre>
+
+<ul>
+<li><strong>MainWindow</strong> = <a href="../../app/ui/main_window.py">app/ui/main_window.py</a> — 모든 자식 위젯의 부모, <code>AppState</code> 보유.</li>
+<li><strong>ChatView</strong> = <a href="../../app/ui/chat_view.py">app/ui/chat_view.py</a> — <code>QScrollArea</code> + <code>QVBoxLayout</code>, stretch 슬롯 직전 삽입.</li>
+<li><strong>MessageBubble</strong> = <a href="../../app/ui/message_bubble.py">app/ui/message_bubble.py</a> — 단일 메시지(텍스트 + 타임스탬프) 표시.</li>
+<li><strong>FileProgressWidget</strong> = <a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a> — 송신/수신 양방향 ProgressBar.</li>
+<li><strong>StatusBar</strong> = <a href="../../app/ui/status_bar.py">app/ui/status_bar.py</a> — 연결 상태 + peer 수.</li>
+</ul>
+
+<hr>
+
+<h2>4. 색상 변수 표</h2>
+
+<p>본 표의 값은 <strong>현재 임시값</strong>이며, Phase 1 후반 <code>app/ui/theme.qss</code> 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. <code>MessageBubble._COLOR_*</code> 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.</p>
+
+<table>
+<thead>
+<tr><th>변수명</th><th>라이트 임시값</th><th>다크 임시값</th><th>용도</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--primary</code></td><td>미확정 후크</td><td>미확정 후크</td><td>보내기 버튼 · 강조 액션</td></tr>
+<tr><td><code>--bg</code></td><td><code>#ffffff</code></td><td><code>#1e1e1e</code></td><td>윈도우 배경</td></tr>
+<tr><td><code>--fg</code></td><td><code>#1a1a1a</code></td><td><code>#e5e5e5</code></td><td>본문 텍스트</td></tr>
+<tr><td><code>--bubble-self</code></td><td><code>#dcf8c6</code></td><td><code>#2d5a3f</code></td><td>본인 발신 버블 배경</td></tr>
+<tr><td><code>--bubble-other</code></td><td><code>#ffffff</code></td><td><code>#2a2a2a</code></td><td>타인 발신 버블 배경</td></tr>
+<tr><td><code>--bubble-border</code></td><td><code>#dddddd</code></td><td><code>#3a3a3a</code></td><td>버블 경계선</td></tr>
+<tr><td><code>--text-timestamp</code></td><td><code>#888888</code></td><td><code>#9a9a9a</code></td><td>타임스탬프 회색</td></tr>
+<tr><td><code>--text-sender</code></td><td><code>#555555</code></td><td><code>#b5b5b5</code></td><td>발신자 라벨</td></tr>
+<tr><td><code>--status-connected</code></td><td><code>#22c55e</code></td><td><code>#22c55e</code></td><td>연결 정상</td></tr>
+<tr><td><code>--status-error</code></td><td><code>#dc2626</code></td><td><code>#ef4444</code></td><td>연결 오류</td></tr>
+<tr><td><code>--progress-acked</code></td><td>미확정 후크</td><td>미확정 후크</td><td>ACK 누적 진행 막대</td></tr>
+<tr><td><code>--progress-inflight</code></td><td>미확정 후크</td><td>미확정 후크</td><td>송신 큐 대기 막대</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>미확정 후크</strong> = Phase 1 후반 정책 확정 대기. 본 단계에서는 <code>QPalette</code> 기본값을 우선 사용하고, 변수 도입 시 일괄 갱신한다.</p>
+</blockquote>
+
+<hr>
+
+<h2>5. 폰트 + 타이포그래피</h2>
+
+<ul>
+<li><strong>기본 폰트 패밀리</strong>: 시스템 폰트 fallback 체인
+  <ul>
+    <li>macOS: <code>-apple-system</code>, <code>"SF Pro Text"</code>, <code>"Apple SD Gothic Neo"</code></li>
+    <li>Windows: <code>"Segoe UI"</code>, <code>"Malgun Gothic"</code></li>
+    <li>공통 fallback: <code>sans-serif</code></li>
+  </ul>
+</li>
+<li><strong>한국어 fallback 의무</strong> — 한국어 글리프가 없는 영문 전용 폰트가 1순위에 오는 경우 한글이 깨질 수 있으므로 한국어 폰트를 반드시 fallback 체인에 포함.</li>
+<li><strong>크기 등급</strong> (px 기준):
+  <ul>
+    <li>본문(메시지 텍스트): 14px</li>
+    <li>발신자 라벨: 11px / 굵기 600</li>
+    <li>타임스탬프: 10px</li>
+    <li>메뉴·버튼: 13px</li>
+    <li>About 다이얼로그 제목: 16px</li>
+  </ul>
+</li>
+<li><strong>줄간격</strong>: 본문 1.4, 라벨 1.2</li>
+<li><strong>이모지 지원</strong> — 시스템 컬러 이모지 폰트는 자동 fallback. 별도 패치 불필요하지만 일부 Linux 환경에서는 Noto Color Emoji 권장(본 단계는 macOS + Windows 만 지원).</li>
+</ul>
+
+<hr>
+
+<h2>6. 메시지 버블 가이드</h2>
+
+<h3>6.1 정렬·색상 분기</h3>
+
+<table>
+<thead>
+<tr><th>발신자</th><th>정렬</th><th>배경 변수</th><th>발신자 라벨</th></tr>
+</thead>
+<tbody>
+<tr><td>본인 (<code>is_self=True</code>)</td><td>우측</td><td><code>--bubble-self</code></td><td>미노출</td></tr>
+<tr><td>타인 (<code>is_self=False</code>)</td><td>좌측</td><td><code>--bubble-other</code></td><td>상단 노출</td></tr>
+<tr><td>시스템 안내</td><td>좌측</td><td><code>--bubble-other</code></td><td><code>sender="system"</code></td></tr>
+</tbody>
+</table>
+
+<h3>6.2 타임스탬프 위치</h3>
+
+<ul>
+<li>위치: 버블 <strong>내부 우측 하단</strong></li>
+<li>표시 형식: <code>HH:MM</code> (예: <code>14:23</code>)</li>
+<li>전체 시각(<code>YYYY-mm-dd HH:MM:SS</code>) 은 툴팁으로 분리(향후 작업).</li>
+<li>정본 §E 로그 형식(<code>[YYYY-mm-dd H:i:s]</code>) 은 로그 전용이며 UI 표시는 짧은 변형을 사용.</li>
+</ul>
+
+<h3>6.3 이미지 인라인</h3>
+
+<ul>
+<li>이미지 메시지는 버블 내부에 썸네일 노출, 클릭 시 별도 다이얼로그로 원본 표시.</li>
+<li>최대 썸네일 가로 320px, 비율 유지.</li>
+<li>다운로드 진행 중인 이미지는 <code>FileProgressWidget</code> 와 동일한 막대로 임시 표시 후 완료 시점에 썸네일로 교체.</li>
+</ul>
+
+<h3>6.4 파일 ProgressBar 배치</h3>
+
+<ul>
+<li>파일 송수신 위젯(<code>FileProgressWidget</code>) 은 <code>MessageBubble</code> 자리에 끼워 넣어 동일한 시간순 흐름 안에 배치.</li>
+<li>송신자 시점: 회색(in-flight) + 파랑(acked) 2-stack 표현.</li>
+<li>수신자 시점: 단일 파랑 막대.</li>
+<li>완료 시점에는 파일 아이콘 + 파일명 + 크기만 남기고 막대는 100% 채워진 상태로 유지(취소·재시도 버튼은 Phase 2).</li>
+</ul>
+
+<hr>
+
+<h2>7. 입력창 UX</h2>
+
+<ul>
+<li><strong>Placeholder</strong>: <code>"메시지를 입력하세요…"</code> (한국어 단일 — Phase 1).</li>
+<li><strong>단일 라인 + 다중 라인 토글</strong>:
+  <ul>
+    <li>현재 Phase 1 스켈레톤은 <code>QLineEdit</code> 단일 라인.</li>
+    <li>Phase 1 후반에 <code>QTextEdit</code> 로 전환하여 <strong>Shift+Enter = 개행 / Enter = 송신</strong> 분기 적용.</li>
+  </ul>
+</li>
+<li><strong>첨부 버튼 단축키</strong> — <code>Ctrl+O</code> (Open file). 본 단계는 비활성(Task #16 에서 활성).</li>
+<li><strong>전송 단축키</strong> — <code>Enter</code> (단일 라인 모드에서는 <code>returnPressed</code>, 다중 라인 모드에서는 <code>keyPressEvent</code> 분기).</li>
+<li><strong>포커스 정책</strong>: 윈도우 활성화 시 입력창 자동 포커스. 메시지 송신 후 입력창 자동 클리어 + 포커스 유지.</li>
+<li><strong>빈 문자열 송신 차단</strong> — <code>text.strip() == ""</code> 일 때 송신 무시.</li>
+<li><strong>IME(한글 입력) 보호</strong> — 조합 중인 음절(<code>InputMethodEvent</code>) 은 송신 트리거 차단(엔터 키 분기 시 <code>isAutoRepeat</code> 와 IME 상태 함께 검사).</li>
+</ul>
+
+<hr>
+
+<h2>8. 윈도우 사이즈 + 반응형</h2>
+
+<ul>
+<li><strong>최소 사이즈</strong>: 480 × 640 (현재 <a href="../../app/ui/main_window.py">main_window.py</a> <code>setMinimumSize(480, 640)</code>).</li>
+<li><strong>기본 사이즈</strong>: 720 × 880 (Phase 1 후반 도입).</li>
+<li><strong>그리드 분할 (Phase 2 예정)</strong>:
+  <ul>
+    <li>좌측 사이드바(방 목록·peer 목록): 가변 220~280px</li>
+    <li>본문(채팅 + 입력): 가변 stretch</li>
+    <li>우측 패널(파일 목록·설정): 토글, 기본 숨김</li>
+  </ul>
+</li>
+<li><strong>반응형 분기</strong>:
+  <ul>
+    <li>가로 &lt; 600px → 사이드바 자동 접힘, 햄버거 메뉴로 전환</li>
+    <li>가로 ≥ 1000px → 우측 패널 동시 표시 허용</li>
+  </ul>
+</li>
+<li><strong>DPI 스케일</strong> — Qt 자체 <code>Qt.HighDpiScaleFactorRoundingPolicy.PassThrough</code> 를 명시 설정해 Retina/4K 환경에서 흐릿함 방지.</li>
+</ul>
+
+<hr>
+
+<h2>9. 빈도 높은 상태 표시</h2>
+
+<table>
+<thead>
+<tr><th>상태</th><th>위치</th><th>표시 형식</th></tr>
+</thead>
+<tbody>
+<tr><td>시그널링 연결</td><td>StatusBar 좌측</td><td><code>DISCONNECTED</code> / <code>CONNECTING</code> / <code>CONNECTED</code> / <code>ERROR</code></td></tr>
+<tr><td>Peer 수</td><td>StatusBar 우측</td><td><code>peers: N</code> (본인 제외)</td></tr>
+<tr><td>현재 방</td><td>메뉴바 또는 윈도우 제목</td><td><code>TooTalk — room: &lt;id&gt;</code> (Phase 1 후반)</td></tr>
+<tr><td>파일 진행률</td><td>인라인 위젯</td><td><code>1.2/3.4 MB · 35%</code></td></tr>
+<tr><td>시스템 안내</td><td>ChatView 시스템 버블</td><td><code>sender="system"</code></td></tr>
+</tbody>
+</table>
+
+<p>연결 상태 화이트리스트는 <a href="../../app/ui/status_bar.py">status_bar.py</a> <code>_VALID_STATES</code> 에서 강제하며, 화이트리스트 밖 값은 <code>ERROR</code> 로 강제 정규화한다.</p>
+
+<hr>
+
+<h2>10. 다국어 후크</h2>
+
+<ul>
+<li><strong>Phase 1</strong>: 한국어 단일 (모든 UI 문자열을 코드 안에 직접 한국어로 기록). M4 규약에 따라 한국어 주석과 일관성 유지.</li>
+<li><strong>Phase 2</strong> (i18n 도입):
+  <ul>
+    <li>외부화 대상 문자열은 <code>app/ui/i18n/ko.json</code> / <code>en.json</code> 으로 분리</li>
+    <li>함수 <code>tr(key: str) -&gt; str</code> 도입, 미존재 키는 키 자체 반환 + 경고 로그</li>
+    <li>닉네임 등 사용자 입력 문자열은 번역 대상 외(원문 보존)</li>
+  </ul>
+</li>
+<li><strong>로케일 감지</strong> — <code>QLocale.system().name()</code> 기반. <code>.env</code> 의 <code>UI_LOCALE</code> 환경 변수가 있으면 우선.</li>
+<li><strong>본 단계 합의</strong> — Phase 1 동안 i18n 인프라 미도입. 단, 새 문자열을 코드에 추가할 때는 추후 외부화가 쉽도록 <strong>상수 변수</strong>로 분리 권장.</li>
+</ul>
+
+<hr>
+
+<h2>11. 접근성</h2>
+
+<ul>
+<li><strong>탭 순서</strong> — 입력창 → 보내기 버튼 → 첨부 버튼 → 메뉴바 → ChatView 의 순으로 <code>setTabOrder</code> 명시.</li>
+<li><strong>스크린리더 라벨</strong> — 모든 버튼/입력 위젯에 <code>setAccessibleName</code> 부여. 예: 보내기 버튼 = <code>"메시지 보내기"</code>.</li>
+<li><strong>ARIA 등가 속성</strong> — PyQt6 는 ARIA 자체를 지원하지 않으나 <code>QAccessible</code> 인터페이스로 등가 효과를 제공한다. 역할(role) 은 Qt 기본을 사용하되, 커스텀 위젯(<code>MessageBubble</code>)은 <code>QAccessible.Role.StaticText</code> 로 설정.</li>
+<li><strong>포커스 시각화</strong> — 키보드 포커스 위젯은 <code>:focus</code> 스타일 셀렉터로 2px 윤곽선 노출(다크모드 대비 명도 비율 4.5:1 이상).</li>
+<li><strong>명도 대비</strong> — 본문 텍스트 vs 배경 색상은 WCAG AA 기준(4.5:1) 이상 유지. 다크/라이트 양 모드 모두 검증.</li>
+<li><strong>확대 지원</strong> — Qt <code>QApplication.setHighDpiScaleFactorRoundingPolicy</code> 외에 사용자 폰트 크기 환경 변수 <code>UI_FONT_SCALE</code> (0.8~1.5) 후크 제공(Phase 2).</li>
+</ul>
+
+<hr>
+
+<h2>12. XSS / 메시지 escape 정책</h2>
+
+<p>정본 §E 인용: <strong>"Frontend: <code>base.html</code> 상속, CSS 변수 사용, XSS <code>escapeHtml()</code> 필수"</strong> (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md L150</a>).</p>
+
+<p>본 정책의 데스크탑 PyQt6 환경 적용:</p>
+
+<ul>
+<li><strong>현 단계 메시지 본문은 plain text only</strong> — <code>MessageBubble</code> 의 본문 <code>QLabel</code> 은 <code>setTextFormat(Qt.TextFormat.PlainText)</code> 명시 의무. 본 단계 코드에서 명시 호출이 누락된 경우 보강 대상.</li>
+<li><strong>HTML/리치 텍스트 금지</strong> — <code>QLabel.setText</code> 에 사용자 메시지를 그대로 전달하면 Qt 가 휴리스틱으로 HTML 해석을 시도할 위험이 있으므로 <code>PlainText</code> 강제는 필수.</li>
+<li><strong>About 다이얼로그 예외</strong> — 정적 HTML 만 허용 (사용자 입력 미포함). 동적 문자열을 HTML 로 합치는 행위 금지.</li>
+<li><strong>URL 자동 링크화 (Phase 2)</strong> — 도입 시 별도 함수(<code>linkify(text) -&gt; str</code>) 가 escape 후 <code>&lt;a&gt;</code> 만 합성하도록 분리. 일반 메시지 경로(<code>add_message</code>)와 절대 혼합 금지.</li>
+<li><strong>파일명·발신자명</strong> — 외부에서 들어온 모든 문자열은 표시 직전 <code>QLabel.setText</code> 가 아닌 <code>QLabel(text)</code> 생성자 + <code>PlainText</code> 형식으로만 통과.</li>
+<li><strong>시스템 안내</strong> (<code>sender="system"</code>) — 내부 생성 문자열이라도 사용자 입력(예: room_id, peer_id) 을 합성하는 경우 동일 규칙 적용.</li>
+</ul>
+
+<hr>
+
+<h2>13. 메시지 전송 시퀀스</h2>
+
+<p>본 시퀀스는 입력창에서 ChatView 까지의 송신 흐름을 보여준다. Phase 1 스켈레톤 단계는 echo 까지만 동작하고, DataChannel send 는 Task #16 에서 활성화한다.</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant IE as InputEdit
+    participant MW as MainWindow
+    participant CV as ChatView
+    participant DC as DataChannel<br/>(Task #16)
+
+    U->>IE: 텍스트 입력 + Enter
+    IE->>MW: returnPressed 시그널
+    MW->>MW: text.strip() 검증
+    alt 빈 문자열
+        MW-->>IE: 무시 (조기 return)
+    else 유효
+        MW->>CV: add_message(self, text, ts, is_self=True)
+        CV->>CV: MessageBubble 생성 + 삽입
+        CV->>CV: rangeChanged → 1회용 자동 스크롤
+        MW->>IE: clear()
+        MW-->>DC: create_task(send(text))<br/>※ Task #16 에서 활성
+    end
+</pre>
+
+<hr>
+
+<h2>14. Wireframe / Mockup (mermaid block diagram)</h2>
+
+<h3>14.1 메인 채팅 화면 (1280x800 기본)</h3>
+
+<pre class="mermaid">
+flowchart TB
+    subgraph MW["MainWindow 1280 x 800"]
+        direction TB
+
+        subgraph TB1["MenuBar (높이 28)"]
+            M1[설정]
+            M2[방]
+            M3[도움말]
+        end
+
+        subgraph BODY["Body (분할 가로 280 + 1000)"]
+            direction LR
+            subgraph SP["Side Panel 280px"]
+                direction TB
+                RM[Room 목록]
+                PR[Peer 목록<br/>연결 N명]
+            end
+            subgraph CH["Chat Area 1000px"]
+                direction TB
+                CV2[ChatView<br/>QScrollArea<br/>높이 가변]
+                IN2[InputRow 높이 96<br/>QLineEdit + 첨부 + 송신]
+            end
+        end
+
+        subgraph FT1["StatusBar 높이 24"]
+            ST1[connect:OK]
+            ST2[peers:3]
+            ST3[upload:42%]
+        end
+    end
+</pre>
+
+<h3>14.2 메시지 버블 배치 (ChatView 안)</h3>
+
+<pre class="mermaid">
+flowchart TD
+    subgraph CV3["ChatView 1000 폭 안의 메시지 영역"]
+        direction TB
+        B1["타인 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
+        B2["타인 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
+        B3["본인 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
+        B4["본인 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
+        B5["타인 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
+    end
+    B1 --> B2 --> B3 --> B4 --> B5
+</pre>
+
+<h3>14.3 파일 진행 위젯 상세</h3>
+
+<pre class="mermaid">
+flowchart TD
+    subgraph FPS["FileProgressWidget 송신 role"]
+        direction TB
+        T1["filename.zip · 12.3 MB"]
+        BAR1["회색 bar<br/>송신 buffer: 78%"]
+        BAR2["파란 bar<br/>수신 확정: 64%"]
+    end
+    subgraph FPR["FileProgressWidget 수신 role"]
+        direction TB
+        T2["filename.zip · 12.3 MB"]
+        BAR3["파란 bar<br/>수신: 64% (7.8/12.3 MB)"]
+    end
+</pre>
+
+<h3>14.4 화면 전환 다이어그램</h3>
+
+<pre class="mermaid">
+flowchart LR
+    LAUNCH[앱 실행<br/>QApplication 시작]
+    LAUNCH --> CONN[연결 다이얼로그<br/>room id 입력]
+    CONN -->|JOIN 성공| MAIN[메인 채팅 화면]
+    CONN -->|JOIN 실패| ERR1[에러 토스트<br/>StatusBar 빨강]
+    ERR1 --> CONN
+
+    MAIN --> SET[설정 다이얼로그<br/>nickname · STUN · TURN]
+    SET --> MAIN
+
+    MAIN --> ABOUT[About 다이얼로그<br/>TooTalk 버전 · 라이선스]
+    ABOUT --> MAIN
+
+    MAIN -->|Ctrl+Q 또는 닫기| QUIT[graceful disconnect<br/>SignalingClient.disconnect]
+    QUIT --> END[프로세스 종료]
+</pre>
+
+<h3>14.5 설계 제약</h3>
+
+<table>
+<thead>
+<tr><th>항목</th><th>기준값</th><th>비고</th></tr>
+</thead>
+<tbody>
+<tr><td>메인 윈도우 최소 사이즈</td><td>800 x 600</td><td>사이드 패널 자동 접힘 &lt; 1024</td></tr>
+<tr><td>메인 윈도우 기본 사이즈</td><td>1280 x 800</td><td>첫 실행 시</td></tr>
+<tr><td>사이드 패널 폭</td><td>280 ~ 360</td><td>드래그 조절</td></tr>
+<tr><td>채팅 입력창 높이</td><td>96</td><td>다중 라인 시 192 까지 자동 확장</td></tr>
+<tr><td>StatusBar 높이</td><td>24</td><td>변동 없음</td></tr>
+<tr><td>메시지 버블 최대 가로</td><td>380</td><td>§2.4 메시지 가독성 정합</td></tr>
+<tr><td>파일 진행 위젯 높이</td><td>송신 72 · 수신 56</td><td>2-stack vs 1-stack</td></tr>
+<tr><td>첨부 버튼 한 변</td><td>36</td><td>클릭 영역 확보</td></tr>
+</tbody>
+</table>
+
+<p>본 wireframe 은 <strong>레이아웃 의도</strong>만 정의한다. 실제 픽셀·색상값은 <code>app/ui/theme.qss</code> (Phase 1 후반 신설 예정) 와 <code>app/ui/*.py</code> 구현 본문이 따른다.</p>
+
+<hr>
+
+<h2>15. 참조</h2>
+
+<table>
+<thead>
+<tr><th>주제</th><th>문서</th></tr>
+</thead>
+<tbody>
+<tr><td>정본 §E (코딩 불변 규칙)</td><td><a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></td></tr>
+<tr><td>상위 네비게이션</td><td><a href="../../AGENTS.md">AGENTS.md</a></td></tr>
+<tr><td>UX 컨셉·정보 구조</td><td><a href="../../DESIGN.md">DESIGN.md</a></td></tr>
+<tr><td>계층 경계·모듈 의존</td><td><a href="../../ARCHITECTURE.md">ARCHITECTURE.md</a></td></tr>
+<tr><td>메인 윈도우 구현</td><td><a href="../../app/ui/main_window.py">app/ui/main_window.py</a></td></tr>
+<tr><td>채팅 리스트 구현</td><td><a href="../../app/ui/chat_view.py">app/ui/chat_view.py</a></td></tr>
+<tr><td>메시지 버블 구현</td><td><a href="../../app/ui/message_bubble.py">app/ui/message_bubble.py</a></td></tr>
+<tr><td>상태바 구현</td><td><a href="../../app/ui/status_bar.py">app/ui/status_bar.py</a></td></tr>
+<tr><td>파일 진행 위젯 구현</td><td><a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a></td></tr>
+<tr><td>요구사항 명세</td><td><a href="../../Specification.md">Specification.md</a></td></tr>
+<tr><td>신뢰성 정책</td><td><a href="../../RELIABILITY.md">RELIABILITY.md</a></td></tr>
+<tr><td>보안 정책</td><td><a href="../../SECURITY.md">SECURITY.md</a></td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<p>마지막 갱신: 2026-05-17 (FRONTEND.md 초안 — Phase 1 스켈레톤 UI 표준 정의)</p>
+
+</body>
+</html>
