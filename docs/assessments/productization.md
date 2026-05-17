@@ -10,24 +10,24 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite. 히스토리성 prepend 아님.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 12:28 (commit `5d898b2` 직후 — 본 사이클 누계 10 commit 반영)
+> 최근 갱신 시점: 2026-05-17 13:08 (commit `461f196` 직후 — 본 사이클 누계 16 commit 반영)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1 부트스트랩 + 인프라 자동화 완료. 제품화 가능성 = **인프라 우위 / 시장 진입 즉시성 낮음**.
+**현재 단계**: Phase 1 부트스트랩 + 인프라 자동화 + 정책 본문 완성 + 가드레일 강화. 제품화 가능성 = **인프라 완성 / 시장 진입 즉시성 낮음**.
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 2.0 / 5 | 1.5 → 2.0 ▲ | CI 3 workflow + 5 HTML 동시 정리 + self-hosted setup 완료. 단 WebRTC DataChannel 1:1 채팅 미연결 |
+| 기술 완성도 | 2.0 / 5 | = | CI 3 workflow + 5 HTML + self-hosted setup 완료. WebRTC DataChannel 1:1 채팅 미연결 잔존 |
 | 시장 적합성 | 2 / 5 | = | P2P 메신저 niche — Signal/Wire 경쟁 강력 |
 | 차별화 요소 | 3 / 5 | = | 시그널링 1대 + WebRTC DataChannel = 인프라 단순 |
 | 사용자 가치 | 2.5 / 5 | = | 1:1 채팅·파일전송만으로 약함. 그룹·음성·E2EE 필요 |
-| 수익화 모델 | 1 / 5 | = | 명시 안 됨 — Phase 2 이후 결정 |
-| 운영 비용 | 4.5 / 5 | 4 → 4.5 ▲ | self-hosted CI 비용 0 + 5 HTML 자동 + sub-agent 병렬 활용 |
-| **종합** | **2.5 / 5** | 2.3 → 2.5 ▲ | **PoC + 인프라 단계 — 시장 출시 전 2~3 Phase 추가 필요** |
+| 수익화 모델 | 1.5 / 5 | 1 → 1.5 ▲ | adoption-roadmap.md 의 Phase 1~5 + 옵션 A~D 명시 |
+| 운영 비용 | 4.5 / 5 | = | self-hosted CI 비용 0 + 5 HTML 자동 + sub-agent 병렬 |
+| **종합** | **2.6 / 5** | 2.5 → 2.6 ▲ | **PoC + 인프라 + 정책 단계 — 시장 출시 전 2~3 Phase 추가 필요** |
 
 ---
 
@@ -52,20 +52,35 @@ status: active
 - doc-gardener (주 1회) — drift 자동 감지 운영 비용 절감
 - **HTML 5종 동시 정리** (사용자 directive 2026-05-17) — Structure/ARCHITECTURE/FRONTEND/productization/vibe-coding 의 .md ↔ .html 동기. CLAUDE.md §10-6/7 명문화
 - **평가 snapshot 자동 갱신** — 매 task 마다 productization + vibe-coding 전체 rewrite
+- **3 정책 본문 신설** — doc-gardening + adoption-roadmap + execution-harness 모두 active. 깨진 링크 12 → 0
+- **PR 템플릿** — release-agent 정합 9 섹션
 
 ### 2.4 기술 스택 modern
 
 - Python 3.13 + PyQt6 + aiortc + qasync = 최신 안정 스택
 - PyInstaller 단일 zip 배포 = 사용자 진입 마찰 낮음 (macOS / Windows)
-- **MariaDB 영속화** (사용자 directive 2026-05-17) — SQL 표준 + 표준 운영 도구 풍부. SQLite 흔적 4 파일 회수 완료 (config.py · ARCHITECTURE · 실행계획 · RELIABILITY)
+- **MariaDB 영속화** (사용자 directive 2026-05-17) — SQL 표준 + 표준 운영 도구 풍부. SQLite 흔적 4 파일 회수 완료
 - asyncmy 드라이버 + InnoDB redo log + binlog PITR
 
-### 2.5 자동화 흐름 의 sub-agent 병렬 활용
+### 2.5 자동화 흐름 + sub-agent 병렬 활용
 
 - 사용자 directive 2026-05-17 — "병렬작업이 가능한 영역이면 서브에이전트를 적극적으로 활용"
-- 본 사이클 = 5 HTML 동시 변환 의 5 sub-agent 병렬 spawn (Whitebox run_in_background)
-- 시간 단축 = 직렬 의 ~600초 → 병렬 의 ~225초 (단일 sub-agent bottleneck)
+- 본 세션 누계 = 5 HTML + 2 HTML 재생성 = 7 sub-agent 누계 spawn
+- 시간 단축 = 직렬 대비 ~60% 절감
 - 추가 활용 영역 = 평가 snapshot HTML 갱신, 광범위 lint 정정, 다중 파일 회수
+
+### 2.6 가드레일 자동화 강화
+
+- `tools/doc-lint.sh` = 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭) — bash 3.2 호환 + 즉시 실행
+- 12 영구 메모리 가드레일 (신규 2 — no-self-other-pronoun + doc-perfection-before-code)
+- 텔레그램 HTTP API 직접 경로 강제 활성 (매 응답 종료 직전 송신 의무)
+- 깨진 링크 12 → 0 해소 (3 정책 본문 신설)
+
+### 2.7 색상 가시화 (사용자 directive 2026-05-17)
+
+- FRONTEND.md + FRONTEND.html 색상 변수 표 의 9 hex 변수 18 swatch (라이트+다크) 추가
+- HTML 의 .swatch CSS 클래스 + markdown 의 inline span 정합
+- 디자이너·QA 직관 강화
 
 ---
 
@@ -97,14 +112,20 @@ status: active
 ### 3.4 라이선스 미확정
 
 - handoff §5 — 라이선스 = "미확정 (Phase 1 후반 확정)"
-- PyQt6 의 GPL/상용 분리 — 상용 채택 시 라이선스 비용 발생
+- PyQt6 GPL/상용 분리 — 상용 채택 시 라이선스 비용 발생
 - 라이선스 결정 전 = 외부 contributor 기여 어려움
 
 ### 3.5 self-hosted runner 등록 미완 (Phase 1 차단점)
 
-- CI 3 workflow 정의 완료 (commit `5d898b2`)
+- CI 3 workflow + setup 문서 완료
 - 단 runner 미등록 = 모든 workflow `queued` 무한 대기
-- 사용자 직접 작업 필요 — docs/references/ci-self-hosted-setup.md 의 절차 따라 진행
+- 사용자 직접 작업 필요 — docs/references/ci-self-hosted-setup.md 절차 따라 진행
+
+### 3.6 코드 진입 미완
+
+- Phase 1 MVP 의 실 코드 (WebRTC DataChannel 연결 + MariaDB 영속화) 미작성
+- 본 사이클 누계 = 문서 95% + 코드 5% (config.py 5필드 회수만)
+- 사용자 GO 신호 + 가드레일 [[feedback-doc-perfection-before-code]] 통과 후 코드 진입 가능
 
 ---
 
@@ -151,10 +172,14 @@ status: active
 
 | 우선순위 | 액션 | 상태 | 소요 |
 |---|---|---|---|
-| 0 | 잔존 MariaDB 회수 4 파일 (config / ARCHITECTURE / 실행계획 / RELIABILITY) | ✅ 완료 (본 사이클) | — |
-| 0 | CI 3 workflow 신설 (ci / docs-lint / doc-gardener) | ✅ 완료 (본 사이클) | — |
-| 0 | self-hosted runner setup 문서 | ✅ 완료 (본 사이클) | — |
-| 0 | 평가 snapshot 2종 + HTML 5종 동시 정리 | ✅ 완료 (본 사이클) | — |
+| 0 | 잔존 MariaDB 회수 4 파일 (config / ARCHITECTURE / 실행계획 / RELIABILITY) | ✅ 완료 | — |
+| 0 | CI 3 workflow 신설 (ci / docs-lint / doc-gardener) | ✅ 완료 | — |
+| 0 | self-hosted runner setup 문서 | ✅ 완료 | — |
+| 0 | 평가 snapshot 2종 + HTML 5종 동시 정리 | ✅ 완료 (사이클 2) | — |
+| 0 | 1인칭/3인칭 표현 회수 + 텔레그램 가드레일 강화 | ✅ 완료 | — |
+| 0 | doc-lint.sh bash 3.2 호환 + 5 검사 | ✅ 완료 | — |
+| 0 | PR 템플릿 + docs/policies/ 3 문서 (깨진 링크 12 → 0) | ✅ 완료 | — |
+| 0 | FRONTEND 색상 swatch 가시화 | ✅ 완료 | — |
 | 1 | self-hosted runner 등록 + CI GREEN 확인 | 🟡 사용자 직접 | 1일 (사용자) |
 | 2 | Phase 1 MVP — 1:1 채팅·파일전송·MariaDB 영속화 코드 진입 | 🔴 미진입 | 6주 |
 | 3 | E2EE (libsignal-protocol wrapping) 도입 | 🔴 미진입 | 4주 |
@@ -207,6 +232,7 @@ status: active
 | 라이선스 결정 지연 → contributor 기여 차단 | 중 | 중 | Phase 1 후반 사용자 결정 |
 | PyQt6 GPL/상용 라이선스 비용 → 수익화 모델 충돌 | 중 | 상 | 상용 라이선스 vs Qt for Python 정책 검토 |
 | self-hosted runner 미등록 → CI workflow 미작동 | 상 | 중 | 사용자 직접 등록 — 1일 작업 |
+| 문서 95% : 코드 5% 비율 지속 → MVP 완성 지연 | 상 | 중 | 가드레일 [[feedback-doc-perfection-before-code]] 충족 후 즉시 코드 진입 |
 
 ---
 
@@ -221,6 +247,8 @@ status: active
 | 1주 retention (내부 pilot) | ≥ 60% | 미측정 (pilot 미진행) |
 | **CI 3 workflow GREEN 비율** | 100% | 0% (runner 미등록) |
 | **문서·코드 drift 감지율** | doc-gardener 주 1회 | 자동화 완료 (workflow `queued`) |
+| **doc-lint.sh 5 검사 통과율** | 100% | 본 사이클 신규 파일 100% PASS |
+| **가드레일 영구 메모리** | 10종+ | 12종 active (신규 2 본 세션) |
 
 ---
 
@@ -233,6 +261,7 @@ status: active
 - 단기 액션 우선순위 — 완료 항목 표시 변경 (🔴 → 🟡 → ✅)
 - KPI 실측 값 반영 (코드 진입 + pilot 시점)
 - 신규 옵션 추가 (사용자 directive 의 시장 pivot 발생 시)
+- 신규 가드레일 누계 (현 12종)
 
 ---
 
@@ -240,6 +269,7 @@ status: active
 
 - 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../CLAUDE_HARNESS_IMPORTANT.md)
 - 정책: [PLANS.md](../../PLANS.md) · [PRODUCT_SENSE.md](../../PRODUCT_SENSE.md) · [QUALITY_SCORE.md](../../QUALITY_SCORE.md)
+- 정책 본문: [docs/policies/doc-gardening.md](../policies/doc-gardening.md) · [adoption-roadmap.md](../policies/adoption-roadmap.md) · [execution-harness.md](../policies/execution-harness.md)
 - 실행계획: [docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md](../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md)
 - 세션 인계: [docs/exec-plans/active/2026-05-17-session-handoff.md](../exec-plans/active/2026-05-17-session-handoff.md)
 - 동행 snapshot: [vibe-coding.md](vibe-coding.md)
