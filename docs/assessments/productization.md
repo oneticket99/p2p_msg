@@ -180,7 +180,7 @@ status: active
 - **reviewer-agent 재호출** (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가
 - **P1 + P2 정정 완료** — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 `RTC_CHUNK_WINDOW` → `FILE_CHUNK_SIZE/BUFFER` 정정
 - 사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn
-- 기술 완성도 row 의 의 의 의 의 — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달
+- 기술 완성도 row — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달
 
 ### 2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11 신규 — 사이클 12 유지)
 
@@ -188,7 +188,7 @@ status: active
 - handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입
 - 검토 대상 = `app/rtc/` 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + `__init__`) + `app/ui/file_progress_widget.py` = 8 file 누계 ~96 KB
 - reviewer-agent sub-agent spawn (Whitebox `run_in_background: true`) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가
-- 직전 c17a952 의 `git add app/` wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 의 의 의 사후 회수
+- 직전 c17a952 의 `git add app/` wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 사후 회수
 - Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입
 
 ### 2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (사이클 10 신규 — 사이클 11 유지)

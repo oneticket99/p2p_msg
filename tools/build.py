@@ -61,8 +61,8 @@ def build_windows_via_wine() -> int:
 
     Notes
     -----
-    본 함수 = CI (GitHub Actions Ubuntu) 또는 사용자 직접 docker 환경 의 의 의 의 호출.
-    Docker daemon 필요 — `docker version` 의 의 의 의 의 의 사전 점검.
+    본 함수 = CI (GitHub Actions Ubuntu) 또는 사용자 직접 docker 환경 호출.
+    Docker daemon 필요 — `docker version` 사전 점검.
     """
 
     if shutil.which("docker") is None:

@@ -2,7 +2,7 @@
 """users 테이블 repository — 회원가입 + 조회 + 인증 상태 갱신.
 
 DDL 정합: ``server/db/migrations/0001_init.sql`` 의 `users` 테이블.
-모든 함수 = pool 인스턴스 의 의 의 의 의 의 의 의 의 의 의 의 의 의 dependency injection 패턴.
+모든 함수 = pool 인스턴스 dependency injection 패턴.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Any, Optional
 
 @dataclass(frozen=True, slots=True)
 class UserRow:
-    """users row dataclass — repository 의 의 의 의 의 의 의 의 의 의 의 도메인 객체."""
+    """users row dataclass — repository 도메인 객체."""
 
     id: int
     email: str
@@ -110,7 +110,7 @@ async def mark_email_verified(pool: Any, user_id: int) -> None:
 
     Notes
     -----
-    호출자 = 이미 OTP 검증 PASS 검증 완료. 본 함수 = 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 단순 갱신.
+    호출자 = 이미 OTP 검증 PASS 검증 완료. 본 함수 = 단순 갱신.
     """
 
     sql = "UPDATE users SET email_verified = 1 WHERE id = %s"

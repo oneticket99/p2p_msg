@@ -133,7 +133,7 @@ class TestChunkCodec:
         assert decoded_seq == max_seq
 
     def test_round_trip_binary_payload_with_zero_bytes(self) -> None:
-        # null byte 포함 payload — text 인코딩 의 의 의 의 byte-safe 검증
+        # null byte 포함 payload — text 인코딩 byte-safe 검증
         fid = new_file_id()
         payload = b"\x00\xff\x00\xff" * 64
         frame = encode_chunk(fid, 42, payload)
@@ -196,7 +196,7 @@ class TestBuilders:
         assert msg["thumbnail_base64"] == "iVBORw0KGgo="
 
     def test_build_file_meta_coerces_int(self) -> None:
-        # size + total_chunks 의 의 의 외부 입력 (str/float) 의 의 int 변환
+        # size + total_chunks 외부 입력 (str/float) 의 의 int 변환
         msg = build_file_meta(
             file_id="x",
             name="x",
@@ -270,7 +270,7 @@ class TestTextCodec:
             decode_text("{not valid json")
 
     def test_decode_text_non_dict_returns_empty(self) -> None:
-        # JSON array · primitive 의 의 의 의 의 의 dict 폴백
+        # JSON array · primitive dict 폴백
         assert decode_text("[1, 2, 3]") == {}
         assert decode_text("42") == {}
         assert decode_text('"string"') == {}

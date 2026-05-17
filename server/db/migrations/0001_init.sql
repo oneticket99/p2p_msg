@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 -- TooTalk(p2p_msg) MariaDB 초기 스키마 — Phase 1 회원가입 + 시그널링 + 대화 메타.
 -- 본 파일 = `server/db/migrations/0001_init.sql` — migration 도구 의 첫 entry.
--- 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 모든 컬럼 = comment 의무 정합 ([[feedback-db-schema-field-comments]]).
+-- 모든 컬럼 = comment 의무 정합 ([[feedback-db-schema-field-comments]]).
 -- DDL 본문 = MariaDB 10.6+ + InnoDB + utf8mb4_unicode_ci.
 
 -- =============================================================================
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     COMMENT '사용자 표시 이름. UNIQUE. 채팅 sender 표기 + 검색 키. 길이 1~64자. 영문/한글/숫자 + underscore 허용 (앱 측 정규식 검증)',
 
   password_hash VARCHAR(255) NOT NULL
-    COMMENT 'PBKDF2-SHA256 해시 (포맷 `pbkdf2_sha256$<iter>$<salt_b64>$<hash_b64>`). 앱 산출 (app.core.security.hash_password). 평문 저장 절대 금지. 알고리즘 마이그레이션 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 verify 의 의 의 prefix 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의',
+    COMMENT 'PBKDF2-SHA256 해시 (포맷 `pbkdf2_sha256$<iter>$<salt_b64>$<hash_b64>`). 앱 산출 (app.core.security.hash_password). 평문 저장 절대 금지. 알고리즘 마이그레이션 verify prefix 의',
 
   email_verified TINYINT(1) NOT NULL DEFAULT 0
     COMMENT '이메일 OTP 검증 완료 여부 (0=미인증, 1=인증). 회원가입 직후 = 0, OTP 검증 PASS 시 = 1. unverified 사용자 = 로그인 차단 정합',
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
     COMMENT '계정 상태. active=정상, suspended=정지 (관리자 차단), deleted=탈퇴 (soft-delete, 30일 보관 후 hard-delete). 본 컬럼 = active 만 로그인 가능',
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    COMMENT '회원가입 시각 (UTC). 가입일 통계 + 30일 inactive 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의',
+    COMMENT '회원가입 시각 (UTC). 가입일 통계 + 30일 inactive 의',
 
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     COMMENT '레코드 마지막 수정 시각 (UTC). 비번 변경 / 이메일 변경 / status 변경 시 자동 갱신',
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS email_verification (
     COMMENT 'OTP 레코드 PK (AUTO_INCREMENT)',
 
   email VARCHAR(255) NOT NULL
-    COMMENT 'OTP 발송 대상 이메일. users.email 와 join 가능하나 외래키 미설정 (회원가입 직전 의 의 의 의 의 의 의 의 의 의 의 의 의 의 user row 부재 케이스 의 의 의 의 의 의 의 의)',
+    COMMENT 'OTP 발송 대상 이메일. users.email 와 join 가능하나 외래키 미설정 (회원가입 직전 user row 부재 케이스 의)',
 
   purpose ENUM('signup', 'password_reset') NOT NULL
     COMMENT 'OTP 용도. signup=회원가입 인증, password_reset=비번 재설정. 동일 email 의 다른 purpose 동시 발급 허용',
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS email_verification (
     COMMENT '6자리 OTP 평문 의 SHA-256 hex (64자). 앱 산출 (app.core.security.hash_otp). 평문 저장 절대 금지. constant-time 비교 (hmac.compare_digest)',
 
   expires_at TIMESTAMP NOT NULL
-    COMMENT 'OTP 만료 시각 (UTC, 발급 시각 + 3분). 본 시각 초과 = 무효. 만료 OTP = 별도 cleanup cron 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의',
+    COMMENT 'OTP 만료 시각 (UTC, 발급 시각 + 3분). 본 시각 초과 = 무효. 만료 OTP = 별도 cleanup cron 의',
 
   consumed_at TIMESTAMP NULL DEFAULT NULL
     COMMENT 'OTP 사용 시각 (UTC). NULL = 미사용, NOT NULL = 사용 완료 (재사용 차단). 검증 PASS 시 본 컬럼 갱신 + 동일 row 재사용 차단',
@@ -75,10 +75,10 @@ CREATE TABLE IF NOT EXISTS email_verification (
   KEY idx_email_verification_email_purpose (email, purpose, consumed_at),
   KEY idx_email_verification_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Phase 1 이메일 OTP — 회원가입 + 비번 찾기. 3분 만료 + 5회 시도 제한. consumed_at 의 의 의 의 재사용 차단';
+  COMMENT='Phase 1 이메일 OTP — 회원가입 + 비번 찾기. 3분 만료 + 5회 시도 제한. consumed_at 재사용 차단';
 
 
--- 한글 주석: 비번 재설정 토큰 — 이메일 link click 의 의 의 의 의 의 의 의 의 비번 재설정 흐름
+-- 한글 주석: 비번 재설정 토큰 — 이메일 link click 비번 재설정 흐름
 CREATE TABLE IF NOT EXISTS password_reset (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT
     COMMENT '비번 재설정 레코드 PK (AUTO_INCREMENT)',
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS password_reset (
     COMMENT '대상 사용자 PK. users.id 외래키. CASCADE DELETE — 사용자 삭제 시 본 row 도 삭제',
 
   token_hash CHAR(64) NOT NULL
-    COMMENT '32 byte URL-safe 토큰 의 SHA-256 hex (64자). 이메일 link query string 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의. 평문 저장 절대 금지',
+    COMMENT '32 byte URL-safe 토큰 의 SHA-256 hex (64자). 이메일 link query string 의. 평문 저장 절대 금지',
 
   expires_at TIMESTAMP NOT NULL
     COMMENT '토큰 만료 시각 (UTC, 발급 시각 + 30분). 본 시각 초과 = 무효',
@@ -103,20 +103,20 @@ CREATE TABLE IF NOT EXISTS password_reset (
   KEY idx_password_reset_expires (expires_at),
   CONSTRAINT fk_password_reset_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Phase 1 비번 재설정 토큰 — 이메일 link 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 흐름. 30분 만료. 단일 사용 (consumed_at)';
+  COMMENT='Phase 1 비번 재설정 토큰 — 이메일 link 흐름. 30분 만료. 단일 사용 (consumed_at)';
 
 
 -- =============================================================================
 -- 대화 4 TABLE — Phase 1 시그널링 룸 + peer + 파일 메타 + 메시지 로그
 -- =============================================================================
 
--- 한글 주석: 시그널링 룸 — 1:1 또는 group chat 의 의 의 의 가상 채널
+-- 한글 주석: 시그널링 룸 — 1:1 또는 group chat 가상 채널
 CREATE TABLE IF NOT EXISTS rooms (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT
     COMMENT '룸 PK (AUTO_INCREMENT)',
 
   room_code CHAR(16) NOT NULL
-    COMMENT '룸 식별 코드 (16자 URL-safe random). UNIQUE. 외부 공유 + 시그널링 WS 의 의 의 의 query parameter 로 사용',
+    COMMENT '룸 식별 코드 (16자 URL-safe random). UNIQUE. 외부 공유 + 시그널링 WS query parameter 로 사용',
 
   owner_id BIGINT UNSIGNED NOT NULL
     COMMENT '룸 생성자 PK (users.id 외래키). CASCADE DELETE — 사용자 탈퇴 시 본 row 도 삭제. owner = 추방 / 룸 삭제 권한 보유',
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS peers (
   CONSTRAINT fk_peers_room FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
   CONSTRAINT fk_peers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Phase 1 룸 참여자 — N:M (rooms ↔ users) join 테이블. role + left_at 의 의 의 의 의 의 권한/상태 표현';
+  COMMENT='Phase 1 룸 참여자 — N:M (rooms ↔ users) join 테이블. role + left_at 권한/상태 표현';
 
 
 -- 한글 주석: 파일 전송 메타 — Agent #16 FileSender/FileReceiver 결과 영속화
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS file_meta (
     COMMENT '송신자 PK (users.id 외래키). CASCADE DELETE',
 
   name VARCHAR(255) NOT NULL
-    COMMENT '원본 파일명 (UTF-8 한글 그대로 보존). 수신측 의 의 의 의 의 의 _safe_filename 정규화 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의',
+    COMMENT '원본 파일명 (UTF-8 한글 그대로 보존). 수신측 _safe_filename 정규화 의',
 
   size BIGINT UNSIGNED NOT NULL
     COMMENT '파일 크기 (byte). 양수. 송신 전 fstat() 결과',
@@ -239,7 +239,7 @@ CREATE TABLE IF NOT EXISTS messages (
     COMMENT 'kind=file 시 file_meta.file_id 참조 (UUID hex 32자). kind=text/system 시 NULL',
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    COMMENT '메시지 수신 시각 (UTC). 시그널링 서버 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의',
+    COMMENT '메시지 수신 시각 (UTC). 시그널링 서버 의',
 
   PRIMARY KEY (id),
   KEY idx_messages_room_created (room_id, created_at),
@@ -248,4 +248,4 @@ CREATE TABLE IF NOT EXISTS messages (
   CONSTRAINT fk_messages_room FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
   CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Phase 1 메시지 로그 — 텍스트 + 파일 + 시스템 알림 통합 history. (room_id, created_at) index = 채팅 timeline 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의';
+  COMMENT='Phase 1 메시지 로그 — 텍스트 + 파일 + 시스템 알림 통합 history. (room_id, created_at) index = 채팅 timeline 의';

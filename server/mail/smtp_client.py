@@ -110,7 +110,7 @@ async def send_otp_email(to_email: str, code: str, purpose: str) -> None:
     RuntimeError
         aiosmtplib 미설치 시.
     aiosmtplib.errors.SMTPException
-        SMTP 서버 오류 — 호출자 try/except 의 의 의 의 의 의 의 의 의 의 의 의 의 retry.
+        SMTP 서버 오류 — 호출자 try/except retry.
     """
 
     if aiosmtplib is None:

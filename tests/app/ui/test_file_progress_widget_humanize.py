@@ -47,7 +47,7 @@ class TestHumanize:
         assert FileProgressWidget._humanize(1024 * 1024) == "1.0 MB"
 
     def test_100_mb(self) -> None:
-        # 100 MB — 의 의 의 의 의 의 의 의 100.0 MB
+        # 100 MB — 100.0 MB
         assert FileProgressWidget._humanize(100 * 1024 * 1024) == "100.0 MB"
 
     # ---- 4. GB 영역 (1024^3 ≤ n < 1024^4) ----
@@ -67,10 +67,10 @@ class TestHumanize:
         assert FileProgressWidget._humanize(1024**4) == "1.0 TB"
 
     def test_huge_value_still_tb(self) -> None:
-        # 1024 TB 의 의 의 의 의 의 의 TB 단위 의 의 의 의 유지 (units[-1] 경계)
+        # 1024 TB TB 단위 유지 (units[-1] 경계)
         result = FileProgressWidget._humanize(1024**5)
         assert result.endswith(" TB")
-        # 의 의 의 의 의 의 의 의 1024.0 TB
+        # 1024.0 TB
         assert "1024.0" in result
 
     # ---- 6. 부정수 / 음수 / 비정수 입력 폴백 ----
@@ -82,7 +82,7 @@ class TestHumanize:
     def test_float_input_coerced_to_int(self) -> None:
         # int() 강제 변환 — 소수점 절삭
         assert FileProgressWidget._humanize(1024) == "1.0 KB"
-        # type ignore 경고 회피 의 의 의 의 의 의 직접 int 호출
+        # type ignore 경고 회피 직접 int 호출
         assert FileProgressWidget._humanize(int(1024.7)) == "1.0 KB"
 
     @pytest.mark.parametrize(

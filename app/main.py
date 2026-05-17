@@ -80,11 +80,11 @@ def main() -> int:
     asyncio.set_event_loop(loop)
 
     # 4) AuthClient 초기화 — REST endpoint base URL
-    # signaling_url 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ws → http 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    # signaling_url ws → http 의
     api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").rstrip("/ws")
     auth_client = AuthClient(api_base)
 
-    # 5) 메인 윈도우 표시 (AUTH_REQUIRED=1 시 의 의 의 의 의 의 의 의 의 의 의 로그인 우선 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의)
+    # 5) 메인 윈도우 표시 (AUTH_REQUIRED=1 시 로그인 우선 의)
     window = MainWindow(config=config)
     window.show()
 
@@ -93,7 +93,7 @@ def main() -> int:
         try:
             loop.run_forever()
         finally:
-            # auth_client close 의 의 의 의 의 의 의 의 의 graceful
+            # auth_client close graceful
             loop.run_until_complete(auth_client.close())
     return 0
 

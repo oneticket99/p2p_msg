@@ -461,7 +461,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - P2 ARCHITECTURE §5 RTC_CHUNK_WINDOW → FILE_CHUNK_SIZE/BUFFER
 - reviewer-agent 재호출 sub-agent — **CONDITIONAL PASS** (직전 P0 해소 + 신규 위반 1건 detect)
 - 신규 위반 = `docs/html/ARCHITECTURE.html` mirror 미반영 (CLAUDE.md §10-6 위반) → ARCHITECTURE.html sub-agent rewrite (§5 + §7 정정)
-- handoff §9 #8 ✅ 진행 (정식 GO 직전 1 step 의 의 mirror 정정 후 사이클 13 재호출 의 의 의 정식 GO 도달)
+- handoff §9 #8 ✅ 진행 (정식 GO 직전 1 step 의 의 mirror 정정 후 사이클 13 재호출 정식 GO 도달)
 
 ### 8.34 snapshot 사이클 12 + HTML 2 (사이클 10 신규)
 
@@ -578,7 +578,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 #### 9.2.2 잔존 (사용자 직접 의무 / 별도 cycle)
 
-- `tests/integration/` — aiortc 실 통합 + DataChannel 점진 send + ACK round-trip + 무결성 SHA-256 e2e (av wheel build = ffmpeg 의존, macOS 의 의 의 `brew install ffmpeg` 의무)
+- `tests/integration/` — aiortc 실 통합 + DataChannel 점진 send + ACK round-trip + 무결성 SHA-256 e2e (av wheel build = ffmpeg 의존, macOS `brew install ffmpeg` 의무)
 - Windows 환경 검증 — wine cross-compile build (Ubuntu + cdrx docker — self-hosted runner 또는 사용자 직접 환경)
 - AC-04-3 100ms 실측 — `FILE_BACKPRESSURE_POLL_MS` 실 측정 (현 50ms default — dogfooding 시점 측정)
 - `app/observability/` 디렉토리 신설 (Phase 2 진입 전) — `logging_adapter.py` (logger prefix 일관 강제 + level 동적 갱신)

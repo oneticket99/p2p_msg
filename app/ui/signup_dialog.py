@@ -109,7 +109,7 @@ class SignupDialog(QDialog):
         return page
 
     def _on_signup_clicked(self) -> None:
-        """회원가입 버튼 클릭 — async task 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 dispatch."""
+        """회원가입 버튼 클릭 — async task dispatch."""
 
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()

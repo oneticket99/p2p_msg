@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""비번 재설정 use case — 이메일 OTP 의 의 의 의 의 의 의 의 의 비번 재설정.
+"""비번 재설정 use case — 이메일 OTP 비번 재설정.
 
 흐름:
 1. request_reset(email) → OTP 발급 + 이메일 발송 (purpose=password_reset)

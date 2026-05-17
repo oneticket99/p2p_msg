@@ -2,7 +2,7 @@
 """회원가입 use case — email + username + password 검증 + OTP 발송.
 
 [[project-auth-email-otp-required]] 정합 — 회원가입 직후 email_verified=0,
-OTP 검증 PASS 시 verify_otp.py 의 의 의 의 의 의 의 의 의 의 의 mark_email_verified.
+OTP 검증 PASS 시 verify_otp.py mark_email_verified.
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ async def register_user(
     _validate_username(username)
     _validate_password(password)
 
-    # 중복 사전 검증 — UNIQUE 의 의 의 의 의 의 의 의 의 의 RACE 의 의 의 의 의 의 의 의 의 INSERT 시점 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    # 중복 사전 검증 — UNIQUE RACE INSERT 시점 의
     existing_email = await users_repo.get_user_by_email(pool, email_norm)
     if existing_email is not None:
         raise EmailAlreadyRegistered(f"email 중복 — {email_norm}")

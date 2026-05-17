@@ -36,7 +36,7 @@ class TestSafeFilename:
         assert _safe_filename("hello.txt") == "hello.txt"
 
     def test_korean_filename_preserved(self) -> None:
-        # 한글 파일명 의 의 의 그대로 보존 (송수신 BPE 호환 정합)
+        # 한글 파일명 그대로 보존 (송수신 BPE 호환 정합)
         assert _safe_filename("안녕하세요.txt") == "안녕하세요.txt"
 
     def test_path_traversal_strip_parent(self) -> None:
@@ -44,21 +44,21 @@ class TestSafeFilename:
         assert _safe_filename("../etc/passwd") == "passwd"
 
     def test_path_traversal_strip_deep(self) -> None:
-        # 다중 상위 의 의 의 basename 만 남김
+        # 다중 상위 basename 만 남김
         assert _safe_filename("../../../../etc/passwd") == "passwd"
 
     def test_absolute_path_basename_only(self) -> None:
         assert _safe_filename("/etc/passwd") == "passwd"
 
     def test_windows_path_separator(self) -> None:
-        # 백슬래시는 macOS basename 의 의 의 분리자 미인식 → 그대로
-        # 단 보안상 의 의 의 의 의 의 의 의 의 윈도우 path 의 의 의 의 의 우려
+        # 백슬래시는 macOS basename 분리자 미인식 → 그대로
+        # 단 보안상 윈도우 path 우려
         result = _safe_filename("C:\\Windows\\System32\\evil.exe")
-        # macOS basename 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+        # macOS basename 의
         assert result == "C:\\Windows\\System32\\evil.exe" or "evil.exe" in result
 
     def test_null_byte_removed(self) -> None:
-        # null byte injection — C string 종료 의 의 의 의 의 위험
+        # null byte injection — C string 종료 위험
         assert _safe_filename("hello\x00.txt") == "hello.txt"
 
     def test_dot_only_returns_default(self) -> None:
@@ -74,7 +74,7 @@ class TestSafeFilename:
         assert _safe_filename("   ") == "untitled.bin"
 
     def test_none_input_returns_default(self) -> None:
-        # 의 의 의 의 의 의 의 의 None 의 의 의 의 의 의 의 의 의 의 의 폴백
+        # None 폴백
         assert _safe_filename(None) == "untitled.bin"  # type: ignore[arg-type]
 
     def test_trailing_whitespace_stripped(self) -> None:

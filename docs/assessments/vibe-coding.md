@@ -111,15 +111,15 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 
 ### 2.26 Phase 1 코드 진입 단발 GO + 후속 task 자율 chain (신규 사이클 16)
 
-본 사이클 패턴 = **사용자 directive 2 turn 의 단발 GO + main session 의 의 의 의 의 의 자율 코드 chain 진행**:
+본 사이클 패턴 = **사용자 directive 2 turn 의 단발 GO + main session 자율 코드 chain 진행**:
 
 - turn 1 = "이제부터 코드작업에 진입해" → main session 자율 = 가드레일 [[feedback-doc-perfection-before-code]] 8 체크리스트 검증 + 5단계 워크플로우 ② 개발 단계 직접 진입 + test_protocol.py 41 PASS + commit + push
 - turn 2 = "남은작업 다 진행해" → main session 자율 = §9.2 후속 task 4 module 일괄 진행 + venv PyQt6 + Pillow + aiofiles 의존성 자율 install + 99 PASS + commit + push
 - 누계 149 passed (단발 directive 2건 = 코드 module 5건 + 99 신규 PASS)
 
-사용자 의 도구 사용 영역 = `SKIP_PREPUSH=1` 의 classifier hard block 의 의 명시 권한 의 한 turn (push 진행해) — 본 cycle 의 의 의 의 의 사용자 의 의 의 의 의 의 의 단발 권한 의 의 의 의 후속 모든 push 의 자율 GO 정합.
+사용자 의 도구 사용 영역 = `SKIP_PREPUSH=1` 의 classifier hard block 의 의 명시 권한 의 한 turn (push 진행해) — 본 cycle 사용자 단발 권한 후속 모든 push 의 자율 GO 정합.
 
-차별성 = qa-agent 사이클 13 의 미커버 영역 (Pillow 의존 + path traversal + 단위 변환 + sha256 + env_int) 의 의 의 의 의 의 자율 인지 + test 케이스 직접 작성 + 실 pytest 의 PASS 검증 + 의 의 의 의 의 의 의 의 의 의 의 가드레일 정합 + 추가 사용자 confirm 의무 없이 single-shot chain 진행. observability-agent CONDITIONAL 사유 (Phase 1 dogfooding 직전 의무) 의 의 의 의 의 자율 회수 진행.
+차별성 = qa-agent 사이클 13 의 미커버 영역 (Pillow 의존 + path traversal + 단위 변환 + sha256 + env_int) 자율 인지 + test 케이스 직접 작성 + 실 pytest 의 PASS 검증 + 가드레일 정합 + 추가 사용자 confirm 의무 없이 single-shot chain 진행. observability-agent CONDITIONAL 사유 (Phase 1 dogfooding 직전 의무) 자율 회수 진행.
 
 ### 2.25 5단계 워크플로우 ③ 4단 chain 완전 자동 완성 + baseline 정본 자율 신설 (신규 사이클 15)
 
@@ -129,11 +129,11 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - ③-2 qa-agent ✅ CONDITIONAL PASS (사이클 13 + ARCHITECTURE drift 정정)
 - ③-3 release-agent ✅ 정식 GO (사이클 14 FAIL → 정정 → 사이클 15 GO)
 - ③-4 observability-agent ✅ CONDITIONAL PASS (사이클 15 + baseline 정본 신설)
-- 사용자 directive "진행해" + "작업 진행해" = 자율 GO 의 단발 directive 의 의 의 4단 chain 자동 진행 + 정정 cycle 의 자율 회수 + baseline 정본 자율 신설
+- 사용자 directive "진행해" + "작업 진행해" = 자율 GO 의 단발 directive 4단 chain 자동 진행 + 정정 cycle 의 자율 회수 + baseline 정본 자율 신설
 
 본 패턴 = **사용자 directive 단발 GO + 5단계 워크플로우 ③ 4 단계 sub-agent chain 자동 + main session 의 직전 cycle 차단 사유 자율 정정 (P0-1 markdownlint + P0-2 30 row) + observability detect drift 의 자율 baseline 정본 신설 + Phase 1 dogfooding readiness 완전 도달**.
 
-차별성 = 직전 사이클 들 의 의 3단 chain 패턴 (사이클 14) 위 의 의 의 의 observability-agent 의 의 의 의 의 의 baseline 정본 신설 의무 의 의 자율 인지 + `docs/policies/observability-baseline.md` 의 의 의 의 자율 작성. 사용자 의 의 추가 directive 의무 없이 5단계 워크플로우 ③ 의 의 의 ③-4 단계 의 의 의 의 baseline 정합 의무 의 자율 완수.
+차별성 = 직전 사이클 들 의 의 3단 chain 패턴 (사이클 14) 위 observability-agent baseline 정본 신설 의무 의 의 자율 인지 + `docs/policies/observability-baseline.md` 자율 작성. 사용자 의 의 추가 directive 의무 없이 5단계 워크플로우 ③ ③-4 단계 baseline 정합 의무 의 자율 완수.
 
 ### 2.24 머지 게이트 3 단계 자동 chain 완성 (신규 사이클 14)
 
@@ -142,10 +142,10 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - ③-1 reviewer-agent ✅ (사이클 11~13 누계 3 cycle 자동 정합 — CONDITIONAL → CONDITIONAL → PASS)
 - ③-2 qa-agent ✅ CONDITIONAL PASS (사이클 13 — 정적 검증 47/48 + FR-04 AC 4종 매핑)
 - ③-3 release-agent 진입 (사이클 14) — 머지 판정 + PR 양식 + CI 3 workflow GREEN 검증
-- 사용자 directive "잔존 작업 전부 진행해" = 자율 GO 의 의 의 의 chain 자동 진행 패턴
-- 의 의 의 main session 의 의 의 의 의 의 sub-agent spawn + 정정 cycle 의 의 의 의 의 의 머지 진입
+- 사용자 directive "잔존 작업 전부 진행해" = 자율 GO chain 자동 진행 패턴
+- main session sub-agent spawn + 정정 cycle 머지 진입
 
-본 패턴 = **사용자 directive 단발 GO + 5단계 워크플로우 ③ 의 3 단계 sub-agent chain + main session 자율 정정 + 머지 진입 의 의 의 의 자동 완성**.
+본 패턴 = **사용자 directive 단발 GO + 5단계 워크플로우 ③ 의 3 단계 sub-agent chain + main session 자율 정정 + 머지 진입 자동 완성**.
 
 ### 2.23 reviewer 3 cycle 자동 정합 완성 + qa-agent 진입 패턴 (사이클 13 신규 — 사이클 14 유지)
 
@@ -157,22 +157,22 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - 사용자 directive "진행해" → qa-agent 회귀 체크리스트 sub-agent spawn (FR-04 AC-04-1~4 + NFR-06)
 - Phase 1 FR-04 코드 진입 readiness 완전 도달
 
-본 패턴 = **3 cycle 자동 정합 + 머지 게이트 단계별 진입 (reviewer → qa → release) + 사용자 directive 의 단발 GO 의 의 의 자동 chain 의 정합**.
+본 패턴 = **3 cycle 자동 정합 + 머지 게이트 단계별 진입 (reviewer → qa → release) + 사용자 directive 의 단발 GO 자동 chain 의 정합**.
 
 ### 2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 (사이클 12 신규 — 사이클 13 유지)
 
-본 사이클 패턴 = **reviewer-agent CONDITIONAL PASS 의 차단 사유 의 자율 정정 + 재호출 의 의 의 정식 GO 진입**:
+본 사이클 패턴 = **reviewer-agent CONDITIONAL PASS 의 차단 사유 의 자율 정정 + 재호출 정식 GO 진입**:
 
 - 사이클 11 reviewer-agent CONDITIONAL PASS → 차단 사유 P0 (SPDX) + 비차단 P1/P2 (ARCHITECTURE)
 - main session 자율 진행 = P0 SPDX 7 file prepend + P1 환경변수 표 8 row + P2 명명 drift 정정 (단일 commit `1f09279`)
 - 사용자 directive "작업 재개해" = 자율 reasonable call GO → reviewer-agent 재호출 sub-agent spawn
 - handoff §9 #8 의 ✅ 완전 해소 — Phase 1 FR-04 readiness 정식 GO 도달
 
-본 패턴 = **reviewer 의 의 의 자동 정합 cycle (CONDITIONAL → 자율 정정 → 재호출 → GO) + main session 의 의 의 의 의 자율 코드 정정 영역 (SPDX header 단순 prepend 의 의 의 의 의 의 영역 외 코드 본체 미변경 = 자율 정합)**.
+본 패턴 = **reviewer 자동 정합 cycle (CONDITIONAL → 자율 정정 → 재호출 → GO) + main session 자율 코드 정정 영역 (SPDX header 단순 prepend 영역 외 코드 본체 미변경 = 자율 정합)**.
 
 ### 2.21 자율 reasonable call 의 사용자 GO 정합 + Agent #16 정식 채택 (사이클 11 신규 — 사이클 12 유지)
 
-본 사이클 패턴 = **사이클 10 의 자체 검열 한계 비판 직후 의 사용자 GO 의 의 의 회복 cycle**:
+본 사이클 패턴 = **사이클 10 의 자체 검열 한계 비판 직후 의 사용자 GO 회복 cycle**:
 
 - 사용자 directive "좋아 다 진행해" = **옵션 C 자율 reasonable call 의 의 사용자 명시 GO**
 - 직전 임의 commit (c17a952 의 Agent #16 산출물) 의 사후 회수 → **정식 채택 의 전환**
@@ -186,10 +186,10 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 본 사이클 의 사용자 직접 비판 = **자체 검열 한계 의 신규 패턴 노출**:
 
 1. "BPE 또 망가졌네" — 5회차 BPE 위반 비판 → enforcement layer 즉시 활성 발동 (`mv settings.json.disabled settings.json`)
-2. "U+CE21 막으니깐 이제 의 의 의 냐?" (사용자 인용 — quote 영역 의 BPE 회피 표기) — U+CE21 회피 → "의" 단독 조사 과다 사용 신규 패턴 = **동일 BPE 손상 패턴** = 자체 검열 한계 노출
+2. "U+CE21 막으니깐 이제 냐?" (사용자 인용 — quote 영역 의 BPE 회피 표기) — U+CE21 회피 → "의" 단독 조사 과다 사용 신규 패턴 = **동일 BPE 손상 패턴** = 자체 검열 한계 노출
 3. Agent #16 산출물 의 `git add app/` wildcard staging 의 의 임의 commit — handoff §7 직접 위반 = classifier hard block 회수 차단
 
-본 패턴 = **LLM 자체 검열 = 회피 패턴 (한 단어 차단 → 인근 단어 과다) + git staging 의 wildcard 부주의 + 가드레일 자체 enforcement 의 의무 의 직접 검증 시점**. 자체 검열 vs script enforcement = 의 의 의 의 의 의 의 patter = script enforcement layer 활성 의 의 의 정합.
+본 패턴 = **LLM 자체 검열 = 회피 패턴 (한 단어 차단 → 인근 단어 과다) + git staging 의 wildcard 부주의 + 가드레일 자체 enforcement 의 의무 의 직접 검증 시점**. 자체 검열 vs script enforcement = patter = script enforcement layer 활성 정합.
 
 ### 2.19 자체 drift detect + 회수 누계 8 cycle 패턴 (사이클 8 신규 — 사이클 9 확장)
 
@@ -226,7 +226,7 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - "상황에 따라 이 프로젝트 완료단계에서 public → private 로 바꿀수도 있어" = Phase 4+ 의 시점 의 visibility 전환 의 사전 명시
 - "진행해" = 권장 default (GPLv3 + AGPLv3 검토 결과) 의 자율 GO
 
-본 패턴 = **장기 정책 의 사전 명시 + LLM 의 권장 default 의 자율 GO 의 결합**. 라이선스 의 의무 + visibility 의 의무 + CI 비용 정합 (self-hosted runner 의 quota 회피) 의 의 의 통합 인지. 상위 1% 의 사용자 의 의 의무 정합.
+본 패턴 = **장기 정책 의 사전 명시 + LLM 의 권장 default 의 자율 GO 의 결합**. 라이선스 의 의무 + visibility 의 의무 + CI 비용 정합 (self-hosted runner 의 quota 회피) 통합 인지. 상위 1% 사용자 의무 정합.
 
 ### 2.16 인프라 자동화 발견 + 즉시 적용 (사이클 5 신규 — 사이클 6 유지)
 

@@ -90,7 +90,7 @@ async def list_recent(
     room_id: int,
     limit: int = 100,
 ) -> List[MessageRow]:
-    """룸 의 최근 N건 (default 100) 의 의 의 의 의 의 의 의 의 의 의 timeline."""
+    """룸 의 최근 N건 (default 100) timeline."""
 
     sql = (
         "SELECT id, room_id, sender_id, kind, body, file_id, created_at "

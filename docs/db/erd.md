@@ -150,7 +150,7 @@ erDiagram
   1. `server/db/migrations/000N_<name>.sql` 신규 migration (append-only)
   2. `docs/db/erd.md` 본 ERD 갱신 (mermaid + 5요소 표)
   3. `ARCHITECTURE.md` §부록 B (DB schema) 동시 갱신
-  4. `docs/exec-plans/active/2026-05-17-session-handoff.md` §5 정책 표 의 의 의 의 의 의 의 의 의 의 의 갱신
+  4. `docs/exec-plans/active/2026-05-17-session-handoff.md` §5 정책 표 갱신
 
 ## 7. 참조
 

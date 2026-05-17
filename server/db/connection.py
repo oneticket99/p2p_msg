@@ -2,7 +2,7 @@
 """asyncmy 기반 MariaDB 연결 pool wrapper.
 
 본 모듈 = 시그널링 서버 의 모든 DB 접근 entry point.
-환경변수 의 의 의 의 의 설정 (정본 §E 12-factor) — 하드코딩 금지.
+환경변수 설정 (정본 §E 12-factor) — 하드코딩 금지.
 
 사용 패턴::
 
@@ -31,7 +31,7 @@ from typing import Any, Optional
 
 log = logging.getLogger(__name__)
 
-# asyncmy import — 의 의 wheel install 시점 의 의 의 ImportError 대응
+# asyncmy import — 의 의 wheel install 시점 ImportError 대응
 try:
     import asyncmy
 except ImportError:  # pragma: no cover - 의존성 미설치 환경

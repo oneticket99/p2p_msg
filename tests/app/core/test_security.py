@@ -46,7 +46,7 @@ class TestPasswordHash:
         assert re.match(r"^[A-Za-z0-9_-]+$", parts[3])
 
     def test_hash_unique_per_call(self) -> None:
-        # 같은 비번 의 의 의 의 salt 가 random — 매 호출 결과 다름
+        # 같은 비번 salt 가 random — 매 호출 결과 다름
         a = hash_password("same_password")
         b = hash_password("same_password")
         assert a != b
@@ -94,7 +94,7 @@ class TestOtp:
         assert code.isdigit()
 
     def test_otp_zero_padding_preserved(self) -> None:
-        # 1000회 generate 의 의 의 의 의 leading-zero OTP 등장 가능성 검증 — 모든 결과 길이 = 6
+        # 1000회 generate leading-zero OTP 등장 가능성 검증 — 모든 결과 길이 = 6
         for _ in range(200):
             code = generate_otp_code()
             assert len(code) == 6
@@ -143,7 +143,7 @@ class TestSessionToken:
         assert len(token) >= 32
 
     def test_token_unique(self) -> None:
-        # 100회 generate 의 의 의 의 의 collision 없음 (256 bit entropy)
+        # 100회 generate collision 없음 (256 bit entropy)
         tokens = {generate_session_token() for _ in range(100)}
         assert len(tokens) == 100
 

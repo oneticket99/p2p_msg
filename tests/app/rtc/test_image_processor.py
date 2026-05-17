@@ -31,7 +31,7 @@ from app.rtc.image_processor import (
     make_thumbnail_base64,
 )
 
-# Pillow import — 테스트 fixture 의 의 의 의 의 의 PNG 생성 의 위
+# Pillow import — 테스트 fixture PNG 생성 의 위
 from PIL import Image  # type: ignore[import-not-found]
 
 
@@ -52,7 +52,7 @@ def png_path(tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def rgba_png_path(tmp_path: Path) -> Path:
-    """RGBA 알파 채널 의 PNG — JPEG 저장 시 RGB 변환 검증 의 의 의."""
+    """RGBA 알파 채널 PNG — JPEG 저장 시 RGB 변환 검증."""
 
     target = tmp_path / "rgba.png"
     image = Image.new("RGBA", (100, 100), color=(255, 0, 0, 128))
@@ -193,7 +193,7 @@ class TestMakeThumbnailSync:
             assert out.size[1] <= 100
 
     def test_rgba_converted_to_rgb_for_jpeg(self, rgba_png_path: Path) -> None:
-        # RGBA → JPEG 의 의 alpha 채널 의 의 의 의 RGB 변환 의 의무
+        # RGBA → JPEG 의 의 alpha 채널 RGB 변환 의 의무
         raw = _make_thumbnail_sync(
             rgba_png_path,
             max_size=(50, 50),
@@ -226,7 +226,7 @@ class TestMakeThumbnailSync:
         assert raw[:8] == b"\x89PNG\r\n\x1a\n"
 
     def test_aspect_ratio_preserved(self, png_path: Path) -> None:
-        # 500x300 → 100x100 박스 의 의 의 의 비율 유지 = 100x60
+        # 500x300 → 100x100 박스 비율 유지 = 100x60
         raw = _make_thumbnail_sync(
             png_path,
             max_size=(100, 100),
@@ -249,7 +249,7 @@ class TestMakeThumbnailBase64:
     @pytest.mark.asyncio
     async def test_returns_valid_base64(self, png_path: Path) -> None:
         b64 = await make_thumbnail_base64(png_path)
-        # base64 의 의 의 의 utf-8 안전 + 정확한 디코딩
+        # base64 utf-8 안전 + 정확한 디코딩
         assert isinstance(b64, str)
         decoded = base64.b64decode(b64, validate=True)
         # 디코딩 결과 = JPEG bytes (default format)
@@ -257,7 +257,7 @@ class TestMakeThumbnailBase64:
 
     @pytest.mark.asyncio
     async def test_custom_max_size_override(self, png_path: Path) -> None:
-        # 작은 박스 의 의 의 의 의 의 강제 의 의 의 의 결과 의 의 크기 ≤ 50
+        # 작은 박스 강제 결과 의 의 크기 ≤ 50
         b64 = await make_thumbnail_base64(png_path, max_size=(50, 50))
         decoded = base64.b64decode(b64)
         with Image.open(io.BytesIO(decoded)) as out:
@@ -281,6 +281,6 @@ class TestMakeThumbnailBase64:
 
     @pytest.mark.asyncio
     async def test_nonexistent_file_raises(self, tmp_path: Path) -> None:
-        # 존재 안 함 의 의 의 의 Pillow 의 FileNotFoundError propagate
+        # 존재 안 함 Pillow 의 FileNotFoundError propagate
         with pytest.raises(FileNotFoundError):
             await make_thumbnail_base64(tmp_path / "missing.png")

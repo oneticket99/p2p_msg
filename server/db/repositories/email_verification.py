@@ -96,7 +96,7 @@ async def find_active_otp(
 
 
 async def increment_attempt(pool: Any, otp_id: int) -> int:
-    """검증 시도 +1 — 5회 초과 시 본 row 무효 (find_active_otp 의 의 의 의 의 의 의 의 자동 제외).
+    """검증 시도 +1 — 5회 초과 시 본 row 무효 (find_active_otp 자동 제외).
 
     Returns
     -------

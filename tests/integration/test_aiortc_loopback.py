@@ -17,7 +17,7 @@ import asyncio
 
 import pytest
 
-# aiortc import — 의 의 av wheel install 의 의 의 의 의 모듈 의 의 의 의 import 의 실패 시 skip
+# aiortc import — 의 의 av wheel install 모듈 import 의 실패 시 skip
 pytest.importorskip("aiortc", reason="aiortc + av wheel 의 install 의무 (brew install ffmpeg)")
 
 from aiortc import RTCPeerConnection, RTCSessionDescription  # noqa: E402
@@ -34,13 +34,13 @@ async def _negotiate(pc1: RTCPeerConnection, pc2: RTCPeerConnection) -> None:
     """SDP offer/answer + ICE candidate 직접 교환.
 
     실 시그널링 서버 없이 동일 프로세스 의 두 peer 의 SDP 본문 만 교환한다.
-    aiortc 의 의 의 ICE gathering 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 await.
+    aiortc ICE gathering await.
     """
 
     offer = await pc1.createOffer()
     await pc1.setLocalDescription(offer)
 
-    # ICE gathering 완료 대기 (loopback 의 의 의 의 의 단순 동기 패턴 OK)
+    # ICE gathering 완료 대기 (loopback 단순 동기 패턴 OK)
     await pc2.setRemoteDescription(
         RTCSessionDescription(sdp=pc1.localDescription.sdp, type=pc1.localDescription.type)
     )
@@ -86,7 +86,7 @@ class TestDataChannelLoopback:
 
             await _negotiate(pc1, pc2)
 
-            # 메시지 도착 의 의 의 의 의 5초 timeout — CI 환경 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+            # 메시지 도착 5초 timeout — CI 환경 의
             msg = await asyncio.wait_for(received, timeout=10.0)
             assert msg == "hello tootalk"
         finally:
@@ -102,7 +102,7 @@ class TestDataChannelLoopback:
         try:
             channel = pc1.createDataChannel("binary")
             received: asyncio.Future[bytes] = asyncio.get_event_loop().create_future()
-            payload = b"\x00\xff" * 1024  # 2 KiB null + 0xFF 의 의 의 byte-safe 검증
+            payload = b"\x00\xff" * 1024  # 2 KiB null + 0xFF byte-safe 검증
 
             @channel.on("open")
             def _on_open() -> None:

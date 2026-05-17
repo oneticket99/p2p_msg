@@ -145,7 +145,7 @@ def hash_otp(code: str) -> str:
     """OTP 평문 → SHA-256 hex (DB 저장 + 검증 constant-time 비교).
 
     OTP = 짧은 6자리 정수 — brute force timing attack 방어 = 해시 후 비교.
-    PBKDF2 같이 무거운 KDF 미사용 (만료 3분 + try count 제한 의 의 의 의 의 의 충분).
+    PBKDF2 같이 무거운 KDF 미사용 (만료 3분 + try count 제한 충분).
     """
 
     return hashlib.sha256(code.encode("utf-8")).hexdigest()

@@ -101,7 +101,7 @@ async def build_app() -> web.Application:
     Returns:
         준비 완료된 ``web.Application``.
     """
-    # 한글 주석: middleware 는 신규 인스턴스 의 의 의 의 의 의 의 의 의 의 의 의 인자 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    # 한글 주석: middleware 는 신규 인스턴스 인자 의
     app = web.Application(middlewares=[auth_middleware])
 
     # 시그널링 룸 registry (기존)
@@ -114,7 +114,7 @@ async def build_app() -> web.Application:
     # auth REST endpoint 등록
     register_auth_routes(app)
 
-    # DB pool — DB_ENABLED=1 시 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 활성. 로컬 dev 시 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    # DB pool — DB_ENABLED=1 시 활성. 로컬 dev 시 의
     if os.environ.get("DB_ENABLED", "0").strip() == "1":
         app["db_pool"] = await create_pool()
     else:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""aiohttp 세션 검증 미들웨어 — Authorization Bearer 헤더 의 의 의 의 의 의 의 의 의 의 검증."""
+"""aiohttp 세션 검증 미들웨어 — Authorization Bearer 헤더 검증."""
 
 from __future__ import annotations
 

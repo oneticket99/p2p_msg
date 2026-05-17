@@ -43,7 +43,7 @@ async def login_user(
     email_norm = email.strip().lower()
     user_row = await users_repo.get_user_by_email(pool, email_norm)
 
-    # constant-time 의 의 의 의 의 의 의 의 의 — 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    # constant-time — 의
     if user_row is None or not verify_password(password, user_row.password_hash):
         raise InvalidCredentials("이메일 또는 비번 불일치")
 

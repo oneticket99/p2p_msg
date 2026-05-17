@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """``server.mail.smtp_client.build_otp_email`` 단위 테스트.
 
-실 SMTP 전송 = integration 의 의 의 의 의 의 별도 cycle 위탁. 본 module = 메시지 빌더 만 검증.
+실 SMTP 전송 = integration 별도 cycle 위탁. 본 module = 메시지 빌더 만 검증.
 """
 
 from __future__ import annotations
