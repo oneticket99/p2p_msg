@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 22:05 (사이클 9 갱신 — 본 세션 누계 commit 49+ 반영, Agent #16 정식 채택 + reviewer-agent 검토 진입 + snapshot 사이클 11). 최신 commit `a260190`.
+> 본 인계 시점: 2026-05-17 22:45 (사이클 10 갱신 — 본 세션 누계 commit 50+ 반영, reviewer 재호출 + Agent #16 정식 GO + snapshot 사이클 12). 최신 commit `1f09279`.
 
 ---
 
@@ -452,6 +452,23 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - vibe-coding 4.85 (비판·재교정 4 → 4.5 ▲ 회복) + §2.21 자율 reasonable call 사용자 GO 정합 신규
 - §3.1 pivot 사이클 11 row 추가
 - HTML 2종 sub-agent 병렬 재생성 (사이클 11 정합)
+
+### 8.33 reviewer 재호출 + P0/P1/P2 정정 + ARCHITECTURE.html mirror 정정 (사이클 10 신규)
+
+- 사용자 directive "작업 재개해" = 자율 진행 GO
+- P0 SPDX-License-Identifier header prepend 7 file (app/rtc/ 6 .py + app/ui/file_progress_widget.py)
+- P1 ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*)
+- P2 ARCHITECTURE §5 RTC_CHUNK_WINDOW → FILE_CHUNK_SIZE/BUFFER
+- reviewer-agent 재호출 sub-agent — **CONDITIONAL PASS** (직전 P0 해소 + 신규 위반 1건 detect)
+- 신규 위반 = `docs/html/ARCHITECTURE.html` mirror 미반영 (CLAUDE.md §10-6 위반) → ARCHITECTURE.html sub-agent rewrite (§5 + §7 정정)
+- handoff §9 #8 ✅ 진행 (정식 GO 직전 1 step 의 의 mirror 정정 후 사이클 13 재호출 의 의 의 정식 GO 도달)
+
+### 8.34 snapshot 사이클 12 + HTML 2 (사이클 10 신규)
+
+- productization 3.95 (=) + §2.18 reviewer 정식 GO + Phase 1 FR-04 readiness 도달 신규
+- vibe-coding 4.85 + §2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 신규
+- §3.1 pivot 사이클 12 row 추가
+- HTML 2종 sub-agent 병렬 재생성 (사이클 12 정합)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -467,7 +484,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
 | 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
 | 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
-| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ 진입 (사이클 11 cycle, 사용자 directive "좋아 다 진행해" 옵션 C 자율 GO) | reviewer-agent sub-agent spawn — Whitebox `run_in_background: true` (Phase 1 코드 진입 readiness 평가 진행 중) |
+| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ **완료** (사이클 11 + 12) | 사이클 11 CONDITIONAL PASS (차단 1건 SPDX) → main session P0+P1+P2 정정 (commit 1f09279) → 사이클 12 reviewer 재호출 (정식 GO 평가) |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 
 ### 9.1 잔존 task 진입 가능 (가드레일 통과 후)

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 22:00 (commit `a260190` 직후 — 본 세션 누계 48 commit 반영, 사이클 11 — Agent #16 정식 채택 + reviewer-agent 검토 진입)
+> 최근 갱신 시점: 2026-05-17 22:40 (commit `1f09279` 직후 — 본 세션 누계 49 commit 반영, 사이클 12 — reviewer-agent 재호출 + 정식 GO 평가)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 3 / 5 | = | CI 8 job GREEN + wine + SMTP + fork PR strict (변동 없음 — 라이선스 정책 = 코드 미진입) |
+| 기술 완성도 | 3.2 / 5 | 3 → 3.2 ▲ | CI 8 job GREEN + wine + SMTP + fork PR strict + **Agent #16 정식 채택 ~96 KB 코드 tracked + SPDX header 7 file + reviewer 재호출 CONDITIONAL PASS** (Phase 1 FR-04 readiness) |
 | 시장 적합성 | 2.5 / 5 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
 | 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar |
 | 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **3.95 / 5** | 3.85 → 3.95 ▲ | **인프라/문서/QA/차별화/CI/보안/라이선스 완성 — 옵션 B Toonation 통합 즉시 진입 가능 + private 전환 시점 명시** |
+| **종합** | **4.0 / 5** | 3.95 → 4.0 ▲ | **인프라/문서/QA/차별화/CI/보안/라이선스 완성 + Agent #16 정식 채택 + reviewer 재호출 CONDITIONAL PASS — Phase 1 FR-04 readiness 도달** |
 
 ---
 
@@ -140,7 +140,15 @@ status: active
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
-### 2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (신규 사이클 11)
+### 2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (신규 사이클 12)
+
+- 사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit `1f09279`
+- **reviewer-agent 재호출** (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가
+- **P1 + P2 정정 완료** — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 `RTC_CHUNK_WINDOW` → `FILE_CHUNK_SIZE/BUFFER` 정정
+- 사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn
+- 기술 완성도 row 의 의 의 의 의 — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달
+
+### 2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11 신규 — 사이클 12 유지)
 
 - **사용자 directive 2026-05-17** — "좋아 다 진행해" = **옵션 C 자율 GO** (Agent #16 산출물 정식 채택)
 - handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입

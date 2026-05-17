@@ -192,7 +192,7 @@ sequenceDiagram
 <ul>
   <li>시그널링 단계는 9개 envelope 안에서만 진행 (<a href="../../server/protocol.py">server/protocol.py</a> 5종 클라→서버, 4종 서버→클라).</li>
   <li>DataChannel envelope 은 별도 스키마이며 시그널링 envelope 와 절대 섞이지 않는다.</li>
-  <li>파일 송수신은 <code>CHUNK_ACK</code> 기반 backpressure 로 흐름 제어. 송신 영역 윈도우 크기는 <code>.env</code> <code>RTC_CHUNK_WINDOW</code> 로 외부화.</li>
+  <li>파일 송수신은 <code>CHUNK_ACK</code> 기반 backpressure 로 흐름 제어. 청크 크기 + buffer 상/하한 + ACK 간격 = <code>.env</code> <code>FILE_CHUNK_SIZE</code> / <code>FILE_BUFFER_HIGH</code> / <code>FILE_BUFFER_LOW</code> / <code>FILE_ACK_INTERVAL_BYTES</code> 외부화 (Agent #16 정합, §7 표).</li>
 </ul>
 
 <hr>
@@ -222,6 +222,7 @@ sequenceDiagram
 
 <hr>
 
+<!-- 환경변수 표 — Agent #16 (file_sender/file_receiver/image_processor) 등록 키 8건 신규 반영 (직전 RTC_CHUNK_SIZE/WINDOW 2 row 회수) -->
 <h2>7. 환경변수 영역 설정 외부화 정책</h2>
 
 <p>정본 §E 의 "설정값은 <code>.env</code> 또는 DB 상수 테이블로만 관리" 규칙을 본 저장소 도메인에 적용한다. 다음 표는 본 시점에 합의된 환경변수 키이며, 추가·변경 시 본 표를 먼저 갱신한다.</p>
@@ -242,8 +243,14 @@ sequenceDiagram
     <tr><td><code>DB_USER</code></td><td>클라</td><td><code>tootalk</code></td><td><a href="../../AGENTS.md">AGENTS.md</a> 부록 B</td></tr>
     <tr><td><code>DB_PASS</code></td><td>클라</td><td>(비움)</td><td><code>.env.local</code> 주입</td></tr>
     <tr><td><code>DB_NAME</code></td><td>클라</td><td><code>tootalk</code></td><td><a href="../../AGENTS.md">AGENTS.md</a> 부록 B</td></tr>
-    <tr><td><code>RTC_CHUNK_SIZE</code></td><td>클라</td><td><code>16384</code></td><td>본 문서 §5 (파일 전송 backpressure)</td></tr>
-    <tr><td><code>RTC_CHUNK_WINDOW</code></td><td>클라</td><td><code>64</code></td><td>본 문서 §5</td></tr>
+    <tr><td><code>FILE_CHUNK_SIZE</code></td><td>클라</td><td><code>16384</code></td><td>본 문서 §5 (파일 전송 청크 크기 — Agent #16 정합)</td></tr>
+    <tr><td><code>FILE_BUFFER_HIGH</code></td><td>클라</td><td><code>16777216</code> (16 MiB)</td><td><code>app/rtc/file_sender.py</code> (backpressure 상한 — 16 MiB 이상 시 송신 대기)</td></tr>
+    <tr><td><code>FILE_BUFFER_LOW</code></td><td>클라</td><td><code>4194304</code> (4 MiB)</td><td><code>app/rtc/file_sender.py</code> (backpressure 하한 — 4 MiB 이하 시 송신 재개)</td></tr>
+    <tr><td><code>FILE_BACKPRESSURE_POLL_MS</code></td><td>클라</td><td><code>50</code></td><td><code>app/rtc/file_sender.py</code> (<code>bufferedAmount</code> 폴링 간격)</td></tr>
+    <tr><td><code>FILE_ACK_INTERVAL_BYTES</code></td><td>클라</td><td><code>524288</code> (512 KiB)</td><td><code>app/rtc/file_receiver.py</code> (수신 ACK 발송 간격)</td></tr>
+    <tr><td><code>FILE_RECEIVE_DIR</code></td><td>클라</td><td><code>~/Downloads/TooTalk</code></td><td><code>app/rtc/file_receiver.py</code> (수신 파일 저장 디렉토리)</td></tr>
+    <tr><td><code>THUMB_MAX_PX</code></td><td>클라</td><td><code>200</code></td><td><code>app/rtc/image_processor.py</code> (Pillow 썸네일 최대 픽셀)</td></tr>
+    <tr><td><code>THUMB_QUALITY</code></td><td>클라</td><td><code>80</code></td><td><code>app/rtc/image_processor.py</code> (JPEG 품질)</td></tr>
   </tbody>
 </table>
 
