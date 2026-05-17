@@ -8,32 +8,38 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17. 작성 사이클 종료 직전 사용자 명시 GO 후 즉시 작성. 잔존 MariaDB 회수 4 파일 미완 명시.
+> 본 인계 시점: 2026-05-17 13:42 (사이클 1 갱신 — 본 세션 누계 commit 20+ 반영). 최신 commit `b2b5bcb`.
 
 ---
 
 ## 1. 30초 TL;DR
 
-- **너는 Watcher** 다. 보고는 세밀 (모든 도구 1:1), 유휴 폴백 `/loop 2m` (조건 A ∧ B).
-- **서브에이전트는 Whitebox** — `run_in_background: true` + `Monitor`/`TaskOutput` 표준.
-- **5단계 워크플로우 절대 준수** — 문서 → 문서 검토 → 개발 → QA → 코드 리뷰. ②~⑤ 진입 전 ① 단계 완료 의무.
-- **9 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선. trade-off 정당화 금지.
-- **파일 1건 작성/수정/삭제 시 즉시 git commit + push** + markdown/doc lint 통과 의무.
-- **BPE 손상 의존명사 단독 사용 영구 금지** (한국어 토큰화 불안정). 매 응답 자체 검열 grep 의무. 가드레일 본문 참조.
-- **DB = MariaDB**, GUI = PyQt6, Python = 3.13, CI = self-hosted, repo = public.
-- **M7 텔레그램 송신 필수** — bot `toonation_first_dev_bot` (chat 201073550). MCP 또는 HTTP API.
+- **Watcher 역할** — 보고 Fine-Grained (모든 도구 1:1), 유휴 폴백 `/loop 2m`
+- **서브에이전트 Whitebox** — `run_in_background: true` + 자동 notify
+- **5단계 워크플로우 절대** — 문서 → 검토 → 개발 → QA → 리뷰. ②~⑤ 진입 전 ① 완료 의무
+- **14 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선
+- **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
+- **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
+- **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
+- **DB = MariaDB**, GUI = PyQt6, Python = 3.13, CI = self-hosted, repo = public
+- **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
+- **HTML 동시 정리 6종** — Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding
+- **평가 snapshot 2종** — productization (2.6/5) + vibe-coding (4.5/5) 매 task 종료 시 전체 rewrite
 
 ---
 
 ## 2. 세션 시작 체크리스트 (필수 순서)
 
-1. **본 문서 전체 정독** — 본 파일 §1~§10
+1. **본 문서 전체 정독** — §1~§10
 2. **정본 정독** — [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §1~5 + §A~S
-3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 9 가드레일 전부
-4. **AGENTS.md 정독** — [AGENTS.md](../../../AGENTS.md) §1~11
-5. **현 활성 실행계획** — [docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
-6. **누계 git log** — `git -C /Users/oneticket_toonation/Documents/vscode_work/p2p_msg log --oneline` 확인
-7. **TL;DR 사용자 재선언** (Q-2 등가 첫 응답 템플릿)
+3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 14 가드레일 전부
+4. **CLAUDE.md §10-6/7 정독** — HTML 6종 + 평가 snapshot 2종 동시 갱신 의무
+5. **AGENTS.md 정독** — §1~11
+6. **현 활성 실행계획** — [2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
+7. **누계 git log** — `git -C /Users/oneticket_toonation/Documents/vscode_work/p2p_msg log --oneline`
+8. **CheckList §2 진행률 표 정독** — 16행 진행률 표 (drift 차단)
+9. **TL;DR 사용자 재선언** (Q-2 등가 첫 응답 템플릿)
+10. **텔레그램 세션 재진입 송신** — HTTP API 의 첫 송신 의무
 
 ---
 
@@ -43,35 +49,45 @@ status: active
 [Watcher] 세션 재진입 — TooTalk 가드레일 활성.
 - 본 인계 로드 OK: docs/exec-plans/active/2026-05-17-session-handoff.md §1~10
 - 정본 로드 OK: CLAUDE_HARNESS_IMPORTANT.md §1~5, §A~S
-- 메모리 9 가드레일 로드 OK
+- 메모리 14 가드레일 로드 OK
+- CLAUDE.md §10-6/7 동시 갱신 의무 인지 OK
 - 정책 상태:
-  · 보고 세밀도 = Fine-Grained (모든 도구 1:1)
-  · /loop 폴백 = 조건 A ∧ B
-  · 서브에이전트 = Whitebox (run_in_background + Monitor)
+  · 보고 세밀도 = Fine-Grained
+  · 서브에이전트 = Whitebox (run_in_background + 자동 notify)
   · 워크플로우 = ① 문서 → ② 개발 → ③ QA → ④ 리뷰 → ⑤ 머지 강제
-  · 파일 1건 즉시 commit + push (markdown/doc lint 통과 후)
-  · BPE 위생 = 손상 의존명사 단독 사용 영구 금지 (메모리 가드레일 본문 참조)
-  · M7 텔레그램 송신 = 모든 작업 보고
-- 첫 액션: §9 우선순위 표 1번 행 부터 진행.
+  · 파일 1건 즉시 commit + push (lint 5 검사 통과 후)
+  · BPE 위생 = U+CE21 단독 영구 금지
+  · 1인칭/3인칭 대명사 = 영구 금지 (가드레일 [[feedback-no-self-other-pronoun]])
+  · M7 텔레그램 송신 = HTTP API 직접 (매 응답 + task 완료)
+  · 8 체크리스트 = 큰 프로젝트 코드 진입 전 필수
+  · HTML 6종 동시 정리 = 매 .md 갱신 시 .html 동시
+  · 평가 snapshot 2종 = 매 task 종료 시 전체 rewrite
+- 텔레그램 송신 완료 (msg ID)
+- 첫 액션: §9 우선순위 표 1번 행부터 진행
 ```
 
 ---
 
-## 4. 영구 가드레일 인덱스 9건 (hard constraint)
+## 4. 영구 가드레일 인덱스 14건 (hard constraint)
 
 본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
 | 파일 (`~/.claude/projects/.../memory/`) | 핵심 규칙 |
 |---|---|
-| `feedback_no_korean_chuck_token.md` | 한국어 BPE 손상 의존명사 단독 사용 절대 금지. 합성어 허용. 메모리 본문 인용. |
-| `feedback_no_autonomy_dereliction_prevention.md` | 자율성 제한 = 직무유기 방지 본질 의무. trade-off frame 금지. |
-| `feedback_workflow_strict_doc_first.md` | 모든 작업: 문서 → 검토 → 개발 → QA → 리뷰. 코드 spawn 차단 조건 명시. |
-| `feedback_per_file_immediate_push.md` | 파일 1건 = 1 commit + 1 push (즉시). 정본 §R-1 강화. |
-| `feedback_repeat_criticism_permanent_record.md` | 동일 비판 2회 이상 = 영구 메모리 강제 저장. 메타 규칙. |
-| `feedback_lint_before_push_guardrail.md` | 파일 수정 후 markdown lint + doc lint 통과 시 push. |
-| `feedback_telegram_report_mandatory_m7.md` | 모든 작업 보고 텔레그램 송신. |
-| `feedback_m7_caveman_ultra_simplify.md` | M7 송신 본문 caveman ultra 패턴 (5줄 이하). |
-| `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 본 인계 문서 작성 (트리거 조건 3종). |
+| `feedback_no_korean_chuck_token.md` | BPE 손상 U+CE21 단독 사용 절대 금지 |
+| `feedback_no_self_other_pronoun.md` | **신규 본 세션**. 1인칭/3인칭 대명사 영구 금지 (3회차 강화) |
+| `feedback_no_autonomy_dereliction_prevention.md` | 자율성 제한 = 직무유기 방지 본질 의무 |
+| `feedback_workflow_strict_doc_first.md` | 문서 → 검토 → 개발 → QA → 리뷰 절대 워크플로우 |
+| `feedback_doc_perfection_before_code.md` | **신규 본 세션**. 큰 프로젝트 8 체크리스트 + 간단 작업 완화 |
+| `feedback_per_file_immediate_push.md` | 파일 1건 = 1 commit + 1 push (즉시) |
+| `feedback_repeat_criticism_permanent_record.md` | 동일 비판 2회 이상 = 영구 메모리 강제 저장 메타 규칙 |
+| `feedback_lint_before_push_guardrail.md` | 파일 수정 후 markdown + doc-lint.sh 5 검사 통과 후 push |
+| `feedback_telegram_report_mandatory_m7.md` | **본 세션 강화**. HTTP API 직접 + 매 응답/task 종료 강제 송신 |
+| `feedback_m7_caveman_ultra_simplify.md` | 텔레그램 송신 본문 caveman ultra (5줄 이하) |
+| `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 본 인계 문서 작성 트리거 |
+| `feedback_design_interactive_html.md` | **신규 본 세션**. 디자인 directive HTML interactive 권장 |
+| `project_phase1_completion_priority.md` | **신규 본 세션**. Phase 1 기본 8 완성 후 추가 차별화 진입 (scope creep 차단) |
+| `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
 
 ---
 
@@ -80,152 +96,168 @@ status: active
 | 항목 | 값 | 출처 |
 |---|---|---|
 | 서비스명 | TooTalk | 2026-05-17 |
-| 코드명/repo/디렉토리 | `p2p_msg` | 2026-05-17 |
+| 코드명/repo | `p2p_msg` | 2026-05-17 |
 | GUI | PyQt6 (GPL/상용 분리) | 2026-05-17 |
 | Python | 3.13 | 2026-05-17 |
 | WebRTC | aiortc | 2026-05-17 |
 | 이벤트 루프 | qasync | 2026-05-17 |
 | 시그널링 | aiohttp WebSocket | 2026-05-17 |
 | 시그널링 데모 호스트 | `114.207.112.73` (root / 보안 deprioritized) | 2026-05-17 |
-| **DB** | **MariaDB** (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) | 2026-05-17 |
+| **DB** | **MariaDB** (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) + asyncmy + InnoDB redo log + binlog PITR | 2026-05-17 |
 | 빌드 | macOS + Windows · PyInstaller + zip · 인증서 미사용 | 2026-05-17 |
-| CI | **self-hosted** runner 매트릭스 (GitHub-hosted 미사용) | 2026-05-17 |
+| CI | **self-hosted** runner 매트릭스 (macOS arm64 + Windows x64) | 2026-05-17 |
 | GitHub | `oneticket99/p2p_msg` **public** | 2026-05-17 |
-| branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 push 허용) | 2026-05-17 |
-| 보안 우선순위 | 데모 서버 hardening **최저** (코드/repo 위생은 별도 유지) | 2026-05-17 |
-| M7 텔레그램 bot | `toonation_first_dev_bot` (chat `201073550`) | 2026-05-17 |
+| branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
+| **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
+| HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
+| 평가 snapshot | 2종 (productization 2.6/5 + vibe-coding 4.5/5) | 2026-05-17 |
+| M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | 라이선스 | 미확정 (Phase 1 후반 확정) | — |
 
 ---
 
 ## 6. M1~M7 캐시
 
-1. **M1** 문서가 코드보다 앞선다 (핫픽스 포함)
-2. **M2** 파일 작업 끝 → README.md 변경 이력 prepend
-3. **M3** History.md 역순 (최신 상단) prepend 전용
-4. **M4** 작업 파일 한글 주석 필수 (`.py`, `.js`, `.html`, `.css`, `.sql`, `.sh`)
-5. **M5** 작업 완료 즉시 git commit + push (로컬 백로그 금지)
+1. **M1** 문서가 코드보다 앞선다
+2. **M2** 파일 작업 끝 → README.md 변경 이력 prepend (30행)
+3. **M3** History.md 역순 prepend (최신 상단)
+4. **M4** 작업 파일 한글 주석 (`.py`·`.js`·`.html`·`.css`·`.sql`·`.sh`)
+5. **M5** 작업 완료 즉시 commit + push (로컬 백로그 0)
 6. **M6** directive 처리 직후 `data/wbs.sqlite` 1행 등록 (인프라 준비 후)
-7. **M7** directive 결과 텔레그램 동시 송신 + 양방향 수신
+7. **M7** directive 결과 텔레그램 강제 송신 (HTTP API 직접)
 
 ---
 
 ## 7. 재진입 직후 피해야 할 실수
 
-- ❌ 본 인계 정독 없이 "일반 Claude Code" 모드로 응답
-- ❌ 코드 spawn 진행 (잔존 MariaDB 회수 4 파일 미완 상태)
-- ❌ `Agent` foreground 동기 호출 (Whitebox 규약 위반)
-- ❌ `--no-verify` / `--force` / `--amend` 사용
-- ❌ 매 응답 본문/파일 작성 시 BPE 위반 단어 자체 검열 누락 (메모리 가드레일 본문 참조)
-- ❌ markdown lint / doc lint 통과 안 한 채 push
-- ❌ 사용자 명시 GO 없이 reasonable default 자체 적용
-- ❌ 동시 N 에이전트 spawn (1 에이전트 단일 작업 완료 후 다음)
-- ❌ M7 텔레그램 송신 누락
-- ❌ `docs/policies/` 깨진 링크 잔존 (작성 예정 표기 패턴 사용)
-- ❌ Agent #16 산출물 (`app/rtc/` + `app/ui/file_progress_widget.py` + `app/requirements.txt`) untracked 상태 임의 commit
+- ❌ 본 인계 정독 없이 일반 모드 응답
+- ❌ 코드 spawn 진입 (사용자 GO 없이 — 가드레일 [[feedback-doc-perfection-before-code]] 위반)
+- ❌ `Agent` foreground 동기 호출 (Whitebox 위반)
+- ❌ `--no-verify` / `--force` / `--amend`
+- ❌ 1인칭 / 3인칭 대명사 표현 사용 (3회차 영구 가드레일)
+- ❌ BPE U+CE21 단독 의존명사 사용
+- ❌ 텔레그램 송신 누락 (HTTP API 강제 활성 — 매 응답 종료 직전)
+- ❌ 동시 N sub-agent spawn (단 병렬 가능 영역은 허용 — 사용자 directive 2026-05-17)
+- ❌ HTML 동시 갱신 누락 (.md 갱신 시 .html 의 stale)
+- ❌ 평가 snapshot 동시 갱신 누락 (CLAUDE.md §10-7 의무)
+- ❌ Agent #16 산출물 (`app/rtc/` + `app/ui/file_progress_widget.py`) untracked 임의 commit
+- ❌ Phase 1 기본 8 완성 전 추가 차별화 진입 ([[project-phase1-completion-priority]] 위반)
 
 ---
 
-## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17)
+## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 13:42)
 
-### 8.1 누계 commit (29건 + 추가 진행 가능)
+### 8.1 누계 commit (본 세션 20건, 직전 인계 시점 = `f500104`)
 
-```
-7a23e8d  deps(app): asyncmy>=0.2.10 추가 — MariaDB driver
-d86bd43  docs(policy): DESIGN.md MariaDB 회수 — 환경변수 표 5종
-f59ff63  chore: .env.example MariaDB 회수
-8ceed84  docs(map): AGENTS.md MariaDB 회수
-9445f7e  docs(ops): MIGRATION_MARIADB.md 신설 — 운영 8/8
-50a8572  docs(ops): CLAUDE.md 신설 — 운영 2/8
-f4a4f3f  docs(ops): EXTENSION_GUIDE.md 신설 — 운영 7/8
-79026c0  docs(ops): README.md 신설 — 운영 6/8 (M1, M2)
-a126472  docs(ops): History.md 신설 — 운영 5/8 M3 역순
-27dff27  docs(ops): CheckList.md 신설 — 운영 4/8
-39bd0a9  docs(ops): Structure.md 신설 — 운영 3/8
-0fd29ba  docs(policy): FRONTEND.md §14 wireframe/mockup 섹션 추가
-b3efb2b  docs(ops): Specification.md 신설 — 운영 1/8
-8c45f10  feat(tools): doc-lint.sh 신설 — 문서 lint 가드레일
-2f33da0  chore: .markdownlint.json 신설 — lint 가드레일 사전 작업
-44288ab  docs(policy): SECURITY.md 신설 — 9 정책 8/9
-d240179  docs(policy): QUALITY_SCORE.md 신설 — 9 정책 7/9
-aa31bd9  docs(policy): PRODUCT_SENSE.md 신설 — 9 정책 6/9
-4f79813  docs(policy): RELIABILITY.md 신설 — 9 정책 5/9
-3a13cfc  docs(policy): PLANS.md 신설 — 9 정책 4/9
-b877653  docs(policy): FRONTEND.md 신설 — 9 정책 3/9
-af54042  docs(policy): DESIGN.md 신설 — 9 정책 2/9
-4c23e11  docs(policy): ARCHITECTURE.md 신설 — 9 정책 1/9
-1fb7ba3  feat(app): PyQt6 + qasync 클라 스켈레톤
-7f10179  feat(server): aiohttp WebSocket 시그널링 서버 스켈레톤
-5264d43  feat(agents): .claude/agents 7 프로세스 에이전트 정의
-6dbbe06  fix: 실행계획 TD-6 행 BPE 위생 정정
-5eac245  docs: Phase 1 MVP 실행계획 + CI self-hosted 정책 반영
-5268a75  chore: 정본 정독 대상 + Claude CLI Telegram wrapper
-928c2bf  docs: AGENTS.md TooTalk 서비스명 명문화
-9f67eeb  docs: 부트스트랩 — AGENTS.md + .gitignore + .env.example
+```text
+b2b5bcb  docs(agents): AGENTS PR 게이트 — build.yml (M5) 행 추가
+ee10273  docs(checklist): CheckList §2 진행률 표 drift 차단 갱신
+050acca  feat(qa): pytest 인프라 + Playwright E2E + DESIGN UI 디자인 시스템 + HTML
+86868b9  docs: 평가 snapshot 사이클 2 동시 갱신
+461f196  docs(frontend): FRONTEND 색상 변수 표 swatch 가시화
+dc9170f  docs(policies): docs/policies/ 3 문서 신설 (깨진 링크 12 → 0)
+96ad8e4  docs(release): .github/pull_request_template.md 신설
+db0b634  chore(tools): doc-lint.sh bash 3.2 호환 + 1인칭/3인칭 검사
+794c251  docs: vibe-coding snapshot 갱신 + HTML 2종 + 가드레일 강화
+26f60ed  fix(guardrail): 1인칭/3인칭 전수 회수 + 텔레그램 가드레일 강제
+5d898b2  docs: docs/html/ 5 HTML + CLAUDE.md §10-6/7
+87e71e3  fix(policy): RELIABILITY.md MariaDB 회수 (13 위반)
+9477e9c  fix(plan): 실행계획 MariaDB 회수 (5 위반)
+6ab9952  docs: assessments productization + vibe-coding 신설
+aff2cde  fix(policy): ARCHITECTURE.md MariaDB 회수 (4 위반)
+34d4707  fix(app): app/core/config.py MariaDB 회수 (5필드)
+0b0e010  docs: ci-self-hosted-setup.md 신설
+6f39d32  ci: doc-gardener.yml 신설
+76313fe  ci: docs-lint.yml 신설
+df7f581  ci: ci.yml 신설 (게이트 7종 self-hosted 매트릭스)
 ```
 
-### 8.2 정본 §K 18 동결 — 완료
+### 8.2 정본 §K 18 동결 — 유지
 
-- 정본 1: `CLAUDE_HARNESS_IMPORTANT.md` ✅
-- 정책 9: AGENTS · ARCHITECTURE · DESIGN · FRONTEND · PLANS · PRODUCT_SENSE · QUALITY_SCORE · RELIABILITY · SECURITY ✅
-- 운영 8: CLAUDE · Specification · Structure · CheckList · History · README · EXTENSION_GUIDE · MIGRATION_MARIADB ✅
+- 루트 .md 정확히 18 (변동 없음)
 
-### 8.3 코드 누계
+### 8.3 docs/ 하위 신규
 
-- `server/` 7 파일 1121 행 (aiohttp WebSocket 시그널링)
-- `app/` 14 파일 1635 행 (PyQt6 + qasync 스켈레톤)
-- `.claude/agents/` 7 파일 600 행 (프로세스 에이전트 정의)
-- `tools/` 2 파일 (claude-telegram.sh + doc-lint.sh)
-- `app/rtc/` + `app/ui/file_progress_widget.py` — **untracked 보존** (Agent #16 산출물, 사용자 stop 의도로 commit 차단)
+- `docs/policies/doc-gardening.md` · `docs/policies/adoption-roadmap.md` · `docs/policies/execution-harness.md` (3 active)
+- `docs/assessments/productization.md` · `docs/assessments/vibe-coding.md` (2 snapshot)
+- `docs/html/Structure.html` · `ARCHITECTURE.html` · `FRONTEND.html` · `DESIGN.html` · `productization.html` · `vibe-coding.html` (6 동시 정리)
+- `docs/references/ci-self-hosted-setup.md` (1)
 
-### 8.4 MariaDB 회수 진행 4/8
+### 8.4 .github/ 신규
 
-| 회수 파일 | 상태 | 비고 |
-|---|---|---|
-| AGENTS.md | ✅ `8ceed84` | §1 본문 + 표 + 부록 B |
-| .env.example | ✅ `f59ff63` | DB_HOST/PORT/USER/PASS/NAME |
-| DESIGN.md | ✅ `d86bd43` | 환경변수 표 5종 전개 |
-| app/requirements.txt | ✅ `7a23e8d` | asyncmy>=0.2.10 |
-| **app/core/config.py** | ❌ 잔존 | `_DEFAULT_LOCAL_DB_PATH` + `local_db_path` 필드 → 5필드 |
-| **ARCHITECTURE.md** | ❌ 잔존 | L76 Core / L163 app/core / L166 app/db / L188 환경변수 |
-| **docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md** | ❌ 잔존 | L38 / L92 / L109 / L179 / L203 |
-| **RELIABILITY.md** | ❌ 잔존 | L59/80/81/126/130/206/222/224/226/234/235/248/306 (13행) |
+- `.github/workflows/ci.yml` (7 게이트)
+- `.github/workflows/docs-lint.yml` (cron daily)
+- `.github/workflows/doc-gardener.yml` (cron 주간)
+- `.github/pull_request_template.md` (release-agent 정합 9 섹션)
 
-### 8.5 가드레일 인프라
+### 8.5 pytest + Playwright 인프라 신규
 
-- `.markdownlint.json` ✅ (commit `2f33da0`)
-- `tools/doc-lint.sh` ✅ (commit `8c45f10`)
-- `tools/claude-telegram.sh` ✅ (commit `5268a75`)
+- `pyproject.toml` (pytest 7+ + asyncio + coverage + 5 marker)
+- `app/requirements-dev.txt` + `server/requirements-dev.txt` (pytest + playwright)
+- `tests/{__init__,conftest}.py`
+- `tests/app/test_config.py` (6 test — MariaDB 5필드 + DSN + 폴백)
+- `tests/server/test_protocol.py` (3 test — 화이트리스트 + 거부 + 비문자열)
+- `tests/e2e/{conftest,test_html_visual_smoke}.py` (3 e2e test)
+- `ci.yml` pytest job 매트릭스 추가
+
+### 8.6 MariaDB 회수 완료 (handoff §9 우선순위 1~4 모두 ✅)
+
+- `app/core/config.py` (5필드 + db_dsn) ✅
+- `ARCHITECTURE.md` (4 위반) ✅
+- 실행계획 (5 위반) ✅
+- `RELIABILITY.md` (13 위반) ✅
+- `app/README.md` 동행 ✅
+
+### 8.7 가드레일 인프라
+
+- `tools/doc-lint.sh` (5 검사 — BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭, bash 3.2 호환)
+- `tools/claude-telegram.sh` (Telegram CLI wrapper)
+- `.markdownlint.json` (MD013/MD025/MD032/MD060 완화 + MD033 span/div 허용)
+- 영구 메모리 14종 (신규 본 세션 4 — no-self-other-pronoun + doc-perfection-before-code + design-interactive-html + phase1-completion-priority)
+
+### 8.8 텔레그램 강제 활성
+
+- HTTP API 직접 (bot `8753967007` + chat `201073550`)
+- 본 세션 송신 누계 14건 (msg 1052 ~ 1066)
+- `.env.local` 의 자격 격리 (`.gitignore` `.env.*`)
+
+### 8.9 Agent #16 산출물 untracked 보존
+
+- `app/rtc/` (file_sender + file_receiver + image_processor + peer + protocol + README) ❌ untracked
+- `app/ui/file_progress_widget.py` ❌ untracked
+- 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
 
 ## 9. 다음 세션 첫 액션 (우선순위 순)
 
-| 순서 | 작업 | task id | 비고 |
+| 순서 | 작업 | 상태 | 비고 |
 |---|---|---|---|
-| 1 | **MariaDB 회수: app/core/config.py** | #41 | `local_db_path` 필드 → `db_host` / `db_port` / `db_user` / `db_pass` / `db_name`. `_DEFAULT_*` 상수 + `_env_str`/`_env_int` 적용 |
-| 2 | **MariaDB 회수: ARCHITECTURE.md** | #43 | 4 행 갱신 (Core 영역 / app/core / app/db / 환경변수 표) |
-| 3 | **MariaDB 회수: 실행계획** | #44 | 5 행 갱신 (§2 In Scope / M3 / task#16 / 검증 / 의존성 그래프) |
-| 4 | **MariaDB 회수: RELIABILITY.md** | #45 | 13 행 갱신 — SQLite WAL → MariaDB binlog/replication. 가장 큼 |
-| 5 | (선택) Agent #16 산출물 검토 | — | `app/rtc/` + `file_progress_widget.py` reviewer-agent 검토 후 commit 여부 사용자 결정 받기 |
-| 6 | 워크플로우 진입 — 본 시점 코드 단계는 사용자 GO 받기 전 차단 | — | [[feedback-workflow-strict-doc-first]] 정합 |
+| 1 | self-hosted runner 등록 (macOS arm64 + Windows x64) | 🟡 사용자 직접 | docs/references/ci-self-hosted-setup.md 절차. 1일. CI 3 workflow `queued` 해소 |
+| 2 | 평가 snapshot 사이클 3 갱신 (CLAUDE.md §10-7 의무) | 🔴 미진입 | 본 세션 누계 commit 20+ 반영. productization + vibe-coding rewrite + HTML 2 sub-agent |
+| 3 | 잔존 BPE 위반 정정 — CLAUDE_HARNESS_IMPORTANT.md | 🔴 미진입 | 정본 광범위 (BPE 다수). doc-lint.sh 의 grep |
+| 4 | 라이선스 결정 — LICENSE 신설 | 🟡 사용자 직접 | OSS / 상용 분기. contributor 진입 가능 시점 |
+| 5 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
+| 6 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 | `app/rtc/` + `file_progress_widget.py` commit 여부 |
+| 7 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 
-### 9.1 MariaDB 회수 완료 후 진입 가능 후속 task
+### 9.1 잔존 task 진입 가능 (가드레일 통과 후)
 
-- #16 파일전송 양방향 progress 모듈 (코드 sub-agent re-spawn 또는 untracked 산출물 검토)
-- #17 데모 시그널링 서버 배포 (114.207.112.73 의 systemd · docker)
+- #16 파일전송 양방향 progress 모듈 (Agent #16 산출물 검토 후)
+- #17 데모 시그널링 서버 배포 (114.207.112.73 systemd · docker)
 - #18 PyInstaller spec + 빌드 스크립트
-- #19 GitHub Actions 매트릭스 빌드 (self-hosted runner 등록 사용자 직접 수행 필요)
-- #20 README 빌드/실행 안내 (이미 신설됨 — 갱신 작업)
+- #19 build.yml 매트릭스 (M5 단계)
+- #20 README 빌드/실행 안내 갱신
+- E2EE (libsignal-protocol wrapping) — Phase 2 진입
 
 ---
 
 ## 10. 본 문서 자체의 불변 규약
 
-- 본 §10 은 다음 세션에 의해서도 유지. "작업 완료" 이유로 삭제·간소화 금지.
+- 본 §10 = 다음 세션에 의해서도 유지. "작업 완료" 이유로 삭제·간소화 금지.
 - 정책 변경 시 §5 표 + 관련 메모리 가드레일 동시 갱신. 한쪽만 갱신 금지.
-- 본 인계가 완전 소비된 시점 (잔존 MariaDB 회수 4 파일 push + 코드 진입 단계 통과) = `docs/exec-plans/completed/` 로 이동.
-- 본 파일 경로 (`docs/exec-plans/active/2026-05-17-session-handoff.md`) 는 다음 세션 정독 대상으로 본 활성 위치 유지.
+- 본 인계가 완전 소비된 시점 (Phase 1 기본 8 완성 + 코드 진입 통과) = `docs/exec-plans/completed/` 이동.
+- 본 파일 경로 (`docs/exec-plans/active/2026-05-17-session-handoff.md`) = 다음 세션 정독 대상 = 본 활성 위치 유지.
 - 새 인계 작성 시 본 패턴 사본 + 갱신.
 
 ---
@@ -233,11 +265,13 @@ af54042  docs(policy): DESIGN.md 신설 — 9 정책 2/9
 ## 참조
 
 - 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md)
+- 운영 규약: [CLAUDE.md](../../../CLAUDE.md) §10-6/7 (HTML + snapshot 동시 갱신)
 - 저장소 맵: [AGENTS.md](../../../AGENTS.md)
 - 실행계획 본문: [2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
+- 정책 본문: [docs/policies/doc-gardening.md](../../policies/doc-gardening.md) · [adoption-roadmap.md](../../policies/adoption-roadmap.md) · [execution-harness.md](../../policies/execution-harness.md)
+- 평가 snapshot: [docs/assessments/productization.md](../../assessments/productization.md) · [vibe-coding.md](../../assessments/vibe-coding.md)
 - 메모리 인덱스: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md`
-- 정본 §Q 등가: `CLAUDE_HARNESS_IMPORTANT.md` §Q-0 ~ Q-7
 
 ---
 
-마지막 갱신: 2026-05-17 (세션 인계 초안 — 잔존 MariaDB 회수 4 파일 미완 상태 명시)
+마지막 갱신: 2026-05-17 13:42 — 사이클 1 갱신 (본 세션 누계 commit 20+ 반영, 가드레일 14, 텔레그램 송신 14건, HTML 6, pytest 인프라, 정책 본문 3)
