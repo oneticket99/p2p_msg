@@ -1,0 +1,72 @@
+# =============================================================================
+# docs-lint.yml — TooTalk 문서 lint 전용 워크플로우
+# -----------------------------------------------------------------------------
+# 본 워크플로우는 ci.yml docs-lint job 의 독립 채널 등가 + 추가 트리거 보유:
+#   - schedule: 매일 09:00 KST (00:00 UTC) — drift 조기 감지
+#   - workflow_dispatch: 사용자 수동 trigger
+#   - push: docs/** + 루트 .md + .markdownlint.json 변경 시
+#   - pull_request: docs/** + 루트 .md 변경 시
+#
+# 검증 항목 (ci.yml 측 docs-lint job 과 동일):
+#   1) markdownlint-cli2 — .markdownlint.json 규칙
+#   2) tools/doc-lint.sh — BPE 위생 · 깨진 링크 · frontmatter · 연속 빈 줄
+#
+# 보안 노트:
+#   - 본 워크플로우는 github.event.* 사용자 입력 미사용 (workflow injection 위험 0)
+#   - concurrency.group 측 github.ref 만 사용 (브랜치 이름, GitHub 보장)
+#
+# 정책 정합:
+#   - 정본 §L docs-lint.yml 등가
+#   - 사용자 directive 2026-05-17 — self-hosted runner 단독
+# =============================================================================
+
+name: docs-lint
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '**/*.md'
+      - '.markdownlint.json'
+      - 'tools/doc-lint.sh'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '**/*.md'
+      - '.markdownlint.json'
+      - 'tools/doc-lint.sh'
+
+concurrency:
+  group: docs-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  lint:
+    name: markdownlint + doc-lint.sh
+    runs-on: [self-hosted, macOS, arm64]
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: markdownlint-cli2 실행
+        run: |
+          npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.venv" "#dist" "#build"
+
+      - name: tools/doc-lint.sh 실행
+        run: bash tools/doc-lint.sh
+
+      - name: 누계 .md 파일 수 보고
+        if: success()
+        run: |
+          TOTAL=$(find . -type f -name "*.md" \
+            ! -path "*/node_modules/*" \
+            ! -path "*/.venv/*" \
+            ! -path "*/dist/*" \
+            ! -path "*/build/*" \
+            ! -path "*/.git/*" | wc -l | tr -d ' ')
+          echo "::notice::검증 통과 누계 .md = $TOTAL 파일"
