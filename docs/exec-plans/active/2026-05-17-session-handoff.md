@@ -526,6 +526,18 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.41 사이클 22 perl bulk 실패 → 복원 + post-write hook 강제화 + Phase 1 자율 chain 완성 (사이클 22~23)
+
+- 사용자 directive 누계 자율 GO — security + DB schema + 7 repository + SMTP + 5 auth use case + middleware + REST 5 endpoint + auth_client + UI 4 dialog + PyInstaller spec + build.yml
+- 사이클 22 = perl `s/  +/ /g` bulk 정정 의 4-space indent collapse = Python 전수 syntax 손상 + 사용자 직무유기 비판
+- 복원 = git restore (사용자 GO) → origin/main 1e28afc HEAD
+- post-write hook 강제화 = tools/hook_post_write_inspect.sh 5 검사 + settings.json PostToolUse matcher
+- 영구 메모리 4건 (26 → 30) — post-write-inspection + code-qa-review-gate + timezone-kst + db-schema-field-comments
+- 재진입 (사이클 23) = main_window 계정 메뉴 — 단계별 Edit + 매 Edit AST 검증
+- 5 검증 (AST + import + pytest 197 + doc-lint + BPE 0) 매 cycle 의무
+- KST timezone 의무 (History/commit/log/DB 일관)
+- build.yml heredoc 우회 신설
+
 ### 8.40 Phase 1 코드 진입 GO + 5 test module 누계 149 PASS (사이클 16 신규)
 
 - 사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = task #7 정식 GO + §9.2 후속 자율 GO
@@ -610,5 +622,6 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-18 02:00 — 사이클 16 (Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa-agent 미커버 영역 완전 회수, commit `3aa7eed` 까지 origin/main 반영, 본 세션 누계 60+ commit)
+마지막 갱신: 2026-05-18 22:00 KST — 사이클 23 (perl bulk 손상 복원 + post-write hook 강제화 + 검증 의무 패턴 정착 + main_window 계정 메뉴 + build.yml heredoc, commit `a13a1f3` HEAD, 누계 75+ commit, 가드레일 30)
+이전 갱신: 2026-05-18 02:00 — 사이클 16 (Phase 1 코드 진입 GO + 149 PASS + qa 미커버 회수, `3aa7eed`)
 이전 갱신: 2026-05-18 01:00 — 사이클 15 (본 세션 누계 commit 53+ + 사이클 15 의 신규 commit dcbb372 (release P0-1/P0-2 정정) + 후속 commit 일괄 (observability-baseline.md 신설 + snapshot 2 + HTML 2 + handoff §8.38/§8.39 + History.md prepend + README §11 prepend) 반영, 가드레일 22, 텔레그램 송신 N건, HTML 6, pytest 인프라, 정책 본문 4 (observability-baseline.md 신규), auth 정책 + 차별화 명문화, CI 3종 GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + enforcement layer 활성 + drift 회수 누계 9 cycle (사이클 15 의 baseline drift 3건 회수 추가) + **5단계 워크플로우 ③ 4단 chain 완전 자동 완성 — reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15)** 신규, snapshot 사이클 15 — productization 4.05 + vibe-coding 4.90)

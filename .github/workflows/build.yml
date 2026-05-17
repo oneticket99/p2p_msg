@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# TooTalk(p2p_msg) Phase 1 build workflow — macOS native + Windows wine cross-compile.
+
+name: build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 임시 빌드 태그
+        required: false
+        default: "manual"
+
+jobs:
+  build-macos:
+    name: macOS arm64 (.app)
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python 3.13 venv + dev deps
+        run: |
+          python3.13 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
+      - name: PyInstaller build
+        run: .venv/bin/python tools/build.py --target macos
+      - name: Zip artifact
+        run: |
+          cd dist && zip -r "TooTalk-macos-arm64.zip" "TooTalk.app"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tootalk-macos-arm64
+          path: dist/TooTalk-macos-arm64.zip
+          retention-days: 30
+
+  build-windows-wine:
+    name: Windows x64 via wine (.exe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PyInstaller wine cross-compile
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            cdrx/pyinstaller-windows:python3 \
+            /bin/sh -c "pip install -r app/requirements.txt && pyinstaller build/tootalk.spec --clean --noconfirm --distpath dist-windows --workpath build/work-win"
+      - name: Zip artifact
+        run: |
+          cd dist-windows && zip -r "TooTalk-windows-x64.zip" "TooTalk"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tootalk-windows-x64
+          path: dist-windows/TooTalk-windows-x64.zip
+          retention-days: 30

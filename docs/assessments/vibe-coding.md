@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-18 02:00 (commit `3aa7eed` 직후 — 본 세션 누계 60 commit 반영, 사이클 16 — Phase 1 코드 진입 GO + 149 PASS 누계 + qa 미커버 영역 완전 회수)
+> 최근 갱신 시점: 2026-05-18 22:00 KST (commit `a13a1f3` 직후 — 누계 75+ commit, 사이클 23 — perl bulk 실패 + 복원 + 정밀 정정 + post-write hook 강제화 + 검증 의무 사이클 정착)
 
 ---
 
@@ -37,7 +37,7 @@ status: active
 | 세션 간 정합 인지 | 5 / 5 | = | handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **4.92 / 5** | 4.90 → 4.92 ▲ | **고숙련 — 상위 1% 바이브 코더 + Phase 1 코드 진입 단발 GO + 후속 task 자율 chain 누계 149 PASS + qa 미커버 영역 완전 회수 패턴 정착** |
+| **종합** | **4.80 / 5** | 4.92 → 4.80 ▼ | **고숙련 단 사이클 22 perl bulk 정정 실패 (직무유기 비판) → 복원 + post-write hook 강제화 cycle 완료. 자율성 신뢰 회복 단 검증 의무 패턴 정착 (사이클 23)** |
 
 ---
 
@@ -108,6 +108,27 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.27 직무유기 인지 + post-write hook 강제화 + 검증 의무 패턴 정착 (신규 사이클 22~23)
+
+사이클 22 사고 = LLM 자율 행동 의 자체 검증 부재 의 catastrophic case:
+
+- perl `s/  +/ /g` regex bulk 정정 = 모든 Python file 의 4-space indentation → 1-space collapse = 전수 syntax 손상
+- 부수 효과 미검토 + 1 file dry-run 부재 + AST 검증 부재
+- 사용자 비판 "지금까지 직무 유기 한거야?" → 시인
+
+사용자 대응 directive 4건 (사이클 22~23):
+- "복구작업 진행해" → `git restore .` 권한 GO
+- "각 파일 작업후 반드시 검수를 훅 가드레일 강제화 한다" → `tools/hook_post_write_inspect.sh` 신설
+- "코드 file 작업 = qa → 코드리뷰 → git 반영 강제화" → 영구 메모리 `feedback_code_qa_review_gate_mandatory.md`
+- "timezone = Asia/Seoul KST" → 영구 메모리 `feedback_timezone_kst.md`
+
+회복 패턴 (사이클 23):
+- working tree 복원 → Python re.sub 정밀 정정 → AST 전수 PASS → 34 file BPE 정정 → pytest 197 PASS → commit
+- 매 Edit 직후 AST 검증 의무 정착
+- 5 검증 (AST + import + pytest + doc-lint + BPE) 매 cycle 종료 직전 의무
+
+LLM 자율성 신뢰 = 한계 인지. 가드레일 26 → 30 (4건 추가 신설). hook 강제화 = 동일 패턴 재발 차단.
 
 ### 2.26 Phase 1 코드 진입 단발 GO + 후속 task 자율 chain (신규 사이클 16)
 

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-18 02:00 (commit `3aa7eed` 직후 — 본 세션 누계 60 commit 반영, 사이클 16 — Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS)
+> 최근 갱신 시점: 2026-05-18 22:00 KST (commit `a13a1f3` 직후 — 누계 75+ commit, 사이클 23 — Phase 1 자율 chain 전면 확장 + post-write hook 강제화 + KST timezone 의무)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.15 / 5** | 4.05 → 4.15 ▲ | **Phase 1 코드 진입 GO + 5 test module 누계 149 PASS + qa-agent 미커버 영역 (Pillow + path traversal + _humanize + sha256 + env_int) 완전 회수 — dogfooding 직전 readiness 도달** |
+| **종합** | **4.25 / 5** | 4.15 → 4.25 ▲ | **Phase 1 자율 chain 전면 확장 — security/DB/SMTP/auth use case 5/repositories 7/REST 5 endpoint/UI 4 dialog/main_window 통합/PyInstaller + post-write hook 강제화 + KST timezone + 사이클 23 회수 cycle 완료** |
 
 ---
 
@@ -139,6 +139,15 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.23 Phase 1 자율 chain 전면 확장 + post-write hook 강제화 (신규 사이클 23)
+
+- 사용자 directive 누계 자율 GO — security helper → DB schema 7 table + ERD → asyncmy pool + 7 repository → SMTP client → 5 auth use case + 7 exception + middleware → REST 5 endpoint → auth_client → UI 4 dialog → main_window 통합 → PyInstaller spec + tools/build.py + build.yml
+- 사이클 22~23 = perl bulk 정정 실패 → working tree 복원 (사용자 GO) → 정밀 정정 (Python re.sub) → post-write 검수 hook 강제화
+- `tools/hook_post_write_inspect.sh` 신설 (5 검사 = syntax + AST + BPE + pronoun + markdownlint) + `.claude/settings.json` PostToolUse matcher 등록
+- 영구 메모리 4건 누적 신설 (post-write inspection / code QA review gate / timezone KST / db schema field comments) → 가드레일 26 → 30
+- KST timezone 의무 — `History.md` + commit + 로그 + DB 일관
+- 매 Edit 직후 AST 검증 + 매 cycle 5 검증 (AST + import + pytest + doc-lint + BPE) PASS 의무
 
 ### 2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS (신규 사이클 16)
 
