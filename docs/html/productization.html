@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 13)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 13 의 등가 렌더링. light theme + 표 zebra stripe + mermaid 0 + §2.18 보존 (reviewer-agent 정식 GO) + §2.19 신규 (qa-agent 회귀 체크리스트 진입) -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 14)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 14 의 등가 렌더링. light theme + 표 zebra stripe + mermaid 0 + §2.19 보존 (qa-agent 회귀 진입) + §2.20 신규 (release-agent 머지 진입 + 머지 게이트 3 단계 정합) -->
 <style>
   :root{
     --bg:#fafafa;
@@ -66,10 +66,10 @@
 <body>
 
 <header class="meta">
-  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 13)</h1>
+  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 14)</h1>
   <div class="sub">
     owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span><br>
-    최근 갱신 시점: 2026-05-17 (사이클 13 — qa-agent 회귀 체크리스트 진입 + §2.18 reviewer 정식 GO 보존 + §2.19 신규 작성)<br>
+    최근 갱신 시점: 2026-05-17 (사이클 14 — release-agent 머지 진입 + 머지 게이트 3 단계 정합 §2.20 신규 + §2.19 qa-agent 회귀 보존)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -83,22 +83,22 @@
 
 <h2>1. 총평 (TL;DR)</h2>
 
-<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + GPLv3 라이선스 확정 + visibility 전환 정책 + Agent #16 산출물 reviewer-agent 정식 GO + SPDX/ARCHITECTURE 정정 + <strong>qa-agent 회귀 체크리스트 진입</strong>. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + 코드 진입 readiness PASS + QA 게이트 활성</strong>.</p>
+<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + GPLv3 라이선스 확정 + visibility 전환 정책 + Agent #16 산출물 reviewer-agent 정식 GO + SPDX/ARCHITECTURE 정정 + qa-agent 회귀 체크리스트 진입 + <strong>release-agent 머지 게이트 3 단계 정합</strong>. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + 코드 진입 readiness PASS + QA 회귀 + 머지 게이트 직렬 정합 활성</strong>.</p>
 
 <table>
   <thead>
     <tr><th>항목</th><th class="center">점수 (5점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">3.2 / 5</td><td class="center">=</td><td>Agent #16 산출물 ~96 KB reviewer-agent GO + SPDX header 8 file + ARCHITECTURE 정합 + qa-agent 회귀 진입</td></tr>
+    <tr><td>기술 완성도</td><td class="center">3.2 / 5</td><td class="center">=</td><td>Agent #16 산출물 ~96 KB reviewer-agent GO + SPDX header 8 file + ARCHITECTURE 정합 + qa-agent 회귀 + release-agent 머지 게이트 진입</td></tr>
     <tr><td>시장 적합성</td><td class="center">2.5 / 5</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
     <tr><td>차별화 요소</td><td class="center">4.5 / 5</td><td class="center">=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar</td></tr>
     <tr><td>사용자 가치</td><td class="center">3 / 5</td><td class="center">=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
     <tr><td>수익화 모델</td><td class="center">2.5 / 5</td><td class="center">=</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
     <tr><td>운영 비용</td><td class="center">5 / 5</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
-    <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>21 영구 가드레일 + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook 활성</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 5 + snapshot 사이클 13 + CheckList drift 차단 + drift 회수 누계 4 cycle</td></tr>
-    <tr><th>종합</th><th class="center">4.0 / 5</th><th class="center">=</th><th>인프라/문서/QA/차별화/CI/보안/라이선스/코드-readiness 완성 + qa-agent 회귀 진입 — Phase 1 MVP 본격 진입 준비</th></tr>
+    <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>21 영구 가드레일 + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook 활성 + 머지 게이트 직렬 활성</td></tr>
+    <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 5 + snapshot 사이클 14 + CheckList drift 차단 + drift 회수 누계 4 cycle + 머지 게이트 3 단계 명문</td></tr>
+    <tr><th>종합</th><th class="center">4.0 / 5</th><th class="center">=</th><th>인프라/문서/QA/차별화/CI/보안/라이선스/코드-readiness 완성 + qa-agent 회귀 + release-agent 머지 게이트 진입 — Phase 1 MVP 머지 단계 준비</th></tr>
   </tbody>
 </table>
 
@@ -267,7 +267,7 @@
   <li>handoff §9 #8 ✅ 완료 (reviewer-agent 검토 진입 → PASS) — 다음 handoff 의 §9 = Phase 1 MVP 코드 진입 단일 항목</li>
 </ul>
 
-<h3>2.19 qa-agent 회귀 체크리스트 진입 (신규 사이클 13)</h3>
+<h3>2.19 qa-agent 회귀 체크리스트 진입 (사이클 13 — 보존)</h3>
 <ul>
   <li><strong>5단계 워크플로우 ③-2 진입</strong> — reviewer-agent PASS (③-1) 직후 qa-agent (③-2) 회귀 체크리스트 활성 — 정본 §C(7역할) + CLAUDE.md §3 표 순서 고정</li>
   <li><strong>qa-agent 검사 범위</strong> — Agent #16 산출물 8 file ~96 KB (app/rtc/ 7 + app/ui/file_progress_widget.py) 의 (a) 단위 test 회귀 (pytest 12건 + 신규 protocol/file_sender/file_receiver test stub) + (b) Playwright E2E 회귀 (시그널링 WS + HTML 시각) + (c) coverage 80% 게이트 + (d) SPDX header lint 자동 검증 + (e) import-smoke job</li>
@@ -276,6 +276,17 @@
   <li><strong>FAIL 시 회귀 경로</strong> — qa-agent FAIL 1건 = ② 개발 단계 회귀 (main session 직접 정정) → reviewer-agent 재호출 → qa-agent 재진입 (직렬 게이트 고정)</li>
   <li><strong>PASS 시 다음 단계</strong> — qa-agent PASS → ③-3 observability-agent (로그/메트릭 baseline 검증) → CI 3종 GREEN 확인 → ⑤ release-agent 진입 (단 Phase 1 MVP 본격 진입 GO 는 사용자 결정 영역)</li>
   <li>본 사이클 = 검증 게이트 의 2단계 진입 — reviewer (코드 품질) → qa (회귀 안정성) 의 직렬 진행 시작점</li>
+</ul>
+
+<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 정합 (신규 사이클 14)</h3>
+<ul>
+  <li><strong>5단계 워크플로우 ⑤ release-agent 진입 정합</strong> — qa-agent (③-2) PASS → observability-agent (③-3) PASS → CI 3종 GREEN 확인 → release-agent (⑤ 머지 + push) — 정본 §C 행 5 + CLAUDE.md §3 행 5 의 직렬 고정 순서 유지</li>
+  <li><strong>머지 게이트 3 단계 명문화</strong> — 본 사이클 신규 정합. (a) <strong>게이트 1 — 검증 직렬 PASS</strong>: reviewer ✅ → qa ✅ → observability ✅ 3 단계 모두 PASS (FAIL 1건 = ② 회귀). (b) <strong>게이트 2 — CI 3종 GREEN</strong>: ci.yml (8 job) + docs-lint.yml + doc-gardener.yml 동시 GREEN — self-hosted macOS arm64 runner 활성 의무. (c) <strong>게이트 3 — 사용자 명시 GO</strong>: 자율 머지 금지 (CLAUDE.md §4-3 + handoff §7 정합), 사용자 directive 명시 후만 release-agent spawn.</li>
+  <li><strong>release-agent 호출 범위</strong> — Agent #16 산출물 8 file ~96 KB + SPDX header 8 + ARCHITECTURE.md §6 정합 + handoff/snapshot/CheckList 의 사이클 14 갱신 동시 commit. <code>git commit</code> + <code>SKIP_PREPUSH=1 git push origin main</code> (CLAUDE.md §9-2 분류기 우회 정합) + PR 머지 (M5 즉시 push).</li>
+  <li><strong>release-agent 금지 사항</strong> — <code>--force</code> main 금지 + <code>--no-verify</code> 금지 + 머지 게이트 미통과 PR 금지 + <code>--no-gpg-sign</code> 금지 (CLAUDE.md §3 행 5 + 정본 §P-7 정합).</li>
+  <li><strong>머지 게이트 FAIL → 회귀 경로</strong> — 게이트 1 FAIL = ② 개발 회귀. 게이트 2 FAIL = ci 디버깅 (self-hosted runner 상태 + workflow 로그). 게이트 3 보류 = 사용자 GO 대기 (release-agent spawn 차단).</li>
+  <li><strong>본 사이클 의 의미</strong> — 검증 게이트 의 3단계 완료 진입점 (reviewer ✅ → qa ✅ → release 직전). 머지 게이트 3 단계 정합 = 후속 Phase 1 MVP 본격 진입 의 기반 절차. handoff §9 의 다음 사이클 entry = "release-agent spawn 사용자 GO 대기" 단일 항목.</li>
+  <li><strong>다음 단계</strong> — observability-agent (③-3) PASS 확인 + CI 3종 GREEN 확인 후 사용자 directive "release-agent 진행해" 대기 → release-agent spawn (Whitebox <code>run_in_background: true</code>) → 머지 + push + PR close → Phase 1 MVP 본격 진입 (<code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code>) 사용자 GO 영역.</li>
 </ul>
 
 <hr>
@@ -325,11 +336,11 @@
   <li>workflow 3종 GREEN 도달</li>
 </ul>
 
-<h3>3.6 코드 진입 (사이클 12 진입 + 사이클 13 qa-agent 회귀 검증 진행)</h3>
+<h3>3.6 코드 진입 (사이클 12 진입 + 사이클 13 qa-agent 회귀 + 사이클 14 release-agent 머지 게이트 진입)</h3>
 <ul>
-  <li>Agent #16 산출물 8 file ~96 KB (app/rtc/ 7 + app/ui/file_progress_widget.py) reviewer-agent GO + SPDX header 적용 완료</li>
+  <li>Agent #16 산출물 8 file ~96 KB (app/rtc/ 7 + app/ui/file_progress_widget.py) reviewer-agent GO + SPDX header 적용 완료 + qa-agent 회귀 + release-agent 머지 게이트 3 단계 진입</li>
   <li>문서 89% + 코드 11% 비율 (직전 91%/9% 대비 코드 비중 ▲)</li>
-  <li>다음 단계 = qa-agent 회귀 PASS 후 <code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code> Phase 1 MVP 본격 진입 (사용자 GO 후)</li>
+  <li>다음 단계 = release-agent 머지 PASS 후 <code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code> Phase 1 MVP 본격 진입 (사용자 GO 후)</li>
 </ul>
 
 <h3>3.7 추가 차별화 보류</h3>
@@ -360,7 +371,7 @@
   <li>수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)</li>
   <li>진입 장벽: 0 (내부 도입)</li>
   <li>성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증</li>
-  <li><strong>확률 = 상 (사이클 12 의 코드 readiness PASS + 사이클 13 의 qa 게이트 진입 이 안정성 강화)</strong></li>
+  <li><strong>확률 = 상 (사이클 14 의 머지 게이트 3 단계 정합 진입 이 안정성 추가 강화)</strong></li>
   <li><strong>권장도 1순위</strong></li>
 </ul>
 
@@ -402,7 +413,8 @@
     <tr><td class="center">0</td><td><strong>SMTP 정책 + 절차 — 5 file + 영구 메모리</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책</strong></td><td class="center"><span class="ok">✅</span> (사이클 6)</td></tr>
     <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 정식 GO + SPDX header 8 file 적용 + ARCHITECTURE 정정</strong></td><td class="center"><span class="ok">✅</span> (사이클 12)</td></tr>
-    <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 진입 (7행 게이트)</strong></td><td class="center"><span class="pending">🟡 진행</span> (사이클 13)</td></tr>
+    <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 진입 (7행 게이트)</strong></td><td class="center"><span class="ok">✅</span> (사이클 13)</td></tr>
+    <tr><td class="center">0</td><td><strong>release-agent 머지 진입 + 머지 게이트 3 단계 정합</strong></td><td class="center"><span class="pending">🟡 진행</span> (사이클 14)</td></tr>
     <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
     <tr><td class="center">2</td><td>Phase 1 MVP 코드 진입 (app/auth + app/db + app/signaling)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
     <tr><td class="center">3</td><td>Toonation 통합 시나리오 검토 (옵션 B)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
@@ -464,12 +476,13 @@
     <tr><td>데모 서버 보안 사고</td><td class="center">중</td><td class="center">중</td><td>Phase 2 진입 직전 hardening</td></tr>
     <tr><td><span class="strike">라이선스 결정 지연</span></td><td class="center"><span class="ok">✅ 해소 (사이클 6)</span></td><td class="center">—</td><td>GPLv3 확정 + SPDX 8 file (사이클 12)</td></tr>
     <tr><td>PyQt6 GPL 의무 의 외부 fork distribution</td><td class="center">중</td><td class="center">중</td><td>GPLv3 정합 + private 전환 시 외부 fork 차단</td></tr>
-    <tr><td>문서 89% : 코드 11% 지속</td><td class="center">중</td><td class="center">중</td><td>Agent #16 GO + qa-agent 회귀 PASS 후 Phase 1 MVP 본격 진입</td></tr>
+    <tr><td>문서 89% : 코드 11% 지속</td><td class="center">중</td><td class="center">중</td><td>Agent #16 GO + qa-agent 회귀 + release-agent 머지 게이트 PASS 후 Phase 1 MVP 본격 진입</td></tr>
     <tr><td><strong>원격 제어 보안 사고</strong> (Phase 3+ 위험)</td><td class="center">중</td><td class="center">상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그</td></tr>
     <tr><td><strong>SMTP spam reputation 부족</strong></td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
     <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong></td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
     <tr><td><strong>데모 서버 SSH 차단</strong></td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
-    <tr><td><strong>qa-agent 회귀 FAIL → ② 회귀 cycle 지연</strong> (신규 사이클 13)</td><td class="center">중</td><td class="center">중</td><td>회귀 체크리스트 7행 의 단계별 PASS — FAIL 1건 시 즉시 main session 직접 정정 + reviewer 재호출 직렬 진행</td></tr>
+    <tr><td><strong>qa-agent 회귀 FAIL → ② 회귀 cycle 지연</strong></td><td class="center">중</td><td class="center">중</td><td>회귀 체크리스트 7행 의 단계별 PASS — FAIL 1건 시 즉시 main session 직접 정정 + reviewer 재호출 직렬 진행</td></tr>
+    <tr><td><strong>머지 게이트 3 단계 중 1건 FAIL</strong> (신규 사이클 14)</td><td class="center">중</td><td class="center">중</td><td>게이트 1 FAIL = ② 회귀, 게이트 2 FAIL = ci 디버깅 (self-hosted runner 로그), 게이트 3 보류 = 사용자 GO 대기 (release-agent spawn 차단)</td></tr>
   </tbody>
 </table>
 
@@ -498,7 +511,8 @@
     <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK</td></tr>
     <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib)</td></tr>
     <tr><td><strong>SPDX header 코드 file 적용률</strong></td><td>100%</td><td><strong>100% (8/8 file — 사이클 12)</strong></td></tr>
-    <tr><td><strong>qa-agent 회귀 체크리스트 PASS 율</strong> (신규 사이클 13)</td><td>7/7 PASS</td><td>진행 중 (체크리스트 활성 — 사이클 13)</td></tr>
+    <tr><td><strong>qa-agent 회귀 체크리스트 PASS 율</strong></td><td>7/7 PASS</td><td>진행 중 (체크리스트 활성 — 사이클 13)</td></tr>
+    <tr><td><strong>머지 게이트 3 단계 PASS 율</strong> (신규 사이클 14)</td><td>3/3 PASS</td><td>1/3 (게이트 1 검증 직렬 진행 중 — reviewer ✅ + qa 진행 + observability 대기)</td></tr>
   </tbody>
 </table>
 
@@ -509,16 +523,16 @@
 <p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
 
 <ul>
-  <li>기술 완성도 점수 — qa-agent 회귀 PASS + Phase 1 MVP 본격 진입 + dogfooding 시 +0.5~1.0</li>
+  <li>기술 완성도 점수 — 머지 게이트 3 단계 PASS + Phase 1 MVP 본격 진입 + dogfooding 시 +0.5~1.0</li>
   <li>누락 기능 표 — Phase 1 MVP 본격 진입 시 항목 제거</li>
-  <li>단기 액션 ✅ 표시 갱신 (qa-agent 회귀 PASS 시 사이클 13 row 갱신)</li>
+  <li>단기 액션 ✅ 표시 갱신 (release-agent 머지 PASS 시 사이클 14 row 갱신)</li>
   <li>KPI 실측 값 (Phase 1 MVP 본격 진입 + pilot 시점)</li>
   <li>가드레일 메모리 누계 (현 21)</li>
   <li>텔레그램 송신 누계 (현 30건+)</li>
-  <li>sub-agent 누계 (현 17 — 사이클 13 qa-agent 진입 시 18 예정)</li>
+  <li>sub-agent 누계 (현 17 — 사이클 14 release-agent 진입 시 18 예정)</li>
   <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
   <li>SMTP 실제 설치 완료 시 §2.11 + §9 KPI 갱신</li>
-  <li>라이선스 확정 시 §3.4 ✅ + SPDX 적용 완료 (사이클 12 ✅) + qa-agent 회귀 PASS (사이클 13 ✅ 예정)</li>
+  <li>라이선스 확정 시 §3.4 ✅ + SPDX 적용 완료 (사이클 12 ✅) + qa-agent 회귀 (사이클 13) + release-agent 머지 게이트 (사이클 14)</li>
 </ul>
 
 <footer class="refs">

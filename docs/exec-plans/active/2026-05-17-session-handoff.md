@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 23:30 (사이클 12 갱신 — 본 세션 누계 commit 52+ 반영, reviewer 3 cycle 정식 GO + qa-agent 회귀 진입 + snapshot 사이클 13). 최신 commit `e418b39`.
+> 본 인계 시점: 2026-05-18 00:05 (사이클 13 갱신 — 본 세션 누계 commit 53+ 반영, release-agent 머지 진입 + 머지 게이트 3 단계 완성 + snapshot 사이클 14). 최신 commit `d241c04`.
 
 ---
 
@@ -479,6 +479,15 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - 종합 판정 = **PASS 정식 GO** (Phase 1 FR-04 코드 진입 readiness 완전 도달)
 - handoff = main session → `@qa-agent` 회귀 체크리스트 → 코드 진입 권장
 - handoff §9 #8 ✅ **완전 해소** (3 cycle 누계 — 11 + 12 + 13)
+
+### 8.37 release-agent 머지 진입 + 머지 게이트 3 단계 완성 + snapshot 사이클 14 (사이클 13 신규)
+
+- 사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release 진입
+- release-agent sub-agent spawn (Whitebox) — PR 템플릿 + M1~M7 + CI 3 workflow GREEN + 머지 판정
+- 머지 게이트 누계 = reviewer ✅ (사이클 11~13) → qa ✅ CONDITIONAL → **release 진입** (사이클 14)
+- snapshot 사이클 14 — productization §2.20 신규 (release 머지 진입) + vibe-coding §2.24 신규 (머지 게이트 3 단계 자동 chain)
+- HTML 2종 sub-agent 병렬 재생성 (사이클 14 정합)
+- next = observability-agent 머지 직후 (5단계 워크플로우 최종 단계)
 
 ### 8.36 qa-agent 회귀 + ARCHITECTURE.md drift 정정 + snapshot 사이클 13 (사이클 12 신규)
 

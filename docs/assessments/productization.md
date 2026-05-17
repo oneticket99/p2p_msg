@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 23:25 (commit `e418b39` 직후 — 본 세션 누계 51 commit 반영, 사이클 13 — qa-agent 회귀 진입)
+> 최근 갱신 시점: 2026-05-18 00:00 (commit `d241c04` 직후 — 본 세션 누계 52 commit 반영, 사이클 14 — release-agent 머지 진입)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -140,7 +140,15 @@ status: active
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
-### 2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (신규 사이클 13)
+### 2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 (신규 사이클 14)
+
+- 사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release-agent 진입
+- 머지 게이트 누계 = reviewer ✅ (사이클 11~13 3 cycle) → qa ✅ CONDITIONAL (사이클 13) → **release 진입** (사이클 14)
+- release-agent sub-agent spawn (Whitebox) — PR 템플릿 정합 + M1~M7 + CI 3 workflow GREEN + 머지 판정
+- qa-agent CONDITIONAL PASS 의 미커버 영역 (tests/rtc/ 등) = Phase 1 후속 별도 task 위탁 정합
+- release-agent PASS 후 → observability-agent 머지 직후 의 5단계 워크플로우 최종 단계
+
+### 2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (사이클 13 신규 — 사이클 14 유지)
 
 - 사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입
 - reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)
