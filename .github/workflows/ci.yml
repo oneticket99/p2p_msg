@@ -11,8 +11,10 @@
 #   7) import-smoke    — app/server import 매트릭스 (macOS arm64 + Windows x64)
 #
 # 정책 정합:
-#   - 사용자 directive 2026-05-17 — CI = self-hosted runner 단독, GitHub-hosted 미사용
-#   - runner 라벨: [self-hosted, macOS, arm64] · [self-hosted, Windows, x64]
+#   - 사용자 directive 2026-05-17 — CI = self-hosted macOS arm64 단독
+#     + Windows 빌드 = GitHub-hosted Ubuntu (wine cross-compile, build.yml 후반)
+#   - runner 라벨: [self-hosted, macOS, arm64]
+#   - Windows self-hosted runner 의무 = 영구 회수 (wine 대체)
 #   - 정본 §L 등가 — 게이트 1건 FAIL = PR merge 차단
 #
 # 보안 노트:
@@ -189,8 +191,10 @@ jobs:
   # ---------------------------------------------------------------------------
   import-smoke:
     name: import-smoke (${{ matrix.label }})
-    # Windows-x64 entry 임시 비활성 — Windows runner 미등록 (2026-05-17 cycle)
-    # Phase 1 후반 Windows runner 등록 직후 본 entry 의 주석 해제 + Task #3 정합
+    # Windows-x64 entry 영구 비활성 — wine cross-compile 대체 (사용자 directive 2026-05-17)
+    # Windows 빌드 의무 = build.yml (Phase 1 후반 신설) 의 GitHub-hosted Ubuntu +
+    # cdrx/pyinstaller-windows docker image. 본 ci.yml 의 import-smoke/pytest = macOS arm64 단독.
+    # 정합 정책: 영구 메모리 project_windows_build_via_wine.md + AGENTS.md §1 빌드 row.
     strategy:
       fail-fast: false
       matrix:
@@ -237,8 +241,10 @@ jobs:
   # ---------------------------------------------------------------------------
   pytest:
     name: pytest (${{ matrix.label }})
-    # Windows-x64 entry 임시 비활성 — Windows runner 미등록 (2026-05-17 cycle)
-    # Phase 1 후반 Windows runner 등록 직후 본 entry 의 주석 해제 + Task #3 정합
+    # Windows-x64 entry 영구 비활성 — wine cross-compile 대체 (사용자 directive 2026-05-17)
+    # Windows 빌드 의무 = build.yml (Phase 1 후반 신설) 의 GitHub-hosted Ubuntu +
+    # cdrx/pyinstaller-windows docker image. 본 ci.yml 의 import-smoke/pytest = macOS arm64 단독.
+    # 정합 정책: 영구 메모리 project_windows_build_via_wine.md + AGENTS.md §1 빌드 row.
     strategy:
       fail-fast: false
       matrix:
