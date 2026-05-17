@@ -1,4 +1,9 @@
 PyQt6>=6.7
 qasync>=0.27
 aiohttp>=3.11
+aiortc>=1.9
+Pillow>=10.0
+aiofiles>=23.2
 python-dotenv>=1.0
+# MariaDB driver (사용자 directive 2026-05-17 — 영속화 DB)
+asyncmy>=0.2.10
