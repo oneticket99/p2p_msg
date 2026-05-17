@@ -1,0 +1,120 @@
+# =============================================================================
+# doc-gardener.yml — TooTalk 주 1회 드리프트 감지 워크플로우
+# -----------------------------------------------------------------------------
+# 본 워크플로우는 @doc-gardener-agent ([.claude/agents/doc-gardener-agent.md])
+# 의 자동화 등가 (Phase 1). 주간 스테일·드리프트 감지 + workflow summary 보고.
+#
+# Phase 1 범위 (본 워크플로우):
+#   1) 깨진 상대 링크 (tools/doc-lint.sh 검사 2)
+#   2) frontmatter 필수 필드 누락 (doc-lint.sh 검사 3)
+#   3) 90일 스테일 감지 — docs/** last_verified 필드 비교
+#   4) BPE 위생 (doc-lint.sh 검사 1)
+#   5) 루트 18 동결 확인
+#
+# Phase 2 측 예정 (본 워크플로우 외):
+#   - 자동 보정 PR 생성 (feature branch + gh pr create)
+#   - 90일 스테일 owner 알림 (이슈 또는 텔레그램)
+#   - MIGRATION_MARIADB.md ↔ 코드 __tablename__ 정합
+#
+# 트리거:
+#   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
+#   - workflow_dispatch (수동)
+#
+# 보안 노트:
+#   - 본 워크플로우는 github.event.* 사용자 입력 미사용 (workflow injection 위험 0)
+#   - github.workflow / github.event_name 은 GitHub 보장 enum (안전)
+#   - 향후 PR 자동 생성 단계 도입 시 permissions 측 contents:write +
+#     pull-requests:write 추가 필요
+#
+# 정책 정합:
+#   - 정본 §M docs/policies/doc-gardening.md 등가 (작성 예정 위임)
+#   - 사용자 directive 2026-05-17 — self-hosted runner 단독
+# =============================================================================
+
+name: doc-gardener
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: doc-gardener
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+
+  drift-detect:
+    name: drift 감지 (스테일 + 링크 + frontmatter + BPE)
+    runs-on: [self-hosted, macOS, arm64]
+    env:
+      WORKFLOW_NAME: ${{ github.workflow }}
+      EVENT_NAME: ${{ github.event_name }}
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 기본 lint (doc-lint.sh 재사용)
+        run: bash tools/doc-lint.sh
+
+      - name: 90일 스테일 감지 (docs/** last_verified)
+        run: |
+          set -uo pipefail
+          THRESHOLD_DAYS=90
+          TODAY=$(date +%s)
+          STALE_COUNT=0
+          STALE_LIST=""
+
+          while IFS= read -r f; do
+            # frontmatter 측 last_verified 필드 추출 (YYYY-MM-DD)
+            LV=$(grep -E '^last_verified:' "$f" 2>/dev/null \
+              | head -1 \
+              | sed -E 's/^last_verified:[[:space:]]*//;s/["'\'']//g;s/[[:space:]]*$//')
+            if [ -z "$LV" ]; then continue; fi
+            # ISO-8601 형식 가정 — macOS date BSD 측 -j -f 사용
+            LV_TS=$(date -j -f "%Y-%m-%d" "$LV" "+%s" 2>/dev/null || true)
+            if [ -z "$LV_TS" ]; then continue; fi
+            DIFF_DAYS=$(( (TODAY - LV_TS) / 86400 ))
+            if [ "$DIFF_DAYS" -gt "$THRESHOLD_DAYS" ]; then
+              STALE_COUNT=$((STALE_COUNT + 1))
+              STALE_LIST="${STALE_LIST}- ${f} — last_verified ${LV} (${DIFF_DAYS}일 경과)\n"
+            fi
+          done < <(find docs -type f -name "*.md" 2>/dev/null)
+
+          if [ "$STALE_COUNT" -gt 0 ]; then
+            echo "::warning::90일 스테일 ${STALE_COUNT}건 발견:"
+            echo -e "$STALE_LIST"
+            {
+              echo "## 90일 스테일 감지 (${STALE_COUNT}건)"
+              echo ""
+              echo -e "$STALE_LIST"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "스테일 0건 — 모든 docs/** 90일 이내"
+            echo "## 90일 스테일 감지 — 0건" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: 루트 18 동결 확인
+        run: |
+          COUNT=$(ls -1 *.md 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$COUNT" != "18" ]; then
+            echo "::error::루트 마크다운 동결 위반 — 정확히 18 필요, 현재 $COUNT"
+            exit 1
+          fi
+          echo "루트 18 동결 정합"
+
+      - name: drift 리포트 요약 (Phase 1)
+        if: always()
+        run: |
+          {
+            echo "## doc-gardener 실행 요약"
+            echo ""
+            echo "- 실행 시각: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            echo "- 워크플로우: $WORKFLOW_NAME"
+            echo "- 트리거: $EVENT_NAME"
+            echo ""
+            echo "Phase 2 측 예정 — 자동 보정 PR 생성 + owner 알림 + MIGRATION_MARIADB 정합"
+          } >> "$GITHUB_STEP_SUMMARY"
