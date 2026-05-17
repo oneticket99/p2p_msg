@@ -3,71 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="title" content="FRONTEND.md — TooTalk PyQt6 UI 표준">
-<meta name="description" content="TooTalk(p2p_msg) 데스크탑 클라이언트 PyQt6 프런트엔드 표준 정의서">
+<meta name="title" content="TooTalk FRONTEND — UI 스타일 가이드 (Toonation 브랜드 컬러 통합)">
+<meta name="description" content="TooTalk(p2p_msg) 데스크탑 클라이언트 PyQt6 프런트엔드 표준 정의서 — Toonation 브랜드 컬러 정합">
 <meta name="author" content="TooTalk Project">
 <meta name="generator" content="docs/html FRONTEND.html (FRONTEND.md 변환)">
-<title>FRONTEND.md — TooTalk PyQt6 UI 표준</title>
+<title>TooTalk FRONTEND — UI 스타일 가이드 (Toonation 브랜드 컬러 통합)</title>
+<!-- mermaid 다이어그램 렌더링 — wireframe 6 + 시퀀스 다이어그램 1 = 총 11개 보존 -->
 <script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true});</script>
 <style>
-  :root { color-scheme: light dark; }
+  /* 색상 정합 — light theme 고정 (배경 #fafafa · 텍스트 #1f2937) */
+  :root { color-scheme: light; }
   body {
     font-family: -apple-system, "SF Pro Text", "Apple SD Gothic Neo", "Segoe UI", "Malgun Gothic", sans-serif;
     line-height: 1.6;
     max-width: 960px;
     margin: 2rem auto;
     padding: 0 1rem;
-    color: #1a1a1a;
-    background: #ffffff;
+    color: #1f2937;
+    background: #fafafa;
   }
-  h1, h2, h3, h4 { line-height: 1.3; margin-top: 1.8em; }
-  h1 { border-bottom: 2px solid #ddd; padding-bottom: 0.3em; }
-  h2 { border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+  h1, h2, h3, h4 { line-height: 1.3; margin-top: 1.8em; color: #0f172a; }
+  h1 { border-bottom: 2px solid #cbd5e1; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #e2e8f0; padding-bottom: 0.2em; }
+  h3 { color: #0066FF; }
   blockquote {
-    border-left: 4px solid #ccc;
+    border-left: 4px solid #0066FF;
     padding: 0.4em 1em;
     margin: 1em 0;
-    color: #555;
-    background: #f9f9f9;
+    color: #475569;
+    background: #f1f5f9;
   }
   code {
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    background: #f3f4f6;
+    background: #eef2ff;
+    color: #1e293b;
     padding: 0.1em 0.35em;
     border-radius: 3px;
     font-size: 0.92em;
   }
   pre {
-    background: #f6f8fa;
+    background: #f1f5f9;
     padding: 1em;
     border-radius: 6px;
     overflow-x: auto;
+    border: 1px solid #e2e8f0;
   }
   pre code { background: transparent; padding: 0; }
+  /* mermaid 다이어그램 컨테이너 — 가독성 우선 */
   pre.mermaid {
-    background: #fafafa;
+    background: #ffffff;
     text-align: center;
-    border: 1px solid #eee;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   }
+  /* 표 zebra stripe + border — 사용자 directive 정합 */
   table {
     border-collapse: collapse;
     width: 100%;
     margin: 1em 0;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
   th, td {
-    border: 1px solid #ddd;
-    padding: 0.5em 0.75em;
+    border: 1px solid #cbd5e1;
+    padding: 0.55em 0.8em;
     text-align: left;
     vertical-align: top;
   }
-  th { background: #f3f4f6; }
-  tr:nth-child(even) td { background: #fafafa; }
-  hr { border: 0; border-top: 1px solid #ddd; margin: 2em 0; }
-  a { color: #2563eb; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  th {
+    background: #e2e8f0;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  /* zebra stripe — 짝수 행 배경 미세 변경 */
+  tr:nth-child(even) td { background: #f8fafc; }
+  hr { border: 0; border-top: 1px solid #cbd5e1; margin: 2em 0; }
+  a { color: #0066FF; text-decoration: none; }
+  a:hover { text-decoration: underline; color: #0052FF; }
   ul, ol { padding-left: 1.6em; }
   li { margin: 0.25em 0; }
-  /* 색상 swatch — 색상 변수 표 가시화 (사용자 directive 2026-05-17) */
+  strong { color: #0f172a; }
+  /* 색상 swatch — 색상 변수 표 가시화 (14px 정사각 + 1px 회색 border) */
   .swatch {
     display: inline-block;
     width: 14px;
@@ -77,6 +93,14 @@
     margin-right: 6px;
     border-radius: 2px;
   }
+  /* Toonation 브랜드 컬러 전용 swatch — §15 본문에서 사용 */
+  .swatch-toonation-blue { background: #0066FF; }
+  .swatch-toonation-blue-deep { background: #0052FF; }
+  .swatch-deep-navy { background: #0F172A; }
+  .swatch-white { background: #FFFFFF; }
+  .swatch-neon-cyan { background: #22D3EE; }
+  .swatch-light-cyan { background: #67E8F9; }
+  .swatch-navy-variant { background: #1E293B; }
 </style>
 </head>
 <body>
@@ -164,7 +188,7 @@ flowchart TD
 <li><strong>MainWindow</strong> = <a href="../../app/ui/main_window.py">app/ui/main_window.py</a> — 모든 자식 위젯의 부모, <code>AppState</code> 보유.</li>
 <li><strong>ChatView</strong> = <a href="../../app/ui/chat_view.py">app/ui/chat_view.py</a> — <code>QScrollArea</code> + <code>QVBoxLayout</code>, stretch 슬롯 직전 삽입.</li>
 <li><strong>MessageBubble</strong> = <a href="../../app/ui/message_bubble.py">app/ui/message_bubble.py</a> — 단일 메시지(텍스트 + 타임스탬프) 표시.</li>
-<li><strong>FileProgressWidget</strong> = <a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a> — 송신/수신 양방향 ProgressBar.</li>
+<li><strong>FileProgressWidget</strong> = <a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py (예정)</a> — 송신/수신 양방향 ProgressBar.</li>
 <li><strong>StatusBar</strong> = <a href="../../app/ui/status_bar.py">app/ui/status_bar.py</a> — 연결 상태 + peer 수.</li>
 </ul>
 
@@ -172,90 +196,92 @@ flowchart TD
 
 <h2>4. 색상 변수 표</h2>
 
-<p>본 표의 값은 <strong>현재 임시값</strong>이며, Phase 1 후반 <code>app/ui/theme.qss</code> 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. <code>MessageBubble._COLOR_*</code> 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.</p>
+<p>본 표의 값은 Phase 1 후반 <code>app/ui/theme.qss</code> 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. <code>MessageBubble._COLOR_*</code> 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.</p>
+
+<p><strong>Toonation 브랜드 컬러 통합</strong> (사용자 directive 2026-05-17). Toonation 공식 BI 가이드 — 2023-04 브랜드 리뉴얼 정합 — 비비드 블루 + 딥 네이비 + 네온 민트/스카이 포인트. 본 §15 자세한 본문.</p>
 
 <table>
 <thead>
-<tr><th>변수명</th><th>라이트 임시값</th><th>다크 임시값</th><th>용도</th></tr>
+<tr><th>변수명</th><th>라이트</th><th>다크</th><th>용도</th></tr>
 </thead>
 <tbody>
 <tr>
-<td><code>--primary</code></td>
-<td>미확정 후크</td>
-<td>미확정 후크</td>
-<td>보내기 버튼 · 강조 액션</td>
+  <td><code>--primary</code></td>
+  <td><span class="swatch swatch-toonation-blue"></span><code>#0066FF</code> (Toonation Blue)</td>
+  <td><span class="swatch swatch-toonation-blue-deep"></span><code>#0052FF</code> (Toonation Blue Deep)</td>
+  <td>보내기 버튼 · 강조 액션 · Toonation 브랜드 정합</td>
 </tr>
 <tr>
-<td><code>--bg</code></td>
-<td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
-<td><span class="swatch" style="background:#1e1e1e;"></span><code>#1e1e1e</code></td>
-<td>윈도우 배경</td>
+  <td><code>--bg</code></td>
+  <td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
+  <td><span class="swatch" style="background:#1e1e1e;"></span><code>#1e1e1e</code></td>
+  <td>윈도우 배경</td>
 </tr>
 <tr>
-<td><code>--fg</code></td>
-<td><span class="swatch" style="background:#1a1a1a;"></span><code>#1a1a1a</code></td>
-<td><span class="swatch" style="background:#e5e5e5;"></span><code>#e5e5e5</code></td>
-<td>본문 텍스트</td>
+  <td><code>--fg</code></td>
+  <td><span class="swatch" style="background:#1a1a1a;"></span><code>#1a1a1a</code></td>
+  <td><span class="swatch" style="background:#e5e5e5;"></span><code>#e5e5e5</code></td>
+  <td>본문 텍스트</td>
 </tr>
 <tr>
-<td><code>--bubble-self</code></td>
-<td><span class="swatch" style="background:#dcf8c6;"></span><code>#dcf8c6</code></td>
-<td><span class="swatch" style="background:#2d5a3f;"></span><code>#2d5a3f</code></td>
-<td>내가 발신한 버블 배경 (self)</td>
+  <td><code>--bubble-self</code></td>
+  <td><span class="swatch" style="background:#dcf8c6;"></span><code>#dcf8c6</code></td>
+  <td><span class="swatch" style="background:#2d5a3f;"></span><code>#2d5a3f</code></td>
+  <td>내가 발신한 버블 배경 (self)</td>
 </tr>
 <tr>
-<td><code>--bubble-other</code></td>
-<td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
-<td><span class="swatch" style="background:#2a2a2a;"></span><code>#2a2a2a</code></td>
-<td>상대가 발신한 버블 배경 (peer)</td>
+  <td><code>--bubble-other</code></td>
+  <td><span class="swatch" style="background:#ffffff;"></span><code>#ffffff</code></td>
+  <td><span class="swatch" style="background:#2a2a2a;"></span><code>#2a2a2a</code></td>
+  <td>상대가 발신한 버블 배경 (peer)</td>
 </tr>
 <tr>
-<td><code>--bubble-border</code></td>
-<td><span class="swatch" style="background:#dddddd;"></span><code>#dddddd</code></td>
-<td><span class="swatch" style="background:#3a3a3a;"></span><code>#3a3a3a</code></td>
-<td>버블 경계선</td>
+  <td><code>--bubble-border</code></td>
+  <td><span class="swatch" style="background:#dddddd;"></span><code>#dddddd</code></td>
+  <td><span class="swatch" style="background:#3a3a3a;"></span><code>#3a3a3a</code></td>
+  <td>버블 경계선</td>
 </tr>
 <tr>
-<td><code>--text-timestamp</code></td>
-<td><span class="swatch" style="background:#888888;"></span><code>#888888</code></td>
-<td><span class="swatch" style="background:#9a9a9a;"></span><code>#9a9a9a</code></td>
-<td>타임스탬프 회색</td>
+  <td><code>--text-timestamp</code></td>
+  <td><span class="swatch" style="background:#888888;"></span><code>#888888</code></td>
+  <td><span class="swatch" style="background:#9a9a9a;"></span><code>#9a9a9a</code></td>
+  <td>타임스탬프 회색</td>
 </tr>
 <tr>
-<td><code>--text-sender</code></td>
-<td><span class="swatch" style="background:#555555;"></span><code>#555555</code></td>
-<td><span class="swatch" style="background:#b5b5b5;"></span><code>#b5b5b5</code></td>
-<td>발신자 라벨</td>
+  <td><code>--text-sender</code></td>
+  <td><span class="swatch" style="background:#555555;"></span><code>#555555</code></td>
+  <td><span class="swatch" style="background:#b5b5b5;"></span><code>#b5b5b5</code></td>
+  <td>발신자 라벨</td>
 </tr>
 <tr>
-<td><code>--status-connected</code></td>
-<td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
-<td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
-<td>연결 정상</td>
+  <td><code>--status-connected</code></td>
+  <td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
+  <td><span class="swatch" style="background:#22c55e;"></span><code>#22c55e</code></td>
+  <td>연결 정상</td>
 </tr>
 <tr>
-<td><code>--status-error</code></td>
-<td><span class="swatch" style="background:#dc2626;"></span><code>#dc2626</code></td>
-<td><span class="swatch" style="background:#ef4444;"></span><code>#ef4444</code></td>
-<td>연결 오류</td>
+  <td><code>--status-error</code></td>
+  <td><span class="swatch" style="background:#dc2626;"></span><code>#dc2626</code></td>
+  <td><span class="swatch" style="background:#ef4444;"></span><code>#ef4444</code></td>
+  <td>연결 오류</td>
 </tr>
 <tr>
-<td><code>--progress-acked</code></td>
-<td>미확정 후크</td>
-<td>미확정 후크</td>
-<td>ACK 누적 진행 막대</td>
+  <td><code>--progress-acked</code></td>
+  <td><span class="swatch swatch-neon-cyan"></span><code>#22D3EE</code> (네온 시안)</td>
+  <td><span class="swatch swatch-light-cyan"></span><code>#67E8F9</code> (라이트 시안)</td>
+  <td>ACK 누적 진행 막대 — Toonation 포인트 컬러 (민트/스카이 블루) 정합</td>
 </tr>
 <tr>
-<td><code>--progress-inflight</code></td>
-<td>미확정 후크</td>
-<td>미확정 후크</td>
-<td>송신 큐 대기 막대</td>
+  <td><code>--progress-inflight</code></td>
+  <td><span class="swatch swatch-deep-navy"></span><code>#0F172A</code> (Deep Navy)</td>
+  <td><span class="swatch swatch-navy-variant"></span><code>#1E293B</code> (Navy 변형)</td>
+  <td>송신 큐 대기 막대 — Toonation 서브 컬러 (딥 네이비) 정합</td>
 </tr>
 </tbody>
 </table>
 
 <blockquote>
-<p><strong>미확정 후크</strong> = Phase 1 후반 정책 확정 대기. 본 단계에서는 <code>QPalette</code> 기본값을 우선 사용하고, 변수 도입 시 일괄 갱신한다.</p>
+<p><strong>Toonation 브랜드 컬러</strong> = 2023-04 BI 리뉴얼 정합 (사용자 directive 2026-05-17). 자세한 본문 = §15.</p>
 </blockquote>
 
 <hr>
@@ -632,7 +658,94 @@ flowchart TB
 
 <hr>
 
-<h2>15. 참조</h2>
+<h2>15. Toonation 브랜드 컬러 가이드 (사용자 directive 2026-05-17)</h2>
+
+<p>본 §15 = Toonation 공식 BI 가이드 정합 본문. TooTalk UI 의 <code>--primary</code> + <code>--progress-*</code> 변수 + 회원가입 / 로그인 / 비번찾기 wireframe (§14.6~§14.8) 의 브랜드 컬러 적용 정본.</p>
+
+<h3>15.1 브랜드 정합 사유</h3>
+
+<p>Toonation 공식 브랜드 컬러 = <strong>블루 계열 메인</strong>. 2023-04 브랜드 리뉴얼 — 로고 + 공식 웹사이트 + 후원 페이지 + 가이드 시스템 전반 의 비비드 블루 + 딥 네이비 + 네온 민트/스카이 포인트 조합 의 핵심 아이덴티티 적용. TooTalk = Toonation 통합 옵션 B (★★★★★ 권장도 1순위 — adoption-roadmap §4.2) 정합 본 브랜드 컬러 직접 채택.</p>
+
+<h3>15.2 핵심 브랜드 컬러 표</h3>
+
+<table>
+<thead>
+<tr><th>분류</th><th>hex</th><th>swatch</th><th>용도</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>메인 컬러 (Toonation Blue)</strong></td>
+  <td><code>#0066FF</code></td>
+  <td><span class="swatch swatch-toonation-blue"></span></td>
+  <td>선명 + 신뢰감 비비드 블루. 보내기 버튼 · 강조 액션 · 후원 CTA</td>
+</tr>
+<tr>
+  <td><strong>메인 컬러 변형 (Toonation Blue Deep)</strong></td>
+  <td><code>#0052FF</code></td>
+  <td><span class="swatch swatch-toonation-blue-deep"></span></td>
+  <td>다크 모드 + hover/active 상태</td>
+</tr>
+<tr>
+  <td><strong>서브 컬러 (Deep Navy)</strong></td>
+  <td><code>#0F172A</code></td>
+  <td><span class="swatch swatch-deep-navy"></span></td>
+  <td>다크 모드 배경 + 코인/텍스트 배경</td>
+</tr>
+<tr>
+  <td><strong>베이스 (White)</strong></td>
+  <td><code>#FFFFFF</code></td>
+  <td><span class="swatch swatch-white"></span></td>
+  <td>라이트 모드 기본 배경</td>
+</tr>
+<tr>
+  <td><strong>포인트 (네온 시안)</strong></td>
+  <td><code>#22D3EE</code></td>
+  <td><span class="swatch swatch-neon-cyan"></span></td>
+  <td>후원 금액 + 배너 + 시선 끌기 (민트 블루)</td>
+</tr>
+<tr>
+  <td><strong>포인트 (라이트 시안)</strong></td>
+  <td><code>#67E8F9</code></td>
+  <td><span class="swatch swatch-light-cyan"></span></td>
+  <td>다크 모드 의 포인트 + ACK 누적 진행</td>
+</tr>
+</tbody>
+</table>
+
+<h3>15.3 §4 색상 변수 매핑</h3>
+
+<table>
+<thead>
+<tr><th>§4 변수</th><th>Toonation 매핑</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--primary</code> 라이트</td><td>메인 컬러 <code>#0066FF</code></td></tr>
+<tr><td><code>--primary</code> 다크</td><td>메인 컬러 변형 <code>#0052FF</code></td></tr>
+<tr><td><code>--progress-acked</code> 라이트</td><td>포인트 네온 시안 <code>#22D3EE</code></td></tr>
+<tr><td><code>--progress-acked</code> 다크</td><td>포인트 라이트 시안 <code>#67E8F9</code></td></tr>
+<tr><td><code>--progress-inflight</code> 라이트</td><td>서브 딥 네이비 <code>#0F172A</code></td></tr>
+<tr><td><code>--progress-inflight</code> 다크</td><td>Navy 변형 <code>#1E293B</code></td></tr>
+</tbody>
+</table>
+
+<h3>15.4 BI 가이드 참조 + 활용 영역</h3>
+
+<ul>
+<li>공식 BI 가이드라인 + 로고 원본 (PC/모바일 사이즈) = Toonation 공식 홈페이지 하단 또는 Toonation 고객센터 의 로고 변경 안내 페이지</li>
+<li>활용 = 방송용 오버레이 + 후원 배너 + 회원가입/로그인 wireframe (§14.6~§14.8) 의 <code>--primary</code> 적용 + 메인 채팅 의 보내기 버튼 + 양방향 ProgressBar 의 ACK 색상</li>
+</ul>
+
+<h3>15.5 제약 + 의무</h3>
+
+<ul>
+<li>브랜드 외부 표기 시 = Toonation 공식 가이드 직접 인용 의무 (본 §15 = TooTalk 내부 정합 본문)</li>
+<li>라이선스 GPLv3 + 브랜드 정합 — 외부 fork distribution 시 Toonation 브랜드 사용 권한 별도 확인 의무 (TooTalk source code 라이선스 ≠ Toonation 브랜드 사용권)</li>
+<li>정식 Toonation 통합 옵션 B 진입 시 = 본 §15 의 공식 BI 가이드 의 자세한 인용 + 사용자 검토 의무 (Phase 2 이후)</li>
+</ul>
+
+<hr>
+
+<h2>16. 참조</h2>
 
 <table>
 <thead>
@@ -647,7 +760,7 @@ flowchart TB
 <tr><td>채팅 리스트 구현</td><td><a href="../../app/ui/chat_view.py">app/ui/chat_view.py</a></td></tr>
 <tr><td>메시지 버블 구현</td><td><a href="../../app/ui/message_bubble.py">app/ui/message_bubble.py</a></td></tr>
 <tr><td>상태바 구현</td><td><a href="../../app/ui/status_bar.py">app/ui/status_bar.py</a></td></tr>
-<tr><td>파일 진행 위젯 구현</td><td><a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py</a></td></tr>
+<tr><td>파일 진행 위젯 구현</td><td><a href="../../app/ui/file_progress_widget.py">app/ui/file_progress_widget.py (예정)</a></td></tr>
 <tr><td>요구사항 명세</td><td><a href="../../Specification.md">Specification.md</a></td></tr>
 <tr><td>신뢰성 정책</td><td><a href="../../RELIABILITY.md">RELIABILITY.md</a></td></tr>
 <tr><td>보안 정책</td><td><a href="../../SECURITY.md">SECURITY.md</a></td></tr>
@@ -656,7 +769,7 @@ flowchart TB
 
 <hr>
 
-<p>마지막 갱신: 2026-05-17 (FRONTEND.md 초안 — Phase 1 스켈레톤 UI 표준 정의)</p>
+<p>마지막 갱신: 2026-05-17 (FRONTEND.html 전체 rewrite — §15 Toonation 브랜드 컬러 가이드 통합 + §16 참조 재번호)</p>
 
 </body>
 </html>

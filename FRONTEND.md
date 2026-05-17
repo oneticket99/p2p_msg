@@ -81,11 +81,13 @@ flowchart TD
 
 ## 4. 색상 변수 표
 
-본 표의 값은 **현재 임시값**이며, Phase 1 후반 `app/ui/theme.qss` 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. `MessageBubble._COLOR_*` 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.
+본 표의 값은 Phase 1 후반 `app/ui/theme.qss` 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. `MessageBubble._COLOR_*` 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.
 
-| 변수명 | 라이트 임시값 | 다크 임시값 | 용도 |
+**Toonation 브랜드 컬러 통합** (사용자 directive 2026-05-17). Toonation 공식 BI 가이드 — 2023-04 브랜드 리뉴얼 정합 — 비비드 블루 + 딥 네이비 + 네온 민트/스카이 포인트. 본 §15 자세한 본문.
+
+| 변수명 | 라이트 | 다크 | 용도 |
 |---|---|---|---|
-| `--primary` | 미확정 후크 | 미확정 후크 | 보내기 버튼 · 강조 액션 |
+| `--primary` | <span style="display:inline-block;width:14px;height:14px;background:#0066FF;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#0066FF` (Toonation Blue) | <span style="display:inline-block;width:14px;height:14px;background:#0052FF;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#0052FF` (Toonation Blue Deep) | 보내기 버튼 · 강조 액션 · Toonation 브랜드 정합 |
 | `--bg` | <span style="display:inline-block;width:14px;height:14px;background:#ffffff;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#ffffff` | <span style="display:inline-block;width:14px;height:14px;background:#1e1e1e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#1e1e1e` | 윈도우 배경 |
 | `--fg` | <span style="display:inline-block;width:14px;height:14px;background:#1a1a1a;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#1a1a1a` | <span style="display:inline-block;width:14px;height:14px;background:#e5e5e5;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#e5e5e5` | 본문 텍스트 |
 | `--bubble-self` | <span style="display:inline-block;width:14px;height:14px;background:#dcf8c6;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#dcf8c6` | <span style="display:inline-block;width:14px;height:14px;background:#2d5a3f;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#2d5a3f` | 내가 발신한 버블 배경 (self) |
@@ -95,10 +97,10 @@ flowchart TD
 | `--text-sender` | <span style="display:inline-block;width:14px;height:14px;background:#555555;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#555555` | <span style="display:inline-block;width:14px;height:14px;background:#b5b5b5;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#b5b5b5` | 발신자 라벨 |
 | `--status-connected` | <span style="display:inline-block;width:14px;height:14px;background:#22c55e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#22c55e` | <span style="display:inline-block;width:14px;height:14px;background:#22c55e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#22c55e` | 연결 정상 |
 | `--status-error` | <span style="display:inline-block;width:14px;height:14px;background:#dc2626;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#dc2626` | <span style="display:inline-block;width:14px;height:14px;background:#ef4444;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#ef4444` | 연결 오류 |
-| `--progress-acked` | 미확정 후크 | 미확정 후크 | ACK 누적 진행 막대 |
-| `--progress-inflight` | 미확정 후크 | 미확정 후크 | 송신 큐 대기 막대 |
+| `--progress-acked` | <span style="display:inline-block;width:14px;height:14px;background:#22D3EE;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#22D3EE` (네온 시안) | <span style="display:inline-block;width:14px;height:14px;background:#67E8F9;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#67E8F9` (라이트 시안) | ACK 누적 진행 막대 — Toonation 포인트 컬러 (민트/스카이 블루) 정합 |
+| `--progress-inflight` | <span style="display:inline-block;width:14px;height:14px;background:#0F172A;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#0F172A` (Deep Navy) | <span style="display:inline-block;width:14px;height:14px;background:#1E293B;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#1E293B` (Navy 변형) | 송신 큐 대기 막대 — Toonation 서브 컬러 (딥 네이비) 정합 |
 
-> **미확정 후크** = Phase 1 후반 정책 확정 대기. 본 단계에서는 `QPalette` 기본값을 우선 사용하고, 변수 도입 시 일괄 갱신한다.
+> **Toonation 브랜드 컬러** = 2023-04 BI 리뉴얼 정합 (사용자 directive 2026-05-17). 자세한 본문 = §15.
 
 ---
 
@@ -423,7 +425,50 @@ flowchart TB
 
 ---
 
-## 15. 참조
+## 15. Toonation 브랜드 컬러 가이드 (사용자 directive 2026-05-17)
+
+본 §15 = Toonation 공식 BI 가이드 정합 본문. TooTalk UI 의 `--primary` + `--progress-*` 변수 + 회원가입 / 로그인 / 비번찾기 wireframe (§14.6~§14.8) 의 브랜드 컬러 적용 정본.
+
+### 15.1 브랜드 정합 사유
+
+Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 리뉴얼 — 로고 + 공식 웹사이트 + 후원 페이지 + 가이드 시스템 전반 의 비비드 블루 + 딥 네이비 + 네온 민트/스카이 포인트 조합 의 핵심 아이덴티티 적용. TooTalk = Toonation 통합 옵션 B (★★★★★ 권장도 1순위 — adoption-roadmap §4.2) 정합 본 브랜드 컬러 직접 채택.
+
+### 15.2 핵심 브랜드 컬러 표
+
+| 분류 | hex | swatch | 용도 |
+|---|---|---|---|
+| **메인 컬러 (Toonation Blue)** | `#0066FF` | <span style="display:inline-block;width:14px;height:14px;background:#0066FF;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 선명 + 신뢰감 비비드 블루. 보내기 버튼 · 강조 액션 · 후원 CTA |
+| **메인 컬러 변형 (Toonation Blue Deep)** | `#0052FF` | <span style="display:inline-block;width:14px;height:14px;background:#0052FF;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 다크 모드 + hover/active 상태 |
+| **서브 컬러 (Deep Navy)** | `#0F172A` | <span style="display:inline-block;width:14px;height:14px;background:#0F172A;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 다크 모드 배경 + 코인/텍스트 배경 |
+| **베이스 (White)** | `#FFFFFF` | <span style="display:inline-block;width:14px;height:14px;background:#FFFFFF;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 라이트 모드 기본 배경 |
+| **포인트 (네온 시안)** | `#22D3EE` | <span style="display:inline-block;width:14px;height:14px;background:#22D3EE;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 후원 금액 + 배너 + 시선 끌기 (민트 블루) |
+| **포인트 (라이트 시안)** | `#67E8F9` | <span style="display:inline-block;width:14px;height:14px;background:#67E8F9;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span> | 다크 모드 의 포인트 + ACK 누적 진행 |
+
+### 15.3 §4 색상 변수 매핑
+
+| §4 변수 | Toonation 매핑 |
+|---|---|
+| `--primary` 라이트 | 메인 컬러 `#0066FF` |
+| `--primary` 다크 | 메인 컬러 변형 `#0052FF` |
+| `--progress-acked` 라이트 | 포인트 네온 시안 `#22D3EE` |
+| `--progress-acked` 다크 | 포인트 라이트 시안 `#67E8F9` |
+| `--progress-inflight` 라이트 | 서브 딥 네이비 `#0F172A` |
+| `--progress-inflight` 다크 | Navy 변형 `#1E293B` |
+
+### 15.4 BI 가이드 참조 + 활용 영역
+
+- 공식 BI 가이드라인 + 로고 원본 (PC/모바일 사이즈) = Toonation 공식 홈페이지 하단 또는 Toonation 고객센터 의 로고 변경 안내 페이지
+- 활용 = 방송용 오버레이 + 후원 배너 + 회원가입/로그인 wireframe (§14.6~§14.8) 의 `--primary` 적용 + 메인 채팅 의 보내기 버튼 + 양방향 ProgressBar 의 ACK 색상
+
+### 15.5 제약 + 의무
+
+- 브랜드 외부 표기 시 = Toonation 공식 가이드 직접 인용 의무 (본 §15 = TooTalk 내부 정합 본문)
+- 라이선스 GPLv3 + 브랜드 정합 — 외부 fork distribution 시 Toonation 브랜드 사용 권한 별도 확인 의무 (TooTalk source code 라이선스 ≠ Toonation 브랜드 사용권)
+- 정식 Toonation 통합 옵션 B 진입 시 = 본 §15 의 공식 BI 가이드 의 자세한 인용 + 사용자 검토 의무 (Phase 2 이후)
+
+---
+
+## 16. 참조
 
 | 주제 | 문서 |
 |---|---|

@@ -65,7 +65,7 @@
 | 라이선스 본문 | [LICENSE](LICENSE) (GPLv3 GNU 표준 674 lines, 사용자 directive 2026-05-17) | 외부 distribution + SPDX header 적용 직전 |
 | 인프라 절차 | [docs/references/ci-self-hosted-setup.md](docs/references/ci-self-hosted-setup.md) · [docs/references/smtp-setup.md](docs/references/smtp-setup.md) | runner 등록 + SMTP 설치 시점 |
 | 평가 snapshot | [docs/assessments/productization.md](docs/assessments/productization.md) · [vibe-coding.md](docs/assessments/vibe-coding.md) | 매 task 종료 시 전체 rewrite (사이클 8) |
-| enforcement layer sketch | [.claude/settings.json.disabled](.claude/settings.json.disabled) · [tools/hook_check_bpe_token_input.sh](tools/hook_check_bpe_token_input.sh) · [tools/hook_telegram_report_stop.sh](tools/hook_telegram_report_stop.sh) | 다음 BPE 위반/텔레그램 누락 발견 시 활성 |
+| enforcement layer sketch | [.claude/settings.json](.claude/settings.json) · [tools/hook_check_bpe_token_input.sh](tools/hook_check_bpe_token_input.sh) · [tools/hook_telegram_report_stop.sh](tools/hook_telegram_report_stop.sh) | 다음 BPE 위반/텔레그램 누락 발견 시 활성 |
 
 > **루트 마크다운은 18개로 동결** ([정본 §K](CLAUDE_HARNESS_IMPORTANT.md)). 신규 문서는 반드시 `docs/` 하위에 생성.
 
