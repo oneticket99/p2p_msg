@@ -15,7 +15,12 @@ env/
 .eggs/
 *.egg-info/
 *.egg
-build/
+# PyInstaller work + Python build setuptools 산출물 — 임시 만 차단 (.spec 영구 보존)
+build/work/
+build/work-win/
+build/__pycache__/
+build/*.tar.gz
+build/*.zip
 dist/
 .pytest_cache/
 .mypy_cache/
