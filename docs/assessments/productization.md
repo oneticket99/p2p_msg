@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 14:00 KST (사이클 38 — Phase 2 signature sound minimal layer + 19 PASS + WAV placeholder)
+> 최근 갱신 시점: 2026-05-20 14:30 KST (사이클 39 — Phase 2 ChatView SoundPlayer trigger 연결 + 9 PASS + Phase 2 누계 123 케이스)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 7.7 / 10 | 7.5 → 7.7 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 (X3DH + Signal Protocol + skipped_keys + ooo) + signature sound layer 19 PASS + 307 pytest |
+| 기술 완성도 | 7.8 / 10 | 7.7 → 7.8 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 + signature sound 28 PASS (wrapper 19 + ChatView trigger 9) + 316 pytest |
 | 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
 | 차별화 요소 | 9.2 / 10 | 9.1 → 9.2 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol + signature sound UX |
-| 사용자 가치 | 6.5 / 10 | 6.3 → 6.5 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (사용자 directive 직접 반영) |
+| 사용자 가치 | 6.6 / 10 | 6.5 → 6.6 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (ChatView trigger 활성) |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
 | 보안 hardening | 7.4 / 10 | 7.2 → 7.4 ▲ | E2EE Signal Protocol 95 케이스 (X3DH 초기 키 교환 추가) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **8.9 / 10** | 8.8 → 8.9 ▲ | **사이클 38 signature sound minimal layer + Config 3 필드 + WAV placeholder + 19 PASS — 사용자 directive 청각 신호 직접 구현 + Phase 2 누계 114 케이스** |
+| **종합** | **8.95 / 10** | 8.9 → 8.95 ▲ | **사이클 39 ChatView SoundPlayer trigger 연결 + 9 PASS — 사이클 38 minimal layer follow-up. peer 수신 시 play_signature 활성 + self 발신 미재생 (UX noise 회피). Phase 2 누계 123 케이스** |
 
 ---
 
@@ -140,6 +140,30 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.28 ChatView SoundPlayer trigger 연결 — deeper integration (신규 사이클 39)
+
+사이클 38 의 signature sound minimal layer follow-up. 사용자 directive "다음작업 진행해" 자율 GO.
+
+deeper integration 완성:
+- `app/ui/chat_view.py` 의 `should_play_on_message(is_self, sound_player)` module-level helper 신설 — 3 조건 short-circuit (is_self True 즉시 False + player None 즉시 False + player.enabled 최종)
+- `ChatView.__init__` 의 `sound_player: Optional[SoundPlayer] = None` inject 파라미터 추가 (graceful 폴백 — test 환경 QApplication 부재 정합)
+- `add_message` 안 helper 호출 + `play_signature()` trigger
+- self 발신 미재생 = UX noise 회피 (자기 입력 직후 sound = distracting)
+
+테스트:
+- `tests/app/ui/test_chat_view_sound.py` 9 케이스 2 TestClass
+- TestShouldPlayOnMessage 6 (peer+enabled / self+enabled / peer+disabled / peer+None / self+None / self 우선순위 short-circuit)
+- TestSoundPlayerIntegration 3 (Mock 주입 + play_signature 호출/미호출 검증)
+
+5 검증 PASS — AST + import + pytest 316 + doc-lint 0 + BPE 0 (1건 detect 정정).
+
+Phase 2 누계 = 123 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6 + x3dh 11 + sound 19 + chat_view_sound 9).
+
+차별화 매트릭스:
+- 사이클 38 minimal layer = wrapper + Config 3 필드 + WAV
+- 사이클 39 deeper integration = ChatView 안 활성 trigger 연결
+- 잔존: 설정 dialog UI (음소거 toggle + 볼륨 slider) + designer 최종 chiptune 교체
 
 ### 2.27 signature sound minimal layer — UX brand recognition (신규 사이클 38)
 

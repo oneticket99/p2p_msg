@@ -62,7 +62,7 @@
   - **잔존**: X3DH initial key exchange + multi-device sync + sender keys (그룹 chat)
 - **그룹 채팅 (3~8명 mesh)** — n^2 PeerConnection 토폴로지 우선. 8명 초과 시 SFU 도입 검토 (Phase 3 이연 가능). **사이클 36 시점 미시작**
 - **WebRTC MediaStream** — Opus 음성 + H.264/VP8 영상. 에코 캔슬링 (WebRTC AEC3) + 자동 이득 조절. **미시작**
-- **signature sound** ([[project-signature-sound]]) — PyQt6 QSoundEffect + 자체 "뿅" WAV (200~400ms chiptune, 사용자 directive 2026-05-18). UX brand recognition 차별화. **사이클 38 minimal 완성** — `app/ui/sound_player.py` SoundPlayer wrapper + `Config` 3 필드 (sound_enabled / sound_volume / sound_signature_path) + WAV placeholder (220 ms chime 880→1320 Hz) + 19 PASS. **잔존**: ChatView 수신 trigger 연결 + 설정 UI dialog (음소거 toggle + 볼륨 slider).
+- **signature sound** ([[project-signature-sound]]) — PyQt6 QSoundEffect + 자체 "뿅" WAV (200~400ms chiptune, 사용자 directive 2026-05-18). UX brand recognition 차별화. **사이클 38~39 완성** — 사이클 38 `app/ui/sound_player.py` SoundPlayer wrapper + Config 3 필드 + WAV placeholder + 19 PASS. 사이클 39 ChatView 의 `should_play_on_message` helper + `add_message` peer 수신 trigger + 9 PASS. **잔존**: 설정 UI dialog (음소거 toggle + 볼륨 slider) + designer 최종 chiptune asset 교체.
 - **코드 서명** — Apple Developer ID notarization + Windows Authenticode. TD-2 · TD-3 해소. **미시작**
 - **시그널링 hardening** — TLS + 인증 토큰 + rate limit. TD-1 해소. **부분 완성** (auth Bearer middleware = 사이클 20 완료, TLS = 미실시)
 - **자동 업데이트** — Sparkle (macOS) + WinSparkle (Windows) 통합. **미시작**

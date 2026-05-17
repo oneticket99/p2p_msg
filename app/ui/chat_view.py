@@ -26,8 +26,39 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui.message_bubble import MessageBubble
+from app.ui.sound_player import SoundPlayer
 
 log = logging.getLogger(__name__)
+
+
+def should_play_on_message(
+    is_self: bool, sound_player: Optional[SoundPlayer]
+) -> bool:
+    """메시지 수신 시 시그니처 사운드 재생 여부 판정.
+
+    Parameters
+    ----------
+    is_self : bool
+        True = 자기 발신 (sound noise 회피 미재생).
+    sound_player : SoundPlayer | None
+        주입된 player. None = 미설정 = 미재생.
+
+    Returns
+    -------
+    bool
+        True = play_signature() 호출 대상. False = skip.
+
+    Notes
+    -----
+    self 발신 미재생 = UX 의무 (자기 입력 직후 sound 발생 시 distracting).
+    peer 발신만 trigger. player 부재 = graceful 폴백.
+    """
+
+    if is_self:
+        return False
+    if sound_player is None:
+        return False
+    return sound_player.enabled
 
 
 class ChatView(QScrollArea):
@@ -41,10 +72,24 @@ class ChatView(QScrollArea):
     - 신규 버블은 ``_messages_layout`` 의 ``stretch`` 슬롯 직전에 삽입
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
-        """ScrollArea + 내부 VBox 레이아웃 초기화."""
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        sound_player: Optional[SoundPlayer] = None,
+    ) -> None:
+        """ScrollArea + 내부 VBox 레이아웃 초기화.
+
+        Parameters
+        ----------
+        parent : QWidget | None
+            Qt 부모 위젯.
+        sound_player : SoundPlayer | None
+            peer 메시지 수신 시 시그니처 사운드 재생 트리거. None =
+            미재생 (graceful 폴백, test 환경 정합).
+        """
 
         super().__init__(parent)
+        self._sound_player = sound_player
 
         # 스크롤 영역 기본 설정 — 가로 스크롤은 비활성, 세로만 사용
         self.setWidgetResizable(True)
@@ -102,6 +147,12 @@ class ChatView(QScrollArea):
         # (현재 사이클에서는 layout 이 아직 갱신되지 않을 수 있음)
         scrollbar = self.verticalScrollBar()
         scrollbar.rangeChanged.connect(self._scroll_to_bottom_once)
+
+        # peer 수신 메시지 = 시그니처 사운드 재생 트리거 (사용자 directive
+        # 2026-05-17 "텔레그램/카카오톡 뿅 등가"). self 발신 + player 부재
+        # + 음소거 상태 = should_play_on_message 의 False 폴백.
+        if should_play_on_message(is_self, self._sound_player):
+            self._sound_player.play_signature()  # type: ignore[union-attr]
 
     # ------------------------------------------------------------------
     # 내부 헬퍼

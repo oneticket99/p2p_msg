@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 38)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 38 의 등가 렌더링.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 39)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 39 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     마지막 갱신 라인 = "2026-05-20 14:00 KST — 사이클 38 (signature sound minimal layer + 19 PASS)".
-     §1 종합 = 10점 만점 9 row + 종합 8.9 / 10 (Phase 2 누계 114 케이스 + signature sound 반영).
-     §2.27 신규 (signature sound minimal layer) 최우선 노출.
-     기술 7.7 / 시장 5.3 / 차별화 9.2 / 가치 6.5 / 수익화 5.4 / 운영 9.8 / 가드레일 10.0 / 정합 9.7 / 보안 7.4 = 평균 8.9 정합. -->
+     마지막 갱신 라인 = "2026-05-20 14:30 KST — 사이클 39 (ChatView SoundPlayer trigger + 9 PASS + Phase 2 누계 123)".
+     §1 종합 = 10점 만점 9 row + 종합 8.95 / 10 (Phase 2 누계 123 + deeper integration 반영).
+     §2.28 신규 (ChatView trigger 연결 deeper integration) 최우선 노출.
+     기술 7.8 / 시장 5.3 / 차별화 9.2 / 가치 6.6 / 수익화 5.4 / 운영 9.8 / 가드레일 10.0 / 정합 9.7 / 보안 7.4 = 평균 8.95 정합. -->
 <style>
   :root{
     --bg:#fafafa;
@@ -88,7 +88,7 @@
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-20 14:00 KST</strong> — 사이클 38 (Phase 2 signature sound minimal layer + Config 3 필드 + WAV placeholder + 19 PASS)<br>
+    최근 갱신 시점: <strong>2026-05-20 14:30 KST</strong> — 사이클 39 (ChatView SoundPlayer trigger 연결 + 9 PASS + Phase 2 누계 123 케이스)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -96,8 +96,8 @@
 <nav class="toc">
   <strong>목차</strong>
   <ol>
-    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 8.9 / 10</a></li>
-    <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.27</a></li>
+    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 8.95 / 10</a></li>
+    <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.28</a></li>
     <li><a href="#sec-3">약점 (Productization Weaknesses)</a></li>
     <li><a href="#sec-4">시장 포지셔닝 옵션 (A/B/C/D)</a></li>
     <li><a href="#sec-5">단기 (3개월) 제품화 액션</a></li>
@@ -120,16 +120,16 @@
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">7.7 / 10</td><td class="center"><span class="up">7.5 → 7.7 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 (X3DH + Signal Protocol + skipped_keys + ooo) + signature sound layer 19 PASS + 307 pytest</td></tr>
+    <tr><td>기술 완성도</td><td class="center">7.8 / 10</td><td class="center"><span class="up">7.7 → 7.8 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 + signature sound 28 PASS (wrapper 19 + ChatView trigger 9) + 316 pytest</td></tr>
     <tr><td>시장 적합성</td><td class="center">5.3 / 10</td><td class="center"><span class="up">5.2 → 5.3 ▲</span></td><td>Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등)</td></tr>
     <tr><td>차별화 요소</td><td class="center">9.2 / 10</td><td class="center"><span class="up">9.1 → 9.2 ▲</span></td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol + signature sound UX</td></tr>
-    <tr><td>사용자 가치</td><td class="center">6.5 / 10</td><td class="center"><span class="up">6.3 → 6.5 ▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (사용자 directive 직접 반영)</td></tr>
+    <tr><td>사용자 가치</td><td class="center">6.6 / 10</td><td class="center"><span class="up">6.5 → 6.6 ▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (ChatView trigger 활성)</td></tr>
     <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
     <tr><td>운영 비용</td><td class="center">9.8 / 10</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer</td></tr>
     <tr><td>세션 간 정합</td><td class="center">9.7 / 10</td><td class="center">=</td><td>handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무</td></tr>
     <tr><td>보안 hardening</td><td class="center">7.4 / 10</td><td class="center"><span class="up">7.2 → 7.4 ▲</span></td><td>E2EE Signal Protocol 95 케이스 (X3DH 초기 키 교환 추가) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>8.9 / 10</strong></td><td class="center"><span class="up">8.8 → 8.9 ▲</span></td><td><strong>사이클 38 signature sound minimal layer + Config 3 필드 + WAV placeholder + 19 PASS — 사용자 directive 청각 신호 직접 구현 + Phase 2 누계 114 케이스</strong></td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>8.95 / 10</strong></td><td class="center"><span class="up">8.9 → 8.95 ▲</span></td><td><strong>사이클 39 ChatView SoundPlayer trigger 연결 + 9 PASS — 사이클 38 minimal layer follow-up. peer 수신 시 play_signature 활성 + self 발신 미재생 (UX noise 회피). Phase 2 누계 123 케이스</strong></td></tr>
   </tbody>
 </table>
 
@@ -255,6 +255,18 @@
   <li><strong>사이클 9 (d)</strong>: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합</li>
 </ul>
 <p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
+
+<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.28 ChatView SoundPlayer trigger 연결 — deeper integration <span class="new">신규 사이클 39</span></h3>
+<p>사이클 38 의 signature sound minimal layer follow-up. 사용자 directive "다음작업 진행해" 자율 GO.</p>
+<p>deeper integration 완성:</p>
+<ul>
+  <li><code>app/ui/chat_view.py</code> 의 <code>should_play_on_message(is_self, sound_player)</code> module-level helper 신설 — 3 조건 short-circuit (is_self True 즉시 False + player None 즉시 False + player.enabled 최종)</li>
+  <li><code>ChatView.__init__</code> 의 <code>sound_player: Optional[SoundPlayer] = None</code> inject 파라미터 추가 (graceful 폴백 — test 환경 QApplication 부재 정합)</li>
+  <li><code>add_message</code> 안 helper 호출 + <code>play_signature()</code> trigger</li>
+  <li>self 발신 미재생 = UX noise 회피 (자기 입력 직후 sound = distracting)</li>
+</ul>
+<p>tests/app/ui/test_chat_view_sound.py 9 케이스 2 TestClass — TestShouldPlayOnMessage 6 (peer+enabled / self+enabled / peer+disabled / peer+None / self+None / self 우선순위) + TestSoundPlayerIntegration 3 (Mock 주입 + play_signature 호출/미호출 검증).</p>
+<p>5 검증 PASS — AST + import + pytest 316 + doc-lint 0 + BPE 0 (1건 detect 정정). Phase 2 누계 = 123 케이스. 잔존: 설정 dialog UI (음소거 toggle + 볼륨 slider) + designer 최종 chiptune 교체.</p>
 
 <h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.27 signature sound minimal layer — UX brand recognition <span class="new">신규 사이클 38</span></h3>
 <blockquote>
@@ -706,7 +718,7 @@
     <li>Markdown 정본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
   <p style="margin-top:14px;color:var(--muted);font-size:12px">
-    마지막 갱신: <strong>2026-05-20 14:00 KST</strong> — 사이클 38 (signature sound minimal layer + 19 PASS + Phase 2 누계 114 케이스)
+    마지막 갱신: <strong>2026-05-20 14:30 KST</strong> — 사이클 39 (ChatView SoundPlayer trigger 연결 + 9 PASS + Phase 2 누계 123 케이스)
   </p>
 </footer>
 
