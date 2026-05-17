@@ -35,7 +35,12 @@ _DEFAULT_SIGNAL_SCHEME: Final[str] = "ws"
 _DEFAULT_STUN_URL: Final[str] = "stun:stun.l.google.com:19302"
 _DEFAULT_USER_NICKNAME: Final[str] = "guest"
 _DEFAULT_LOG_LEVEL: Final[str] = "INFO"
-_DEFAULT_LOCAL_DB_PATH: Final[str] = "./data/local.sqlite"
+# MariaDB 영속화 DB (사용자 directive 2026-05-17 — SQLite 회수)
+_DEFAULT_DB_HOST: Final[str] = "127.0.0.1"
+_DEFAULT_DB_PORT: Final[int] = 3306
+_DEFAULT_DB_USER: Final[str] = "tootalk"
+_DEFAULT_DB_PASS: Final[str] = ""
+_DEFAULT_DB_NAME: Final[str] = "tootalk"
 _DEFAULT_MEDIA_CACHE_DIR: Final[str] = "./media_cache"
 
 
@@ -55,8 +60,9 @@ class Config:
         클라이언트 표시명 — Phase 1 데모용. 정식 인증은 추후 키 페어로 대체.
     log_level : str
         ``DEBUG`` / ``INFO`` / ``WARNING`` / ``ERROR`` / ``CRITICAL``.
-    local_db_path : str
-        SQLite 로컬 저장 경로.
+    db_host, db_port, db_user, db_pass, db_name : str/int/str/str/str
+        MariaDB 영속화 DB 접속 정보 (사용자 directive 2026-05-17).
+        ``asyncmy`` 드라이버 경유 접속. ``db_dsn`` 프로퍼티로 합성 DSN 노출.
     media_cache_dir : str
         이미지/파일 캐시 디렉토리.
     """
@@ -70,7 +76,11 @@ class Config:
     turn_credential: str
     user_nickname: str
     log_level: str
-    local_db_path: str
+    db_host: str
+    db_port: int
+    db_user: str
+    db_pass: str
+    db_name: str
     media_cache_dir: str
 
     @property
@@ -78,6 +88,19 @@ class Config:
         """``ws://host:port/ws`` 형태의 시그널링 WebSocket URL."""
 
         return f"{self.signal_scheme}://{self.signal_host}:{self.signal_port}/ws"
+
+    @property
+    def db_dsn(self) -> str:
+        """``mysql://user:pass@host:port/name`` 형태의 MariaDB DSN.
+
+        ``asyncmy.connect`` 또는 SQLAlchemy 측 사용. 비밀번호 빈 값은 ``:``
+        생략하지 않고 그대로 노출 — DB 접속 라이브러리가 해석.
+        """
+
+        return (
+            f"mysql://{self.db_user}:{self.db_pass}"
+            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +189,11 @@ def load_config(dotenv_path: str | None = None) -> Config:
         turn_credential=_env_str("TURN_CREDENTIAL", ""),
         user_nickname=_env_str("USER_NICKNAME", _DEFAULT_USER_NICKNAME),
         log_level=_normalize_log_level(_env_str("LOG_LEVEL", _DEFAULT_LOG_LEVEL)),
-        local_db_path=_env_str("LOCAL_DB_PATH", _DEFAULT_LOCAL_DB_PATH),
+        db_host=_env_str("DB_HOST", _DEFAULT_DB_HOST),
+        db_port=_env_int("DB_PORT", _DEFAULT_DB_PORT),
+        db_user=_env_str("DB_USER", _DEFAULT_DB_USER),
+        db_pass=_env_str("DB_PASS", _DEFAULT_DB_PASS),
+        db_name=_env_str("DB_NAME", _DEFAULT_DB_NAME),
         media_cache_dir=_env_str("MEDIA_CACHE_DIR", _DEFAULT_MEDIA_CACHE_DIR),
     )
 

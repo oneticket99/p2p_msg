@@ -52,7 +52,11 @@ python -m app.main
 | `TURN_CREDENTIAL` | (비움) | TURN 인증 비밀번호 |
 | `USER_NICKNAME` | `guest` | 클라이언트 표시명 (Phase 1 데모) |
 | `LOG_LEVEL` | `INFO` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL` |
-| `LOCAL_DB_PATH` | `./data/local.sqlite` | SQLite 로컬 저장 경로 |
+| `DB_HOST` | `127.0.0.1` | MariaDB 호스트 (사용자 directive 2026-05-17) |
+| `DB_PORT` | `3306` | MariaDB TCP 포트 |
+| `DB_USER` | `tootalk` | MariaDB 접속 사용자 |
+| `DB_PASS` | (비움) | MariaDB 비밀번호 — `.env.local` 주입 |
+| `DB_NAME` | `tootalk` | MariaDB 데이터베이스 명 |
 | `MEDIA_CACHE_DIR` | `./media_cache` | 이미지/파일 캐시 디렉토리 |
 
 무효 값(빈 문자열·잘못된 정수)은 자동으로 기본값으로 폴백한다
