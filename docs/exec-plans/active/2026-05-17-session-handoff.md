@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 20:30 (사이클 7 갱신 — 본 세션 누계 commit 43+ 반영, drift 회수 누계 8 cycle + snapshot 사이클 9 추가). 최신 commit `d3d5f75`.
+> 본 인계 시점: 2026-05-17 21:20 (사이클 8 갱신 — 본 세션 누계 commit 47+ 반영, Toonation 브랜드 컬러 통합 + enforcement layer 활성 + app/ui 1인칭/3인칭 회수 + snapshot 사이클 10). 최신 commit `c57b1b5`.
 
 ---
 
@@ -33,7 +33,8 @@ status: active
 - **SMTP 자체 설치** — 데모 서버 (114.207.112.73) postfix + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback ([docs/references/smtp-setup.md](../../references/smtp-setup.md))
 - **라이선스 = GPLv3** — LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환 + SPDX header convention ([[project-license-gpl]])
 - **visibility = public → private 전환 가능성** — Phase 완료 시점 사용자 명시 의무. self-hosted runner 의 quota 회피 정합 ([[project-visibility-transition]])
-- **enforcement layer sketch** — `.claude/settings.json.disabled` (PreToolUse Edit/Write BPE 차단 + Stop 텔레그램 자동 송신). 다음 위반/누락 발견 시 = `mv .disabled → settings.json` 즉시 활성 의무 ([[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]])
+- **enforcement layer 활성** — `.claude/settings.json` (PreToolUse Edit/Write BPE 차단 + Stop 텔레그램 자동 송신) — 5회차 BPE 위반 직접 비판 시점 발동 (2026-05-17 cycle 10, [[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]])
+- **Toonation 브랜드 컬러 통합** — FRONTEND.md §4 의 3 미확정 후크 확정 (#0066FF Toonation Blue + #22D3EE 네온 시안 + #0F172A Deep Navy) + §15 BI 가이드 신규 (사용자 directive 2026-05-17 — 2023-04 BI 리뉴얼 정합)
 
 ---
 
@@ -419,6 +420,23 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - vibe-coding 4.85 (=) + §2.19 자체 drift detect 8 cycle 패턴 확장
 - §3.1 pivot 사이클 9 row 추가
 - HTML 2종 sub-agent 병렬 재생성 (사이클 9 정합)
+
+### 8.29 Toonation 브랜드 컬러 통합 + enforcement 활성 (사이클 8 신규)
+
+- 사용자 directive 2026-05-17 Toonation 공식 BI 가이드 본문 반영
+- FRONTEND.md §4 색상 변수 3 미확정 후크 확정 (Toonation Blue + 네온 시안 + Deep Navy)
+- FRONTEND.md §15 신규 5 sub-section (브랜드 정합 사유 + 핵심 컬러 표 + §4 매핑 + BI 참조 + 제약/의무)
+- FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건
+- **enforcement layer 활성** — settings.json.disabled → settings.json rename (5회차 BPE 위반 비판 발동)
+- AGENTS.md link 갱신
+- app/ui/ 1인칭/3인칭 위반 16 fix (chat_view + main_window + message_bubble + status_bar — Agent #16 산출물 의 의 잔존)
+
+### 8.30 snapshot 사이클 10 + HTML 2 (사이클 8 신규)
+
+- productization 3.95 (=) + §2.16 Toonation 브랜드 컬러 + enforcement 활성 신규
+- vibe-coding 4.85 (비판·재교정 4.5 → 4 ▼) + §2.20 사용자 비판 5회차 BPE + "의" 단독 조사 신규 패턴
+- §3.1 pivot 사이클 10 row 추가
+- HTML 2종 sub-agent 병렬 재생성 (사이클 10 정합)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 20:25 (commit `d3d5f75` 직후 — 본 세션 누계 40 commit 반영, 사이클 9)
+> 최근 갱신 시점: 2026-05-17 21:15 (commit `c57b1b5` 직후 — 본 세션 누계 46 commit 반영, 사이클 10 — Toonation 브랜드 컬러 통합 + enforcement layer 활성)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -139,6 +139,16 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (신규 사이클 10)
+
+- **사용자 directive 2026-05-17** — Toonation 공식 BI 가이드 본문 직접 반영
+- FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — `--primary` (#0066FF Toonation Blue + #0052FF Deep) + `--progress-acked` (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + `--progress-inflight` (#0F172A Deep Navy + #1E293B 변형)
+- FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호
+- FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반
+- **enforcement layer 활성** — `.claude/settings.json.disabled` → `.claude/settings.json` rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)
+- PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중
+- adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계
 
 ### 2.14 BPE script trigger sketch — enforcement layer 사전 명시 (사이클 7 신규 — 사이클 8 유지)
 
