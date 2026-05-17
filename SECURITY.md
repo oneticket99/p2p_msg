@@ -385,6 +385,22 @@ flowchart TD
 
 PyQt6 GPL 의무로 인해 데모 zip 배포물도 GPL 적용 가능성. 사용자 directive (§3) 는 **데모 서버 hardening 만 면제**하며 GPL 의무 자체는 면제하지 않는다.
 
+### 12.4 TooTalk 본 저장소 라이선스 (사용자 directive 2026-05-17 — 확정)
+
+- **GPLv3** (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)
+- SPDX header convention (Phase 1 코드 진입 시 의무) — `# SPDX-License-Identifier: GPL-3.0-or-later`
+- 본 저장소 의 모든 source file 의 본 header 의무 (의존성 라이선스 의 의 정합 자동)
+- PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib 의 BSD/Apache/MIT/LGPL 의 GPLv3 흡수
+- AGPLv3 검토 결과 = Phase 2 이후 옵션 (network use clause)
+- 영구 메모리: `project_license_gpl.md` + `project_visibility_transition.md`
+
+### 12.5 GitHub visibility (사용자 directive 2026-05-17)
+
+- public (Phase 1 현재) → private 전환 가능성 (Phase 완료 시점 의 사용자 명시 의무)
+- GPL 의무 발동 시점 = source code **distribution**. private + 외부 배포 0 = 의무 본질 비활성
+- 이미 public history 의 외부 fork = GPL 권한 영구 유지 (revocation 불가). 신규 fork 만 차단
+- self-hosted runner 채택 = private 의 quota 회피 정합
+
 ---
 
 ## 13. 참조
