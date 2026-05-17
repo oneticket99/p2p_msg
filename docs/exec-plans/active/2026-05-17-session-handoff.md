@@ -21,7 +21,7 @@ status: active
 - **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
 - **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
 - **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
-- **DB = MariaDB 7 테이블** (users + email_verification + password_reset + rooms + peers + file_meta + messages), GUI = PyQt6, Python = 3.13, CI = self-hosted
+- **DB = MariaDB 7 테이블** (users + email_verification + password_reset + rooms + peers + file_meta + messages), GUI = PyQt6, Python = 3.13, CI = self-hosted macOS arm64 + GitHub-hosted Ubuntu (Windows wine cross-compile)
 - **회원가입 + 이메일 OTP 인증 필수** (Phase 1 의무 — bcrypt 12 + OTP 3분 + 아이디/비번 찾기, [[project-auth-email-otp-required]])
 - **Phase 3 막바지 원격 데스크탑 제어 차별화** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어, [[project-phase2-remote-control-differentiator]])
 - **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
@@ -110,8 +110,8 @@ status: active
 | **DB** | **MariaDB 7 테이블** (auth 3: users + email_verification + password_reset / 대화 4: rooms + peers + file_meta + messages) + asyncmy + bcrypt 12 + InnoDB redo log + binlog PITR | 2026-05-17 |
 | **회원가입** | 이메일 OTP 인증 필수 (Phase 1 의무) — email + username + password 필수 + nickname + avatar 선택 + OTP 3분 + 5회/30분 차단 + 아이디/비번 찾기 (reset_token UUID4 30분) | 2026-05-17 |
 | **차별화** | Phase 3 막바지 친구간 원격 데스크탑 제어 (패턴 A 도움 + 패턴 B 제어, P5/P6 OBS 도움 시나리오) | 2026-05-17 |
-| 빌드 | macOS + Windows · PyInstaller + zip · 인증서 미사용 | 2026-05-17 |
-| CI | **self-hosted** runner 매트릭스 (macOS arm64 + Windows x64) | 2026-05-17 |
+| 빌드 | macOS arm64 native (self-hosted runner) + Windows x64 wine cross-compile (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker) · PyInstaller + zip · 인증서 미사용 | 2026-05-17 |
+| CI | **self-hosted macOS arm64** (id=2, online, 활성) + **GitHub-hosted Ubuntu** (Windows wine 빌드, Phase 1 후반). Windows self-hosted 의무 = **영구 회수** | 2026-05-17 |
 | GitHub | `oneticket99/p2p_msg` **public** | 2026-05-17 |
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
@@ -267,7 +267,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 | 순서 | 작업 | 상태 | 비고 |
 |---|---|---|---|
-| 1 | self-hosted runner 등록 (macOS arm64 + Windows x64) | 🟡 사용자 직접 | docs/references/ci-self-hosted-setup.md 절차. 1일. CI 3 workflow `queued` 해소 |
+| 1 | ~~self-hosted runner 등록 (macOS arm64 + Windows x64)~~ | ✅ 완료 (2026-05-17 cycle) | macOS arm64 id=2 online. Windows self-hosted 의무 회수 (wine cross-compile 대체 — [[project-windows-build-via-wine]]) |
 | 2 | 평가 snapshot 사이클 3 갱신 (CLAUDE.md §10-7 의무) | 🔴 미진입 | 본 세션 누계 commit 20+ 반영. productization + vibe-coding rewrite + HTML 2 sub-agent |
 | 3 | 잔존 BPE 위반 정정 — CLAUDE_HARNESS_IMPORTANT.md | 🔴 미진입 | 정본 광범위 (BPE 다수). doc-lint.sh 의 grep |
 | 4 | 라이선스 결정 — LICENSE 신설 | 🟡 사용자 직접 | OSS / 상용 분기. contributor 진입 가능 시점 |
