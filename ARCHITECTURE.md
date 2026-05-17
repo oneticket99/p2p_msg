@@ -159,17 +159,21 @@ sequenceDiagram
 
 | 모듈 | 책임 | 의존성 | 위치 |
 |---|---|---|---|
-| `app/ui/` | PyQt6 위젯·QSS·이벤트 핸들러 | `app/core/` | 클라이언트 UI 계층 |
-| `app/core/` | 세션 상태·메시지 큐·MariaDB 영속화 | `app/net/` · `app/rtc/` · `app/db/` | 클라이언트 Core 계층 |
-| `app/net/` | 시그널링 WS 클라이언트·재연결·백오프 | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net 계층 |
-| `app/rtc/` | aiortc 래퍼·DataChannel·청크 송수신 | `aiortc` · `app/core/` 콜백 | 클라이언트 RTC 계층 |
-| `app/db/` | MariaDB 스키마·마이그레이션 (사용자 directive 2026-05-17) | `asyncmy` 드라이버 | 클라이언트 영속화 |
-| `app/auth/` | 회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17) | `aiohttp` (server/auth API 호출) + `app/core/` 세션 | 클라이언트 Auth 계층 |
-| `server/signaling.py` | WebSocket 핸들러·5종 메시지 라우팅 | `server/room.py` · `server/protocol.py` | 서버 Router |
-| `server/auth/` | 회원가입/로그인/OTP 발송/비번 재설정 (사용자 directive 2026-05-17) | `bcrypt` · `aiosmtplib` · `asyncmy` · users/email_verification/password_reset 테이블 | 서버 Auth Service |
-| `server/room.py` | `Peer`·`Room`·`RoomRegistry` 상태 관리 | `server/protocol.py` | 서버 Service |
-| `server/protocol.py` | TypedDict envelope·오류 코드 상수 | (없음) | 서버 Model |
-| `server/main.py` | entry point·env 로딩·`AppRunner` | 위 3개 + `dotenv` | 서버 부트스트랩 |
+| `app/ui/` | PyQt6 위젯·QSS·signup/login/reset dialog (사이클 23) + main_window 계정 메뉴 | `app/core/` · `app/net/auth_client.py` | 클라이언트 UI 계층 |
+| `app/core/` | `AppState` 세션 상태 + `Config` .env 로딩 + `security.py` (PBKDF2-SHA256 600K iter + OTP + session token, 사이클 18) | `python-dotenv` + `hashlib` + `secrets` + `hmac` | 클라이언트 Core |
+| `app/net/` | 시그널링 WS client + `auth_client.py` REST client (사이클 21) | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net |
+| `app/rtc/` | aiortc 래퍼·DataChannel + protocol/peer/file_sender/file_receiver/image_processor (Agent #16) | `aiortc` · `Pillow` · `aiofiles` | 클라이언트 RTC |
+| `app/crypto/` | Phase 2 E2EE Signal Protocol — `e2ee.py` (AES-GCM+X25519+HKDF) + `double_ratchet.py` (KDF chain) + `session.py` (SessionState + DH ratchet) + `skipped_keys.py` (LRU+TTL) (사이클 27~35) | `cryptography>=42.0` | 클라이언트 E2EE |
+| `app/main.py` | qasync entry + AuthClient 초기화 + MainWindow 진입 (사이클 22) | `qasync` + 위 5개 | 클라이언트 부트스트랩 |
+| `server/signaling.py` | WebSocket 핸들러 + DB 영속화 통합 (signaling_persistence dependency injection, 사이클 26) | `server/room.py` · `server/signaling_persistence.py` | 서버 Router |
+| `server/signaling_persistence.py` | DB 영속화 helper (rooms/peers/messages persist + pool=None silent skip, 사이클 24) | `server/db/repositories/` | 서버 Service Bridge |
+| `server/api/auth_handlers.py` | REST 5 endpoint — /api/auth/{register,verify,login,reset/request,reset/consume} (사이클 21) | `aiohttp` + `server/auth/` | 서버 Router REST |
+| `server/auth/` | 5 use case (register/verify/login/reset_password) + middleware (Bearer + public path skip) + 7 exception (사이클 20) | `app.core.security` (PBKDF2) + `server/db/repositories/` + `aiosmtplib` | 서버 Auth Service |
+| `server/db/` | `connection.py` (asyncmy pool + 환경변수 8) + 7 repository (users/email_verification/password_reset/rooms/peers/file_meta/messages) + `migrations/0001_init.sql` (52 필드 COMMENT 5요소 의무, 사이클 18~19) | `asyncmy>=0.2.10` | 서버 영속화 |
+| `server/mail/smtp_client.py` | aiosmtplib STARTTLS + SASL + UTF-8 한글 본문 (signup/password_reset 분기, 사이클 19) | `aiosmtplib>=3.0` | 서버 Mail |
+| `server/room.py` | `Peer` (user_id + db_room_id field 추가, 사이클 25) + `Room`·`RoomRegistry` | `server/protocol.py` | 서버 Room State |
+| `server/protocol.py` | TypedDict envelope + 오류 코드 (사이클 1) | — | 서버 Model |
+| `server/main.py` | entry + DB pool + auth middleware + session_store + on_cleanup (사이클 22) | 위 + `dotenv` + `signaling_persistence` | 서버 부트스트랩 |
 | `tools/` | `md_agents.py` · `doc-lint.sh` · `claude-telegram.sh` · `hook_check_bpe_token_input.sh` (PreToolUse sketch) · `hook_telegram_report_stop.sh` (Stop sketch) · `db_init.py` (예정) · `build.py` (예정) | 표준 라이브러리 + bash | 운영 자동화 + enforcement layer sketch |
 | `.github/workflows/` | `ci.yml` 8 job · `docs-lint.yml` · `doc-gardener.yml` · `build.yml` (Phase 1 후반 — macOS native + Ubuntu wine cross-compile 듀얼) | self-hosted macOS arm64 + GitHub-hosted Ubuntu | CI 게이트 |
 | `LICENSE` (저장소 루트) | GPLv3 표준 본문 (GNU 674 lines, 사용자 directive 2026-05-17) | — | 라이선스 |
