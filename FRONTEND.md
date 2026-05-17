@@ -1,0 +1,284 @@
+# FRONTEND.md — TooTalk PyQt6 UI 표준
+
+> 본 문서는 TooTalk(코드명 `p2p_msg`) 데스크탑 클라이언트의 **프런트엔드 정책** 정의서다.
+> 정본 정합: [CLAUDE_HARNESS_IMPORTANT.md](CLAUDE_HARNESS_IMPORTANT.md) §E (L144~150).
+> 상위 네비게이션: [AGENTS.md](AGENTS.md) §3 "문서 맵" — UI/UX 설계 항목.
+> 자매 문서: [DESIGN.md](DESIGN.md) (UX 컨셉·정보 구조), [ARCHITECTURE.md](ARCHITECTURE.md) (계층 경계).
+
+---
+
+## 1. 문서 목적
+
+본 문서는 **PyQt6 기반 데스크탑 UI 표준**을 정의한다. 구체적으로:
+
+- 위젯 계층(MainWindow → ChatView → MessageBubble + StatusBar) 의 책임 분할
+- 색상 변수 / 타이포그래피 / 입력창 UX 의 통일 규칙
+- 메시지 버블 정렬·타임스탬프 노출 정책
+- 윈도우 사이즈 / 반응형 그리드 / 다국어·접근성 후크
+- XSS 차단을 위한 메시지 escape 규약 (정본 §E 인용)
+
+본 문서는 **정책**이고 **실제 코드 큰 블록은 포함하지 않는다**. 구현은 [app/ui/](app/ui/) 하위 모듈 본문이 담당하며, 본 문서는 그 본문이 따라야 하는 계약(contract) 만 명문화한다. 정본 §E 와 본 문서가 충돌하면 정본 우선.
+
+---
+
+## 2. UI 원칙 (7~10 bullet)
+
+1. **단순 우선** — 1차 시야(viewport) 안에 채팅 리스트·입력창·상태표시 3 영역만 노출. 부가 패널은 토글로만 진입.
+2. **접근성 기본** — 모든 인터랙티브 위젯에 `setAccessibleName` / `setToolTip` 부여 의무. 스크린리더 호환 라벨 필수.
+3. **키보드 단축키** — Ctrl+R(방 입장), Ctrl+Q(종료), Enter(송신), Shift+Enter(개행), Esc(입력창 비우기). 마우스 없이도 핵심 흐름 완주 가능.
+4. **메시지 가독성** — 본문 폰트 14px 이상, 줄간격 1.4, 한 버블 최대 가로 380px. 한 호흡에 읽히는 가로 폭 유지.
+5. **다크모드 후크** — `app/ui/theme.qss` 단일 파일에서 `--bg` / `--fg` / `--bubble-*` 변수를 토글하면 전 위젯이 일괄 전환되도록 `objectName` 기반 셀렉터로 위임.
+6. **하드코딩 금지** — 색상·간격·폰트 패밀리 직접 문자열 금지 ([정본 §E](CLAUDE_HARNESS_IMPORTANT.md)). 본 문서 §4 변수 표 경유.
+7. **본인/타인 시각 분기** — 좌(타인) / 우(본인) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.
+8. **상태 즉시 가시화** — 시그널링 연결 상태·peer 수·파일 진행률은 항상 화면 1 영역(StatusBar 또는 인라인 위젯)에 노출. 모달로 숨기지 않는다.
+9. **비동기 IO 비차단** — 시그널링·DataChannel·디스크 IO 는 모두 `asyncio.create_task` 로 예약하고, Qt slot 본문은 UI 업데이트만 수행 ([정본 §E](CLAUDE_HARNESS_IMPORTANT.md) 비동기 전용).
+10. **점진적 강조** — 신규 메시지 도착 시 자동 스크롤은 1회용 시그널로 처리해 사용자가 위로 스크롤 중일 때 강제 점프를 피한다.
+
+---
+
+## 3. 위젯 계층 트리
+
+```mermaid
+flowchart TD
+    MW[MainWindow<br/>QMainWindow]
+    MB[MenuBar<br/>설정 · 도움말]
+    CV[ChatView<br/>QScrollArea]
+    IN[InputRow<br/>QHBoxLayout]
+    SB[StatusBar<br/>QStatusBar]
+    BU[MessageBubble<br/>QFrame]
+    FP[FileProgressWidget<br/>QWidget]
+    AT[AttachButton<br/>QPushButton]
+    IE[InputEdit<br/>QLineEdit]
+    SN[SendButton<br/>QPushButton]
+    CS[ConnState<br/>QLabel]
+    PC[PeerCount<br/>QLabel]
+
+    MW --> MB
+    MW --> CV
+    MW --> IN
+    MW --> SB
+    CV --> BU
+    CV --> FP
+    IN --> AT
+    IN --> IE
+    IN --> SN
+    SB --> CS
+    SB --> PC
+
+    classDef root fill:#dbeafe,stroke:#2563eb
+    classDef leaf fill:#f3f4f6,stroke:#6b7280
+    class MW root
+    class MB,CV,IN,SB,BU,FP,AT,IE,SN,CS,PC leaf
+```
+
+- **MainWindow** = [app/ui/main_window.py](app/ui/main_window.py) — 모든 자식 위젯의 부모, `AppState` 보유.
+- **ChatView** = [app/ui/chat_view.py](app/ui/chat_view.py) — `QScrollArea` + `QVBoxLayout`, stretch 슬롯 직전 삽입.
+- **MessageBubble** = [app/ui/message_bubble.py](app/ui/message_bubble.py) — 단일 메시지(텍스트 + 타임스탬프) 표시.
+- **FileProgressWidget** = [app/ui/file_progress_widget.py](app/ui/file_progress_widget.py) — 송신/수신 양방향 ProgressBar.
+- **StatusBar** = [app/ui/status_bar.py](app/ui/status_bar.py) — 연결 상태 + peer 수.
+
+---
+
+## 4. 색상 변수 표
+
+본 표의 값은 **현재 임시값**이며, Phase 1 후반 `app/ui/theme.qss` 도입 시점에 정본 §E "CSS 변수 사용" 규약에 따라 정식 변수로 이관한다. `MessageBubble._COLOR_*` 클래스 상수는 본 변수의 임시 보관소이며, 테마 시스템 도입 후 제거 대상이다.
+
+| 변수명 | 라이트 임시값 | 다크 임시값 | 용도 |
+|---|---|---|---|
+| `--primary` | 미확정 후크 | 미확정 후크 | 보내기 버튼 · 강조 액션 |
+| `--bg` | `#ffffff` | `#1e1e1e` | 윈도우 배경 |
+| `--fg` | `#1a1a1a` | `#e5e5e5` | 본문 텍스트 |
+| `--bubble-self` | `#dcf8c6` | `#2d5a3f` | 본인 발신 버블 배경 |
+| `--bubble-other` | `#ffffff` | `#2a2a2a` | 타인 발신 버블 배경 |
+| `--bubble-border` | `#dddddd` | `#3a3a3a` | 버블 경계선 |
+| `--text-timestamp` | `#888888` | `#9a9a9a` | 타임스탬프 회색 |
+| `--text-sender` | `#555555` | `#b5b5b5` | 발신자 라벨 |
+| `--status-connected` | `#22c55e` | `#22c55e` | 연결 정상 |
+| `--status-error` | `#dc2626` | `#ef4444` | 연결 오류 |
+| `--progress-acked` | 미확정 후크 | 미확정 후크 | ACK 누적 진행 막대 |
+| `--progress-inflight` | 미확정 후크 | 미확정 후크 | 송신 큐 대기 막대 |
+
+> **미확정 후크** = Phase 1 후반 정책 확정 대기. 본 단계에서는 `QPalette` 기본값을 우선 사용하고, 변수 도입 시 일괄 갱신한다.
+
+---
+
+## 5. 폰트 + 타이포그래피
+
+- **기본 폰트 패밀리**: 시스템 폰트 fallback 체인
+  - macOS: `-apple-system`, `"SF Pro Text"`, `"Apple SD Gothic Neo"`
+  - Windows: `"Segoe UI"`, `"Malgun Gothic"`
+  - 공통 fallback: `sans-serif`
+- **한국어 fallback 의무** — 한국어 글리프가 없는 영문 전용 폰트가 1순위에 오는 경우 한글이 깨질 수 있으므로 한국어 폰트를 반드시 fallback 체인에 포함.
+- **크기 등급** (px 기준):
+  - 본문(메시지 텍스트): 14px
+  - 발신자 라벨: 11px / 굵기 600
+  - 타임스탬프: 10px
+  - 메뉴·버튼: 13px
+  - About 다이얼로그 제목: 16px
+- **줄간격**: 본문 1.4, 라벨 1.2
+- **이모지 지원** — 시스템 컬러 이모지 폰트는 자동 fallback. 별도 패치 불필요하지만 일부 Linux 환경에서는 Noto Color Emoji 권장(본 단계는 macOS + Windows 만 지원).
+
+---
+
+## 6. 메시지 버블 가이드
+
+### 6.1 정렬·색상 분기
+
+| 발신자 | 정렬 | 배경 변수 | 발신자 라벨 |
+|---|---|---|---|
+| 본인 (`is_self=True`) | 우측 | `--bubble-self` | 미노출 |
+| 타인 (`is_self=False`) | 좌측 | `--bubble-other` | 상단 노출 |
+| 시스템 안내 | 좌측 | `--bubble-other` | `sender="system"` |
+
+### 6.2 타임스탬프 위치
+
+- 위치: 버블 **내부 우측 하단**
+- 표시 형식: `HH:MM` (예: `14:23`)
+- 전체 시각(`YYYY-mm-dd HH:MM:SS`) 은 툴팁으로 분리(향후 작업).
+- 정본 §E 로그 형식(`[YYYY-mm-dd H:i:s]`) 은 로그 전용이며 UI 표시는 짧은 변형을 사용.
+
+### 6.3 이미지 인라인
+
+- 이미지 메시지는 버블 내부에 썸네일 노출, 클릭 시 별도 다이얼로그로 원본 표시.
+- 최대 썸네일 가로 320px, 비율 유지.
+- 다운로드 진행 중인 이미지는 `FileProgressWidget` 와 동일한 막대로 임시 표시 후 완료 시점에 썸네일로 교체.
+
+### 6.4 파일 ProgressBar 배치
+
+- 파일 송수신 위젯(`FileProgressWidget`) 은 `MessageBubble` 자리에 끼워 넣어 동일한 시간순 흐름 안에 배치.
+- 송신자 시점: 회색(in-flight) + 파랑(acked) 2-stack 표현.
+- 수신자 시점: 단일 파랑 막대.
+- 완료 시점에는 파일 아이콘 + 파일명 + 크기만 남기고 막대는 100% 채워진 상태로 유지(취소·재시도 버튼은 Phase 2).
+
+---
+
+## 7. 입력창 UX
+
+- **Placeholder**: `"메시지를 입력하세요…"` (한국어 단일 — Phase 1).
+- **단일 라인 + 다중 라인 토글**:
+  - 현재 Phase 1 스켈레톤은 `QLineEdit` 단일 라인.
+  - Phase 1 후반에 `QTextEdit` 로 전환하여 **Shift+Enter = 개행 / Enter = 송신** 분기 적용.
+- **첨부 버튼 단축키** — `Ctrl+O` (Open file). 본 단계는 비활성(Task #16 에서 활성).
+- **전송 단축키** — `Enter` (단일 라인 모드에서는 `returnPressed`, 다중 라인 모드에서는 `keyPressEvent` 분기).
+- **포커스 정책**: 윈도우 활성화 시 입력창 자동 포커스. 메시지 송신 후 입력창 자동 클리어 + 포커스 유지.
+- **빈 문자열 송신 차단** — `text.strip() == ""` 일 때 송신 무시.
+- **IME(한글 입력) 보호** — 조합 중인 음절(`InputMethodEvent`) 은 송신 트리거 차단(엔터 키 분기 시 `isAutoRepeat` 와 IME 상태 함께 검사).
+
+---
+
+## 8. 윈도우 사이즈 + 반응형
+
+- **최소 사이즈**: 480 × 640 (현재 [main_window.py](app/ui/main_window.py) `setMinimumSize(480, 640)`).
+- **기본 사이즈**: 720 × 880 (Phase 1 후반 도입).
+- **그리드 분할 (Phase 2 예정)**:
+  - 좌측 사이드바(방 목록·peer 목록): 가변 220~280px
+  - 본문(채팅 + 입력): 가변 stretch
+  - 우측 패널(파일 목록·설정): 토글, 기본 숨김
+- **반응형 분기**:
+  - 가로 < 600px → 사이드바 자동 접힘, 햄버거 메뉴로 전환
+  - 가로 ≥ 1000px → 우측 패널 동시 표시 허용
+- **DPI 스케일** — Qt 자체 `Qt.HighDpiScaleFactorRoundingPolicy.PassThrough` 를 명시 설정해 Retina/4K 환경에서 흐릿함 방지.
+
+---
+
+## 9. 빈도 높은 상태 표시
+
+| 상태 | 위치 | 표시 형식 |
+|---|---|---|
+| 시그널링 연결 | StatusBar 좌측 | `DISCONNECTED` / `CONNECTING` / `CONNECTED` / `ERROR` |
+| Peer 수 | StatusBar 우측 | `peers: N` (본인 제외) |
+| 현재 방 | 메뉴바 또는 윈도우 제목 | `TooTalk — room: <id>` (Phase 1 후반) |
+| 파일 진행률 | 인라인 위젯 | `1.2/3.4 MB · 35%` |
+| 시스템 안내 | ChatView 시스템 버블 | `sender="system"` |
+
+연결 상태 화이트리스트는 [status_bar.py](app/ui/status_bar.py) `_VALID_STATES` 에서 강제하며, 화이트리스트 밖 값은 `ERROR` 로 강제 정규화한다.
+
+---
+
+## 10. 다국어 후크
+
+- **Phase 1**: 한국어 단일 (모든 UI 문자열을 코드 안에 직접 한국어로 기록). M4 규약에 따라 한국어 주석과 일관성 유지.
+- **Phase 2** (i18n 도입):
+  - 외부화 대상 문자열은 `app/ui/i18n/ko.json` / `en.json` 으로 분리
+  - 함수 `tr(key: str) -> str` 도입, 미존재 키는 키 자체 반환 + 경고 로그
+  - 닉네임 등 사용자 입력 문자열은 번역 대상 외(원문 보존)
+- **로케일 감지** — `QLocale.system().name()` 기반. `.env` 의 `UI_LOCALE` 환경 변수가 있으면 우선.
+- **본 단계 합의** — Phase 1 동안 i18n 인프라 미도입. 단, 새 문자열을 코드에 추가할 때는 추후 외부화가 쉽도록 **상수 변수**로 분리 권장.
+
+---
+
+## 11. 접근성
+
+- **탭 순서** — 입력창 → 보내기 버튼 → 첨부 버튼 → 메뉴바 → ChatView 의 순으로 `setTabOrder` 명시.
+- **스크린리더 라벨** — 모든 버튼/입력 위젯에 `setAccessibleName` 부여. 예: 보내기 버튼 = `"메시지 보내기"`.
+- **ARIA 등가 속성** — PyQt6 는 ARIA 자체를 지원하지 않으나 `QAccessible` 인터페이스로 등가 효과를 제공한다. 역할(role) 은 Qt 기본을 사용하되, 커스텀 위젯(`MessageBubble`)은 `QAccessible.Role.StaticText` 로 설정.
+- **포커스 시각화** — 키보드 포커스 위젯은 `:focus` 스타일 셀렉터로 2px 윤곽선 노출(다크모드 대비 명도 비율 4.5:1 이상).
+- **명도 대비** — 본문 텍스트 vs 배경 색상은 WCAG AA 기준(4.5:1) 이상 유지. 다크/라이트 양 모드 모두 검증.
+- **확대 지원** — Qt `QApplication.setHighDpiScaleFactorRoundingPolicy` 외에 사용자 폰트 크기 환경 변수 `UI_FONT_SCALE` (0.8~1.5) 후크 제공(Phase 2).
+
+---
+
+## 12. XSS / 메시지 escape 정책
+
+정본 §E 인용: **"Frontend: `base.html` 상속, CSS 변수 사용, XSS `escapeHtml()` 필수"** ([CLAUDE_HARNESS_IMPORTANT.md L150](CLAUDE_HARNESS_IMPORTANT.md)).
+
+본 정책의 데스크탑 PyQt6 환경 적용:
+
+- **현 단계 메시지 본문은 plain text only** — `MessageBubble` 의 본문 `QLabel` 은 `setTextFormat(Qt.TextFormat.PlainText)` 명시 의무. 본 단계 코드에서 명시 호출이 누락된 경우 보강 대상.
+- **HTML/리치 텍스트 금지** — `QLabel.setText` 에 사용자 메시지를 그대로 전달하면 Qt 가 휴리스틱으로 HTML 해석을 시도할 위험이 있으므로 `PlainText` 강제는 필수.
+- **About 다이얼로그 예외** — 정적 HTML 만 허용 (사용자 입력 미포함). 동적 문자열을 HTML 로 합치는 행위 금지.
+- **URL 자동 링크화 (Phase 2)** — 도입 시 별도 함수(`linkify(text) -> str`) 가 escape 후 `<a>` 만 합성하도록 분리. 일반 메시지 경로(`add_message`)와 절대 혼합 금지.
+- **파일명·발신자명** — 외부에서 들어온 모든 문자열은 표시 직전 `QLabel.setText` 가 아닌 `QLabel(text)` 생성자 + `PlainText` 형식으로만 통과.
+- **시스템 안내** (`sender="system"`) — 내부 생성 문자열이라도 사용자 입력(예: room_id, peer_id) 을 합성하는 경우 동일 규칙 적용.
+
+---
+
+## 13. 메시지 전송 시퀀스
+
+본 시퀀스는 입력창에서 ChatView 까지의 송신 흐름을 보여준다. Phase 1 스켈레톤 단계는 echo 까지만 동작하고, DataChannel send 는 Task #16 에서 활성화한다.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant IE as InputEdit
+    participant MW as MainWindow
+    participant CV as ChatView
+    participant DC as DataChannel<br/>(Task #16)
+
+    U->>IE: 텍스트 입력 + Enter
+    IE->>MW: returnPressed 시그널
+    MW->>MW: text.strip() 검증
+    alt 빈 문자열
+        MW-->>IE: 무시 (조기 return)
+    else 유효
+        MW->>CV: add_message(self, text, ts, is_self=True)
+        CV->>CV: MessageBubble 생성 + 삽입
+        CV->>CV: rangeChanged → 1회용 자동 스크롤
+        MW->>IE: clear()
+        MW-->>DC: create_task(send(text))<br/>※ Task #16 에서 활성
+    end
+```
+
+---
+
+## 14. 참조
+
+| 주제 | 문서 |
+|---|---|
+| 정본 §E (코딩 불변 규칙) | [CLAUDE_HARNESS_IMPORTANT.md](CLAUDE_HARNESS_IMPORTANT.md) |
+| 상위 네비게이션 | [AGENTS.md](AGENTS.md) |
+| UX 컨셉·정보 구조 | [DESIGN.md](DESIGN.md) |
+| 계층 경계·모듈 의존 | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| 메인 윈도우 구현 | [app/ui/main_window.py](app/ui/main_window.py) |
+| 채팅 리스트 구현 | [app/ui/chat_view.py](app/ui/chat_view.py) |
+| 메시지 버블 구현 | [app/ui/message_bubble.py](app/ui/message_bubble.py) |
+| 상태바 구현 | [app/ui/status_bar.py](app/ui/status_bar.py) |
+| 파일 진행 위젯 구현 | [app/ui/file_progress_widget.py](app/ui/file_progress_widget.py) |
+| 요구사항 명세 | [Specification.md](Specification.md) |
+| 신뢰성 정책 | [RELIABILITY.md](RELIABILITY.md) |
+| 보안 정책 | [SECURITY.md](SECURITY.md) |
+
+---
+
+마지막 갱신: 2026-05-17 (FRONTEND.md 초안 — Phase 1 스켈레톤 UI 표준 정의)
