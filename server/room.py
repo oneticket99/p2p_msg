@@ -50,6 +50,10 @@ class Peer:
     peer_id: str
     ws: web.WebSocketResponse
     room_id: str | None = None
+    # 인증된 user_id (DB users.id 외래키). 익명 peer = None. 사이클 25 추가.
+    user_id: int | None = None
+    # DB rooms.id (영속화 시점 mapping). 익명 또는 DB 비활성 시 None.
+    db_room_id: int | None = None
     # asyncio.Lock 은 인스턴스마다 새로 생성되어야 하므로 default_factory 사용
     send_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
