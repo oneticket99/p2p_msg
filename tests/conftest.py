@@ -1,6 +1,6 @@
 """TooTalk(p2p_msg) pytest 공유 픽스처.
 
-DESIGN.md §10.4 정합 — 픽스처는 본 파일 측 ``@pytest.fixture`` 로 정의한다.
+DESIGN.md §10.4 정합 — 픽스처는 본 파일 의 ``@pytest.fixture`` 로 정의한다.
 사용자 directive 2026-05-17 — "qa 단계에서는 pytest 당연히 필요해".
 """
 
@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 
-# 저장소 루트 경로 — 모든 테스트 측 공유 (.env 로딩 / 픽스처 경로 등)
+# 저장소 루트 경로 — 모든 테스트 의 공유 (.env 로딩 / 픽스처 경로 등)
 REPO_ROOT: Path = Path(__file__).resolve().parent.parent
 
 
@@ -28,7 +28,7 @@ def isolate_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """테스트 간 환경변수 격리 — 외부 ``.env`` 영향 차단.
 
     각 테스트 시작 시 TooTalk 관련 env vars 모두 제거.
-    개별 테스트 측 ``monkeypatch.setenv`` 로 명시 주입한 값만 유효.
+    개별 테스트 의 ``monkeypatch.setenv`` 로 명시 주입한 값만 유효.
     """
 
     keys_to_clear = [
@@ -54,7 +54,7 @@ def isolate_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def fake_env_signal_host(monkeypatch: pytest.MonkeyPatch) -> str:
-    """``SIGNAL_SERVER_HOST`` 측 테스트 전용 fake 값."""
+    """``SIGNAL_SERVER_HOST`` 의 테스트 전용 fake 값."""
 
     fake_host = "10.0.0.42"
     monkeypatch.setenv("SIGNAL_SERVER_HOST", fake_host)

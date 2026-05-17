@@ -93,7 +93,7 @@ class Config:
     def db_dsn(self) -> str:
         """``mysql://user:pass@host:port/name`` 형태의 MariaDB DSN.
 
-        ``asyncmy.connect`` 또는 SQLAlchemy 측 사용. 비밀번호 빈 값은 ``:``
+        ``asyncmy.connect`` 또는 SQLAlchemy 의 사용. 비밀번호 빈 값은 ``:``
         생략하지 않고 그대로 노출 — DB 접속 라이브러리가 해석.
         """
 

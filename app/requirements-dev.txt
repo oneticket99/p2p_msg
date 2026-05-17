@@ -1,6 +1,6 @@
 # 클라이언트 개발 의존성 — pytest + coverage + lint
 # 사용자 directive 2026-05-17 — "qa 단계에서는 pytest 당연히 필요해"
-# 본 파일은 .env 격리 외 — 모든 contributor 측 동일 버전 사용
+# 본 파일은 .env 격리 외 — 모든 contributor 의 동일 버전 사용
 
 -r requirements.txt
 

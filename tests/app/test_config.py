@@ -1,7 +1,7 @@
-"""``app.core.config`` 측 단위 테스트.
+"""``app.core.config`` 의 단위 테스트.
 
 DESIGN.md §10.1 정합 — 단위 테스트는 Qt 비의존 + 외부 IO 격리.
-사용자 directive 2026-05-17 (MariaDB 회수) 측 5 DB 필드 정합 검증.
+사용자 directive 2026-05-17 (MariaDB 회수) 의 5 DB 필드 정합 검증.
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def test_load_config_reads_signal_host_from_env(
 
 
 def test_db_dsn_property_format() -> None:
-    """``db_dsn`` 프로퍼티 측 mysql:// 형식 검증 (asyncmy 호환)."""
+    """``db_dsn`` 프로퍼티 의 mysql:// 형식 검증 (asyncmy 호환)."""
 
     from app.core.config import load_config
 
@@ -54,7 +54,7 @@ def test_db_dsn_property_format() -> None:
 
 
 def test_signaling_url_property_format() -> None:
-    """``signaling_url`` 프로퍼티 측 ws:// 형식 검증."""
+    """``signaling_url`` 프로퍼티 의 ws:// 형식 검증."""
 
     from app.core.config import load_config
 

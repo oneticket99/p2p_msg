@@ -1,4 +1,4 @@
-"""``server.protocol`` 측 단위 테스트 — envelope 화이트리스트 검증.
+"""``server.protocol`` 의 단위 테스트 — envelope 화이트리스트 검증.
 
 DESIGN.md §10.1 정합 — 단위 테스트는 외부 IO 격리.
 NFR-05 정합 (Specification.md) — 시그널링 envelope 외부 입력 화이트리스트 5종 외 거부.
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 
 def test_is_valid_client_type_accepts_whitelist() -> None:
-    """화이트리스트 5종 (JOIN/LEAVE/OFFER/ANSWER/ICE) 측 모두 통과."""
+    """화이트리스트 5종 (JOIN/LEAVE/OFFER/ANSWER/ICE) 의 모두 통과."""
 
     from server.protocol import (
         CLIENT_MSG_TYPES,
@@ -23,7 +23,7 @@ def test_is_valid_client_type_accepts_whitelist() -> None:
 
     for msg_type in (MSG_JOIN, MSG_LEAVE, MSG_OFFER, MSG_ANSWER, MSG_ICE):
         assert is_valid_client_type(msg_type), (
-            f"화이트리스트 측 정상 type {msg_type} 거부 발생 — 검증 실패"
+            f"화이트리스트 의 정상 type {msg_type} 거부 발생 — 검증 실패"
         )
 
     assert len(CLIENT_MSG_TYPES) == 5
@@ -51,7 +51,7 @@ def test_is_valid_client_type_rejects_unknown() -> None:
 
 
 def test_is_valid_client_type_rejects_non_string() -> None:
-    """비-문자열 입력 측 거부 (보안 — TypeError 회피)."""
+    """비-문자열 입력 의 거부 (보안 — TypeError 회피)."""
 
     from server.protocol import is_valid_client_type
 
