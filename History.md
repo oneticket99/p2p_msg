@@ -40,7 +40,8 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
-[2026-05-17 12:10:21] app/core/config.py + app/README.md MariaDB 회수 — _DEFAULT_LOCAL_DB_PATH + local_db_path 단일 필드를 _DEFAULT_DB_HOST/PORT/USER/PASS/NAME 5상수 + db_host/port/user/pass/name 5필드로 회수. db_dsn 프로퍼티 신설 (mysql://user:pass@host:port/name) (커밋 대기)
+[2026-05-17 12:12:30] ARCHITECTURE.md MariaDB 회수 — L76 Core 영역 mermaid (SQLite 저장소 → MariaDB 영속화), L163 app/core 모듈 표 (의존성 + app/db 추가), L166 app/db (sqlite3 → asyncmy), L188 환경변수 표 (SQLITE_PATH 단행 → DB_HOST/PORT/USER/PASS/NAME 5행) (커밋 대기)
+[2026-05-17 12:10:21] app/core/config.py + app/README.md MariaDB 회수 — _DEFAULT_LOCAL_DB_PATH + local_db_path 단일 필드를 _DEFAULT_DB_HOST/PORT/USER/PASS/NAME 5상수 + db_host/port/user/pass/name 5필드로 회수. db_dsn 프로퍼티 신설 (mysql://user:pass@host:port/name) (34d4707)
 [2026-05-17 12:05:41] docs/references/ci-self-hosted-setup.md 신설 — self-hosted runner 등록 절차 (macOS arm64 + Windows x64), 라벨 명세 + 사전 의존성 + 보안 hardening + 트러블슈팅 + 운영 체크리스트 (0b0e010)
 [2026-05-17 12:00:02] .github/workflows/doc-gardener.yml 신설 — 주 1회 drift 감지 워크플로우 (cron Monday 00:00 UTC + workflow_dispatch), 90일 스테일 + doc-lint + 루트 18 동결 검증, Phase 2 자동 PR 생성 위임 (6f39d32)
 [2026-05-17 11:57:51] .github/workflows/docs-lint.yml 신설 — 문서 lint 전용 워크플로우 (markdownlint + doc-lint.sh), 트리거 4종 (cron daily 00:00 UTC + workflow_dispatch + push + PR path-filter) (76313fe)

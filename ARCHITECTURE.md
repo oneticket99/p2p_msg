@@ -73,7 +73,7 @@ flowchart LR
 flowchart TB
     subgraph Client["클라이언트 (app/)"]
         UI["UI<br/>QMainWindow · 채팅뷰<br/>QProgressBar · 파일첨부"]
-        Core["Core<br/>SessionState · 메시지큐<br/>SQLite 저장소"]
+        Core["Core<br/>SessionState · 메시지큐<br/>MariaDB 영속화"]
         Net["Net<br/>시그널링 WS 클라<br/>재연결 · 백오프"]
         RTC["RTC<br/>aiortc 래퍼<br/>DataChannel · 청크 송수신"]
         UI --> Core
@@ -160,10 +160,10 @@ sequenceDiagram
 | 모듈 | 책임 | 의존성 | 위치 |
 |---|---|---|---|
 | `app/ui/` | PyQt6 위젯·QSS·이벤트 핸들러 | `app/core/` | 클라이언트 UI 계층 |
-| `app/core/` | 세션 상태·메시지 큐·SQLite 영구화 | `app/net/` · `app/rtc/` | 클라이언트 Core 계층 |
+| `app/core/` | 세션 상태·메시지 큐·MariaDB 영속화 | `app/net/` · `app/rtc/` · `app/db/` | 클라이언트 Core 계층 |
 | `app/net/` | 시그널링 WS 클라이언트·재연결·백오프 | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net 계층 |
 | `app/rtc/` | aiortc 래퍼·DataChannel·청크 송수신 | `aiortc` · `app/core/` 콜백 | 클라이언트 RTC 계층 |
-| `app/db/` | SQLite 스키마·마이그레이션 | 표준 라이브러리 `sqlite3` | 클라이언트 영속화 |
+| `app/db/` | MariaDB 스키마·마이그레이션 (사용자 directive 2026-05-17) | `asyncmy` 드라이버 | 클라이언트 영속화 |
 | `server/signaling.py` | WebSocket 핸들러·5종 메시지 라우팅 | `server/room.py` · `server/protocol.py` | 서버 Router |
 | `server/room.py` | `Peer`·`Room`·`RoomRegistry` 상태 관리 | `server/protocol.py` | 서버 Service |
 | `server/protocol.py` | TypedDict envelope·오류 코드 상수 | (없음) | 서버 Model |
@@ -185,7 +185,11 @@ sequenceDiagram
 | `LOG_LEVEL` | 공통 | `INFO` | [server/README.md](server/README.md) §2 |
 | `SIGNALING_HOST` | 클라 | `114.207.112.73` | [AGENTS.md](AGENTS.md) 부록 B |
 | `STUN_SERVER` | 클라 | `stun.l.google.com:19302` | [AGENTS.md](AGENTS.md) 부록 B |
-| `SQLITE_PATH` | 클라 | `./data/tootalk.sqlite` | [AGENTS.md](AGENTS.md) 부록 B |
+| `DB_HOST` | 클라 | `127.0.0.1` | [AGENTS.md](AGENTS.md) 부록 B (MariaDB 회수 2026-05-17) |
+| `DB_PORT` | 클라 | `3306` | [AGENTS.md](AGENTS.md) 부록 B |
+| `DB_USER` | 클라 | `tootalk` | [AGENTS.md](AGENTS.md) 부록 B |
+| `DB_PASS` | 클라 | (비움) | `.env.local` 주입 |
+| `DB_NAME` | 클라 | `tootalk` | [AGENTS.md](AGENTS.md) 부록 B |
 | `RTC_CHUNK_SIZE` | 클라 | `16384` | 본 문서 §5 (파일 전송 backpressure) |
 | `RTC_CHUNK_WINDOW` | 클라 | `64` | 본 문서 §5 |
 
