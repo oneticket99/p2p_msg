@@ -40,6 +40,7 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+[2026-05-17 11:54:45] .github/workflows/ci.yml 신설 — CI 게이트 7종 (docs-lint·root-18·M1·M2·M3·M4·import-smoke), self-hosted [macOS, arm64] + [Windows, x64] 매트릭스 (커밋 대기)
 [2026-05-17 11:23:50] Structure.md 신설 — 운영 3/8, 527행 mermaid 6 ERD + MariaDB 4 테이블 (39bd0a9)
 [2026-05-17 11:19:01] FRONTEND.md §14 wireframe/mockup 섹션 추가 — UI 표면 5 mermaid 도식 (0fd29ba)
 [2026-05-17 11:18:48] Specification.md 신설 — 운영 1/8, FR 10 + User Story 9 + DB MariaDB 명시 (b3efb2b)
