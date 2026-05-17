@@ -35,7 +35,7 @@ Phase 1 MVP 가 반드시 포함하는 항목.
 - **텍스트 메시지 송수신** — DataChannel 기반 JSON envelope, 타임스탬프·발신자 식별자 포함.
 - **이미지 송수신 (썸네일 + 원본)** — Pillow 기반 썸네일 생성 후 인라인 표시, 원본은 별도 청크 스트림.
 - **파일 송수신 (양방향 ProgressBar)** — 송신/수신 양쪽 PyQt `QProgressBar` 동기 갱신, 청크 단위 backpressure 적용.
-- **SQLite 로컬 히스토리** — 대화 영구 저장, 메시지·이미지·파일 메타데이터 분리 테이블.
+- **MariaDB 로컬 히스토리** (사용자 directive 2026-05-17) — 대화 영구 저장, 메시지·이미지·파일 메타데이터 분리 테이블. `asyncmy` 드라이버 + `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME` 환경변수 5종.
 - **PyInstaller macOS + Windows 빌드** — `--onedir` zip 패키징, 인증서 미사용, 첫 실행 가능 여부까지 검증.
 - **GitHub Actions self-hosted 매트릭스 CI** — `[self-hosted, macOS, arm64]` + `[self-hosted, Windows, x64]` runner, Python 3.13, 빌드·import 스모크·M1~M4 게이트. GitHub-hosted runner 미사용 (사용자 directive 2026-05-17).
 - **데모 시그널링 서버 배포** — `114.207.112.73` 호스트, 시스템d 또는 Docker 단일 컨테이너, 인증 없이 공개 데모 가능.
@@ -89,7 +89,7 @@ gantt
 |----|--------------|---------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | M1 | 2026-05-24   | 부트스트랩 + 정책 문서 + 에이전트 정의             | 루트 18 문서 · `docs/` 골격 · `.claude/agents/` 12 에이전트 · CI 3 워크플로우                       |
 | M2 | 2026-05-31   | 시그널링 서버 + PyQt 스켈레톤                     | `server/signaling.py` (aiohttp WS) · `app/main.py` (메인 윈도우) · qasync 이벤트 루프 통합           |
-| M3 | 2026-06-14   | WebRTC DataChannel 텍스트 송수신                  | `app/rtc/peer.py` (aiortc 래퍼) · Offer/Answer/ICE 교환 · 텍스트 송수신 + SQLite 영구화              |
+| M3 | 2026-06-14   | WebRTC DataChannel 텍스트 송수신                  | `app/rtc/peer.py` (aiortc 래퍼) · Offer/Answer/ICE 교환 · 텍스트 송수신 + MariaDB 영속화              |
 | M4 | 2026-06-21   | 파일/이미지 송수신 + 양방향 ProgressBar           | `app/rtc/transfer.py` 청크 스트림 · 썸네일 생성 · 송수신 ProgressBar · 100MB 파일 검증                |
 | M5 | 2026-06-30   | PyInstaller 빌드 + GitHub Actions + README       | `build/TooTalk-{ver}-{os}.zip` · `.github/workflows/build.yml` 매트릭스 · README 빌드/실행 안내       |
 
@@ -106,7 +106,7 @@ gantt
 | #13  | M1 | `.claude/agents/` 12 에이전트 사양 작성           | `@planning-agent`          | #11           | in_progress|
 | #14  | M2 | `server/signaling.py` aiohttp WebSocket 구현      | `@backend-agent`           | #12, #13      | pending    |
 | #15  | M2 | `app/main.py` PyQt6 메인 윈도우 + qasync 통합     | `@frontend-agent`          | #12, #13      | pending    |
-| #16  | M2 | SQLite 스키마 + 마이그레이션 (`tools/db_init.py`) | `@backend-agent`           | #12           | pending    |
+| #16  | M2 | MariaDB 스키마 + 마이그레이션 (`tools/db_init.py`) | `@backend-agent`           | #12           | pending    |
 | #17  | M3 | `app/rtc/peer.py` aiortc 래퍼 + Offer/Answer 교환 | `@backend-agent`           | #14, #15      | pending    |
 | #18  | M3 | 텍스트 메시지 envelope + 채팅 뷰 wiring           | `@frontend-agent`          | #17, #16      | pending    |
 | #19  | M4 | `app/rtc/transfer.py` 청크 스트림 + backpressure  | `@backend-agent`           | #17           | pending    |
@@ -176,7 +176,7 @@ Phase 1 MVP 종료 조건. 아래 10 항목 모두 체크되어야 `status: comp
 |------------|----------|--------|-------------------------------------------------------------------------------|
 | (예정)     | M1       | -      | 부트스트랩 완료 후 `@reviewer-agent` + `harness-verify` 7/7 PASS 확인          |
 | (예정)     | M2       | -      | 시그널링 서버 health check + PyQt 메인 윈도우 첫 실행 캡처                     |
-| (예정)     | M3       | -      | macOS ↔ Windows 텍스트 송수신 왕복 + SQLite 영구화 회귀                        |
+| (예정)     | M3       | -      | macOS ↔ Windows 텍스트 송수신 왕복 + MariaDB 영속화 회귀                        |
 | (예정)     | M4       | -      | 100MB 파일 송수신 + ProgressBar 양방향 갱신 + 1MB/5MB 이미지 썸네일 검증       |
 | (예정)     | M5       | -      | zip 빌드 다운로드 → 첫 실행 → 텍스트/파일/이미지 모두 동작 확인 (양 OS)        |
 
@@ -200,7 +200,7 @@ Phase 1 MVP 종료 조건. 아래 10 항목 모두 체크되어야 `status: comp
 flowchart LR
     M1[M1 부트스트랩<br/>문서 + 정책 + 에이전트] --> M2A[시그널링 서버<br/>aiohttp WS]
     M1 --> M2B[PyQt 스켈레톤<br/>qasync 통합]
-    M1 --> M2C[SQLite 스키마<br/>db_init.py]
+    M1 --> M2C[MariaDB 스키마<br/>db_init.py + asyncmy]
     M2A --> M3[WebRTC DataChannel<br/>Offer/Answer/ICE]
     M2B --> M3
     M2C --> M3

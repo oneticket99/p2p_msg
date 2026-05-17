@@ -40,7 +40,8 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
-[2026-05-17 12:19:26] docs/assessments/{productization,vibe-coding}.md 신설 — snapshot 패턴 평가 문서 2종 (사용자 directive 2026-05-17 "매 task 종료 시 전체 rewrite"). 제품화 가능성 평가 (10 섹션, 종합 2.3/5 PoC 단계) + 바이브 코딩 능력 평가 (9 섹션, 종합 4.3/5 상위 10%) (커밋 대기)
+[2026-05-17 12:22:47] 실행계획 (2026-05-17-tootalk-phase1-mvp.md) MariaDB 회수 — 5 위반 정정. L38 In Scope (SQLite 로컬 히스토리 → MariaDB + asyncmy + 환경변수 5종), L92 M3 마일스톤 (SQLite 영구화 → MariaDB 영속화), L109 task #16 (SQLite 스키마 → MariaDB 스키마), L179 검증 회귀 시나리오, L203 의존성 그래프 mermaid (커밋 대기)
+[2026-05-17 12:19:26] docs/assessments/{productization,vibe-coding}.md 신설 — snapshot 패턴 평가 문서 2종 (사용자 directive 2026-05-17 "매 task 종료 시 전체 rewrite"). 제품화 가능성 평가 (10 섹션, 종합 2.3/5 PoC 단계) + 바이브 코딩 능력 평가 (9 섹션, 종합 4.3/5 상위 10%) (6ab9952)
 [2026-05-17 12:12:30] ARCHITECTURE.md MariaDB 회수 — L76 Core 영역 mermaid (SQLite 저장소 → MariaDB 영속화), L163 app/core 모듈 표 (의존성 + app/db 추가), L166 app/db (sqlite3 → asyncmy), L188 환경변수 표 (SQLITE_PATH 단행 → DB_HOST/PORT/USER/PASS/NAME 5행) (aff2cde)
 [2026-05-17 12:10:21] app/core/config.py + app/README.md MariaDB 회수 — _DEFAULT_LOCAL_DB_PATH + local_db_path 단일 필드를 _DEFAULT_DB_HOST/PORT/USER/PASS/NAME 5상수 + db_host/port/user/pass/name 5필드로 회수. db_dsn 프로퍼티 신설 (mysql://user:pass@host:port/name) (34d4707)
 [2026-05-17 12:05:41] docs/references/ci-self-hosted-setup.md 신설 — self-hosted runner 등록 절차 (macOS arm64 + Windows x64), 라벨 명세 + 사전 의존성 + 보안 hardening + 트러블슈팅 + 운영 체크리스트 (0b0e010)
