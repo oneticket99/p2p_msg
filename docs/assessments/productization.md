@@ -10,26 +10,26 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 17:00 (commit `aa56563` 직후 — 본 세션 누계 25 commit 반영, 사이클 5)
+> 최근 갱신 시점: 2026-05-17 17:35 (commit `5f36517` 직후 — 본 세션 누계 27 commit 반영, 사이클 6)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + **CI GREEN + wine + fork PR strict + SMTP 자체** 완성. 제품화 가능성 = **인프라 완비 + CI 검증 + 명확한 차별화 보유 / 코드 진입 대기**.
+**현재 단계**: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + **GPLv3 라이선스 확정 + visibility 전환 정책** 완성. 제품화 가능성 = **인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 / 코드 진입 대기**.
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 3 / 5 | 2.5 → 3 ▲ | self-hosted CI 8 job GREEN + Windows wine cross-compile + SMTP postfix 자체 + fork PR strict (가드레일 자동화 추가 향상) |
+| 기술 완성도 | 3 / 5 | = | CI 8 job GREEN + wine + SMTP + fork PR strict (변동 없음 — 라이선스 정책 = 코드 미진입) |
 | 시장 적합성 | 2.5 / 5 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
-| 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar (변동 없음) |
-| 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 (변동 없음) |
-| 수익화 모델 | 2 / 5 | = | Toonation 옵션 B (변동 없음) |
-| 운영 비용 | 5 / 5 | 4.5 → 5 ▲ | self-hosted macOS + Windows wine 무료 (Windows runner 회피) + SMTP postfix 자체 (relay 비용 0) + fork PR API 자동 |
-| 가드레일·자동화 | 5 / 5 | = | 18 영구 가드레일 (신규 2 — windows-build-via-wine + smtp-demo-server) + doc-lint 5 + pytest + Playwright + gh API 자동화 |
-| 세션 간 정합 | 5 / 5 | = | handoff 사이클 2 + snapshot 5 + CheckList drift 차단 |
-| **종합** | **3.85 / 5** | 3.6 → 3.85 ▲ | **인프라/문서/QA/차별화/CI/보안 완성 — 옵션 B Toonation 통합 즉시 진입 가능** |
+| 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar |
+| 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
+| 수익화 모델 | 2.5 / 5 | 2 → 2.5 ▲ | GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합 |
+| 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
+| 가드레일·자동화 | 5 / 5 | = | 20 영구 가드레일 (신규 2 — license-gpl + visibility-transition) + doc-lint 5 + pytest + Playwright + gh API |
+| 세션 간 정합 | 5 / 5 | = | handoff 사이클 3 + snapshot 6 + CheckList drift 차단 |
+| **종합** | **3.95 / 5** | 3.85 → 3.95 ▲ | **인프라/문서/QA/차별화/CI/보안/라이선스 완성 — 옵션 B Toonation 통합 즉시 진입 가능 + private 전환 시점 명시** |
 
 ---
 
@@ -107,13 +107,23 @@ status: active
 - SendGrid relay fallback (free 100/day) — spam reputation 부족 시
 - Phase 1 필수 도입 (사용자 directive)
 
-### 2.12 CI 자동화 + 보안 hardening (신규 사이클 5)
+### 2.12 CI 자동화 + 보안 hardening (사이클 5 신규 — 사이클 6 유지)
 
 - **self-hosted macOS arm64 runner** 등록 + online (id=2, launchd PID 62533)
 - ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)
 - **Windows 빌드 = wine cross-compile** (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker — Windows runner 의무 영구 회수)
 - **fork PR 승인 정책 strict** (`all_external_contributors` — gh API 자동 적용)
 - workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN
+
+### 2.13 라이선스 + visibility 정책 확정 (신규 사이클 6)
+
+- **GPLv3 확정** (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)
+- PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib BSD/Apache/LGPL 의 GPLv3 흡수
+- SPDX header convention (Phase 1 코드 진입 시 의무) — `# SPDX-License-Identifier: GPL-3.0-or-later`
+- **GitHub visibility public (현재) → private 전환 가능성** (Phase 완료 시점, 사용자 명시 의무)
+- self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)
+- AGPLv3 = Phase 2 이후 옵션 (network use clause)
+- 영구 메모리 2 신설 — `project_license_gpl.md` + `project_visibility_transition.md`
 
 ---
 
@@ -142,10 +152,10 @@ status: active
 - 회원가입 + 이메일 OTP 도입 완료 (사용자 directive 2026-05-17)
 - 단 키 페어 인증 + E2EE 결합 = Phase 2 의 예정
 
-### 3.4 라이선스 미확정
+### 3.4 ~~라이선스 미확정~~ (✅ 사이클 6 해소)
 
-- handoff §5 — "미확정 (Phase 1 후반)"
-- PyQt6 GPL/상용 분리
+- **GPLv3 확정** (사용자 directive 2026-05-17)
+- LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환
 
 ### 3.5 ~~self-hosted runner 등록 미완~~ (✅ 사이클 5 해소)
 
@@ -223,11 +233,11 @@ status: active
 | 0 | **wine cross-compile 정책 (cdrx docker + Ubuntu) — 6 file 갱신** | ✅ (사이클 5) |
 | 0 | **fork PR 승인 정책 strict (gh API 자동)** | ✅ (사이클 5) |
 | 0 | **SMTP 정책 + 절차 (postfix + Let's Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리** | ✅ (사이클 5) |
+| 0 | **GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책** | ✅ (사이클 6) |
 | 1 | SMTP 실제 설치 (114.207.112.73 SSH) | 🟡 사용자 직접 |
 | 2 | Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB) | 🔴 GO 대기 |
-| 3 | 라이선스 + LICENSE 신설 | 🔴 GO 대기 |
-| 4 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 GO 대기 |
-| 5 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 |
+| 3 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 GO 대기 |
+| 4 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 |
 
 ---
 
@@ -273,8 +283,8 @@ status: active
 | Signal/Telegram 무료 + 우월 → 사용자 획득 실패 | 상 | 상 | 옵션 B (Toonation) pivot |
 | 1인 개발자 Phase 2~4 완주 어려움 | 중 | 상 | 옵션 B ROI 빠른 검증 |
 | 데모 서버 보안 사고 | 중 | 중 | Phase 2 진입 직전 hardening |
-| 라이선스 결정 지연 | 중 | 중 | Phase 1 후반 결정 |
-| PyQt6 GPL/상용 비용 | 중 | 상 | Qt for Python 검토 |
+| ~~라이선스 결정 지연~~ | ✅ 해소 (사이클 6) | — | GPLv3 확정 |
+| PyQt6 GPL 의무 의 외부 fork distribution | 중 | 중 | GPLv3 정합 + private 전환 시 외부 fork 차단 |
 | 문서 91% : 코드 9% 지속 | 상 | 중 | 8 체크리스트 통과 후 코드 진입 |
 | **원격 제어 보안 사고** (Phase 3+ 위험) | 중 | 상 | 친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그 |
 | **SMTP spam reputation 부족** (신규 사이클 5) | 상 | 중 | SendGrid relay fallback (free 100/day) |
@@ -302,6 +312,7 @@ status: active
 | **원격 제어 세션 성공률** | ≥ 95% | 미측정 (Phase 3 막바지 후) |
 | **mail-tester score** (SMTP) | ≥ 7/10 | 미측정 (SSH 설치 후) |
 | **fork PR approval rate** (악성 차단) | 100% | strict 적용 OK (사이클 5) |
+| **GPLv3 호환 의존성** | 100% | 100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6) |
 
 ---
 
