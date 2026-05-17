@@ -86,33 +86,48 @@ for f in "${FILES[@]}"; do
 done
 
 # ── 검사 2: 깨진 상대 링크 ───────────────────────────────────────────────────
+# link text 영역 안 `(예정)` 마커 발견 시 본 link 검사 skip
+# (미작성 코드 + Agent #16 산출물 untracked 영역 — 가드레일 [[phase1-completion-priority]]
+#  + handoff §7 정합. 본 마커 = drift 명시화 + CI fail 회피)
 echo ""
 echo "[2/5] 깨진 상대 markdown 링크 검사"
 for f in "${FILES[@]}"; do
     BASE_DIR=$(dirname "$f")
-    # `[text](relative/path.md)` 또는 `[text](relative/path)` 패턴 추출
-    # 절대 URL (http://, https://, mailto:) 제외
-    LINKS=$(grep -oE '\]\(([^)]+)\)' "$f" 2>/dev/null \
-        | sed -E 's/^\]\(//;s/\)$//' \
-        | grep -vE '^(https?://|mailto:|#)' \
-        | grep -vE '^[a-z]+:' \
-        | awk -F'#' '{print $1}' \
-        || true)
+    # `[text](relative/path)` 전체 markdown link 추출 — text + target 모두 검사
+    FULL_LINKS=$(grep -oE '\[[^]]*\]\([^)]+\)' "$f" 2>/dev/null || true)
 
-    while IFS= read -r LINK; do
-        [ -z "$LINK" ] && continue
-        # 빈 fragment-only 제외
-        [ "$LINK" = "" ] && continue
-        # 절대 경로 → REPO_ROOT 기준
-        if [[ "$LINK" = /* ]]; then
-            TARGET_PATH="$REPO_ROOT$LINK"
+    while IFS= read -r FULL; do
+        [ -z "$FULL" ] && continue
+        # link text 영역 추출 — `[...]` 안
+        LINK_TEXT=$(echo "$FULL" | sed -E 's/^\[([^]]*)\].*/\1/')
+        # link target 영역 추출 — `(...)` 안
+        LINK=$(echo "$FULL" | sed -E 's/^\[[^]]*\]\(([^)]+)\)$/\1/')
+
+        # skip rule 1: link text 영역 안 `(예정)` 마커 발견 시 본 link 검사 skip
+        if echo "$LINK_TEXT" | grep -qE '\(예정\)'; then
+            continue
+        fi
+        # skip rule 2: 절대 URL / fragment / mailto / 기타 스킴 제외
+        if echo "$LINK" | grep -qE '^(https?://|mailto:|#)'; then
+            continue
+        fi
+        if echo "$LINK" | grep -qE '^[a-z]+:'; then
+            continue
+        fi
+        # fragment 분리 — `#section` 제거
+        LINK_PATH=$(echo "$LINK" | awk -F'#' '{print $1}')
+        [ -z "$LINK_PATH" ] && continue
+
+        # 절대 경로 → REPO_ROOT 기준 / 상대 경로 → 현재 파일 디렉토리 기준
+        if [[ "$LINK_PATH" = /* ]]; then
+            TARGET_PATH="$REPO_ROOT$LINK_PATH"
         else
-            TARGET_PATH="$BASE_DIR/$LINK"
+            TARGET_PATH="$BASE_DIR/$LINK_PATH"
         fi
         if [ ! -e "$TARGET_PATH" ]; then
             err "깨진 링크 ($f → $LINK): 대상 미존재 $TARGET_PATH"
         fi
-    done <<< "$LINKS"
+    done <<< "$FULL_LINKS"
 done
 
 # ── 검사 3: docs/** frontmatter 필수 필드 ────────────────────────────────────

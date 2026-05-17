@@ -74,7 +74,7 @@ flowchart TD
 - **MainWindow** = [app/ui/main_window.py](app/ui/main_window.py) — 모든 자식 위젯의 부모, `AppState` 보유.
 - **ChatView** = [app/ui/chat_view.py](app/ui/chat_view.py) — `QScrollArea` + `QVBoxLayout`, stretch 슬롯 직전 삽입.
 - **MessageBubble** = [app/ui/message_bubble.py](app/ui/message_bubble.py) — 단일 메시지(텍스트 + 타임스탬프) 표시.
-- **FileProgressWidget** = [app/ui/file_progress_widget.py](app/ui/file_progress_widget.py) — 송신/수신 양방향 ProgressBar.
+- **FileProgressWidget** = [app/ui/file_progress_widget.py (예정)](app/ui/file_progress_widget.py) — 송신/수신 양방향 ProgressBar.
 - **StatusBar** = [app/ui/status_bar.py](app/ui/status_bar.py) — 연결 상태 + peer 수.
 
 ---
@@ -435,7 +435,7 @@ flowchart TB
 | 채팅 리스트 구현 | [app/ui/chat_view.py](app/ui/chat_view.py) |
 | 메시지 버블 구현 | [app/ui/message_bubble.py](app/ui/message_bubble.py) |
 | 상태바 구현 | [app/ui/status_bar.py](app/ui/status_bar.py) |
-| 파일 진행 위젯 구현 | [app/ui/file_progress_widget.py](app/ui/file_progress_widget.py) |
+| 파일 진행 위젯 구현 | [app/ui/file_progress_widget.py (예정)](app/ui/file_progress_widget.py) |
 | 요구사항 명세 | [Specification.md](Specification.md) |
 | 신뢰성 정책 | [RELIABILITY.md](RELIABILITY.md) |
 | 보안 정책 | [SECURITY.md](SECURITY.md) |

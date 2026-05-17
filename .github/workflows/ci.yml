@@ -188,14 +188,16 @@ jobs:
   # ---------------------------------------------------------------------------
   import-smoke:
     name: import-smoke (${{ matrix.label }})
+    # Windows-x64 entry 임시 비활성 — Windows runner 미등록 (2026-05-17 cycle)
+    # Phase 1 후반 Windows runner 등록 직후 본 entry 의 주석 해제 + Task #3 정합
     strategy:
       fail-fast: false
       matrix:
         include:
           - label: macOS-arm64
             runner: [self-hosted, macOS, arm64]
-          - label: Windows-x64
-            runner: [self-hosted, Windows, x64]
+          # - label: Windows-x64
+          #   runner: [self-hosted, Windows, x64]
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -222,14 +224,16 @@ jobs:
   # ---------------------------------------------------------------------------
   pytest:
     name: pytest (${{ matrix.label }})
+    # Windows-x64 entry 임시 비활성 — Windows runner 미등록 (2026-05-17 cycle)
+    # Phase 1 후반 Windows runner 등록 직후 본 entry 의 주석 해제 + Task #3 정합
     strategy:
       fail-fast: false
       matrix:
         include:
           - label: macOS-arm64
             runner: [self-hosted, macOS, arm64]
-          - label: Windows-x64
-            runner: [self-hosted, Windows, x64]
+          # - label: Windows-x64
+          #   runner: [self-hosted, Windows, x64]
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4

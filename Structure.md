@@ -342,7 +342,7 @@ sequenceDiagram
 
 ### 10.3 파일 송수신 양방향 (FILE_META → CHUNK → ACK → END → DONE)
 
-`app/rtc/protocol.py` 의 5종 메시지로 운반되며, `bufferedAmount` 기반 backpressure 가 송신 큐 폭주를 막는다 ([app/rtc/README.md §5](app/rtc/README.md)).
+`app/rtc/protocol.py` 의 5종 메시지로 운반되며, `bufferedAmount` 기반 backpressure 가 송신 큐 폭주를 막는다 ([app/rtc/README.md §5 (예정)](app/rtc/README.md)).
 
 ```mermaid
 sequenceDiagram
@@ -516,14 +516,14 @@ erDiagram
 ### 14.2 실행계획·영역 README
 
 - [docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md](docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md) — Phase 1 MVP
-- [server/README.md](server/README.md) · [app/README.md](app/README.md) · [app/rtc/README.md](app/rtc/README.md)
+- [server/README.md](server/README.md) · [app/README.md](app/README.md) · [app/rtc/README.md (예정)](app/rtc/README.md)
 
 ### 14.3 코드 영역 직접 참조
 
 - 서버: [server/signaling.py](server/signaling.py) · [server/room.py](server/room.py) · [server/protocol.py](server/protocol.py) · [server/main.py](server/main.py)
 - 클라 진입·코어·네트: [app/main.py](app/main.py) · [app/core/app_state.py](app/core/app_state.py) · [app/core/config.py](app/core/config.py) · [app/net/signaling_client.py](app/net/signaling_client.py)
-- 클라 UI 5 위젯: [app/ui/main_window.py](app/ui/main_window.py) · [app/ui/chat_view.py](app/ui/chat_view.py) · [app/ui/message_bubble.py](app/ui/message_bubble.py) · [app/ui/status_bar.py](app/ui/status_bar.py) · [app/ui/file_progress_widget.py](app/ui/file_progress_widget.py)
-- 클라 RTC 5 모듈: [app/rtc/peer.py](app/rtc/peer.py) · [app/rtc/protocol.py](app/rtc/protocol.py) · [app/rtc/file_sender.py](app/rtc/file_sender.py) · [app/rtc/file_receiver.py](app/rtc/file_receiver.py) · [app/rtc/image_processor.py](app/rtc/image_processor.py)
+- 클라 UI 5 위젯: [app/ui/main_window.py](app/ui/main_window.py) · [app/ui/chat_view.py](app/ui/chat_view.py) · [app/ui/message_bubble.py](app/ui/message_bubble.py) · [app/ui/status_bar.py](app/ui/status_bar.py) · [app/ui/file_progress_widget.py (예정)](app/ui/file_progress_widget.py)
+- 클라 RTC 5 모듈: [app/rtc/peer.py (예정)](app/rtc/peer.py) · [app/rtc/protocol.py (예정)](app/rtc/protocol.py) · [app/rtc/file_sender.py (예정)](app/rtc/file_sender.py) · [app/rtc/file_receiver.py (예정)](app/rtc/file_receiver.py) · [app/rtc/image_processor.py (예정)](app/rtc/image_processor.py)
 
 ---
 
