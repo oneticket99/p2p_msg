@@ -164,7 +164,7 @@ Phase 1 MVP 종료 조건. 아래 10 항목 모두 체크되어야 `status: comp
 | TD-3  | Windows SmartScreen 우회 안내 → Authenticode 정식 서명       | "확인된 게시자 없음" 경고. 다운로드 차단 가능성, 평판 점수 부재.            | Phase 2          |
 | TD-4  | aiortc 약 5Mbps 처리 한계 → 성능 검증 + 대안 검토            | 대용량 파일(>500MB) 전송 시 throughput 부족 우려. 청크 사이즈·동시성 튜닝   | Phase 1 후반     |
 | TD-5  | M7 텔레그램 MCP 일시 disconnected → 자동 재연결 + 백오프     | 결과 보고 누락 시 directive 추적 단절. 사용자 가시성 손실.                  | Phase 1          |
-| TD-6  | self-hosted runner 보안 hardening (public repo + fork PR)    | 외부 contributor fork PR 측 악성 코드 실행 위험. 데모 단계는 무위협.        | Phase 2 진입 전  |
+| TD-6  | self-hosted runner 보안 hardening (public repo + fork PR)    | 외부 contributor fork PR 을 통한 악성 코드 실행 위험. 데모 단계는 무위협.   | Phase 2 진입 전  |
 
 ---
 
