@@ -159,3 +159,48 @@ def initialize_session_responder(
         sending_chain=None,
         receiving_chain=None,
     )
+
+
+def advance_dh_ratchet(state: SessionState, new_peer_dh_public: bytes) -> SessionState:
+    """DH ratchet step — inbound DH key 수신 시 receiving + sending chain 모두 advance.
+
+    Signal Protocol DH ratchet:
+    1. DH(my_sk, new_peer_pk) → receiving_chain (root_key 갱신)
+    2. 본인 keypair 재생성 (forward secrecy)
+    3. DH(new_sk, new_peer_pk) → sending_chain (root_key 추가 갱신)
+
+    Parameters
+    ----------
+    state : SessionState
+        현재 session.
+    new_peer_dh_public : bytes
+        수신 메시지 header 의 peer DH public (32 byte).
+
+    Returns
+    -------
+    SessionState
+        sending_chain + receiving_chain 모두 활성 + my_dh keypair 갱신 + root_key 2회 advance.
+    """
+
+    if len(new_peer_dh_public) != 32:
+        raise ValueError("new_peer_dh_public 32 byte 의무")
+
+    # Step 1: 수신 chain — DH(현 sk, 새 peer pk)
+    dh_recv = x25519_shared_secret(state.my_dh_private, new_peer_dh_public)
+    root_after_recv, recv_chain_key = _derive_root_and_chain(dh_recv, state.root_key)
+
+    # Step 2: 본인 keypair 재생성 — forward secrecy
+    new_sk, new_pk = generate_x25519_keypair()
+
+    # Step 3: 송신 chain — DH(새 sk, 새 peer pk)
+    dh_send = x25519_shared_secret(new_sk, new_peer_dh_public)
+    root_final, send_chain_key = _derive_root_and_chain(dh_send, root_after_recv)
+
+    return SessionState(
+        root_key=root_final,
+        my_dh_private=new_sk,
+        my_dh_public=new_pk,
+        peer_dh_public=new_peer_dh_public,
+        sending_chain=ChainKey(key=send_chain_key, counter=0),
+        receiving_chain=ChainKey(key=recv_chain_key, counter=0),
+    )

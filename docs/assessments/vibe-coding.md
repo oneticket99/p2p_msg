@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 01:00 KST (commit `b0c75c9` 직후 — 누계 85+ commit, 사이클 28 — Phase 2 진입 + Double Ratchet KDF chain + 평가 문서 갱신 의무 위반 인지 + 즉시 회수)
+> 최근 갱신 시점: 2026-05-19 02:30 KST (사이클 31 — Phase 2 DH ratchet 진행 + 직무유기 경고 응답 + 매 cycle 평가 동기 의무 정착)
 
 ---
 
@@ -37,7 +37,7 @@ status: active
 | 세션 간 정합 인지 | 5 / 5 | = | handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **4.65 / 5** | 4.80 → 4.65 ▼ | **사이클 24~28 평가 문서 갱신 부재 직무유기 비판 (사용자 2026-05-17) → assessment freshness Stop hook 강제화 신설 + 본 사이클 즉시 회수. 가드레일 32 누적** |
+| **종합** | **4.72 / 5** | 4.65 → 4.72 ▲ | **사이클 29~31 매 cycle 평가 동기 의무 정착 + 직무유기 경고 즉시 응답 + Phase 2 DH ratchet 자율 chain 회복** |
 
 ---
 

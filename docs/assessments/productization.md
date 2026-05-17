@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 01:00 KST (commit `b0c75c9` 직후 — 누계 85+ commit, 사이클 28 — Phase 1 완성 + signaling DB 통합 + Phase 2 진입 (E2EE) + Double Ratchet KDF chain)
+> 최근 갱신 시점: 2026-05-19 02:30 KST (사이클 31 — Phase 2 DH ratchet step + 253 pytest PASS + 직무유기 의식 검증 의무 정합)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.40 / 5** | 4.25 → 4.40 ▲ | **Phase 1 완성 (signaling DB 통합) + Phase 2 진입 (E2EE — AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) + 237 pytest PASS + 검증 의무 cycle 정착** |
+| **종합** | **4.45 / 5** | 4.40 → 4.45 ▲ | **Phase 2 DH ratchet step + SessionState + 253 pytest PASS + Phase 2 누계 56 케이스 (Signal Protocol symmetric + DH ratchet 완성)** |
 
 ---
 

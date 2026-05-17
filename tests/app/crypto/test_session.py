@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import pytest
 
+from app.crypto.e2ee import generate_x25519_keypair
 from app.crypto.session import (
     SessionState,
+    advance_dh_ratchet,
     initialize_session_initiator,
     initialize_session_responder,
 )
@@ -110,3 +112,48 @@ class TestResponder:
         s2 = initialize_session_responder(shared_secret=ss)
         assert s1.my_dh_private != s2.my_dh_private
         assert s1.my_dh_public != s2.my_dh_public
+
+
+class TestAdvanceDhRatchet:
+    def test_invalid_peer_public(self) -> None:
+        state = initialize_session_responder(shared_secret=b"\x42" * 32)
+        with pytest.raises(ValueError, match="new_peer_dh_public"):
+            advance_dh_ratchet(state, b"\x01" * 30)
+
+    def test_both_chains_activated(self) -> None:
+        # 실 X25519 keypair 필요 (가짜 peer pk 의 ECDH 결과 = 의미 없음 단 32 byte syntactic)
+        _, peer_pk = generate_x25519_keypair()
+        state = initialize_session_responder(shared_secret=b"\x42" * 32)
+        next_state = advance_dh_ratchet(state, peer_pk)
+
+        assert next_state.sending_chain is not None
+        assert next_state.receiving_chain is not None
+        assert next_state.sending_chain.counter == 0
+        assert next_state.receiving_chain.counter == 0
+
+    def test_keypair_rotated(self) -> None:
+        # forward secrecy = 본인 keypair 갱신
+        _, peer_pk = generate_x25519_keypair()
+        state = initialize_session_responder(shared_secret=b"\x42" * 32)
+        old_sk = state.my_dh_private
+        old_pk = state.my_dh_public
+        next_state = advance_dh_ratchet(state, peer_pk)
+        assert next_state.my_dh_private != old_sk
+        assert next_state.my_dh_public != old_pk
+
+    def test_root_key_advanced_twice(self) -> None:
+        # root_key 의 2회 advance (recv + send) → 초기 shared_secret 과 다름
+        _, peer_pk = generate_x25519_keypair()
+        state = initialize_session_responder(shared_secret=b"\x42" * 32)
+        next_state = advance_dh_ratchet(state, peer_pk)
+        assert next_state.root_key != state.root_key
+        assert next_state.peer_dh_public == peer_pk
+
+    def test_distinct_per_call(self) -> None:
+        # 같은 peer pk 단 새 keypair → 다른 chain
+        _, peer_pk = generate_x25519_keypair()
+        state = initialize_session_responder(shared_secret=b"\x42" * 32)
+        s1 = advance_dh_ratchet(state, peer_pk)
+        s2 = advance_dh_ratchet(state, peer_pk)
+        # my_dh keypair 의 random → sending_chain 별개
+        assert s1.sending_chain.key != s2.sending_chain.key
