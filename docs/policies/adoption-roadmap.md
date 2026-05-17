@@ -66,19 +66,28 @@ status: active
   - 1주 retention ≥ 60%
   - 사용자 NPS ≥ 30
 
-### 3.3 Phase 3 — E2EE + 모바일 prototype (2027-03-31 목표)
+### 3.3 Phase 3 — E2EE + 모바일 prototype + **원격 제어 차별화** (2027-03-31 목표)
 
-- **타겟**: P2 가족 사진 (+ P1 일부)
-- **범위**: + libsignal-protocol 통합 + iOS/Android prototype + 푸시 알림
-- **배포**: TestFlight + Google Play closed track
+- **타겟**: P2 가족 사진 + P5 라이브 크리에이터 + P6 기술 도움 제공자 (사용자 directive 2026-05-17 차별화)
+- **범위**:
+  - libsignal-protocol 통합 + iOS/Android prototype + 푸시 알림
+  - **원격 데스크탑 제어** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어) — [[project-phase2-remote-control-differentiator]] 정합
+  - WebRTC video track 추가 (현 DataChannel 외)
+  - 화면 캡처 + 입력 주입 OS 별 어댑터 (macOS pyobjc + Windows pywinauto)
+  - 명시 수락 모달 + 긴급 ESC + 친구 추가 사전 의무 + 감사 로그
+- **배포**: TestFlight + Google Play closed track + Toonation 크리에이터 베타 초대
 - **DoD**:
   - E2EE Signal Protocol 통합 PASS (외부 audit 권장)
   - 모바일 ↔ 데스크탑 양방향 메시지 송수신 PASS
   - 푸시 알림 (FCM + APNs) 의 retention 영향 measurement
+  - **원격 제어 패턴 A + B 양방향 PASS** (P5 ↔ P6 OBS 설정 시나리오 dogfooding)
+  - **권한 모델 PASS** (명시 수락 + 긴급 ESC + 감사 로그)
 - **KPI**:
   - 모바일 사용자 ≥ 30% 비중
   - 30일 retention ≥ 50%
   - E2EE audit 의 critical issue 0
+  - **원격 제어 세션 성공률 ≥ 95%** (네트워크 환경 정합)
+  - **원격 제어 세션 평균 길이 ≥ 15분** (1회 OBS 설정 도움 추정)
 
 ### 3.4 Phase 4 — Enterprise/B2B 진입 (2027-09-30 목표)
 
