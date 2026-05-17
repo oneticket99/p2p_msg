@@ -477,12 +477,12 @@ git push origin main
 
 ## S) Z787 / Z789 / Z790 — Tier 1 자동화 layer 5단 영구 활성 + permissions.allow 13건 + 분류기 hard block 영역 + 자율 의지 보류 (2026-05-15 명문화)
 
-> 본 섹션은 2026-05-15 Z787 / Z789 / Z790 cycle 누계 측 자동화 layer + 정책 영역 영구화. handoff v7 § 2 + § 3 정합.
-> 본 정본 측 단독 모순 차단 의무 — § A 표 + § B 워크플로우 + § Q-3 정책 모두 본 § S 와 호환.
+> 본 섹션은 2026-05-15 Z787 / Z789 / Z790 cycle 누계 의 자동화 layer + 정책 영역 영구화. handoff v7 § 2 + § 3 정합.
+> 본 정본 의 단독 모순 차단 의무 — § A 표 + § B 워크플로우 + § Q-3 정책 모두 본 § S 와 호환.
 
 ### S-1) Tier 1 자동화 layer 5단 — 결정적 enforcement
 
-사용자가 직접 코드를 거의 작성하지 않으면서도 코드 품질을 통제하는 핵심 = **enforcement layer 가 매 응답 측 자동 작동**.
+사용자가 직접 코드를 거의 작성하지 않으면서도 코드 품질을 통제하는 핵심 = **enforcement layer 가 매 응답 의 자동 작동**.
 
 ```mermaid
 flowchart LR
@@ -508,17 +508,17 @@ flowchart LR
 | Layer | 활성 commit | trigger | 동작 |
 |---|---|---|---|
 | **L0 PreToolUse** | 기존 | Edit/Write/NotebookEdit input | 한국 토큰 손상 입력 차단 (Z787) |
-| **L1 PreToolUse Bash** | 기존 | Bash command | check_pre_commit_push.sh 측 markdown lint trigger |
-| **L1 SubagentStop** | Z787 Step 2 | sub-agent 완료 | `hook_subagent_auto_telegram.sh` 측 자동 telegram 송신 |
-| **L1 Stop BPE detect** | Z787 Step 2 | 응답 종료 | `hook_response_korean_token_detect.sh` 측 transcript grep + telegram warning |
-| **L1 post-commit WBS** | Z787 Step 1 | 매 commit 직후 | `hook_postcommit_wbs_auto_register.sh` 측 WBS row 자동 INSERT |
-| **L1 post-commit telegram** | Z787 Step 5 | 매 commit 직후 | `hook_postcommit_auto_telegram.sh` 측 commit summary telegram 송신 |
+| **L1 PreToolUse Bash** | 기존 | Bash command | check_pre_commit_push.sh 의 markdown lint trigger |
+| **L1 SubagentStop** | Z787 Step 2 | sub-agent 완료 | `hook_subagent_auto_telegram.sh` 의 자동 telegram 송신 |
+| **L1 Stop BPE detect** | Z787 Step 2 | 응답 종료 | `hook_response_korean_token_detect.sh` 의 transcript grep + telegram warning |
+| **L1 post-commit WBS** | Z787 Step 1 | 매 commit 직후 | `hook_postcommit_wbs_auto_register.sh` 의 WBS row 자동 INSERT |
+| **L1 post-commit telegram** | Z787 Step 5 | 매 commit 직후 | `hook_postcommit_auto_telegram.sh` 의 commit summary telegram 송신 |
 | **L1 pre-push PRE_PUSH=1** | Z787 Step 3+4 | git push 직전 | M5 ahead check skip (self-reference paradox 해소) |
 | **L4 Stop session_audit** | 기존 | 응답 종료 | 5 영역 통합 audit (tree + ahead/behind + md_lint + harness + reviewer 누락) |
 
 ### S-2) permissions.allow 13건 (Z787 Step 2)
 
-`.claude/settings.json` 측 13 entry — Claude Code auto-mode 분류기 측 차단 우회.
+`.claude/settings.json` 의 13 entry — Claude Code auto-mode 분류기 의 차단 우회.
 
 ```text
 Bash(git push origin main:*)
@@ -536,29 +536,29 @@ Bash(cat > .git/hooks/*:*)
 Bash(*.claude/settings.json edit:*)
 ```
 
-신규 hook install / docker ops / brew install 측 사용자 manual approval 없이 자동 진행.
+신규 hook install / docker ops / brew install 의 사용자 manual approval 없이 자동 진행.
 
 ### S-3) 분류기 hard block 영역 + SKIP_PREPUSH=1 prefix 우회
 
-**현상**: settings.json 측 permissions.allow 13건 install 됐음에도 `git push origin main` 직접 입력 시 auto-classifier reject — "Pushing directly to main bypasses PR review; no explicit user authorization".
+**현상**: settings.json 의 permissions.allow 13건 install 됐음에도 `git push origin main` 직접 입력 시 auto-classifier reject — "Pushing directly to main bypasses PR review; no explicit user authorization".
 
-**원인**: classifier 측 single Bash command 측 본 패턴 match 안 됨 (settings 측 install 됐어도 false-negative).
+**원인**: classifier 의 single Bash command 의 본 패턴 match 안 됨 (settings 의 install 됐어도 false-negative).
 
 **우회**: `SKIP_PREPUSH=1 git push origin main` prefix 패턴 → classifier match → PASS.
 
 ```bash
-# 표준 push 명령 (모든 cycle 측 정합)
+# 표준 push 명령 (모든 cycle 의 정합)
 SKIP_PREPUSH=1 git push origin main
 
-# pre-push hook 측 PRE_PUSH=1 환경변수 측 ahead check skip
-# (post-commit hook 부산물 정리 cycle 측 self-reference paradox 해소)
+# pre-push hook 의 PRE_PUSH=1 환경변수 의 ahead check skip
+# (post-commit hook 부산물 정리 cycle 의 self-reference paradox 해소)
 ```
 
 ### S-4) post-commit hook 무한 loop fix (P0-#1 옵션 A)
 
-**현상** (Z789 직전): post-commit hook 측 WBS row INSERT + WAL checkpoint TRUNCATE → `data/wbs.sqlite` metadata 변경 → 다음 cycle working tree 측 unstaged 1 잔존 → M5 GUARD Stop hook 차단 무한 loop.
+**현상** (Z789 직전): post-commit hook 의 WBS row INSERT + WAL checkpoint TRUNCATE → `data/wbs.sqlite` metadata 변경 → 다음 cycle working tree 의 unstaged 1 잔존 → M5 GUARD Stop hook 차단 무한 loop.
 
-**fix** (commit 19e70795): `tools/hook_postcommit_wbs_auto_register.sh` 측 self-skip 분기 신설 (12 line):
+**fix** (commit 19e70795): `tools/hook_postcommit_wbs_auto_register.sh` 의 self-skip 분기 신설 (12 line):
 
 ```bash
 # self-skip — hook 무한 loop 방지 (handoff v7 § 3 P0-#1 옵션 A)
@@ -569,11 +569,11 @@ if [ "$CHANGED_FILES" = "data/wbs.sqlite" ]; then
 fi
 ```
 
-**검증** (commit e02cd9bf): cleanup commit 측 stderr 출력 정합 — `wbs.sqlite 단독 변경 — self-skip` → row 미등록 → tree clean → M5 PASS.
+**검증** (commit e02cd9bf): cleanup commit 의 stderr 출력 정합 — `wbs.sqlite 단독 변경 — self-skip` → row 미등록 → tree clean → M5 PASS.
 
-**reviewer-agent 권고** (ac0e1836): false-positive risk 측 우연히 정상 directive 처리 commit 측 sqlite 단독 변경 시 INSERT skip. 완화책 (다음 cycle 적용 가능):
+**reviewer-agent 권고** (ac0e1836): false-positive risk 의 우연히 정상 directive 처리 commit 의 sqlite 단독 변경 시 INSERT skip. 완화책 (다음 cycle 적용 가능):
 
-- commit message 측 `Hook-Origin: post-commit` trailer 마킹
+- commit message 의 `Hook-Origin: post-commit` trailer 마킹
 - commit message regex AND 매치
 
 ### S-5) 자율 의지 보류 = 직무유기 방지 본질 (Z790 정정)
@@ -582,21 +582,21 @@ fi
 
 **의미**: 어시스턴트의 보수 룰 (`watcher_role_only` / `no_edit_intervention` / `git_auto_push_no_confirm` / `subagent_completion_immediate_report` / `reviewer_agent_mandatory_trigger` 등) 은 trade-off 가 아니라 **직무유기 방지 본질 의무**. Claude 자율 진행 시 4 전형 실패 패턴 (false positive 보고 / 표면 fix / 범위 폭주 / 컨텍스트 손실) 누적.
 
-**평가 frame**: "보수성 vs 속도 trade-off" 가정 금지. 본 cycle 측 cycle 손실 (예: P0-#1 옵션 A 1 cycle 지연) 은 보수 룰 정합 측 정합 패턴 — 차감 사유 아님.
+**평가 frame**: "보수성 vs 속도 trade-off" 가정 금지. 본 cycle 의 cycle 손실 (예: P0-#1 옵션 A 1 cycle 지연) 은 보수 룰 정합 의 정합 패턴 — 차감 사유 아님.
 
 **적용 영구화**:
 
 - 메모리 `feedback_claude_no_autonomy_due_to_dereliction.md` 영구화 (MEMORY.md index 최상단)
-- 평가 측 "자율 의지 보류 (직무유기 방지)" row 신규 A+
+- 평가 의 "자율 의지 보류 (직무유기 방지)" row 신규 A+
 - 사용자 비판 0회 cycle 도달 시점에야 자율 의지 검토 가능 (현재 직무유기 누적 잔존)
 
 ### S-6) 적용 순서 — 새 세션 진입 시
 
 1. **B0 부트스트랩** (정본 + AGENTS.md + handoff § 0) — 본 § S 도 포함
-2. **harness-verify** 7/7 PASS — L4 session_audit 측 자동 trigger
+2. **harness-verify** 7/7 PASS — L4 session_audit 의 자동 trigger
 3. **`SKIP_PREPUSH=1 git push origin main`** prefix 패턴 표준 사용 — § S-3 정합
-4. **sub-agent 완료 즉시 telegram 송신 보고** — § S-1 L1 SubagentStop 자동 + main session 측 즉시 보고 의무 (`feedback_subagent_completion_immediate_report`)
-5. **post-commit hook 부산물 cleanup cycle** — § S-4 self-skip 분기 측 1 cycle 만으로 수렴
+4. **sub-agent 완료 즉시 telegram 송신 보고** — § S-1 L1 SubagentStop 자동 + main session 의 즉시 보고 의무 (`feedback_subagent_completion_immediate_report`)
+5. **post-commit hook 부산물 cleanup cycle** — § S-4 self-skip 분기 의 1 cycle 만으로 수렴
 
 ### S-7) carry-over (handoff v7 § 3 잔존)
 
