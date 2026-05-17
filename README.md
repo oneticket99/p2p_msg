@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-18 — release-agent 사이클 15 정식 GO 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-20 14:00:00 KST] Phase 2 signature sound (사용자 directive "다음작업 진행해" + project_signature_sound) — `app/ui/sound_player.py` `SoundPlayer` (QSoundEffect wrapper) + `Config` sound_enabled/sound_volume/sound_signature_path 3 필드 + `app/assets/sounds/signature.wav` placeholder (220 ms chime 880→1320 Hz) + 19 PASS (TestClampVolume 5 + TestResolveSoundPath 2 + TestSoundPlayer 12). 음소거 토글 + 볼륨 clamp + Qt 부재 폴백. pytest 307 (+19). Phase 2 누계 114
 - [2026-05-19 04:30:00 KST] Phase 2 decrypt_with_session_ooo out-of-order delivery + 6 PASS (사용자 directive "잔존 작업 진행해" 자율 GO) — SessionState skipped_store field + decrypt_ooo wrapper (store fallback + forward skip + replay 차단). 6 케이스 (in-order + 0→2→1 OOO + replay + missing + tampered). pytest 277 (+6). Phase 2 누계 84
 - [2026-05-19 03:30:00 KST] Phase 2 skipped_keys.py LRU+TTL + 14 PASS (사용자 directive "다음작업 시작해" 자율 GO) — `SkippedKeyStore` OrderedDict LRU + MAX_SKIP=1000 + TTL 1시간 + one-shot 자동 폐기 (replay 차단). 14 케이스 4 TestClass (Validation 5 + PutGet 4 + LRUEvict 2 + Expire 3). pytest 267 (+14). Phase 2 누계 74
 - [2026-05-19 03:00:00 KST] Phase 2 encrypt/decrypt_with_session wrapper + Alice/Bob integration 4 PASS (사용자 "잔존작업 진행해" + enforcement layer designer 평가) — SessionState immutable wrapper + chain 미초기화 RuntimeError + TestAliceBobE2EE 4 케이스 (initiate/pre-receive/ratchet unblock/self loopback). Phase 2 누계 60 (unit 56 + integration 4). 253 PASS

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 05:00 KST (사이클 36 — 전수조사 drift 6건 회수 + hook_doc_consistency.sh 강제 신설 + ARCHITECTURE §6 정합)
+> 최근 갱신 시점: 2026-05-20 14:00 KST (사이클 38 — Phase 2 signature sound minimal layer + 19 PASS + WAV placeholder)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 7.5 / 10 | 7.2 → 7.5 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 84 케이스 (Signal Protocol symmetric + DH ratchet + skipped_keys LRU + out-of-order) + 277 pytest |
-| 시장 적합성 | 5.2 / 10 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
-| 차별화 요소 | 9.1 / 10 | 9.0 → 9.1 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol |
-| 사용자 가치 | 6.3 / 10 | 6.0 → 6.3 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE 추가 |
-| 수익화 모델 | 5.4 / 10 | 5.0 → 5.4 ▲ | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 + 차별화 강화 |
+| 기술 완성도 | 7.7 / 10 | 7.5 → 7.7 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 (X3DH + Signal Protocol + skipped_keys + ooo) + signature sound layer 19 PASS + 307 pytest |
+| 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
+| 차별화 요소 | 9.2 / 10 | 9.1 → 9.2 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol + signature sound UX |
+| 사용자 가치 | 6.5 / 10 | 6.3 → 6.5 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (사용자 directive 직접 반영) |
+| 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 10.0 / 10 | 9.9 → 10.0 ▲ | 가드레일 34 누적 (doc-consistency 신규) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer (telegram + freshness + doc consistency) |
+| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
-| 보안 hardening | 7.2 / 10 | 6.5 → 7.2 ▲ | E2EE Signal Protocol 84 케이스 + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **8.8 / 10** | 8.7 → 8.8 ▲ | **사이클 36 전수조사 drift 6건 회수 + hook_doc_consistency.sh Stop hook 강제 신설 (가드레일 34) + ARCHITECTURE §6 정합 완성** |
+| 보안 hardening | 7.4 / 10 | 7.2 → 7.4 ▲ | E2EE Signal Protocol 95 케이스 (X3DH 초기 키 교환 추가) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
+| **종합** | **8.9 / 10** | 8.8 → 8.9 ▲ | **사이클 38 signature sound minimal layer + Config 3 필드 + WAV placeholder + 19 PASS — 사용자 directive 청각 신호 직접 구현 + Phase 2 누계 114 케이스** |
 
 ---
 
@@ -140,6 +140,27 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.27 signature sound minimal layer — UX brand recognition (신규 사이클 38)
+
+사용자 directive 2026-05-17 — "tootalk 의 메시지 수신 시 텔레그램이나 카카오톡 처럼 시그니처 사운드가 출력되었으면 좋겠어. 뿅 같은 sound" + "다음작업 진행해" 자율 GO. `project_signature_sound.md` 영구 메모리 정합.
+
+minimal layer 완성:
+- `app/core/config.py` 의 3 필드 추가 — `sound_enabled` (bool) + `sound_volume` (float, 0.0~1.0 clamp) + `sound_signature_path` (str)
+- helper 2종 — `_env_bool` + `_env_float_clamp`
+- `app/ui/sound_player.py` 신설 — `SoundPlayer` PyQt6 `QSoundEffect` wrapper (lazy-init + Qt 부재 폴백 + 파일 부재 폴백 + 음소거/볼륨 toggle)
+- `resolve_sound_path` helper (상대→절대) + `_clamp_volume` 이중 방어
+- `app/assets/sounds/signature.wav` placeholder — 220 ms chime 880→1320 Hz pitch glide + exponential decay
+- tests/app/ui/test_sound_player.py 19 PASS (TestClampVolume 5 + TestResolveSoundPath 2 + TestSoundPlayer 12)
+
+5 검증 PASS — AST + import + pytest 307 + doc-lint 0 + BPE 0 (2건 detect 정정).
+
+Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6 + x3dh 11 + sound 19).
+
+차별화 매트릭스 강화:
+- KakaoTalk / Telegram = 시그니처 사운드 brand recognition 핵심
+- TooTalk = 자체 chiptune (placeholder + 추후 designer confirm 필요) + 사용자 음소거/볼륨 control 즉시 반영
+- 잔존: ChatView 수신 trigger 연결 + 설정 dialog UI
 
 ### 2.26 전수조사 drift 6건 회수 + doc-consistency Stop hook 강제 (신규 사이클 36)
 

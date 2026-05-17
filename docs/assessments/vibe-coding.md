@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 05:00 KST (사이클 36 — 사용자 전수조사 directive + drift 6건 회수 + doc-consistency Stop hook 강제 + 직무유기 4회차)
+> 최근 갱신 시점: 2026-05-20 14:00 KST (사이클 38 — signature sound minimal layer + Phase 2 누계 114 케이스 + Config 환경변수 helper 2종 신규)
 
 ---
 
@@ -32,13 +32,13 @@ status: active
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
 | 사이클 효율 | 9.5 / 10 | 10.0 → 9.5 ▼ | 33 cycle 누계 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 정합 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
-| UX 직관 | 9.0 / 10 | = | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 통합 + wireframe directive |
-| QA 사고 | 9.8 / 10 | 10.0 → 9.8 ▼ | pytest 253 + Playwright + bcrypt + OTP brute force + Phase 2 60 케이스 |
+| UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
+| QA 사고 | 9.85 / 10 | 9.8 → 9.85 ▲ | pytest 307 + Playwright + bcrypt + OTP brute force + Phase 2 114 케이스 (X3DH + sound) |
 | 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.55 / 10** | 9.65 → 9.55 ▼ | **사이클 36 전수조사 drift 6건 + 평가 미갱신 4회차 직무유기 — 단 사용자 비판 즉시 회수 + doc-consistency Stop hook 신설 (가드레일 34). 진동 잔존** |
+| **종합** | **9.60 / 10** | 9.55 → 9.60 ▲ | **사이클 38 signature sound minimal layer 완성 + 자율 chain 안정 (사이클 37~38 직무유기 0건) + Phase 2 누계 114 케이스. UX directive 직접 구현 — 사용자 명문 청각 신호 즉시 반영** |
 
 ---
 
@@ -109,6 +109,33 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.32 자율 chain 안정 회복 — signature sound minimal layer (신규 사이클 38)
+
+사용자 directive 2026-05-17 "텔레그램이나 카카오톡 처럼 시그니처 사운드가 출력되었으면 좋겠어. 뿅 같은 sound" + 2026-05-17 "직무유기 경향 볼 때 당연히 사운드는 고려 안 했을 거라 이야기" + 2026-05-20 "다음작업 진행해" 자율 GO.
+
+자율 chain 의 안정 회복:
+- 사이클 36 = 직무유기 4회차 + doc-consistency hook 강제화
+- 사이클 37 = X3DH 신설 + 11 PASS + drift 0
+- 사이클 38 = signature sound minimal layer + 19 PASS + drift 0
+
+사이클 38 의 의사결정:
+- 잔존 4종 (multi-device + push + 백업 + signature sound) 의 우선순위 = **사용자 directive 명문 + 최소 scope**
+- signature sound = 사용자 directive 직접 명문 (2026-05-17) + project memory 등록 + Config 3 필드 + SoundPlayer wrapper 의 단일 layer = minimal scope 정합
+
+Config 환경변수 helper 2종 신설:
+- `_env_bool` — 1/true/yes/on 의 boolean 변환 + 그 외 default
+- `_env_float_clamp` — float 변환 + [lo, hi] clamp + 실패 시 default
+
+SoundPlayer 설계 우선순위:
+- PyQt6 부재 환경 = import 자체 graceful 폴백 (CI test 정합)
+- 파일 부재 = warning log + 미재생 폴백 (배포 빌드 의 의 자원 누락 방어)
+- 음소거/볼륨 즉시 반영 (set_enabled / set_volume → effect.setVolume 동기)
+- thread safety = GUI thread 의 직접 호출 docstring 명문 (asyncio thread 의 QTimer.singleShot 우회 의무)
+
+테스트 19 케이스 = Mock 활용 + Qt event loop 없이 logic 검증 (TestSoundPlayer 의 11 케이스 의 effect = MagicMock 주입).
+
+종합 9.55 → 9.60 ▲ — 사이클 37~38 연속 drift 0 + 자율 chain 안정.
 
 ### 2.31 직무유기 4회차 + doc-consistency Stop hook 강제 신설 (신규 사이클 36)
 

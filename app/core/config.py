@@ -42,6 +42,10 @@ _DEFAULT_DB_USER: Final[str] = "tootalk"
 _DEFAULT_DB_PASS: Final[str] = ""
 _DEFAULT_DB_NAME: Final[str] = "tootalk"
 _DEFAULT_MEDIA_CACHE_DIR: Final[str] = "./media_cache"
+# 시그니처 사운드 (Telegram/KakaoTalk "뿅" 등가, 사용자 directive 2026-05-17)
+_DEFAULT_SOUND_ENABLED: Final[bool] = True
+_DEFAULT_SOUND_VOLUME: Final[float] = 0.7  # 0.0~1.0 범위, UI 슬라이더 매핑
+_DEFAULT_SOUND_SIGNATURE_PATH: Final[str] = "app/assets/sounds/signature.wav"
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +69,12 @@ class Config:
         ``asyncmy`` 드라이버 경유 접속. ``db_dsn`` 프로퍼티로 합성 DSN 노출.
     media_cache_dir : str
         이미지/파일 캐시 디렉토리.
+    sound_enabled : bool
+        시그니처 사운드 활성 여부 (사용자 음소거 토글). 기본 True.
+    sound_volume : float
+        시그니처 사운드 볼륨 0.0~1.0 — UI 슬라이더 매핑. clamp 처리.
+    sound_signature_path : str
+        시그니처 사운드 WAV 파일 상대 경로 (저장소 루트 기준).
     """
 
     signal_host: str
@@ -82,6 +92,9 @@ class Config:
     db_pass: str
     db_name: str
     media_cache_dir: str
+    sound_enabled: bool
+    sound_volume: float
+    sound_signature_path: str
 
     @property
     def signaling_url(self) -> str:
@@ -145,6 +158,38 @@ def _normalize_scheme(raw: str) -> str:
     return "ws"
 
 
+def _env_bool(key: str, default: bool) -> bool:
+    """``os.environ`` 에서 boolean 값을 읽되 ``1/true/yes/on`` = True, 그 외 default."""
+
+    raw = os.environ.get(key, "")
+    if raw is None or raw.strip() == "":
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_float_clamp(key: str, default: float, lo: float, hi: float) -> float:
+    """``os.environ`` 의 float 읽고 ``[lo, hi]`` 범위로 clamp — 실패 시 default."""
+
+    raw = os.environ.get(key, "")
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        value = float(raw.strip())
+    except ValueError:
+        log.warning(
+            "환경변수 %s float 변환 실패 — raw=%r → 기본값 %.2f 사용",
+            key,
+            raw,
+            default,
+        )
+        return default
+    if value < lo:
+        return lo
+    if value > hi:
+        return hi
+    return value
+
+
 def _normalize_log_level(raw: str) -> str:
     """허용된 로그 레벨이 아니면 ``INFO`` 로 폴백."""
 
@@ -195,6 +240,13 @@ def load_config(dotenv_path: str | None = None) -> Config:
         db_pass=_env_str("DB_PASS", _DEFAULT_DB_PASS),
         db_name=_env_str("DB_NAME", _DEFAULT_DB_NAME),
         media_cache_dir=_env_str("MEDIA_CACHE_DIR", _DEFAULT_MEDIA_CACHE_DIR),
+        sound_enabled=_env_bool("SOUND_ENABLED", _DEFAULT_SOUND_ENABLED),
+        sound_volume=_env_float_clamp(
+            "SOUND_VOLUME", _DEFAULT_SOUND_VOLUME, 0.0, 1.0
+        ),
+        sound_signature_path=_env_str(
+            "SOUND_SIGNATURE_PATH", _DEFAULT_SOUND_SIGNATURE_PATH
+        ),
     )
 
     log.debug(
