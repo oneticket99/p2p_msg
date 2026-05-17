@@ -1,4 +1,4 @@
-# AGENTS.md — p2p_msg Repository Guide
+# AGENTS.md — TooTalk (p2p_msg) Repository Guide
 
 > 본 문서는 저장소 **맵(navigation map)** 이다. 백과사전 아님.
 > 세부 규칙·정책은 모두 링크로 위임한다. 본 문서의 임무는 "어디를 봐야 하는가" 안내.
@@ -8,7 +8,9 @@
 
 ## 1. 저장소 목적
 
-`p2p_msg` 는 **PyQt6 기반 데스크탑 P2P 메신저** 다. 텔레그램 UX 를 참고하되, 시그널링 서버 하나만 거치고 실 데이터(텍스트·이미지·파일)는 **WebRTC DataChannel 직결**로 운반한다. 송수신 양방향 ProgressBar 와 SQLite 로컬 저장을 기본 탑재한다.
+**TooTalk** (코드명/저장소명: `p2p_msg`) 는 **PyQt6 기반 데스크탑 P2P 메신저** 다. 텔레그램 UX 를 참고하되, 시그널링 서버 하나만 거치고 실 데이터(텍스트·이미지·파일)는 **WebRTC DataChannel 직결**로 운반한다. 송수신 양방향 ProgressBar 와 SQLite 로컬 저장을 기본 탑재한다.
+
+> **명명 규약**: UI 표기·README·빌드 산출물(`TooTalk.app`, `TooTalk-{ver}-{os}.zip`)·About 다이얼로그·시그널링 User-Agent → **TooTalk**. 코드 식별자·import 경로·디렉토리명·GitHub repo 명 → **p2p_msg** 유지.
 
 | 항목 | 값 |
 |---|---|
@@ -264,4 +266,4 @@ ls .claude/agents/
 
 ---
 
-마지막 갱신: 2026-05-17
+마지막 갱신: 2026-05-17 (TooTalk 서비스명 명문화)
