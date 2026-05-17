@@ -8,7 +8,7 @@
 
 ## 1. 저장소 목적
 
-**TooTalk** (코드명/저장소명: `p2p_msg`) 는 **PyQt6 기반 데스크탑 P2P 메신저** 다. 텔레그램 UX 를 참고하되, 시그널링 서버 하나만 거치고 실 데이터(텍스트·이미지·파일)는 **WebRTC DataChannel 직결**로 운반한다. 송수신 양방향 ProgressBar 와 SQLite 로컬 저장을 기본 탑재한다.
+**TooTalk** (코드명/저장소명: `p2p_msg`) 는 **PyQt6 기반 데스크탑 P2P 메신저** 다. 텔레그램 UX 를 참고하되, 시그널링 서버 하나만 거치고 실 데이터(텍스트·이미지·파일)는 **WebRTC DataChannel 직결**로 운반한다. 송수신 양방향 ProgressBar 와 **MariaDB** 로컬 저장을 기본 탑재한다.
 
 > **명명 규약**: UI 표기·README·빌드 산출물(`TooTalk.app`, `TooTalk-{ver}-{os}.zip`)·About 다이얼로그·시그널링 User-Agent → **TooTalk**. 코드 식별자·import 경로·디렉토리명·GitHub repo 명 → **p2p_msg** 유지.
 
@@ -20,7 +20,7 @@
 | 시그널링 | Python `aiohttp` WebSocket |
 | 시그널링 데모 호스트 | `114.207.112.73` |
 | STUN | `stun.l.google.com:19302` |
-| 로컬 저장 | SQLite |
+| 로컬 저장 | MariaDB (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) |
 | Python | 3.13 |
 | 배포 | macOS + Windows · PyInstaller + zip · 인증서 미사용 · GitHub Actions **self-hosted** 매트릭스 |
 | Remote | https://github.com/oneticket99/p2p_msg.git (public) |
@@ -61,7 +61,7 @@
 | 변경 이력 (M2 — 최신 30행) | [README.md](README.md) | 모든 파일 작업 완료 직후 |
 | 확장 가이드 (신규 에이전트·문서·모델) | [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) | 시스템 확장 전 |
 | 에이전트 개별 사양 | [.claude/agents/](.claude/agents/) `<name>.md` | 해당 에이전트 호출 직전 |
-| 정책 (doc-gardening · adoption · harness) | [docs/policies/](docs/policies/) | 운영 정책 변경 시 |
+| 정책 (doc-gardening · adoption · harness) | `docs/policies/` (작성 예정) | 운영 정책 변경 시 |
 
 > **루트 마크다운은 18개로 동결** ([정본 §K](CLAUDE_HARNESS_IMPORTANT.md)). 신규 문서는 반드시 `docs/` 하위에 생성.
 
@@ -261,7 +261,7 @@ ls .claude/agents/
 
 - `SIGNALING_HOST` — 시그널링 서버 호스트 (기본 `114.207.112.73`)
 - `STUN_SERVER` — `stun.l.google.com:19302`
-- `SQLITE_PATH` — 로컬 DB 경로
+- `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASS` / `DB_NAME` — MariaDB 접속 (사용자 directive 2026-05-17)
 - 하드코딩 금지 — 모든 값은 `.env` 또는 DB 상수 테이블 경유
 
 ---
