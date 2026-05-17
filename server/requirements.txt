@@ -1,5 +1,9 @@
 # TooTalk(p2p_msg) Phase 1 MVP 시그널링 서버 의존성
-# Python 3.13 기준. 의존성 최소화 — aiohttp + python-dotenv 만 사용.
+# Python 3.13 기준. 의존성 최소화 — aiohttp + dotenv + DB + SMTP.
 
 aiohttp>=3.11
 python-dotenv>=1.0
+# MariaDB 영속화 (사용자 directive 2026-05-17 — Phase 1 영속화 DB)
+asyncmy>=0.2.10
+# 이메일 OTP 발송 (사용자 directive 2026-05-17 — postfix 데모 서버 의 SMTP client)
+aiosmtplib>=3.0
