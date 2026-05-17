@@ -465,10 +465,20 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ### 8.34 snapshot 사이클 12 + HTML 2 (사이클 10 신규)
 
-- productization 3.95 (=) + §2.18 reviewer 정식 GO + Phase 1 FR-04 readiness 도달 신규
-- vibe-coding 4.85 + §2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 신규
+- productization 3.95 → 4.0 ▲ + §2.18 reviewer 정식 GO + Phase 1 FR-04 readiness 도달 신규
+- vibe-coding 4.85 → 4.90 ▲ + §2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 신규
 - §3.1 pivot 사이클 12 row 추가
 - HTML 2종 sub-agent 병렬 재생성 (사이클 12 정합)
+- ARCHITECTURE.html mirror partial Edit (§5 + §7 8 row, 373 lines)
+
+### 8.35 reviewer-agent 사이클 13 — 정식 GO (사이클 11 신규)
+
+- 사용자 directive "사이클 13 reviewer 재호출 진행해" — 자율 GO
+- 사이클 12 신규 위반 (ARCHITECTURE.html mirror) ✅ 완전 해소
+- 신규 위반 0건 + 14/14 검증 PASS
+- 종합 판정 = **PASS 정식 GO** (Phase 1 FR-04 코드 진입 readiness 완전 도달)
+- handoff = main session → `@qa-agent` 회귀 체크리스트 → 코드 진입 권장
+- handoff §9 #8 ✅ **완전 해소** (3 cycle 누계 — 11 + 12 + 13)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -484,7 +494,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
 | 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
 | 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
-| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ **완료** (사이클 11 + 12) | 사이클 11 CONDITIONAL PASS (차단 1건 SPDX) → main session P0+P1+P2 정정 (commit 1f09279) → 사이클 12 reviewer 재호출 (정식 GO 평가) |
+| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ **정식 GO** (사이클 11 + 12 + 13) | 사이클 11 CONDITIONAL PASS (P0 SPDX) → 사이클 12 정정 + CONDITIONAL PASS (ARCHITECTURE.html mirror) → 사이클 13 정정 + **PASS 정식 GO**. 14/14 검증 PASS. handoff = `@qa-agent` 회귀 체크리스트 → 코드 진입 |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 
 ### 9.1 잔존 task 진입 가능 (가드레일 통과 후)
