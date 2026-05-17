@@ -269,9 +269,11 @@ docs/
 | 파일 | 권한 | 책임 1행 |
 |---|---|---|
 | `tools/claude-telegram.sh` | 실행 | Claude ↔ Telegram 양방향 채널 브리지 (M7 송수신 인프라) |
-| `tools/doc-lint.sh` | 실행 | 문서 린트·BPE 단독 사용 검출·루트 18 동결 검증 |
+| `tools/doc-lint.sh` | 실행 | 문서 린트 5 검사 — BPE U+CE21 단독 + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭 + `(예정)` marker skip rule |
+| `tools/hook_check_bpe_token_input.sh` | 실행 | PreToolUse Edit/Write hook (sketch — `.claude/settings.json.disabled`). 다음 BPE 위반 발견 시 활성 — [[feedback-bpe-script-trigger-warning]] |
+| `tools/hook_telegram_report_stop.sh` | 실행 | Stop hook (sketch). 응답 종료 시점 transcript 의 자동 텔레그램 송신 — [[feedback-telegram-report-script-trigger-warning]] |
 
-> 추가 예정: `tools/md_agents.py` (M1~M3 검증 본체) · `tools/db_init.py` (MariaDB 스키마 초기화) · `tools/build.py` (PyInstaller 래퍼). 본 시점에는 부재.
+> 추가 예정: `tools/md_agents.py` (M1~M3 검증 본체) · `tools/db_init.py` (MariaDB 스키마 초기화) · `tools/build.py` (PyInstaller + wine 래퍼). 본 시점에는 부재.
 
 ---
 

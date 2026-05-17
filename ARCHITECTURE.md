@@ -170,8 +170,10 @@ sequenceDiagram
 | `server/room.py` | `Peer`·`Room`·`RoomRegistry` 상태 관리 | `server/protocol.py` | 서버 Service |
 | `server/protocol.py` | TypedDict envelope·오류 코드 상수 | (없음) | 서버 Model |
 | `server/main.py` | entry point·env 로딩·`AppRunner` | 위 3개 + `dotenv` | 서버 부트스트랩 |
-| `tools/` | `md_agents.py` · hook 스크립트 · `db_init.py` · `build.py` | 표준 라이브러리 중심 | 운영 자동화 |
-| `.github/workflows/` | `ci.yml` · `docs-lint.yml` · `doc-gardener.yml` · `build.yml` | self-hosted runner | CI 게이트 |
+| `tools/` | `md_agents.py` · `doc-lint.sh` · `claude-telegram.sh` · `hook_check_bpe_token_input.sh` (PreToolUse sketch) · `hook_telegram_report_stop.sh` (Stop sketch) · `db_init.py` (예정) · `build.py` (예정) | 표준 라이브러리 + bash | 운영 자동화 + enforcement layer sketch |
+| `.github/workflows/` | `ci.yml` 8 job · `docs-lint.yml` · `doc-gardener.yml` · `build.yml` (Phase 1 후반 — macOS native + Ubuntu wine cross-compile 듀얼) | self-hosted macOS arm64 + GitHub-hosted Ubuntu | CI 게이트 |
+| `LICENSE` (저장소 루트) | GPLv3 표준 본문 (GNU 674 lines, 사용자 directive 2026-05-17) | — | 라이선스 |
+| `.claude/settings.json.disabled` | PreToolUse Edit/Write BPE 차단 + Stop 텔레그램 자동 송신 sketch (미활성). 다음 위반/누락 발견 시 `mv` 의 즉시 활성 | `tools/hook_*.sh` | enforcement layer sketch |
 
 ---
 
