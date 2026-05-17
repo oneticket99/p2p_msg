@@ -158,7 +158,8 @@ PR 생성 전 다음 항목을 모두 체크한다. 미통과 항목 1개라도 
 - [ ] `@reviewer-agent` 통과 (4대 규칙 위반 검사 + 금지 패턴)
 - [ ] `@qa-agent` 회귀 체크리스트 PASS
 - [ ] `@observability-agent` 로그·메트릭 회귀 없음
-- [ ] CI 3종 (`ci.yml` · `docs-lint.yml` · `doc-gardener.yml`) GREEN
+- [ ] CI 3종 (`ci.yml` · `docs-lint.yml` · `doc-gardener.yml`) GREEN — Phase 1 active
+- [ ] `build.yml` GREEN — M5 PyInstaller 매트릭스 (Phase 1 후반 신설 예정)
 - [ ] PR 제목·본문이 `.github/pull_request_template.md` 양식 충족
 - [ ] feature branch 기준 (main 직접 push 금지)
 
