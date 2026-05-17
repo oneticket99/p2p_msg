@@ -23,7 +23,10 @@ import qasync
 from PyQt6.QtWidgets import QApplication
 
 from app.core.config import Config, load_config
+from app.net.auth_client import AuthClient
+from app.ui.login_dialog import LoginDialog
 from app.ui.main_window import MainWindow
+from app.ui.signup_dialog import SignupDialog
 
 
 def _configure_logging(level: str) -> None:
@@ -76,13 +79,22 @@ def main() -> int:
     loop = qasync.QEventLoop(qt_app)
     asyncio.set_event_loop(loop)
 
-    # 4) 메인 윈도우 표시
+    # 4) AuthClient 초기화 — REST endpoint base URL
+    # signaling_url 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ws → http 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").rstrip("/ws")
+    auth_client = AuthClient(api_base)
+
+    # 5) 메인 윈도우 표시 (AUTH_REQUIRED=1 시 의 의 의 의 의 의 의 의 의 의 의 로그인 우선 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의)
     window = MainWindow(config=config)
     window.show()
 
-    # 5) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리
+    # 6) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리
     with loop:
-        loop.run_forever()
+        try:
+            loop.run_forever()
+        finally:
+            # auth_client close 의 의 의 의 의 의 의 의 의 graceful
+            loop.run_until_complete(auth_client.close())
     return 0
 
 

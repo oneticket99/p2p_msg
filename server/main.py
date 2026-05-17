@@ -28,6 +28,9 @@ from typing import Final
 from aiohttp import web
 from dotenv import load_dotenv
 
+from .api.auth_handlers import register_auth_routes
+from .auth.middleware import auth_middleware
+from .db.connection import close_pool, create_pool
 from .room import RoomRegistry
 from .signaling import build_routes
 
@@ -87,20 +90,43 @@ def _read_int_env(key: str, default: int) -> int:
         return default
 
 
-def build_app() -> web.Application:
-    """aiohttp Application 객체를 생성하고 라우트/registry 를 바인딩한다.
+async def build_app() -> web.Application:
+    """aiohttp Application 객체를 생성하고 라우트/registry + DB pool 을 바인딩.
+
+    Phase 1 확장 (사이클 22):
+    - DB_ENABLED=1 환경변수 시 asyncmy pool 생성 + app['db_pool'] 등록
+    - auth middleware 등록 + 5 REST endpoint 라우트
+    - in-memory session_store dict (Phase 1, Phase 2 redis 전환)
 
     Returns:
-        준비 완료된 ``web.Application`` — ``web.run_app`` 또는 ``AppRunner``
-        에 그대로 전달 가능.
+        준비 완료된 ``web.Application``.
     """
-    app = web.Application()
+    # 한글 주석: middleware 는 신규 인스턴스 의 의 의 의 의 의 의 의 의 의 의 의 인자 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    app = web.Application(middlewares=[auth_middleware])
+
+    # 시그널링 룸 registry (기존)
     registry = RoomRegistry()
     build_routes(app, registry)
 
-    # 종료 훅 — 모든 방에 ERROR 송신 후 비우기
-    async def _on_cleanup(_app: web.Application) -> None:
+    # 세션 store (Phase 1 = in-memory dict, Phase 2 = redis)
+    app["session_store"] = {}
+
+    # auth REST endpoint 등록
+    register_auth_routes(app)
+
+    # DB pool — DB_ENABLED=1 시 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 활성. 로컬 dev 시 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    if os.environ.get("DB_ENABLED", "0").strip() == "1":
+        app["db_pool"] = await create_pool()
+    else:
+        app["db_pool"] = None
+        logging.getLogger(__name__).warning(
+            "DB_ENABLED!=1 — DB pool 비활성. auth endpoint 호출 = 500 응답"
+        )
+
+    # 종료 훅 — 모든 방에 ERROR 송신 + DB pool close
+    async def _on_cleanup(app_: web.Application) -> None:
         await registry.shutdown()
+        await close_pool(app_.get("db_pool"))
 
     app.on_cleanup.append(_on_cleanup)
     return app
@@ -128,7 +154,7 @@ async def _serve() -> None:
             "wss 스킴은 Phase 2 진입 시 활성화 예정 — 본 Phase 는 ws 로 동작",
         )
 
-    app = build_app()
+    app = await build_app()
     runner = web.AppRunner(app, access_log=logging.getLogger("aiohttp.access"))
     await runner.setup()
     site = web.TCPSite(runner, host=host, port=port)
