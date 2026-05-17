@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 17:45 (사이클 4 갱신 — 본 세션 누계 commit 28+ 반영, GPLv3 + visibility 정책 추가). 최신 commit `f160ba0`.
+> 본 인계 시점: 2026-05-17 18:30 (사이클 5 갱신 — 본 세션 누계 commit 33+ 반영, BPE + 텔레그램 script trigger sketch 추가). 최신 commit `5704c8c`.
 
 ---
 
@@ -17,7 +17,7 @@ status: active
 - **Watcher 역할** — 보고 Fine-Grained (모든 도구 1:1), 유휴 폴백 `/loop 2m`
 - **서브에이전트 Whitebox** — `run_in_background: true` + 자동 notify
 - **5단계 워크플로우 절대** — 문서 → 검토 → 개발 → QA → 리뷰. ②~⑤ 진입 전 ① 완료 의무
-- **20 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 4 — license-gpl + visibility-transition)
+- **22 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 5 — bpe-script-trigger-warning + telegram-report-script-trigger-warning)
 - **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
 - **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
 - **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
@@ -33,6 +33,7 @@ status: active
 - **SMTP 자체 설치** — 데모 서버 (114.207.112.73) postfix + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback ([docs/references/smtp-setup.md](../../references/smtp-setup.md))
 - **라이선스 = GPLv3** — LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환 + SPDX header convention ([[project-license-gpl]])
 - **visibility = public → private 전환 가능성** — Phase 완료 시점 사용자 명시 의무. self-hosted runner 의 quota 회피 정합 ([[project-visibility-transition]])
+- **enforcement layer sketch** — `.claude/settings.json.disabled` (PreToolUse Edit/Write BPE 차단 + Stop 텔레그램 자동 송신). 다음 위반/누락 발견 시 = `mv .disabled → settings.json` 즉시 활성 의무 ([[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]])
 
 ---
 
@@ -40,12 +41,12 @@ status: active
 
 1. **본 문서 전체 정독** — §1~§10
 2. **정본 정독** — [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §1~5 + §A~S
-3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 20 가드레일 전부
+3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 22 가드레일 전부
 4. **CLAUDE.md §10-6/7 정독** — HTML 6종 + 평가 snapshot 2종 동시 갱신 의무
 5. **AGENTS.md 정독** — §1~11
 6. **현 활성 실행계획** — [2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
 7. **누계 git log** — `git -C /Users/oneticket_toonation/Documents/vscode_work/p2p_msg log --oneline`
-8. **CheckList §2 진행률 표 정독** — 20행 진행률 표 (drift 차단)
+8. **CheckList §2 진행률 표 정독** — 20행 진행률 표 (drift 차단) + 신규 enforcement layer sketch 인지
 9. **TL;DR 사용자 재선언** (Q-2 등가 첫 응답 템플릿)
 10. **텔레그램 세션 재진입 송신** — HTTP API 의 첫 송신 의무
 
@@ -57,7 +58,7 @@ status: active
 [Watcher] 세션 재진입 — TooTalk 가드레일 활성.
 - 본 인계 로드 OK: docs/exec-plans/active/2026-05-17-session-handoff.md §1~10
 - 정본 로드 OK: CLAUDE_HARNESS_IMPORTANT.md §1~5, §A~S
-- 메모리 20 가드레일 로드 OK
+- 메모리 22 가드레일 로드 OK
 - CLAUDE.md §10-6/7 동시 갱신 의무 인지 OK
 - 정책 상태:
   · 보고 세밀도 = Fine-Grained
@@ -76,7 +77,7 @@ status: active
 
 ---
 
-## 4. 영구 가드레일 인덱스 20건 (hard constraint)
+## 4. 영구 가드레일 인덱스 22건 (hard constraint)
 
 본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
@@ -101,6 +102,8 @@ status: active
 | `project_smtp_demo_server.md` | **신규 사이클 3 (2026-05-17)**. SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback |
 | `project_license_gpl.md` | **신규 사이클 4 (2026-05-17)**. TooTalk 라이선스 = GPLv3 (LICENSE 저장소 루트 + PyQt6 GPLv3 정합 + SPDX header) |
 | `project_visibility_transition.md` | **신규 사이클 4 (2026-05-17)**. GitHub visibility = public (현재) → private 전환 가능성 (Phase 완료 시점). self-hosted runner 의 의무 quota 회피 정합 |
+| `feedback_bpe_script_trigger_warning.md` | **신규 사이클 5 (2026-05-17)**. 4회차 사전 경고 — 다음 BPE 위반 시 PreToolUse Edit/Write hook 강제 활성. tools/hook_check_bpe_token_input.sh + .claude/settings.json.disabled sketch |
+| `feedback_telegram_report_script_trigger_warning.md` | **신규 사이클 5 (2026-05-17)**. 5회차 사전 경고 — 다음 텔레그램 송신 누락 시 Stop hook 자동 송신 강제. tools/hook_telegram_report_stop.sh + .claude/settings.json.disabled sketch |
 | `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
 
 ---
@@ -126,11 +129,13 @@ status: active
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
 | HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
-| 평가 snapshot | 2종 (productization 3.95/5 + vibe-coding 4.85/5, 사이클 6 완료) | 2026-05-17 |
+| 평가 snapshot 이전 row | (사이클 7 row 의 의무 — 위 의 의무 row 통합) | 2026-05-17 |
 | fork PR 승인 정책 | `all_external_contributors` (gh API 자동 적용, 사이클 3) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | **라이선스** | **GPLv3** (LICENSE 저장소 루트 — PyQt6 GPLv3 정합 + SPDX header 의무, [[project-license-gpl]]) | 2026-05-17 |
 | **SMTP 서버** | 데모 서버 (`114.207.112.73`) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib client + SendGrid fallback. 절차 = `docs/references/smtp-setup.md`. 실제 설치 = 사용자 직접 SSH | 2026-05-17 |
+| **enforcement layer sketch** | `.claude/settings.json.disabled` 의 PreToolUse Edit/Write (BPE/대명사 차단) + Stop (텔레그램 자동 송신) 듀얼 sketch. 다음 위반/누락 시 = `mv` 의 즉시 활성 의무 | 2026-05-17 |
+| 평가 snapshot | 2종 (productization 3.95/5 + vibe-coding 4.85/5, 사이클 7 완료) | 2026-05-17 |
 
 ---
 
@@ -343,6 +348,31 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - vibe-coding 4.85 (변동 없음) + §2.17 신규 (라이선스 + visibility 직접 인지 패턴)
 - HTML 2종 sub-agent 병렬 재생성 (사이클 6 정합)
 - 단기 액션 ✅ 1건 추가 (GPLv3 + LICENSE)
+
+### 8.19 BPE script trigger sketch (사이클 5 신규)
+
+- 사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제"
+- 영구 메모리 `feedback_bpe_script_trigger_warning.md` 신설 + `feedback_no_korean_chuck_token.md` 4회차 row 추가
+- `tools/hook_check_bpe_token_input.sh` 신설 — PreToolUse Edit/Write hook (executable + self-test PASS)
+- `.claude/settings.json.disabled` 신설 — sketch 미활성 패턴
+- 다음 BPE 위반 발견 시 = `mv .disabled → settings.json` 즉시 활성
+- 정본 §S-1 L0 PreToolUse Edit/Write 의 본 저장소 실 적용
+
+### 8.20 텔레그램 Stop hook sketch (사이클 5 신규)
+
+- 사용자 directive 2026-05-17 5회차 사전 경고 — "텔레그램 보고 의무도 트리거 구조"
+- 영구 메모리 `feedback_telegram_report_script_trigger_warning.md` 신설 + `feedback_telegram_report_mandatory_m7.md` 5회차 row 추가
+- `tools/hook_telegram_report_stop.sh` 신설 — Stop hook script (transcript parse + curl 자동 송신)
+- `.claude/settings.json.disabled` 의 Stop hook 영역 추가 (PreToolUse + Stop 듀얼)
+- 다음 송신 누락 발견 시 = `mv` 즉시 활성
+
+### 8.21 평가 snapshot 사이클 7 (사이클 5 신규)
+
+- productization 3.95 (변동 없음) + §2.14 BPE script trigger sketch 신규
+- vibe-coding 4.85 (변동 없음) + §2.18 사전 경고 + enforcement layer 패턴 신규
+- §3.1 pivot 사이클 7 row 추가 (4회차 사전 경고)
+- HTML 2종 sub-agent 병렬 재생성 (productization 518 lines + vibe-coding 대기)
+- 가드레일 21 + 22 (BPE + 텔레그램 trigger 신규)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -394,4 +424,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 17:45 — 사이클 4 (본 세션 누계 commit 53+ + 사이클 4 의 2 신규 commit `5f36517` (GPLv3) + `f160ba0` (snapshot 6) 반영, 가드레일 20, 텔레그램 송신 30건, HTML 6 + sub-agent 20 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + **GPLv3 라이선스 확정 + visibility 전환 정책** 신규, snapshot 사이클 6 — productization 3.95 + vibe-coding 4.85)
+마지막 갱신: 2026-05-17 18:30 — 사이클 5 (본 세션 누계 commit 55+ + 사이클 5 의 신규 commit `34e8119` (BPE hook sketch) + `5704c8c` (텔레그램 hook sketch + snapshot 7 partial) 반영, 가드레일 22, 텔레그램 송신 32건, HTML 6 + sub-agent 22 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + **BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch** 신규, snapshot 사이클 7 — productization 3.95 + vibe-coding 4.85)

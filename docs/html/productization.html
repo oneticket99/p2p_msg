@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="title" content="TooTalk 제품화 가능성 평가 — Snapshot (사이클 6)">
+<meta name="title" content="TooTalk 제품화 가능성 평가 — Snapshot (사이클 7)">
 <meta name="owner" content="oneticket99">
 <meta name="last_verified" content="2026-05-17">
 <meta name="status" content="active">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 6)</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 7)</title>
 <style>
-  /* 본 스타일은 light theme 의 가독성 최적화 (배경 #fafafa + 텍스트 #1f2937 + accent #2563eb) */
+  /* 본 스타일은 light theme 가독성 최적화 — 배경 #fafafa + 텍스트 #1f2937 + accent #2563eb */
   :root {
     --bg: #fafafa;
     --fg: #1f2937;
@@ -73,7 +73,7 @@
     font-family: "SF Mono", Menlo, Consolas, "D2Coding", monospace;
     font-size: 0.9em;
   }
-  /* 표 정렬 + border + zebra stripe (가독성 강화) */
+  /* 표 정렬 + border + zebra stripe — 가독성 강화 */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -99,13 +99,13 @@
 <body>
 <main>
 
-<!-- 본 문서는 docs/assessments/productization.md 사이클 6 의 정확 등가 HTML -->
+<!-- 본 문서는 docs/assessments/productization.md 사이클 7 의 정확 등가 HTML -->
 <h1>TooTalk 제품화 가능성 평가 (Snapshot)</h1>
 
 <blockquote>
 <p><strong>본 문서는 snapshot 패턴</strong>. 매 task 종료 시점에 전체 rewrite.<br>
 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".</p>
-<p>최근 갱신 시점: 2026-05-17 17:35 (commit <code>5f36517</code> 직후 — 본 세션 누계 27 commit 반영, 사이클 6)<br>
+<p>최근 갱신 시점: 2026-05-17 18:10 (commit <code>34e8119</code> 직후 — 본 세션 누계 31 commit 반영, 사이클 7)<br>
 다음 갱신 시점: 다음 task 종료 시 전체 rewrite</p>
 </blockquote>
 
@@ -117,18 +117,18 @@
 
 <table>
 <thead>
-<tr><th>항목</th><th>점수 (5점)</th><th>직전 → 현재</th><th>근거</th></tr>
+<tr><th>항목</th><th class="num">점수 (5점)</th><th>직전 → 현재</th><th>근거</th></tr>
 </thead>
 <tbody>
-<tr><td>기술 완성도</td><td>3 / 5</td><td>=</td><td>CI 8 job GREEN + wine + SMTP + fork PR strict (변동 없음 — 라이선스 정책 = 코드 미진입)</td></tr>
-<tr><td>시장 적합성</td><td>2.5 / 5</td><td>=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
-<tr><td>차별화 요소</td><td>4.5 / 5</td><td>=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar</td></tr>
-<tr><td>사용자 가치</td><td>3 / 5</td><td>=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
-<tr><td>수익화 모델</td><td>2.5 / 5</td><td>2 → 2.5 ▲</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
-<tr><td>운영 비용</td><td>5 / 5</td><td>=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
-<tr><td>가드레일·자동화</td><td>5 / 5</td><td>=</td><td>20 영구 가드레일 (신규 2 — license-gpl + visibility-transition) + doc-lint 5 + pytest + Playwright + gh API</td></tr>
-<tr><td>세션 간 정합</td><td>5 / 5</td><td>=</td><td>handoff 사이클 3 + snapshot 6 + CheckList drift 차단</td></tr>
-<tr><td><strong>종합</strong></td><td><strong>3.95 / 5</strong></td><td>3.85 → 3.95 ▲</td><td><strong>인프라/문서/QA/차별화/CI/보안/라이선스 완성 — 옵션 B Toonation 통합 즉시 진입 가능 + private 전환 시점 명시</strong></td></tr>
+<tr><td>기술 완성도</td><td class="num">3 / 5</td><td>=</td><td>CI 8 job GREEN + wine + SMTP + fork PR strict (변동 없음 — 라이선스 정책 = 코드 미진입)</td></tr>
+<tr><td>시장 적합성</td><td class="num">2.5 / 5</td><td>=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
+<tr><td>차별화 요소</td><td class="num">4.5 / 5</td><td>=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar</td></tr>
+<tr><td>사용자 가치</td><td class="num">3 / 5</td><td>=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
+<tr><td>수익화 모델</td><td class="num">2.5 / 5</td><td>2 → 2.5 ▲</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
+<tr><td>운영 비용</td><td class="num">5 / 5</td><td>=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
+<tr><td>가드레일·자동화</td><td class="num">5 / 5</td><td>=</td><td>21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch</td></tr>
+<tr><td>세션 간 정합</td><td class="num">5 / 5</td><td>=</td><td>handoff 사이클 3 + snapshot 6 + CheckList drift 차단</td></tr>
+<tr><td><strong>종합</strong></td><td class="num"><strong>3.95 / 5</strong></td><td>3.85 → 3.95 ▲</td><td><strong>인프라/문서/QA/차별화/CI/보안/라이선스 완성 — 옵션 B Toonation 통합 즉시 진입 가능 + private 전환 시점 명시</strong></td></tr>
 </tbody>
 </table>
 
@@ -240,6 +240,16 @@
 <li>self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)</li>
 <li>AGPLv3 = Phase 2 이후 옵션 (network use clause)</li>
 <li>영구 메모리 2 신설 — <code>project_license_gpl.md</code> + <code>project_visibility_transition.md</code></li>
+</ul>
+
+<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시 (신규 사이클 7)</h3>
+<ul>
+<li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
+<li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
+<li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
+<li><code>.claude/settings.json.disabled</code> 신설 — sketch (미활성 패턴)</li>
+<li>다음 BPE 위반 발견 시 = <code>mv .disabled → settings.json</code> 의 즉시 활성 의무</li>
+<li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
 </ul>
 
 <hr>
@@ -474,6 +484,7 @@
 <h2>10. 다음 평가 갱신 트리거</h2>
 
 <p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
+
 <ul>
 <li>기술 완성도 점수 — Phase 1 코드 진입 + dogfooding 시 +0.5~1.0</li>
 <li>누락 기능 표 — 코드 진입 시 항목 제거</li>
@@ -490,6 +501,7 @@
 <hr>
 
 <h2>참조</h2>
+
 <ul>
 <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
 <li>정책: <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a></li>
@@ -497,8 +509,8 @@
 <li>인프라 절차: <a href="../references/ci-self-hosted-setup.md">docs/references/ci-self-hosted-setup.md</a> · <a href="../references/smtp-setup.md">docs/references/smtp-setup.md</a></li>
 <li>실행계획: <a href="../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a></li>
 <li>세션 인계: <a href="../exec-plans/active/2026-05-17-session-handoff.md">docs/exec-plans/active/2026-05-17-session-handoff.md</a></li>
-<li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a></li>
-<li>마크다운 원본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
+<li>동행 snapshot: <a href="../assessments/vibe-coding.md">vibe-coding.md</a></li>
+<li>HTML 등가: <code>docs/html/productization.html</code></li>
 </ul>
 
 </main>
