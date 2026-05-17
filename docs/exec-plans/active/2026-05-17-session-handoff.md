@@ -539,8 +539,9 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
 | 6 | ~~라이선스 결정 — LICENSE 신설~~ | ✅ 완료 (2026-05-17 cycle) | GPLv3 채택 + LICENSE 저장소 루트 (GNU 표준 본문 674 lines). [[project-license-gpl]] + [[project-visibility-transition]] |
 | 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
-| 8 | ~~Agent #16 산출물 reviewer-agent 검토~~ | ✅ **정식 GO** (사이클 11 + 12 + 13) | 사이클 11 CONDITIONAL PASS (P0 SPDX) → 사이클 12 정정 + CONDITIONAL PASS (ARCHITECTURE.html mirror) → 사이클 13 정정 + **PASS 정식 GO**. 14/14 검증 PASS. handoff = `@qa-agent` 회귀 체크리스트 → 코드 진입 |
+| 8 | ~~Agent #16 산출물 5단계 워크플로우 ③ 4단 chain~~ | ✅ **완전 자동 완성** (사이클 11~15) | reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15) + `docs/policies/observability-baseline.md` 정본 신설. Phase 1 dogfooding 진입 readiness 완성 |
 | 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
+| 10 | Phase 1 dogfooding 진입 — RTT/throughput/RSS/disk leak 최초 측정 | 🟡 사용자 직접 GO 대기 | observability-baseline.md §5 의 6 단계 회귀 검증 절차 정합. 데모 시그널링 서버 배포 + 1:1 채팅 round-trip 시점. Phase 1 MVP DoD #1 (RTT &lt; 500ms) + TD-4 (aiortc 약 5Mbps throughput) 최초 측정 의무 |
 
 ### 9.1 잔존 task 진입 가능 (가드레일 통과 후)
 
@@ -550,6 +551,17 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - #19 build.yml 매트릭스 (M5 단계)
 - #20 README 빌드/실행 안내 갱신
 - E2EE (libsignal-protocol wrapping) — Phase 2 진입
+
+### 9.2 사이클 15 후속 별도 task (Phase 1 후반 진행 가능)
+
+- `tests/rtc/` unit test 작성 — `FileSender`·`FileReceiver`·`image_processor`·`_safe_filename`·`_humanize` pytest 케이스 (qa-agent 사이클 13 미커버 영역)
+- `tests/integration/` 부재 — aiortc 실 통합 + DataChannel 점진 send + ACK round-trip + 무결성 SHA-256 e2e (Phase 1 dogfooding 직전 의무)
+- Pillow 의존 함수 실 실행 — `image_processor.py` 의 thumbnail 생성 + 회전 + 압축 (Phase 1 미테스트 영역)
+- Windows 환경 검증 — wine cross-compile build 의 import-smoke 영구 비활성 → 별도 task 의 wine 환경 의 실 실행 검증
+- AC-04-3 100ms 실측 — `FILE_BACKPRESSURE_POLL_MS` 의 실 측정값 정합 (현 50ms default vs README directive 가정 100ms)
+- `app/observability/` 디렉토리 신설 (Phase 2 진입 전) — `logging_adapter.py` (logger prefix 일관 강제 + level 동적 갱신)
+- `FILE_RECV_TIMEOUT_S` 도입 결정 (Phase 2 reliability 강화)
+- `.partial` 임시 파일 자동 cleanup hook (Phase 2 storage 정책)
 
 ---
 
