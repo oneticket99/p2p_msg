@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 13:42 (사이클 1 갱신 — 본 세션 누계 commit 20+ 반영). 최신 commit `b2b5bcb`.
+> 본 인계 시점: 2026-05-17 14:42 (사이클 2 갱신 — 본 세션 누계 commit 28 반영). 최신 commit `67c898a`.
 
 ---
 
@@ -17,14 +17,16 @@ status: active
 - **Watcher 역할** — 보고 Fine-Grained (모든 도구 1:1), 유휴 폴백 `/loop 2m`
 - **서브에이전트 Whitebox** — `run_in_background: true` + 자동 notify
 - **5단계 워크플로우 절대** — 문서 → 검토 → 개발 → QA → 리뷰. ②~⑤ 진입 전 ① 완료 의무
-- **14 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선
+- **16 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 2 — phase1-priority + remote-control + auth-otp + design-html)
 - **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
 - **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
 - **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
-- **DB = MariaDB**, GUI = PyQt6, Python = 3.13, CI = self-hosted, repo = public
+- **DB = MariaDB 7 테이블** (users + email_verification + password_reset + rooms + peers + file_meta + messages), GUI = PyQt6, Python = 3.13, CI = self-hosted
+- **회원가입 + 이메일 OTP 인증 필수** (Phase 1 의무 — bcrypt 12 + OTP 3분 + 아이디/비번 찾기, [[project-auth-email-otp-required]])
+- **Phase 3 막바지 원격 데스크탑 제어 차별화** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어, [[project-phase2-remote-control-differentiator]])
 - **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
 - **HTML 동시 정리 6종** — Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding
-- **평가 snapshot 2종** — productization (2.6/5) + vibe-coding (4.5/5) 매 task 종료 시 전체 rewrite
+- **평가 snapshot 2종** — productization (3.6/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 4 완료)
 
 ---
 
@@ -68,7 +70,7 @@ status: active
 
 ---
 
-## 4. 영구 가드레일 인덱스 14건 (hard constraint)
+## 4. 영구 가드레일 인덱스 16건 (hard constraint)
 
 본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
@@ -87,6 +89,8 @@ status: active
 | `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 본 인계 문서 작성 트리거 |
 | `feedback_design_interactive_html.md` | **신규 본 세션**. 디자인 directive HTML interactive 권장 |
 | `project_phase1_completion_priority.md` | **신규 본 세션**. Phase 1 기본 8 완성 후 추가 차별화 진입 (scope creep 차단) |
+| `project_phase2_remote_control_differentiator.md` | **신규 본 세션 (사이클 2)**. Phase 3 막바지 친구간 원격 데스크탑 제어 차별화 (P5/P6 OBS 도움) |
+| `project_auth_email_otp_required.md` | **신규 본 세션 (사이클 2)**. Phase 1 회원가입 + 이메일 OTP 필수 (bcrypt 12 + 3분 + DB 3 테이블 + 아이디/비번 찾기) |
 | `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
 
 ---
@@ -103,14 +107,16 @@ status: active
 | 이벤트 루프 | qasync | 2026-05-17 |
 | 시그널링 | aiohttp WebSocket | 2026-05-17 |
 | 시그널링 데모 호스트 | `114.207.112.73` (root / 보안 deprioritized) | 2026-05-17 |
-| **DB** | **MariaDB** (`DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASS`/`DB_NAME`) + asyncmy + InnoDB redo log + binlog PITR | 2026-05-17 |
+| **DB** | **MariaDB 7 테이블** (auth 3: users + email_verification + password_reset / 대화 4: rooms + peers + file_meta + messages) + asyncmy + bcrypt 12 + InnoDB redo log + binlog PITR | 2026-05-17 |
+| **회원가입** | 이메일 OTP 인증 필수 (Phase 1 의무) — email + username + password 필수 + nickname + avatar 선택 + OTP 3분 + 5회/30분 차단 + 아이디/비번 찾기 (reset_token UUID4 30분) | 2026-05-17 |
+| **차별화** | Phase 3 막바지 친구간 원격 데스크탑 제어 (패턴 A 도움 + 패턴 B 제어, P5/P6 OBS 도움 시나리오) | 2026-05-17 |
 | 빌드 | macOS + Windows · PyInstaller + zip · 인증서 미사용 | 2026-05-17 |
 | CI | **self-hosted** runner 매트릭스 (macOS arm64 + Windows x64) | 2026-05-17 |
 | GitHub | `oneticket99/p2p_msg` **public** | 2026-05-17 |
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
 | HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
-| 평가 snapshot | 2종 (productization 2.6/5 + vibe-coding 4.5/5) | 2026-05-17 |
+| 평가 snapshot | 2종 (productization 3.6/5 + vibe-coding 4.85/5, 사이클 4 완료) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | 라이선스 | 미확정 (Phase 1 후반 확정) | — |
 
@@ -145,20 +151,27 @@ status: active
 
 ---
 
-## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 13:42)
+## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 14:42)
 
-### 8.1 누계 commit (본 세션 20건, 직전 인계 시점 = `f500104`)
+### 8.1 누계 commit (본 세션 28건, 직전 인계 시점 = `f500104`)
 
 ```text
-b2b5bcb  docs(agents): AGENTS PR 게이트 — build.yml (M5) 행 추가
+67c898a  docs: 평가 snapshot 사이클 4 (productization 3.6 + vibe-coding 4.85)
+5486c72  docs(html): HTML 3종 재생성 — auth + wireframe + 모듈 책임
+ec3f90c  docs(auth): auth 인프라 정책 본문 5 — P3 재조정 + DB 4→7 + 모듈 + wireframe
+17a2e98  feat(auth): 회원가입 + 이메일 OTP 인증 정책 — Phase 1 필수
+247e94d  feat(product): 차별화 계획 정리 — 친구간 원격 데스크탑 제어 (Phase 3 막바지)
+6e45f89  docs: 평가 snapshot 사이클 3 — productization 2.9 + vibe-coding 4.7
+0fd2bcf  docs(handoff): 세션 인계 사이클 1 전체 rewrite
+b2b5bcb  docs(agents): AGENTS PR 게이트 — build.yml (M5)
 ee10273  docs(checklist): CheckList §2 진행률 표 drift 차단 갱신
 050acca  feat(qa): pytest 인프라 + Playwright E2E + DESIGN UI 디자인 시스템 + HTML
-86868b9  docs: 평가 snapshot 사이클 2 동시 갱신
+86868b9  docs: 평가 snapshot 사이클 2
 461f196  docs(frontend): FRONTEND 색상 변수 표 swatch 가시화
-dc9170f  docs(policies): docs/policies/ 3 문서 신설 (깨진 링크 12 → 0)
-96ad8e4  docs(release): .github/pull_request_template.md 신설
+dc9170f  docs(policies): docs/policies/ 3 문서 (깨진 링크 12 → 0)
+96ad8e4  docs(release): .github/pull_request_template.md
 db0b634  chore(tools): doc-lint.sh bash 3.2 호환 + 1인칭/3인칭 검사
-794c251  docs: vibe-coding snapshot 갱신 + HTML 2종 + 가드레일 강화
+794c251  docs: vibe-coding snapshot + HTML 2 + 가드레일 강화
 26f60ed  fix(guardrail): 1인칭/3인칭 전수 회수 + 텔레그램 가드레일 강제
 5d898b2  docs: docs/html/ 5 HTML + CLAUDE.md §10-6/7
 87e71e3  fix(policy): RELIABILITY.md MariaDB 회수 (13 위반)
@@ -166,10 +179,10 @@ db0b634  chore(tools): doc-lint.sh bash 3.2 호환 + 1인칭/3인칭 검사
 6ab9952  docs: assessments productization + vibe-coding 신설
 aff2cde  fix(policy): ARCHITECTURE.md MariaDB 회수 (4 위반)
 34d4707  fix(app): app/core/config.py MariaDB 회수 (5필드)
-0b0e010  docs: ci-self-hosted-setup.md 신설
-6f39d32  ci: doc-gardener.yml 신설
-76313fe  ci: docs-lint.yml 신설
-df7f581  ci: ci.yml 신설 (게이트 7종 self-hosted 매트릭스)
+0b0e010  docs: ci-self-hosted-setup.md
+6f39d32  ci: doc-gardener.yml
+76313fe  ci: docs-lint.yml
+df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 ```
 
 ### 8.2 정본 §K 18 동결 — 유지
@@ -213,7 +226,25 @@ df7f581  ci: ci.yml 신설 (게이트 7종 self-hosted 매트릭스)
 - `tools/doc-lint.sh` (5 검사 — BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭, bash 3.2 호환)
 - `tools/claude-telegram.sh` (Telegram CLI wrapper)
 - `.markdownlint.json` (MD013/MD025/MD032/MD060 완화 + MD033 span/div 허용)
-- 영구 메모리 14종 (신규 본 세션 4 — no-self-other-pronoun + doc-perfection-before-code + design-interactive-html + phase1-completion-priority)
+- 영구 메모리 **16종** (신규 본 세션 6 — no-self-other-pronoun + doc-perfection-before-code + design-interactive-html + phase1-completion-priority + **phase2-remote-control-differentiator** + **auth-email-otp-required**)
+
+### 8.8 회원가입 + 이메일 OTP 정책 (Phase 1 필수, 사이클 2 신규)
+
+- FR-11 회원가입 (P0 / M2) — email + username + password 필수 + nickname + avatar 선택 + OTP 3분
+- FR-12 로그인 (P0 / M2) — email + password + bcrypt 검증
+- FR-13 아이디/비번 찾기 (P0 / M2) — email 미존재 → "가입된 내역 없음" / 일치 → reset_token UUID4 + 30분
+- DB 3 테이블 (users + email_verification + password_reset)
+- SECURITY §9-2 (bcrypt 12 + OTP 5회/30분 차단 + 60초 재발송 rate-limit + SMTP TLS + STRIDE 6)
+- 페르소나 P3 재조정 ("가입 마찰 0" → "가입 마찰 최소", 1회 가입 후 영구 이용)
+
+### 8.9 차별화 — 원격 데스크탑 제어 (Phase 3 막바지, 사이클 2 신규)
+
+- 패턴 A — 원격 도움 요청 (피요청자 = 원격 제어 대상, P5 OBS 설정 시나리오)
+- 패턴 B — 원격 제어 요청 (요청자 = 원격 제어 주체, P6 가 P5 컴퓨터 제어)
+- 권한 모델 — 친구 추가 사전 + 명시 수락 모달 + 긴급 ESC + 감사 로그
+- 기술 — WebRTC video track 추가 + 화면 캡처 (mss/Qt QScreen) + 입력 주입 (pynput/pywinauto/pyobjc) + x264/VP9/AV1 인코딩
+- 페르소나 P5 (라이브 크리에이터) + P6 (기술 도움 제공자) 신규
+- Toonation 옵션 B (★★★★★ 권장도 1순위) 핵심 차별화
 
 ### 8.8 텔레그램 강제 활성
 
@@ -274,4 +305,4 @@ df7f581  ci: ci.yml 신설 (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 13:42 — 사이클 1 갱신 (본 세션 누계 commit 20+ 반영, 가드레일 14, 텔레그램 송신 14건, HTML 6, pytest 인프라, 정책 본문 3)
+마지막 갱신: 2026-05-17 14:42 — 사이클 2 갱신 (본 세션 누계 commit 28 반영, 가드레일 16, 텔레그램 송신 24건, HTML 6, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, snapshot 사이클 4 — productization 3.6 + vibe-coding 4.85, sub-agent 누계 16 spawn)
