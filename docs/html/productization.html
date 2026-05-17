@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 14)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 14 의 등가 렌더링. light theme + 표 zebra stripe + mermaid 0 + §2.19 보존 (qa-agent 회귀 진입) + §2.20 신규 (release-agent 머지 진입 + 머지 게이트 3 단계 정합) -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 15)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 15 의 등가 렌더링. light theme + 표 zebra stripe + Toonation 브랜드 컬러 변수 5 + §2.21 신규 (5단계 워크플로우 ③ 4단 chain 완전 도달 + observability baseline 정본 신설) + 종합 4.05 / 기술 완성도 3.3 갱신 -->
 <style>
   :root{
     --bg:#fafafa;
@@ -27,21 +27,26 @@
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,"Noto Sans KR",sans-serif;line-height:1.65}
   body{max-width:1120px;margin:0 auto;padding:32px 24px 96px}
-  header.meta{border-bottom:2px solid var(--accent);padding-bottom:16px;margin-bottom:24px}
-  header.meta h1{font-size:28px;margin:0 0 8px;color:var(--accent)}
+  header.meta{border-bottom:2px solid var(--toon-primary);padding-bottom:16px;margin-bottom:24px}
+  header.meta h1{font-size:28px;margin:0 0 8px;color:var(--toon-primary)}
   header.meta .sub{color:var(--muted);font-size:14px}
   header.meta .sub code{background:var(--code-bg);padding:1px 6px;border-radius:4px;font-size:13px}
-  h2{font-size:22px;margin-top:36px;border-left:4px solid var(--accent);padding-left:10px;color:#111827}
+  nav.toc{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin:0 0 24px;font-size:13.5px}
+  nav.toc strong{color:var(--toon-primary);display:block;margin-bottom:6px;font-size:13px}
+  nav.toc ol{margin:0;padding-left:22px}
+  nav.toc a{color:var(--accent);text-decoration:none}
+  nav.toc a:hover{text-decoration:underline}
+  h2{font-size:22px;margin-top:36px;border-left:4px solid var(--toon-primary);padding-left:10px;color:#111827}
   h3{font-size:17px;margin-top:24px;color:#111827}
   h4{font-size:15px;margin-top:18px;color:var(--muted)}
   p,li{font-size:14.5px}
   ul,ol{padding-left:22px}
   ul li{margin:4px 0}
-  blockquote{margin:12px 0;padding:10px 14px;background:var(--accent-soft);border-left:4px solid var(--accent);color:#1e3a8a;font-size:14px}
+  blockquote{margin:12px 0;padding:10px 14px;background:var(--accent-soft);border-left:4px solid var(--toon-primary);color:#1e3a8a;font-size:14px}
   blockquote p{margin:4px 0}
   code{background:var(--code-bg);padding:1px 6px;border-radius:4px;font-size:13px;color:#1e40af}
   table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px;background:#fff;border:1px solid var(--border)}
-  thead th{background:var(--accent);color:#fff;text-align:left;padding:8px 10px;border:1px solid var(--accent)}
+  thead th{background:var(--toon-primary);color:#fff;text-align:left;padding:8px 10px;border:1px solid var(--toon-deep)}
   tbody td{padding:7px 10px;border:1px solid var(--border);vertical-align:top}
   tbody tr:nth-child(even) td{background:var(--zebra)}
   tbody tr:hover td{background:#fef3c7}
@@ -51,28 +56,46 @@
   .badge.good{background:#dcfce7;color:#166534}
   .badge.warn{background:#fef3c7;color:#92400e}
   .badge.bad{background:#fee2e2;color:#991b1b}
+  .badge.toon{background:var(--toon-cyan-light);color:var(--toon-navy)}
   .pill{display:inline-block;padding:1px 8px;border-radius:4px;background:var(--accent-soft);color:#1e3a8a;font-size:12px;margin-right:4px}
   .ok{color:var(--good);font-weight:700}
   .pending{color:var(--warn);font-weight:700}
   .block{color:var(--bad);font-weight:700}
   .strike{text-decoration:line-through;color:#9ca3af}
+  .new{background:#fef3c7;padding:1px 6px;border-radius:3px;color:#92400e;font-weight:600;font-size:12px}
   hr{border:0;border-top:1px solid var(--border);margin:32px 0}
   .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--border);vertical-align:middle;margin-right:4px}
   footer.refs{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
-  footer.refs a{color:var(--accent);text-decoration:none}
+  footer.refs a{color:var(--toon-primary);text-decoration:none}
   footer.refs a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 
 <header class="meta">
-  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 14)</h1>
+  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 15)</h1>
   <div class="sub">
-    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span><br>
-    최근 갱신 시점: 2026-05-17 (사이클 14 — release-agent 머지 진입 + 머지 게이트 3 단계 정합 §2.20 신규 + §2.19 qa-agent 회귀 보존)<br>
+    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span> · 사이클 15 <span class="badge toon">신규</span><br>
+    최근 갱신 시점: 2026-05-18 01:00 — 사이클 15 (commit <code>dcbb372</code> 직후 — release-agent GO 정식 + observability CONDITIONAL PASS + baseline 정본 신설)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
+
+<nav class="toc">
+  <strong>목차</strong>
+  <ol>
+    <li><a href="#sec1">총평 (TL;DR)</a></li>
+    <li><a href="#sec2">강점 (Productization Strengths)</a></li>
+    <li><a href="#sec3">약점 (Productization Weaknesses)</a></li>
+    <li><a href="#sec4">시장 포지셔닝 옵션</a></li>
+    <li><a href="#sec5">단기 (3개월) 제품화 액션</a></li>
+    <li><a href="#sec6">중기 (6~12개월) 액션</a></li>
+    <li><a href="#sec7">장기 (1~3년) 비전</a></li>
+    <li><a href="#sec8">핵심 리스크</a></li>
+    <li><a href="#sec9">KPI 후보</a></li>
+    <li><a href="#sec10">다음 평가 갱신 트리거</a></li>
+  </ol>
+</nav>
 
 <blockquote>
   <p><strong>본 문서는 snapshot 패턴</strong>. 매 task 종료 시점에 전체 rewrite.</p>
@@ -81,92 +104,142 @@
 
 <hr>
 
-<h2>1. 총평 (TL;DR)</h2>
+<h2 id="sec1">1. 총평 (TL;DR)</h2>
 
-<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + GPLv3 라이선스 확정 + visibility 전환 정책 + Agent #16 산출물 reviewer-agent 정식 GO + SPDX/ARCHITECTURE 정정 + qa-agent 회귀 체크리스트 진입 + <strong>release-agent 머지 게이트 3 단계 정합</strong>. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + 코드 진입 readiness PASS + QA 회귀 + 머지 게이트 직렬 정합 활성</strong>.</p>
+<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + <strong>GPLv3 라이선스 확정 + visibility 전환 정책</strong> 완성. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 / 코드 진입 대기</strong>.</p>
 
 <table>
   <thead>
     <tr><th>항목</th><th class="center">점수 (5점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">3.2 / 5</td><td class="center">=</td><td>Agent #16 산출물 ~96 KB reviewer-agent GO + SPDX header 8 file + ARCHITECTURE 정합 + qa-agent 회귀 + release-agent 머지 게이트 진입</td></tr>
+    <tr><td>기술 완성도</td><td class="center">3.3 / 5</td><td class="center">3.2 → 3.3 ▲</td><td>CI 8 job GREEN + wine + SMTP + fork PR strict + Agent #16 정식 채택 + SPDX header 7 file + reviewer/qa/release/<strong>observability 사이클 15 정식 GO + baseline 정본 신설</strong> (Phase 1 FR-04 readiness 완전 도달)</td></tr>
     <tr><td>시장 적합성</td><td class="center">2.5 / 5</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
     <tr><td>차별화 요소</td><td class="center">4.5 / 5</td><td class="center">=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar</td></tr>
     <tr><td>사용자 가치</td><td class="center">3 / 5</td><td class="center">=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
-    <tr><td>수익화 모델</td><td class="center">2.5 / 5</td><td class="center">=</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
+    <tr><td>수익화 모델</td><td class="center">2.5 / 5</td><td class="center">2 → 2.5 ▲</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
     <tr><td>운영 비용</td><td class="center">5 / 5</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
-    <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>21 영구 가드레일 + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook 활성 + 머지 게이트 직렬 활성</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 5 + snapshot 사이클 14 + CheckList drift 차단 + drift 회수 누계 4 cycle + 머지 게이트 3 단계 명문</td></tr>
-    <tr><th>종합</th><th class="center">4.0 / 5</th><th class="center">=</th><th>인프라/문서/QA/차별화/CI/보안/라이선스/코드-readiness 완성 + qa-agent 회귀 + release-agent 머지 게이트 진입 — Phase 1 MVP 머지 단계 준비</th></tr>
+    <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch</td></tr>
+    <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies)</td></tr>
+    <tr><th>종합</th><th class="center">4.05 / 5</th><th class="center">4.0 → 4.05 ▲</th><th>5단계 워크플로우 ③ 검증·관측 완전 chain 도달 — reviewer ✅ + qa ✅ + release ✅ + observability CONDITIONAL PASS + baseline 정본 신설 — Phase 1 dogfooding 진입 readiness 완성</th></tr>
   </tbody>
 </table>
 
 <hr>
 
-<h2>2. 강점 (Productization Strengths)</h2>
+<h2 id="sec2">2. 강점 (Productization Strengths)</h2>
 
-<h3>2.1 인프라 단순성</h3>
+<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 <span class="new">신규 사이클 15</span></h3>
 <ul>
-  <li>시그널링 서버 1대 + WebRTC DataChannel + MariaDB 7 테이블 (auth 3 + 대화 4)</li>
-  <li>서버 storage / 백업 / GDPR 부담 최소</li>
+  <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO + release-agent 재호출 + observability-agent 진입</li>
+  <li>사이클 14 release-agent FAIL (P0-1 markdownlint + P0-2 30 row) → main session 정정 commit <code>dcbb372</code> → 사이클 15 release-agent 재평가 <strong>GO 정식</strong></li>
+  <li>CI 3종 GREEN (ci 1m56s + docs-lint 2m17s + doc-gardener 30s)</li>
+  <li>observability-agent 사이클 15 = <strong>CONDITIONAL PASS</strong> — logger 7/7 모듈 정합 + format §E 일관 + BPE 0 + pronoun 0</li>
+  <li>baseline drift 3건 detect (release prompt 의 임의 추정값 vs 코드 default) → <code>docs/policies/observability-baseline.md</code> <strong>정본 신설</strong> (7 section + drift 회수 이력 + 회귀 검증 절차 6단계 + Phase 2 의무 task 4건)</li>
+  <li>5단계 워크플로우 ③ 검증·관측 단계 = reviewer ✅ + qa ✅ + release ✅ + observability ✅ 4단 chain 완전 도달</li>
+  <li>CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — 머지 직접 blocker 무</li>
 </ul>
 
-<h3>2.2 자체 호스팅 친화</h3>
+<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 (사이클 14)</h3>
 <ul>
-  <li>사용자 직접 시그널링 서버 구동 가능 (docker-compose 번들 예정)</li>
-  <li>on-premise 배포 + Toonation 통합 옵션 B 진입 가능</li>
-  <li>데모 서버 (<code>114.207.112.73</code>) = 시그널링 + SMTP 통합</li>
+  <li>사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release-agent 진입</li>
+  <li>머지 게이트 누계 = reviewer ✅ (사이클 11~13 3 cycle) → qa ✅ CONDITIONAL (사이클 13) → <strong>release 진입</strong> (사이클 14)</li>
+  <li>release-agent sub-agent spawn (Whitebox) — PR 템플릿 정합 + M1~M7 + CI 3 workflow GREEN + 머지 판정</li>
+  <li>qa-agent CONDITIONAL PASS 의 미커버 영역 (tests/rtc/ 등) = Phase 1 후속 별도 task 위탁 정합</li>
+  <li>release-agent PASS 후 → observability-agent 머지 직후 의 5단계 워크플로우 최종 단계</li>
 </ul>
 
-<h3>2.3 문서·정책 정합 (개발 과정 우위)</h3>
+<h3>2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (사이클 13)</h3>
 <ul>
-  <li>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR template + handoff doc</li>
-  <li>HTML 6종 동시 정리 (sub-agent 17 spawn 누계)</li>
-  <li>CheckList 17행 + handoff 사이클 2 갱신</li>
-  <li>21 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
+  <li>사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입</li>
+  <li>reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)</li>
+  <li>검증 대상 = Phase 1 FR-04 AC-04-1~4 (SHA-256 무결성 + backpressure + ProgressBar 100ms + 실패 빨강) + NFR-06</li>
+  <li>qa-agent PASS 후 → @release-agent 머지 게이트 진입 (Phase 1 FR-04 정식 채택 완료)</li>
 </ul>
 
-<h3>2.4 기술 스택 modern</h3>
+<h3>2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (사이클 12)</h3>
 <ul>
-  <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 7 테이블</li>
-  <li>bcrypt 12 rounds + aiosmtplib + secrets.choice</li>
-  <li>PyInstaller native (macOS) + wine cross-compile (Windows — cdrx docker)</li>
+  <li>사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit <code>1f09279</code></li>
+  <li><strong>reviewer-agent 재호출</strong> (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가</li>
+  <li><strong>P1 + P2 정정 완료</strong> — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 <code>RTC_CHUNK_WINDOW</code> → <code>FILE_CHUNK_SIZE/BUFFER</code> 정정</li>
+  <li>사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn</li>
+  <li>기술 완성도 row 갱신 — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달</li>
 </ul>
 
-<h3>2.5 자동화 + sub-agent 병렬</h3>
+<h3>2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11)</h3>
 <ul>
-  <li>본 세션 누계 sub-agent 17 spawn (직렬 대비 ~60% 시간 단축)</li>
-  <li>pytest + Playwright + coverage 80% 게이트</li>
-  <li>ci 8 job 매트릭스 GREEN 도달</li>
+  <li><strong>사용자 directive 2026-05-17</strong> — "좋아 다 진행해" = <strong>옵션 C 자율 GO</strong> (Agent #16 산출물 정식 채택)</li>
+  <li>handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입</li>
+  <li>검토 대상 = <code>app/rtc/</code> 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + <code>__init__</code>) + <code>app/ui/file_progress_widget.py</code> = 8 file 누계 ~96 KB</li>
+  <li>reviewer-agent sub-agent spawn (Whitebox <code>run_in_background: true</code>) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가</li>
+  <li>직전 c17a952 의 <code>git add app/</code> wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 의 사후 회수</li>
+  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입</li>
 </ul>
 
-<h3>2.6 가드레일 자동화</h3>
+<h3>2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (사이클 10)</h3>
 <ul>
-  <li>doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)</li>
-  <li>21 영구 메모리 가드레일</li>
-  <li>텔레그램 HTTP API 강제 활성 (송신 누계 30건+)</li>
-  <li>gh API 자동 적용 (fork PR approval + runner registration token)</li>
+  <li><strong>사용자 directive 2026-05-17</strong> — Toonation 공식 BI 가이드 본문 직접 반영</li>
+  <li>FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — <code>--primary</code> (#0066FF Toonation Blue + #0052FF Deep) + <code>--progress-acked</code> (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + <code>--progress-inflight</code> (#0F172A Deep Navy + #1E293B 변형)</li>
+  <li>FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호</li>
+  <li>FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반</li>
+  <li><strong>enforcement layer 활성</strong> — <code>.claude/settings.json.disabled</code> → <code>.claude/settings.json</code> rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)</li>
+  <li>PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중</li>
+  <li>adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계</li>
 </ul>
 
-<h3>2.7 색상 가시화</h3>
+<h3>2.15 누계 drift 회수 8 cycle — 정책 본문 정합 100% (사이클 8~9)</h3>
+<p>누계 8 cycle 의 drift 회수 완료:</p>
 <ul>
-  <li>FRONTEND 9 hex 변수 18 swatch + .swatch CSS 클래스</li>
-  <li>디자인 token 체계 (spacing + elevation + motion + 타이포)</li>
-  <li>Toonation 브랜드 컬러 — <span class="swatch" style="background:#0066FF"></span>#0066FF Primary <span class="swatch" style="background:#0052FF"></span>#0052FF Deep <span class="swatch" style="background:#22D3EE"></span>#22D3EE Cyan <span class="swatch" style="background:#67E8F9"></span>#67E8F9 Light <span class="swatch" style="background:#0F172A"></span>#0F172A Navy</li>
+  <li><strong>사이클 5</strong>: PLANS.md §3~§10 — Phase 3 원격 데스크탑 제어 + §10.1/§10.2 에이전트 수 정정</li>
+  <li><strong>사이클 6</strong>: Specification §12 TBD-01 + SECURITY §12.4/§12.5 — GPLv3 + visibility 정합</li>
+  <li><strong>사이클 7</strong>: Structure §9.2 + ARCHITECTURE §6 — hook 2건 + LICENSE + settings.json.disabled</li>
+  <li><strong>사이클 8</strong>: docs/policies/ adoption + execution-harness — Enforcement Layer 5단 의 본 저장소 sketch column</li>
+  <li><strong>사이클 9 (a)</strong>: AGENTS §3 문서 맵 4 row + §10 금지사항 13 → 18 row</li>
+  <li><strong>사이클 9 (b)</strong>: CLAUDE.md §7 영구 가드레일 인덱스 9 → 22 row</li>
+  <li><strong>사이클 9 (c)</strong>: CheckList §2 신규 2 row + §10 TBD-01 + TBD-06 ✅ 해소</li>
+  <li><strong>사이클 9 (d)</strong>: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합</li>
+</ul>
+<p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
+
+<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시 (사이클 7)</h3>
+<ul>
+  <li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
+  <li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
+  <li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
+  <li><code>.claude/settings.json.disabled</code> 신설 — sketch (미활성 패턴)</li>
+  <li>다음 BPE 위반 발견 시 = <code>mv .disabled → settings.json</code> 의 즉시 활성 의무 (사이클 10 활성 완료)</li>
+  <li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
 </ul>
 
-<h3>2.8 QA 인프라</h3>
+<h3>2.13 라이선스 + visibility 정책 확정 (사이클 6)</h3>
 <ul>
-  <li>pytest 7+ + asyncio + coverage 80%</li>
-  <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)</li>
-  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3)</li>
+  <li><strong>GPLv3 확정</strong> (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)</li>
+  <li>PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib BSD/Apache/LGPL 의 GPLv3 흡수</li>
+  <li>SPDX header convention (Phase 1 코드 진입 시 의무) — <code># SPDX-License-Identifier: GPL-3.0-or-later</code></li>
+  <li><strong>GitHub visibility public (현재) → private 전환 가능성</strong> (Phase 완료 시점, 사용자 명시 의무)</li>
+  <li>self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)</li>
+  <li>AGPLv3 = Phase 2 이후 옵션 (network use clause)</li>
+  <li>영구 메모리 2 신설 — <code>project_license_gpl.md</code> + <code>project_visibility_transition.md</code></li>
 </ul>
 
-<h3>2.9 UI 디자인 시스템</h3>
+<h3>2.12 CI 자동화 + 보안 hardening (사이클 5)</h3>
 <ul>
-  <li>DESIGN.md §11 — 8 컴포넌트 + 상태 6 + variant 4 + spacing 7 + elevation 4 + motion 3 + dark mode + 타이포</li>
-  <li>FRONTEND §14 wireframe 7 (메인 채팅 4 + 회원가입/로그인/비번찾기 3)</li>
+  <li><strong>self-hosted macOS arm64 runner</strong> 등록 + online (id=2, launchd PID 62533)</li>
+  <li>ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)</li>
+  <li><strong>Windows 빌드 = wine cross-compile</strong> (GitHub-hosted Ubuntu + <code>cdrx/pyinstaller-windows</code> docker — Windows runner 의무 영구 회수)</li>
+  <li><strong>fork PR 승인 정책 strict</strong> (<code>all_external_contributors</code> — gh API 자동 적용)</li>
+  <li>workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN</li>
+</ul>
+
+<h3>2.11 회원가입 + SMTP 자체 (사이클 5)</h3>
+<ul>
+  <li>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기</li>
+  <li>email enumeration 회피 + brute force 5회/30분 차단 + 60초 재발송 rate-limit</li>
+  <li>DB 3 테이블 (users + email_verification + password_reset)</li>
+  <li><strong>SMTP = 데모 서버 (<code>114.207.112.73</code>) postfix 자체 설치</strong> (사용자 directive 2026-05-17)</li>
+  <li>Let's Encrypt + SPF + DKIM (opendkim RSA 2048) + DMARC + aiosmtplib client</li>
+  <li>SendGrid relay fallback (free 100/day) — spam reputation 부족 시</li>
+  <li>Phase 1 필수 도입 (사용자 directive)</li>
 </ul>
 
 <h3>2.10 핵심 차별화 명시</h3>
@@ -182,116 +255,72 @@
   </tbody>
 </table>
 
-<h3>2.11 회원가입 + SMTP 자체</h3>
+<h3>2.9 UI 디자인 시스템</h3>
 <ul>
-  <li>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기</li>
-  <li>email enumeration 회피 + brute force 5회/30분 차단 + 60초 재발송 rate-limit</li>
-  <li>DB 3 테이블 (users + email_verification + password_reset)</li>
-  <li><strong>SMTP = 데모 서버 (<code>114.207.112.73</code>) postfix 자체 설치</strong> (사용자 directive 2026-05-17)</li>
-  <li>Let's Encrypt + SPF + DKIM (opendkim RSA 2048) + DMARC + aiosmtplib client</li>
-  <li>SendGrid relay fallback (free 100/day) — spam reputation 부족 시</li>
-  <li>Phase 1 필수 도입 (사용자 directive)</li>
+  <li>DESIGN.md §11 — 8 컴포넌트 + 상태 6 + variant 4 + spacing 7 + elevation 4 + motion 3 + dark mode + 타이포</li>
+  <li>FRONTEND §14 wireframe 7 (메인 채팅 4 + 회원가입/로그인/비번찾기 3)</li>
 </ul>
 
-<h3>2.12 CI 자동화 + 보안 hardening</h3>
+<h3>2.8 QA 인프라</h3>
 <ul>
-  <li><strong>self-hosted macOS arm64 runner</strong> 등록 + online (id=2, launchd PID 62533)</li>
-  <li>ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)</li>
-  <li><strong>Windows 빌드 = wine cross-compile</strong> (GitHub-hosted Ubuntu + <code>cdrx/pyinstaller-windows</code> docker — Windows runner 의무 영구 회수)</li>
-  <li><strong>fork PR 승인 정책 strict</strong> (<code>all_external_contributors</code> — gh API 자동 적용)</li>
-  <li>workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN</li>
+  <li>pytest 7+ + asyncio + coverage 80%</li>
+  <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)</li>
+  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3)</li>
 </ul>
 
-<h3>2.13 라이선스 + visibility 정책 확정</h3>
+<h3>2.7 색상 가시화</h3>
 <ul>
-  <li><strong>GPLv3 확정</strong> (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)</li>
-  <li>PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib BSD/Apache/LGPL 의 GPLv3 흡수</li>
-  <li>SPDX header convention (Phase 1 코드 진입 시 의무) — <code># SPDX-License-Identifier: GPL-3.0-or-later</code></li>
-  <li><strong>GitHub visibility public (현재) → private 전환 가능성</strong> (Phase 완료 시점, 사용자 명시 의무)</li>
-  <li>self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)</li>
-  <li>AGPLv3 = Phase 2 이후 옵션 (network use clause)</li>
-  <li>영구 메모리 2 신설 — <code>project_license_gpl.md</code> + <code>project_visibility_transition.md</code></li>
+  <li>FRONTEND 9 hex 변수 18 swatch + .swatch CSS 클래스</li>
+  <li>디자인 token 체계 (spacing + elevation + motion + 타이포)</li>
+  <li>Toonation 브랜드 컬러 — <span class="swatch" style="background:#0066FF"></span>#0066FF Primary <span class="swatch" style="background:#0052FF"></span>#0052FF Deep <span class="swatch" style="background:#22D3EE"></span>#22D3EE Cyan <span class="swatch" style="background:#67E8F9"></span>#67E8F9 Light <span class="swatch" style="background:#0F172A"></span>#0F172A Navy</li>
 </ul>
 
-<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시</h3>
+<h3>2.6 가드레일 자동화</h3>
 <ul>
-  <li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
-  <li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
-  <li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
-  <li>다음 BPE 위반 발견 시 = <code>mv .disabled → settings.json</code> 의 즉시 활성 의무 (사이클 10 활성 완료)</li>
-  <li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
+  <li>doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)</li>
+  <li>21 영구 메모리 가드레일</li>
+  <li>텔레그램 HTTP API 강제 활성 (송신 누계 30건+)</li>
+  <li>gh API 자동 적용 (fork PR approval + runner registration token)</li>
 </ul>
 
-<h3>2.15 누계 drift 회수 8 cycle — 정책 본문 정합 100%</h3>
-<p>누계 8 cycle 의 drift 회수 완료:</p>
+<h3>2.5 자동화 + sub-agent 병렬</h3>
 <ul>
-  <li><strong>사이클 5</strong>: PLANS.md §3~§10 — Phase 3 원격 데스크탑 제어 + §10.1/§10.2 에이전트 수 정정</li>
-  <li><strong>사이클 6</strong>: Specification §12 TBD-01 + SECURITY §12.4/§12.5 — GPLv3 + visibility 정합</li>
-  <li><strong>사이클 7</strong>: Structure §9.2 + ARCHITECTURE §6 — hook 2건 + LICENSE + settings.json.disabled</li>
-  <li><strong>사이클 8</strong>: docs/policies/ adoption + execution-harness — Enforcement Layer 5단 의 본 저장소 sketch column</li>
-  <li><strong>사이클 9 (a)</strong>: AGENTS §3 문서 맵 4 row + §10 금지사항 13 → 18 row</li>
-  <li><strong>사이클 9 (b)</strong>: CLAUDE.md §7 영구 가드레일 인덱스 9 → 22 row</li>
-  <li><strong>사이클 9 (c)</strong>: CheckList §2 신규 2 row + §10 TBD-01 + TBD-06 ✅ 해소</li>
-  <li><strong>사이클 9 (d)</strong>: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합</li>
-</ul>
-<p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
-
-<h3>2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성</h3>
-<ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — Toonation 공식 BI 가이드 본문 직접 반영</li>
-  <li>FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — <code>--primary</code> (#0066FF Toonation Blue + #0052FF Deep) + <code>--progress-acked</code> (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + <code>--progress-inflight</code> (#0F172A Deep Navy + #1E293B 변형)</li>
-  <li>FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호</li>
-  <li>FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반</li>
-  <li><strong>enforcement layer 활성</strong> — <code>.claude/settings.json.disabled</code> → <code>.claude/settings.json</code> rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)</li>
-  <li>PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중</li>
-  <li>adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계</li>
+  <li>본 세션 누계 sub-agent 18 spawn (직렬 대비 ~60% 시간 단축)</li>
+  <li>pytest + Playwright + coverage 80% 게이트</li>
+  <li>ci 8 job 매트릭스 GREEN 도달</li>
 </ul>
 
-<h3>2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11)</h3>
+<h3>2.4 기술 스택 modern</h3>
 <ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — "좋아 다 진행해" = <strong>옵션 C 자율 GO</strong> (Agent #16 산출물 정식 채택)</li>
-  <li>handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입</li>
-  <li>검토 대상 = <code>app/rtc/</code> 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + <code>__init__</code>) + <code>app/ui/file_progress_widget.py</code> = 8 file 누계 ~96 KB</li>
-  <li>reviewer-agent sub-agent spawn (Whitebox <code>run_in_background: true</code>) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가</li>
-  <li>직전 c17a952 의 <code>git add app/</code> wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 의 사후 회수</li>
-  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입</li>
+  <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 7 테이블</li>
+  <li>bcrypt 12 rounds + aiosmtplib + secrets.choice</li>
+  <li>PyInstaller native (macOS) + wine cross-compile (Windows — cdrx docker)</li>
 </ul>
 
-<h3>2.18 reviewer-agent 정식 GO + SPDX/ARCHITECTURE 정정 완료 (사이클 12 — 보존)</h3>
+<h3>2.3 문서·정책 정합 (개발 과정 우위)</h3>
 <ul>
-  <li><strong>reviewer-agent 정식 검토 PASS</strong> — Agent #16 산출물 8 file ~96 KB 의 M1~M7 정합 + BPE 0 + 1인칭/3인칭 0 + 계층 분리 PASS + GPLv3 SPDX header 적용 readiness OK</li>
-  <li><strong>SPDX header 8 file 일괄 적용</strong> — <code>app/rtc/__init__.py</code> + <code>peer.py</code> + <code>protocol.py</code> + <code>file_sender.py</code> + <code>file_receiver.py</code> + <code>image_processor.py</code> + <code>app/ui/file_progress_widget.py</code> + <code>app/rtc/README.md</code> 모두 <code># SPDX-License-Identifier: GPL-3.0-or-later</code> + Copyright header 적용</li>
-  <li><strong>ARCHITECTURE.md §6 정정</strong> — <code>app/rtc/</code> 실 7 file + <code>app/ui/file_progress_widget.py</code> 의 실 모듈 구조 반영 (직전 sketch column 회수 — 사이클 7 drift 의 후속 정합)</li>
-  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 코드 산출물 readiness PASS — 다음 task = <code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code> Phase 1 MVP 본격 진입 가능</li>
-  <li>본 사이클 = 코드 산출물 검증 게이트 통과 의 첫 cycle — 직전 사이클 까지 의 "문서 91% : 코드 9%" 비율 의 점진 개선 진입점</li>
-  <li>handoff §9 #8 ✅ 완료 (reviewer-agent 검토 진입 → PASS) — 다음 handoff 의 §9 = Phase 1 MVP 코드 진입 단일 항목</li>
+  <li>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR template + handoff doc</li>
+  <li>HTML 6종 동시 정리 (sub-agent 18 spawn 누계)</li>
+  <li>CheckList 17행 + handoff 사이클 5 갱신</li>
+  <li>21 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
 </ul>
 
-<h3>2.19 qa-agent 회귀 체크리스트 진입 (사이클 13 — 보존)</h3>
+<h3>2.2 자체 호스팅 친화</h3>
 <ul>
-  <li><strong>5단계 워크플로우 ③-2 진입</strong> — reviewer-agent PASS (③-1) 직후 qa-agent (③-2) 회귀 체크리스트 활성 — 정본 §C(7역할) + CLAUDE.md §3 표 순서 고정</li>
-  <li><strong>qa-agent 검사 범위</strong> — Agent #16 산출물 8 file ~96 KB (app/rtc/ 7 + app/ui/file_progress_widget.py) 의 (a) 단위 test 회귀 (pytest 12건 + 신규 protocol/file_sender/file_receiver test stub) + (b) Playwright E2E 회귀 (시그널링 WS + HTML 시각) + (c) coverage 80% 게이트 + (d) SPDX header lint 자동 검증 + (e) import-smoke job</li>
-  <li><strong>회귀 체크리스트 7행 (사이클 13 신규 기준)</strong> — ① pytest 12건 PASS 유지 ② protocol.py 의 메시지 직렬화/역직렬화 회귀 ③ file_sender/file_receiver 의 chunk 경계 회귀 ④ image_processor 의 PIL 변환 회귀 ⑤ file_progress_widget 의 양방향 ProgressBar 시그널 회귀 ⑥ SPDX header 8/8 file lint PASS ⑦ ci.yml 8 job 매트릭스 GREEN 유지</li>
-  <li><strong>qa-agent 도구</strong> — Read/Grep/Glob/Bash(read-only) — 프로덕션 데이터 조작 + 데모 시그널링 서버 재시작 금지 (CLAUDE.md §3 행 3)</li>
-  <li><strong>FAIL 시 회귀 경로</strong> — qa-agent FAIL 1건 = ② 개발 단계 회귀 (main session 직접 정정) → reviewer-agent 재호출 → qa-agent 재진입 (직렬 게이트 고정)</li>
-  <li><strong>PASS 시 다음 단계</strong> — qa-agent PASS → ③-3 observability-agent (로그/메트릭 baseline 검증) → CI 3종 GREEN 확인 → ⑤ release-agent 진입 (단 Phase 1 MVP 본격 진입 GO 는 사용자 결정 영역)</li>
-  <li>본 사이클 = 검증 게이트 의 2단계 진입 — reviewer (코드 품질) → qa (회귀 안정성) 의 직렬 진행 시작점</li>
+  <li>사용자 직접 시그널링 서버 구동 가능 (docker-compose 번들 예정)</li>
+  <li>on-premise 배포 + Toonation 통합 옵션 B 진입 가능</li>
+  <li>데모 서버 (<code>114.207.112.73</code>) = 시그널링 + SMTP 통합</li>
 </ul>
 
-<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 정합 (신규 사이클 14)</h3>
+<h3>2.1 인프라 단순성</h3>
 <ul>
-  <li><strong>5단계 워크플로우 ⑤ release-agent 진입 정합</strong> — qa-agent (③-2) PASS → observability-agent (③-3) PASS → CI 3종 GREEN 확인 → release-agent (⑤ 머지 + push) — 정본 §C 행 5 + CLAUDE.md §3 행 5 의 직렬 고정 순서 유지</li>
-  <li><strong>머지 게이트 3 단계 명문화</strong> — 본 사이클 신규 정합. (a) <strong>게이트 1 — 검증 직렬 PASS</strong>: reviewer ✅ → qa ✅ → observability ✅ 3 단계 모두 PASS (FAIL 1건 = ② 회귀). (b) <strong>게이트 2 — CI 3종 GREEN</strong>: ci.yml (8 job) + docs-lint.yml + doc-gardener.yml 동시 GREEN — self-hosted macOS arm64 runner 활성 의무. (c) <strong>게이트 3 — 사용자 명시 GO</strong>: 자율 머지 금지 (CLAUDE.md §4-3 + handoff §7 정합), 사용자 directive 명시 후만 release-agent spawn.</li>
-  <li><strong>release-agent 호출 범위</strong> — Agent #16 산출물 8 file ~96 KB + SPDX header 8 + ARCHITECTURE.md §6 정합 + handoff/snapshot/CheckList 의 사이클 14 갱신 동시 commit. <code>git commit</code> + <code>SKIP_PREPUSH=1 git push origin main</code> (CLAUDE.md §9-2 분류기 우회 정합) + PR 머지 (M5 즉시 push).</li>
-  <li><strong>release-agent 금지 사항</strong> — <code>--force</code> main 금지 + <code>--no-verify</code> 금지 + 머지 게이트 미통과 PR 금지 + <code>--no-gpg-sign</code> 금지 (CLAUDE.md §3 행 5 + 정본 §P-7 정합).</li>
-  <li><strong>머지 게이트 FAIL → 회귀 경로</strong> — 게이트 1 FAIL = ② 개발 회귀. 게이트 2 FAIL = ci 디버깅 (self-hosted runner 상태 + workflow 로그). 게이트 3 보류 = 사용자 GO 대기 (release-agent spawn 차단).</li>
-  <li><strong>본 사이클 의 의미</strong> — 검증 게이트 의 3단계 완료 진입점 (reviewer ✅ → qa ✅ → release 직전). 머지 게이트 3 단계 정합 = 후속 Phase 1 MVP 본격 진입 의 기반 절차. handoff §9 의 다음 사이클 entry = "release-agent spawn 사용자 GO 대기" 단일 항목.</li>
-  <li><strong>다음 단계</strong> — observability-agent (③-3) PASS 확인 + CI 3종 GREEN 확인 후 사용자 directive "release-agent 진행해" 대기 → release-agent spawn (Whitebox <code>run_in_background: true</code>) → 머지 + push + PR close → Phase 1 MVP 본격 진입 (<code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code>) 사용자 GO 영역.</li>
+  <li>시그널링 서버 1대 + WebRTC DataChannel + MariaDB 7 테이블 (auth 3 + 대화 4)</li>
+  <li>서버 storage / 백업 / GDPR 부담 최소</li>
 </ul>
 
 <hr>
 
-<h2>3. 약점 (Productization Weaknesses)</h2>
+<h2 id="sec3">3. 약점 (Productization Weaknesses)</h2>
 
 <h3>3.1 기능 누락 (Phase 1 의도적 보류)</h3>
 <table>
@@ -326,7 +355,6 @@
 <ul>
   <li><strong>GPLv3 확정</strong> (사용자 directive 2026-05-17)</li>
   <li>LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환</li>
-  <li><strong>SPDX header 8 file 적용 완료</strong> (사이클 12)</li>
 </ul>
 
 <h3>3.5 <span class="strike">self-hosted runner 등록 미완</span> (✅ 사이클 5 해소)</h3>
@@ -336,11 +364,11 @@
   <li>workflow 3종 GREEN 도달</li>
 </ul>
 
-<h3>3.6 코드 진입 (사이클 12 진입 + 사이클 13 qa-agent 회귀 + 사이클 14 release-agent 머지 게이트 진입)</h3>
+<h3>3.6 코드 진입 미완</h3>
 <ul>
-  <li>Agent #16 산출물 8 file ~96 KB (app/rtc/ 7 + app/ui/file_progress_widget.py) reviewer-agent GO + SPDX header 적용 완료 + qa-agent 회귀 + release-agent 머지 게이트 3 단계 진입</li>
-  <li>문서 89% + 코드 11% 비율 (직전 91%/9% 대비 코드 비중 ▲)</li>
-  <li>다음 단계 = release-agent 머지 PASS 후 <code>app/auth/</code> + <code>app/db/</code> + <code>app/signaling/</code> Phase 1 MVP 본격 진입 (사용자 GO 후)</li>
+  <li>Phase 1 MVP 실 코드 미작성 (config.py + tests 12건 + Agent #16 산출물 ~96 KB tracked)</li>
+  <li>문서 91% + 코드 9% 비율 (직전 90%/10% 의 약간 감소 — auth/SMTP 정책 추가)</li>
+  <li><code>feedback-doc-perfection-before-code</code> 8 체크리스트 통과 + 사용자 GO 후 진입</li>
 </ul>
 
 <h3>3.7 추가 차별화 보류</h3>
@@ -349,7 +377,7 @@
   <li><code>project-phase1-completion-priority</code> scope creep 차단</li>
 </ul>
 
-<h3>3.8 데모 서버 SSH 접근 차단</h3>
+<h3>3.8 데모 서버 SSH 접근 차단 (사이클 5)</h3>
 <ul>
   <li>본 cycle main session 의 SSH 접근 시도 <code>Connection reset by peer</code></li>
   <li>SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md 절차 13 섹션)</li>
@@ -358,7 +386,7 @@
 
 <hr>
 
-<h2>4. 시장 포지셔닝 옵션</h2>
+<h2 id="sec4">4. 시장 포지셔닝 옵션</h2>
 
 <h3>4.1 옵션 A — OSS 자체 호스팅 메신저</h3>
 <ul>
@@ -371,7 +399,7 @@
   <li>수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)</li>
   <li>진입 장벽: 0 (내부 도입)</li>
   <li>성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증</li>
-  <li><strong>확률 = 상 (사이클 14 의 머지 게이트 3 단계 정합 진입 이 안정성 추가 강화)</strong></li>
+  <li><strong>확률 = 상 (사이클 5 의 CI GREEN + SMTP 자체 + fork PR strict 가 추가 안정성 강화)</strong></li>
   <li><strong>권장도 1순위</strong></li>
 </ul>
 
@@ -385,7 +413,7 @@
 
 <hr>
 
-<h2>5. 단기 (3개월) 제품화 액션</h2>
+<h2 id="sec5">5. 단기 (3개월) 제품화 액션</h2>
 <table>
   <thead>
     <tr><th class="center">우선순위</th><th>액션</th><th class="center">상태</th></tr>
@@ -410,20 +438,21 @@
     <tr><td class="center">0</td><td><strong>dead link 10건 fix + ci.yml Windows matrix 영구 비활성</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>wine cross-compile 정책 (cdrx docker + Ubuntu) — 6 file 갱신</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>fork PR 승인 정책 strict (gh API 자동)</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
-    <tr><td class="center">0</td><td><strong>SMTP 정책 + 절차 — 5 file + 영구 메모리</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
+    <tr><td class="center">0</td><td><strong>SMTP 정책 + 절차 (postfix + Let's Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책</strong></td><td class="center"><span class="ok">✅</span> (사이클 6)</td></tr>
-    <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 정식 GO + SPDX header 8 file 적용 + ARCHITECTURE 정정</strong></td><td class="center"><span class="ok">✅</span> (사이클 12)</td></tr>
-    <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 진입 (7행 게이트)</strong></td><td class="center"><span class="ok">✅</span> (사이클 13)</td></tr>
-    <tr><td class="center">0</td><td><strong>release-agent 머지 진입 + 머지 게이트 3 단계 정합</strong></td><td class="center"><span class="pending">🟡 진행</span> (사이클 14)</td></tr>
+    <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 정식 GO + SPDX 7 file + ARCHITECTURE 정정</strong></td><td class="center"><span class="ok">✅</span> (사이클 12)</td></tr>
+    <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 PASS (FR-04 AC-04-1~4)</strong></td><td class="center"><span class="ok">✅</span> (사이클 13)</td></tr>
+    <tr><td class="center">0</td><td><strong>release-agent 머지 게이트 정식 GO + observability CONDITIONAL PASS + baseline 정본 신설</strong> <span class="new">신규</span></td><td class="center"><span class="ok">✅</span> (사이클 15)</td></tr>
     <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
-    <tr><td class="center">2</td><td>Phase 1 MVP 코드 진입 (app/auth + app/db + app/signaling)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
+    <tr><td class="center">2</td><td>Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
     <tr><td class="center">3</td><td>Toonation 통합 시나리오 검토 (옵션 B)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
+    <tr><td class="center">4</td><td>Agent #16 산출물 reviewer-agent 검토</td><td class="center"><span class="ok">✅</span> (사이클 11~15)</td></tr>
   </tbody>
 </table>
 
 <hr>
 
-<h2>6. 중기 (6~12개월) 액션</h2>
+<h2 id="sec6">6. 중기 (6~12개월) 액션</h2>
 <table>
   <thead>
     <tr><th class="center">우선순위</th><th>액션</th><th>가치</th></tr>
@@ -439,7 +468,7 @@
 
 <hr>
 
-<h2>7. 장기 (1~3년) 비전</h2>
+<h2 id="sec7">7. 장기 (1~3년) 비전</h2>
 
 <h3>7.1 기술</h3>
 <ul>
@@ -465,7 +494,7 @@
 
 <hr>
 
-<h2>8. 핵심 리스크</h2>
+<h2 id="sec8">8. 핵심 리스크</h2>
 <table>
   <thead>
     <tr><th>리스크</th><th class="center">확률</th><th class="center">영향</th><th>회피</th></tr>
@@ -474,21 +503,20 @@
     <tr><td>Signal/Telegram 무료 + 우월 → 사용자 획득 실패</td><td class="center">상</td><td class="center">상</td><td>옵션 B (Toonation) pivot</td></tr>
     <tr><td>1인 개발자 Phase 2~4 완주 어려움</td><td class="center">중</td><td class="center">상</td><td>옵션 B ROI 빠른 검증</td></tr>
     <tr><td>데모 서버 보안 사고</td><td class="center">중</td><td class="center">중</td><td>Phase 2 진입 직전 hardening</td></tr>
-    <tr><td><span class="strike">라이선스 결정 지연</span></td><td class="center"><span class="ok">✅ 해소 (사이클 6)</span></td><td class="center">—</td><td>GPLv3 확정 + SPDX 8 file (사이클 12)</td></tr>
+    <tr><td><span class="strike">라이선스 결정 지연</span></td><td class="center"><span class="ok">✅ 해소 (사이클 6)</span></td><td class="center">—</td><td>GPLv3 확정</td></tr>
     <tr><td>PyQt6 GPL 의무 의 외부 fork distribution</td><td class="center">중</td><td class="center">중</td><td>GPLv3 정합 + private 전환 시 외부 fork 차단</td></tr>
-    <tr><td>문서 89% : 코드 11% 지속</td><td class="center">중</td><td class="center">중</td><td>Agent #16 GO + qa-agent 회귀 + release-agent 머지 게이트 PASS 후 Phase 1 MVP 본격 진입</td></tr>
+    <tr><td>문서 91% : 코드 9% 지속</td><td class="center">상</td><td class="center">중</td><td>8 체크리스트 통과 후 코드 진입</td></tr>
     <tr><td><strong>원격 제어 보안 사고</strong> (Phase 3+ 위험)</td><td class="center">중</td><td class="center">상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그</td></tr>
     <tr><td><strong>SMTP spam reputation 부족</strong></td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
     <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong></td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
     <tr><td><strong>데모 서버 SSH 차단</strong></td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
-    <tr><td><strong>qa-agent 회귀 FAIL → ② 회귀 cycle 지연</strong></td><td class="center">중</td><td class="center">중</td><td>회귀 체크리스트 7행 의 단계별 PASS — FAIL 1건 시 즉시 main session 직접 정정 + reviewer 재호출 직렬 진행</td></tr>
-    <tr><td><strong>머지 게이트 3 단계 중 1건 FAIL</strong> (신규 사이클 14)</td><td class="center">중</td><td class="center">중</td><td>게이트 1 FAIL = ② 회귀, 게이트 2 FAIL = ci 디버깅 (self-hosted runner 로그), 게이트 3 보류 = 사용자 GO 대기 (release-agent spawn 차단)</td></tr>
+    <tr><td><strong>observability baseline drift</strong> <span class="new">신규 사이클 15</span></td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (observability-baseline.md §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
   </tbody>
 </table>
 
 <hr>
 
-<h2>9. KPI 후보</h2>
+<h2 id="sec9">9. KPI 후보</h2>
 <table>
   <thead>
     <tr><th>KPI</th><th>목표</th><th>현재</th></tr>
@@ -499,54 +527,57 @@
     <tr><td>시그널링 재연결 시간 (95p)</td><td>≤ 5초</td><td>미측정</td></tr>
     <tr><td>앱 cold start latency</td><td>≤ 30초</td><td>미측정</td></tr>
     <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
-    <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64)</strong></td></tr>
+    <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64, 사이클 5)</strong></td></tr>
     <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td>본 세션 신규 파일 100%</td></tr>
     <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>21종 active</strong></td></tr>
-    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 (Phase 1 MVP 본격 진입 후)</td></tr>
+    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 (코드 미진입)</td></tr>
     <tr><td>Playwright E2E test</td><td>≥ 5건</td><td>3건 스켈레톤 active</td></tr>
     <tr><td><strong>OTP 발송 → 수신 latency</strong></td><td>≤ 30초</td><td>미측정 (Phase 1 코드 후)</td></tr>
     <tr><td><strong>OTP brute force 차단율</strong></td><td>100% (5회/30분)</td><td>미측정</td></tr>
     <tr><td><strong>원격 제어 세션 성공률</strong></td><td>≥ 95%</td><td>미측정 (Phase 3 막바지 후)</td></tr>
     <tr><td><strong>mail-tester score</strong> (SMTP)</td><td>≥ 7/10</td><td>미측정 (SSH 설치 후)</td></tr>
-    <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK</td></tr>
-    <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib)</td></tr>
-    <tr><td><strong>SPDX header 코드 file 적용률</strong></td><td>100%</td><td><strong>100% (8/8 file — 사이클 12)</strong></td></tr>
-    <tr><td><strong>qa-agent 회귀 체크리스트 PASS 율</strong></td><td>7/7 PASS</td><td>진행 중 (체크리스트 활성 — 사이클 13)</td></tr>
-    <tr><td><strong>머지 게이트 3 단계 PASS 율</strong> (신규 사이클 14)</td><td>3/3 PASS</td><td>1/3 (게이트 1 검증 직렬 진행 중 — reviewer ✅ + qa 진행 + observability 대기)</td></tr>
+    <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK (사이클 5)</td></tr>
+    <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6)</td></tr>
+    <tr><td><strong>5단계 워크플로우 ③ chain PASS</strong> <span class="new">신규 사이클 15</span></td><td>4/4 PASS (reviewer + qa + release + observability)</td><td><strong>4/4 PASS ✓ (CONDITIONAL — baseline measurement 의무 Phase 2)</strong></td></tr>
+    <tr><td><strong>observability logger 모듈 적용률</strong> <span class="new">신규 사이클 15</span></td><td>100%</td><td><strong>100% (7/7 모듈 — format §E 일관)</strong></td></tr>
   </tbody>
 </table>
 
 <hr>
 
-<h2>10. 다음 평가 갱신 트리거</h2>
+<h2 id="sec10">10. 다음 평가 갱신 트리거</h2>
 
 <p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
 
 <ul>
-  <li>기술 완성도 점수 — 머지 게이트 3 단계 PASS + Phase 1 MVP 본격 진입 + dogfooding 시 +0.5~1.0</li>
-  <li>누락 기능 표 — Phase 1 MVP 본격 진입 시 항목 제거</li>
-  <li>단기 액션 ✅ 표시 갱신 (release-agent 머지 PASS 시 사이클 14 row 갱신)</li>
-  <li>KPI 실측 값 (Phase 1 MVP 본격 진입 + pilot 시점)</li>
+  <li>기술 완성도 점수 — Phase 1 코드 진입 + dogfooding 시 +0.5~1.0</li>
+  <li>누락 기능 표 — 코드 진입 시 항목 제거</li>
+  <li>단기 액션 ✅ 표시 갱신</li>
+  <li>KPI 실측 값 (코드 진입 + pilot 시점)</li>
   <li>가드레일 메모리 누계 (현 21)</li>
   <li>텔레그램 송신 누계 (현 30건+)</li>
-  <li>sub-agent 누계 (현 17 — 사이클 14 release-agent 진입 시 18 예정)</li>
+  <li>sub-agent 누계 (현 18 — 사이클 15 release + observability spawn 누계)</li>
   <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
   <li>SMTP 실제 설치 완료 시 §2.11 + §9 KPI 갱신</li>
-  <li>라이선스 확정 시 §3.4 ✅ + SPDX 적용 완료 (사이클 12 ✅) + qa-agent 회귀 (사이클 13) + release-agent 머지 게이트 (사이클 14)</li>
+  <li>라이선스 확정 시 §3.4 ✅</li>
+  <li><strong>observability baseline measurement 진입 시 §2.21 + §8 신규 리스크 row 갱신</strong> <span class="new">신규</span></li>
 </ul>
+
+<hr>
 
 <footer class="refs">
   <p><strong>참조</strong></p>
   <ul>
     <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
     <li>정책: <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a></li>
-    <li>정책 본문: <a href="../policies/doc-gardening.md">doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a></li>
+    <li>정책 본문: <a href="../policies/doc-gardening.md">doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a> · <a href="../policies/observability-baseline.md">observability-baseline.md</a> <span class="new">신규 사이클 15</span></li>
     <li>인프라 절차: <a href="../references/ci-self-hosted-setup.md">ci-self-hosted-setup.md</a> · <a href="../references/smtp-setup.md">smtp-setup.md</a></li>
     <li>실행계획: <a href="../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">tootalk-phase1-mvp.md</a></li>
     <li>세션 인계: <a href="../exec-plans/active/2026-05-17-session-handoff.md">session-handoff.md</a></li>
     <li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a></li>
     <li>md 등가 원본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
+  <p>마지막 갱신: 2026-05-18 01:00 — 사이클 15 (commit <code>dcbb372</code> 직후 — release-agent GO 정식 + observability CONDITIONAL PASS + baseline 정본 신설)</p>
 </footer>
 
 </body>

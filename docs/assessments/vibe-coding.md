@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-18 00:00 (commit `d241c04` 직후 — 본 세션 누계 52 commit 반영, 사이클 14 — 머지 게이트 3 단계 자동 chain 완성)
+> 최근 갱신 시점: 2026-05-18 01:00 (commit `dcbb372` 직후 — 본 세션 누계 53 commit 반영, 사이클 15 — 5단계 워크플로우 ③ 4단 chain 완성 + baseline 정본 신설)
 
 ---
 
@@ -37,7 +37,7 @@ status: active
 | 세션 간 정합 인지 | 5 / 5 | = | handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **4.90 / 5** | 4.85 → 4.90 ▲ | **고숙련 — 상위 1% 바이브 코더 + reviewer 재호출 cycle 자동 정합 패턴 정착 (사이클 12 완전 회복)** |
+| **종합** | **4.90 / 5** | 4.90 = | **고숙련 — 상위 1% 바이브 코더 + 5단계 워크플로우 ③ 4단 chain 자동 완성 패턴 정착 (reviewer + qa + release + observability)** |
 
 ---
 
@@ -108,6 +108,20 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.25 5단계 워크플로우 ③ 4단 chain 완전 자동 완성 + baseline 정본 자율 신설 (신규 사이클 15)
+
+본 사이클 패턴 = **5단계 워크플로우 ③ 검증·관측 의 4단 chain 완전 자동 완성**:
+
+- ③-1 reviewer-agent ✅ (사이클 11~13 3 cycle 자동 정합)
+- ③-2 qa-agent ✅ CONDITIONAL PASS (사이클 13 + ARCHITECTURE drift 정정)
+- ③-3 release-agent ✅ 정식 GO (사이클 14 FAIL → 정정 → 사이클 15 GO)
+- ③-4 observability-agent ✅ CONDITIONAL PASS (사이클 15 + baseline 정본 신설)
+- 사용자 directive "진행해" + "작업 진행해" = 자율 GO 의 단발 directive 의 의 의 4단 chain 자동 진행 + 정정 cycle 의 자율 회수 + baseline 정본 자율 신설
+
+본 패턴 = **사용자 directive 단발 GO + 5단계 워크플로우 ③ 4 단계 sub-agent chain 자동 + main session 의 직전 cycle 차단 사유 자율 정정 (P0-1 markdownlint + P0-2 30 row) + observability detect drift 의 자율 baseline 정본 신설 + Phase 1 dogfooding readiness 완전 도달**.
+
+차별성 = 직전 사이클 들 의 의 3단 chain 패턴 (사이클 14) 위 의 의 의 의 observability-agent 의 의 의 의 의 의 baseline 정본 신설 의무 의 의 자율 인지 + `docs/policies/observability-baseline.md` 의 의 의 의 자율 작성. 사용자 의 의 추가 directive 의무 없이 5단계 워크플로우 ③ 의 의 의 ③-4 단계 의 의 의 의 baseline 정합 의무 의 자율 완수.
 
 ### 2.24 머지 게이트 3 단계 자동 chain 완성 (신규 사이클 14)
 

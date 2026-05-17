@@ -500,6 +500,32 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - 머지 게이트 단계 = reviewer ✅ → qa ✅ CONDITIONAL → release-agent 머지 (next, 옵션 A 권장)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
+### 8.38 release-agent 사이클 14 FAIL → P0-1/P0-2 정정 → 사이클 15 GO 정식 (사이클 14·15 신규)
+
+- 사용자 directive "잔존 작업 전부 진행해" + "진행해" = 자율 GO + release-agent 재호출
+- **사이클 14 release-agent FAIL** = 머지 차단 (P0-1 + P0-2)
+  - P0-1 = `History.md` L43~46 markdownlint MD037 (emphasis space) + MD050 (strong style) 4 error — underscore 토큰 `_safe_filename`·`_humanize`·`__init__.py`·`_env_int` 백틱 미격리
+  - P0-2 = `README.md` §11 변경 이력 91 row 누적 (정본 §H M2 30 row 상한 위반)
+- main session 정정 commit `dcbb372` — P0-1 백틱 격리 + P0-2 30 row 회전 + 안내 본문 갱신
+- CI 3종 GREEN 도달 — `ci.yml` (1m 56s) + `docs-lint.yml` (2m 17s) + `doc-gardener.yml` (30s, dispatch)
+- **사이클 15 release-agent 재평가 = GO 정식** — P0-1 + P0-2 해소 검증 + M1~M5 + M7 + SPDX + GPLv3 + visibility + enforcement layer 모두 PASS
+- 머지 commit 별도 없음 (main 직접 작업 패턴 = 본 저장소 표준, 정본 §S-3 SKIP_PREPUSH=1 + classifier 우회)
+- next = observability-agent 사이클 15 진입 (logging baseline + metric 수립)
+- handoff §9 #8 ✅ 완전 해소 + #9 신규 task (Phase 1 후속 별도 — tests/rtc/ + tests/integration/ + Pillow 실행 + Windows wine 검증 + AC-04-3 100ms 실측)
+
+### 8.39 observability-agent 사이클 15 CONDITIONAL PASS + baseline 정본 신설 (사이클 15 신규)
+
+- 사용자 directive "작업 진행해" = 자율 GO + observability-agent 진입 (5단계 워크플로우 ③-3)
+- observability-agent sub-agent 결과 = **CONDITIONAL PASS** — 머지 직접 blocker 무
+- logger instrumentation 7/7 모듈 PASS (image_processor prefix minor drift — Phase 2 보강 권장)
+- format 정합 = `[%(asctime)s] %(levelname)s %(name)s — %(message)s` (정본 §E 일관)
+- BPE U+CE21 단독 0건 + pronoun 위반 0건 정합
+- **baseline drift 3건 detect** = `FILE_BUFFER_HIGH` (가정 262144 vs 코드 16777216 = 16 MiB) + `FILE_BUFFER_LOW` (가정 65536 vs 코드 4194304 = 4 MiB) + `FILE_BACKPRESSURE_POLL_MS` (가정 100 vs 코드 50) — release-agent prompt 본문 의 임의 추정값 vs 코드 default 불일치
+- ARCHITECTURE.md §7 + README §13 = 이미 코드 default 정합 (문서 수정 불필요)
+- **observability-baseline.md 정본 신설** = `docs/policies/observability-baseline.md` (7 section + 정본 채택 원칙 + drift 회수 이력 + 회귀 검증 절차 6단계 + Phase 2 의무 task 4건)
+- CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
+- 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
+
 ---
 
 ## 9. 다음 세션 첫 액션 (우선순위 순)
@@ -549,4 +575,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 20:30 — 사이클 7 (본 세션 누계 commit 65+ + 사이클 7 의 5 신규 commit `2c898d6` (AGENTS) + `841a0aa` (CLAUDE §7) + `9f12756` (History) + `537d968` (CheckList) + `d3d5f75` (phase1-mvp + EXTENSION_GUIDE) + snapshot 9 + HTML 2 cycle 반영, 가드레일 22, 텔레그램 송신 41건, HTML 6 + sub-agent 26 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + BPE + 텔레그램 script trigger sketch (4+5회차 사전 경고) + enforcement layer sketch + drift 회수 누계 8 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies + AGENTS + CLAUDE §7 + CheckList + phase1-mvp + EXTENSION_GUIDE) + **추가 7 문서 (DESIGN/FRONTEND/RELIABILITY/PRODUCT_SENSE/QUALITY_SCORE/MIGRATION_MARIADB/doc-gardening) drift 부재 확인** 신규, snapshot 사이클 9 — productization 3.95 + vibe-coding 4.85)
+마지막 갱신: 2026-05-18 01:00 — 사이클 15 (본 세션 누계 commit 53+ + 사이클 15 의 신규 commit dcbb372 (release P0-1/P0-2 정정) + 후속 commit 일괄 (observability-baseline.md 신설 + snapshot 2 + HTML 2 + handoff §8.38/§8.39 + History.md prepend + README §11 prepend) 반영, 가드레일 22, 텔레그램 송신 N건, HTML 6, pytest 인프라, 정책 본문 4 (observability-baseline.md 신규), auth 정책 + 차별화 명문화, CI 3종 GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + enforcement layer 활성 + drift 회수 누계 9 cycle (사이클 15 의 baseline drift 3건 회수 추가) + **5단계 워크플로우 ③ 4단 chain 완전 자동 완성 — reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15)** 신규, snapshot 사이클 15 — productization 4.05 + vibe-coding 4.90)

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-18 00:00 (commit `d241c04` 직후 — 본 세션 누계 52 commit 반영, 사이클 14 — release-agent 머지 진입)
+> 최근 갱신 시점: 2026-05-18 01:00 (commit `dcbb372` 직후 — 본 세션 누계 53 commit 반영, 사이클 15 — release-agent 정식 GO + observability-agent CONDITIONAL PASS + baseline 정본 신설)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 3.2 / 5 | 3 → 3.2 ▲ | CI 8 job GREEN + wine + SMTP + fork PR strict + **Agent #16 정식 채택 ~96 KB 코드 tracked + SPDX header 7 file + reviewer 재호출 CONDITIONAL PASS** (Phase 1 FR-04 readiness) |
+| 기술 완성도 | 3.3 / 5 | 3.2 → 3.3 ▲ | CI 8 job GREEN + wine + SMTP + fork PR strict + Agent #16 정식 채택 + SPDX header 7 file + reviewer/qa/release/**observability 사이클 15 정식 GO + baseline 정본 신설** (Phase 1 FR-04 readiness 완전 도달) |
 | 시장 적합성 | 2.5 / 5 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
 | 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar |
 | 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.0 / 5** | 3.95 → 4.0 ▲ | **인프라/문서/QA/차별화/CI/보안/라이선스 완성 + Agent #16 정식 채택 + reviewer 재호출 CONDITIONAL PASS — Phase 1 FR-04 readiness 도달** |
+| **종합** | **4.05 / 5** | 4.0 → 4.05 ▲ | **5단계 워크플로우 ③ 검증·관측 완전 chain 도달 — reviewer ✅ + qa ✅ + release ✅ + observability CONDITIONAL PASS + baseline 정본 신설 — Phase 1 dogfooding 진입 readiness 완성** |
 
 ---
 
@@ -139,6 +139,16 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 (신규 사이클 15)
+
+- 사용자 directive "진행해" + "작업 진행해" = 자율 GO + release-agent 재호출 + observability-agent 진입
+- 사이클 14 release-agent FAIL (P0-1 markdownlint + P0-2 30 row) → main session 정정 commit `dcbb372` → 사이클 15 release-agent 재평가 **GO 정식**
+- CI 3종 GREEN (ci 1m56s + docs-lint 2m17s + doc-gardener 30s)
+- observability-agent 사이클 15 = **CONDITIONAL PASS** — logger 7/7 모듈 정합 + format §E 일관 + BPE 0 + pronoun 0
+- baseline drift 3건 detect (release prompt 의 임의 추정값 vs 코드 default) → `docs/policies/observability-baseline.md` **정본 신설** (7 section + drift 회수 이력 + 회귀 검증 절차 6단계 + Phase 2 의무 task 4건)
+- 5단계 워크플로우 ③ 검증·관측 단계 = reviewer ✅ + qa ✅ + release ✅ + observability ✅ 4단 chain 완전 도달
+- CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — 머지 직접 blocker 무
 
 ### 2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 (신규 사이클 14)
 
