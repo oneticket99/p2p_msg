@@ -21,8 +21,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
-from app.crypto.double_ratchet import ChainKey
+from app.crypto.double_ratchet import (
+    ChainKey,
+    decrypt_message,
+    encrypt_message,
+)
 from app.crypto.e2ee import (
+    EncryptedPayload,
     generate_x25519_keypair,
     hkdf_derive,
     x25519_shared_secret,
@@ -204,3 +209,72 @@ def advance_dh_ratchet(state: SessionState, new_peer_dh_public: bytes) -> Sessio
         sending_chain=ChainKey(key=send_chain_key, counter=0),
         receiving_chain=ChainKey(key=recv_chain_key, counter=0),
     )
+
+
+def encrypt_with_session(
+    state: SessionState,
+    plaintext: bytes,
+    *,
+    associated_data: bytes | None = None,
+) -> Tuple[EncryptedPayload, SessionState]:
+    """session 단위 메시지 암호화 — sending_chain advance + AES-GCM.
+
+    Returns
+    -------
+    tuple[EncryptedPayload, SessionState]
+        (payload, advanced state). caller 는 state 갱신 의무.
+
+    Raises
+    ------
+    RuntimeError
+        sending_chain 미초기화 (initiator 시작 전).
+    """
+
+    if state.sending_chain is None:
+        raise RuntimeError("sending_chain 미초기화 — initiator + DH ratchet 의무")
+
+    payload, next_chain = encrypt_message(
+        state.sending_chain, plaintext, associated_data=associated_data
+    )
+    new_state = SessionState(
+        root_key=state.root_key,
+        my_dh_private=state.my_dh_private,
+        my_dh_public=state.my_dh_public,
+        peer_dh_public=state.peer_dh_public,
+        sending_chain=next_chain,
+        receiving_chain=state.receiving_chain,
+    )
+    return (payload, new_state)
+
+
+def decrypt_with_session(
+    state: SessionState,
+    payload: EncryptedPayload,
+    *,
+    associated_data: bytes | None = None,
+) -> Tuple[bytes, SessionState]:
+    """session 단위 메시지 복호화 — receiving_chain advance + AES-GCM.
+
+    Raises
+    ------
+    RuntimeError
+        receiving_chain 미초기화.
+    cryptography.exceptions.InvalidTag
+        tampering 또는 chain 미동기.
+    """
+
+    if state.receiving_chain is None:
+        raise RuntimeError("receiving_chain 미초기화 — DH ratchet 후 가능")
+
+    plaintext, next_chain = decrypt_message(
+        state.receiving_chain, payload, associated_data=associated_data
+    )
+    new_state = SessionState(
+        root_key=state.root_key,
+        my_dh_private=state.my_dh_private,
+        my_dh_public=state.my_dh_public,
+        peer_dh_public=state.peer_dh_public,
+        sending_chain=state.sending_chain,
+        receiving_chain=next_chain,
+    )
+    return (plaintext, new_state)
