@@ -21,15 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 3.5 / 5 | 3.3 → 3.5 ▲ | CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain 완전 + baseline 정본 신설 + **Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS + qa-agent 사이클 13 미커버 영역 완전 회수** |
-| 시장 적합성 | 2.5 / 5 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
-| 차별화 요소 | 4.5 / 5 | = | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar |
-| 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
-| 수익화 모델 | 2.5 / 5 | 2 → 2.5 ▲ | GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합 |
-| 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
-| 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.50 / 5** | 4.45 → 4.50 ▲ | **Phase 2 integration 4 PASS + Alice/Bob E2EE 통합 + enforcement layer designer 평가 정합 + Phase 2 누계 60 케이스** |
+| 기술 완성도 | 7.2 / 10 | 7.0 → 7.2 ▲ | CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain + Phase 1 코드 진입 + Phase 2 E2EE 60 케이스 + 253 pytest PASS |
+| 시장 적합성 | 5.2 / 10 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
+| 차별화 요소 | 9.1 / 10 | 9.0 → 9.1 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol |
+| 사용자 가치 | 6.3 / 10 | 6.0 → 6.3 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE 추가 |
+| 수익화 모델 | 5.4 / 10 | 5.0 → 5.4 ▲ | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 + 차별화 강화 |
+| 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
+| 가드레일·자동화 | 9.9 / 10 | 9.8 → 9.9 ▲ | 가드레일 33 누적 (10점 만점 정책 신규) + doc-lint 강화 + PostToolUse hook + freshness Stop hook |
+| 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
+| 보안 hardening | 6.5 / 10 | 신규 | E2EE Signal Protocol 60 케이스 + Phase 2 진입 + SMTP postfix + GPLv3 + 데모 서버 hardening 미실시 |
+| **종합** | **8.6 / 10** | 9.0 → 8.6 ▼ | **10점 만점 0.1 세분화 재산정 — 평균값 정합. 보안 hardening row 신규 추가 + 차별화 + Phase 2 진입 반영** |
 
 ---
 
@@ -394,6 +395,20 @@ status: active
 | **SMTP spam reputation 부족** (신규 사이클 5) | 상 | 중 | SendGrid relay fallback (free 100/day) |
 | **wine 안 PyQt6 Qt dlls 호환성** (신규 사이클 5) | 중 | 중 | hello-world 사전 검증 (Phase 1 후반 build.yml) |
 | **데모 서버 SSH 차단** (신규 사이클 5) | 중 | 중 | 사용자 직접 SSH 또는 ISP 협의 |
+| **observability baseline drift** (신규 사이클 15) | 중 | 중 | drift 회수 6단계 절차 (`observability-baseline.md` §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement |
+| **Phase 2 E2EE 잔존 영역** (DH ratchet + session state + skipped keys, 사이클 32) | 중 | 상 | 사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증 |
+
+### 8.1 보안 리스크 해결책 강화 (사이클 32 신규 — 사용자 directive)
+
+| 리스크 | 추가 해결책 (Defense-in-Depth) | 진입 시점 |
+|---|---|---|
+| 데모 서버 보안 사고 | (1) fail2ban + nftables rate limit (SSH/WS/SMTP 의 brute force 차단), (2) Let's Encrypt + HSTS preload (MITM 차단), (3) Wazuh agent + auditd (감사 로그), (4) systemd hardening (PrivateTmp + ProtectHome + NoNewPrivileges), (5) 백업 = encrypted off-site (borg + age) | Phase 2 진입 직전 |
+| PyQt6 GPL 외부 fork distribution | (1) `LICENSE` SPDX header 의무 자동 검증 hook, (2) DCO sign-off pre-commit hook, (3) private 전환 시점 의 GPL 의무 distribution 명시 (Phase 종료 시 사용자 confirm), (4) AGPLv3 Phase 2 옵션 (network use 의 source disclosure) | Phase 2 진입 시 |
+| 원격 제어 보안 사고 (Phase 3+) | (1) 친구 추가 양측 명시 수락 + biometric 2FA 의무, (2) 긴급 ESC = global hotkey + 즉시 세션 종료, (3) 감사 로그 = append-only + 매 세션 SHA-256 chain, (4) 화면 제어 권한 = 매 세션 명시 확인 (개별 영역 의 white-list grant), (5) 친구 평판 = trust score (가입 후 30일 + 활동 5건 이상 시 만 원격 제어 가능) | Phase 3 막바지 진입 직전 |
+| SMTP spam reputation | (1) SPF + DKIM + DMARC 의무 + DMARC reject 정책, (2) bounce rate < 5% + complaint rate < 0.1% 모니터링, (3) SendGrid relay 100/day fallback, (4) Bayesian spam score 사전 검증 (SpamAssassin), (5) outbound rate limit 100/hour 의무, (6) IP warm-up 30일 (점진 송신량 증가) | Phase 1 dogfooding 시 |
+| Phase 2 E2EE 잔존 (DH ratchet + skipped keys) | (1) Signal Protocol Test Vector 적용 (libsignal reference 의 정합 검증), (2) ratchet step 의 매 transition 의 invariant assertion (root + chain + counter 의 monotonic 보장), (3) skipped message keys = MAX_SKIP=1000 + LRU expire (메모리 폭주 차단), (4) 매 message 의 header MAC 검증 (X25519 public + counter 의 무결성), (5) reviewer-agent + cryptography expert review (PyCA 정합 + 부채널 공격 검토) | 사이클 33+ |
+| 잠재 부채널 (timing + cache + speculative) | (1) `hmac.compare_digest` 의무 (constant-time), (2) AES-256-GCM 의 hardware acceleration (AES-NI / ARMv8 Crypto Extensions 활용), (3) X25519 = Curve25519 의 constant-time scalar mult (PyCA 보증), (4) 부채널 검사 도구 — `dudect` (statistical timing leakage), (5) speculative execution 의 PyPy/CPython 검토 보류 (Phase 4+) | Phase 3+ |
+| 클라이언트 plain-text 저장 위험 | (1) DB 메시지 body = 클라 keychain 보관 + DB 는 ciphertext 만 저장, (2) macOS Keychain + Windows Credential Manager 통합, (3) 백업 = passphrase + PBKDF2 600K iter (현 security.py 정합) + age encrypt, (4) memory dump 차단 = `mlock` + `sodium_memzero` 패턴 | Phase 2 후반 |
 
 ---
 
