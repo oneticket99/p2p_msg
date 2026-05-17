@@ -22,7 +22,7 @@
 | STUN | `stun.l.google.com:19302` |
 | 로컬 저장 | SQLite |
 | Python | 3.13 |
-| 배포 | macOS + Windows · PyInstaller + zip · 인증서 미사용 · GitHub Actions 매트릭스 |
+| 배포 | macOS + Windows · PyInstaller + zip · 인증서 미사용 · GitHub Actions **self-hosted** 매트릭스 |
 | Remote | https://github.com/oneticket99/p2p_msg.git (public) |
 | Branch 전략 | feature branch + PR · `main` 직접 push 금지 |
 | 라이선스 | 미확정 (사용자 응답 대기) |
