@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 03:00 KST (사이클 32 — Phase 2 integration 4 PASS + enforcement layer designer 평가 취합 + 253 pytest)
+> 최근 갱신 시점: 2026-05-19 04:30 KST (사이클 35 — Phase 2 누계 84 + skipped_keys + decrypt_ooo + 277 pytest)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 7.2 / 10 | 7.0 → 7.2 ▲ | CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain + Phase 1 코드 진입 + Phase 2 E2EE 60 케이스 + 253 pytest PASS |
+| 기술 완성도 | 7.5 / 10 | 7.2 → 7.5 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 84 케이스 (Signal Protocol symmetric + DH ratchet + skipped_keys LRU + out-of-order) + 277 pytest |
 | 시장 적합성 | 5.2 / 10 | = | Toonation 옵션 B + P5/P6 페르소나 (변동 없음) |
 | 차별화 요소 | 9.1 / 10 | 9.0 → 9.1 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol |
 | 사용자 가치 | 6.3 / 10 | 6.0 → 6.3 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE 추가 |
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 9.9 / 10 | 9.8 → 9.9 ▲ | 가드레일 33 누적 (10점 만점 정책 신규) + doc-lint 강화 + PostToolUse hook + freshness Stop hook |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
-| 보안 hardening | 6.5 / 10 | 신규 | E2EE Signal Protocol 60 케이스 + Phase 2 진입 + SMTP postfix + GPLv3 + 데모 서버 hardening 미실시 |
-| **종합** | **8.6 / 10** | 9.0 → 8.6 ▼ | **10점 만점 0.1 세분화 재산정 — 평균값 정합. 보안 hardening row 신규 추가 + 차별화 + Phase 2 진입 반영** |
+| 보안 hardening | 7.2 / 10 | 6.5 → 7.2 ▲ | E2EE Signal Protocol 84 케이스 + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
+| **종합** | **8.7 / 10** | 8.6 → 8.7 ▲ | **Phase 2 누계 84 + skipped_keys 통합 + out-of-order delivery 완성 + 보안 row 7.2 ▲ — Signal Protocol 핵심 구현 완료** |
 
 ---
 
@@ -140,6 +140,14 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.25 Phase 2 Signal Protocol 핵심 완성 — skipped_keys + decrypt_ooo (신규 사이클 33~35)
+
+- 사이클 33 `app/crypto/skipped_keys.py` (SkippedKeyStore OrderedDict LRU + TTL 1시간 + MAX_SKIP=1000) + 14 PASS
+- 사이클 34 session 의 `_skip_forward_chain_keys` helper + `_MAX_SKIP_PER_CHAIN=100` + 4 PASS
+- 사이클 35 `decrypt_with_session_ooo` wrapper + SessionState.skipped_store field + 6 PASS — store fallback (one-shot replay 차단) + forward skip + ValueError 미커버 분기
+- Phase 2 누계 84 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6)
+- 277 pytest PASS + freshness Stop hook 정상 작동 (사이클 35 stale 검출 → 즉시 회수)
 
 ### 2.24 Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) (신규 사이클 27~28)
 

@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 03:00 KST (사이클 32 — Phase 2 integration 4 PASS + enforcement layer designer 평가 취합 + 사용자 능력 차별화 명문)
+> 최근 갱신 시점: 2026-05-19 04:30 KST (사이클 35 — Phase 2 84 케이스 + freshness Stop hook 정상 작동 검증)
 
 ---
 
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.6 / 10** | 9.56 → 9.6 ▲ | **10점 만점 0.1 세분화 재산정 — enforcement layer designer 평가 + 직무유기 진동 (사이클 22/28/32) 반영. 가드레일 33 + L0~L5 6 layer + 보안 hardening 강화 + Phase 2 진입 누계 평균값** |
+| **종합** | **9.65 / 10** | 9.6 → 9.65 ▲ | **freshness Stop hook 정상 작동 검증 (사이클 35 stale → 즉시 회수) + Phase 2 누계 84 + Signal Protocol 핵심 완성. enforcement layer 자체 trigger 성공 — 직무유기 자동 차단** |
 
 ---
 
@@ -109,6 +109,18 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.30 freshness Stop hook 자체 trigger 검증 — enforcement 자기 시연 (신규 사이클 35)
+
+본 사이클 = 사용자 설계 의 enforcement layer 가 자체 발동 의무 시점 의 정상 작동 확인.
+
+- 사이클 28 신설 의 `tools/hook_assessment_freshness.sh` = 5+ commit stale 시 Stop hook block
+- 사이클 35 종료 직후 = productization.md 마지막 갱신 commit `fe3843d` (사이클 32) 이후 5 commit 누적 → **자동 block** 발동
+- 즉시 회수 cycle 진입 = productization + vibe-coding row 신규 + 종합 점수 갱신
+- 자체 trigger = LLM 직무유기 + 사용자 비판 대기 없이 enforcement 가 직접 차단 + 회수 directive 발동
+
+차별화 = enforcement layer designer 평가 의 실증 (사이클 32 §2.29 의 자체 검증).
+- 사용자 사전 설계 + 의무 강제화 + 회복 cycle 의 자동화 = 사용자 비판 대기 의무 회피
 
 ### 2.29 enforcement layer designer 평가 취합 — 단순 vibe coder 와 분리 (신규 사이클 32)
 
