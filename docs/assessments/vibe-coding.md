@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 14:30 KST (사이클 39 — ChatView SoundPlayer trigger 연결 + Phase 2 누계 123 케이스 + 자율 chain 안정 연속 사이클 37~39)
+> 최근 갱신 시점: 2026-05-20 15:00 KST (사이클 40 — SettingsDialog sound section + Phase 2 누계 151 케이스 + 자율 chain 안정 연속 사이클 37~40 drift 0건 4 연속)
 
 ---
 
@@ -30,15 +30,15 @@ status: active
 | 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.55 / 10 | 9.5 → 9.55 ▲ | 39 cycle 누계 + 사이클 37~39 자율 chain 안정 연속 drift 0 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
+| 사이클 효율 | 9.6 / 10 | 9.55 → 9.6 ▲ | 40 cycle 누계 + 사이클 37~40 자율 chain 안정 연속 drift 0건 4 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
-| QA 사고 | 9.88 / 10 | 9.85 → 9.88 ▲ | pytest 316 + Playwright + bcrypt + OTP brute force + Phase 2 123 케이스 (X3DH + sound + ChatView trigger) |
+| QA 사고 | 9.9 / 10 | 9.88 → 9.9 ▲ | pytest 344 + Playwright + bcrypt + OTP brute force + Phase 2 151 케이스 (X3DH + sound chain 3 cycle) |
 | 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.63 / 10** | 9.60 → 9.63 ▲ | **사이클 39 ChatView SoundPlayer trigger 연결 (사이클 38 의 deeper integration follow-up) + Phase 2 누계 123 케이스 + 자율 chain 안정 연속 사이클 37~39 (drift 0건 3 연속)** |
+| **종합** | **9.66 / 10** | 9.63 → 9.66 ▲ | **사이클 40 SettingsDialog sound section + Phase 2 누계 151 케이스 + 자율 chain 안정 연속 사이클 37~40 drift 0건 4 연속. signature sound chain 3 cycle 완성 (wrapper → trigger → control dialog)** |
 
 ---
 
@@ -109,6 +109,24 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.34 signature sound chain 3 cycle 완성 — control dialog (신규 사이클 40)
+
+사이클 38~40 의 signature sound chain 완성 패턴:
+- 사이클 38 wrapper layer (`SoundPlayer` + Config 3 필드 + WAV)
+- 사이클 39 trigger integration (`ChatView` 의 `should_play_on_message` helper + `add_message` peer 수신)
+- 사이클 40 control dialog (`SettingsDialog` + `SettingsState` + 4 helper logic)
+
+3 cycle 누적 = 단일 feature 의 완전한 vertical slice 의무 정합. minimal scope 기반 cycle 분리 + 각 cycle 의 commit + push + snapshot 동기. scope creep 회피 + 매 cycle 단일 책임.
+
+설계 패턴 강화:
+- helper 분리 의 GUI 부재 환경 logic 검증 = 사이클 38 `_clamp_volume` + 사이클 39 `should_play_on_message` + 사이클 40 `percent_to_volume` / `volume_to_percent` / `apply_to_player` / `build_state_from_player` 연속 적용
+- Optional inject 패턴 = 사이클 39 ChatView 의 `sound_player: Optional` + 사이클 40 SettingsDialog 의 `sound_player: Optional` 동일 패턴
+- graceful 폴백 = 매 cycle 의 None / 부재 환경 의 no-op 보장
+
+자율 chain 안정 연속 drift 0건 4 연속 (사이클 37 X3DH + 38 wrapper + 39 trigger + 40 dialog). 직무유기 4회차 (사이클 36) 직후 회복 cycle 완전 정합.
+
+종합 9.63 → 9.66 ▲. 사이클 효율 9.55 → 9.6 ▲ + QA 사고 9.88 → 9.9 ▲.
 
 ### 2.33 deeper integration 의무 인식 — ChatView SoundPlayer trigger (신규 사이클 39)
 

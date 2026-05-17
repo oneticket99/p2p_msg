@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 14:30 KST (사이클 39 — Phase 2 ChatView SoundPlayer trigger 연결 + 9 PASS + Phase 2 누계 123 케이스)
+> 최근 갱신 시점: 2026-05-20 15:00 KST (사이클 40 — Phase 2 SettingsDialog sound section + 28 PASS + Phase 2 누계 151 케이스)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 7.8 / 10 | 7.7 → 7.8 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 + signature sound 28 PASS (wrapper 19 + ChatView trigger 9) + 316 pytest |
+| 기술 완성도 | 7.9 / 10 | 7.8 → 7.9 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 + signature sound 56 PASS (wrapper 19 + ChatView 9 + SettingsDialog 28) + 344 pytest |
 | 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
 | 차별화 요소 | 9.2 / 10 | 9.1 → 9.2 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol + signature sound UX |
-| 사용자 가치 | 6.6 / 10 | 6.5 → 6.6 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 메시지 수신 청각 신호 (ChatView trigger 활성) |
+| 사용자 가치 | 6.7 / 10 | 6.6 → 6.7 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + 사용자 음소거/볼륨 control dialog |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
 | 보안 hardening | 7.4 / 10 | 7.2 → 7.4 ▲ | E2EE Signal Protocol 95 케이스 (X3DH 초기 키 교환 추가) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **8.95 / 10** | 8.9 → 8.95 ▲ | **사이클 39 ChatView SoundPlayer trigger 연결 + 9 PASS — 사이클 38 minimal layer follow-up. peer 수신 시 play_signature 활성 + self 발신 미재생 (UX noise 회피). Phase 2 누계 123 케이스** |
+| **종합** | **9.0 / 10** | 8.95 → 9.0 ▲ | **사이클 40 SettingsDialog sound section + 28 PASS — 사이클 38~39 signature sound chain 의 사용자 control 완성. SettingsState dataclass + 4 helper logic 분리 + QDialog skeleton. Phase 2 누계 151 케이스** |
 
 ---
 
@@ -140,6 +140,28 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.29 SettingsDialog sound section — 사용자 control 완성 (신규 사이클 40)
+
+사이클 38~39 signature sound layer chain 의 follow-up. 사용자 directive "작업 이어서 진행해" 자율 GO.
+
+control UI 완성:
+- `app/ui/settings_dialog.py` 신설 — `SettingsState` dataclass (sound_enabled + sound_volume + post_init clamp)
+- 4 helper 분리 = GUI 부재 환경 의 logic 검증 가능
+  - `percent_to_volume(percent)` 0~100 → 0.0~1.0 + clamp
+  - `volume_to_percent(volume)` 0.0~1.0 → 0~100 + clamp + round
+  - `apply_to_player(state, player)` state → SoundPlayer 동기 + None graceful 폴백
+  - `build_state_from_player(player)` 현재 상태 추출 + None 기본값
+- `SettingsDialog` PyQt6 QDialog skeleton — 음소거 QCheckBox + 0~100 QSlider (tickInterval 10) + OK/Cancel buttons. accept() = state→player 즉시 반영 + dialog close.
+- Round-trip 변환 정확성 = parametrize 6 케이스 (0/10/25/50/75/100 percent → volume → percent 일치)
+
+테스트 28 케이스 6 TestClass — SettingsStateClamp 4 + PercentToVolume 5 + VolumeToPercent 7 + RoundTripConversion 6 + ApplyToPlayer 3 + BuildStateFromPlayer 3.
+
+5 검증 PASS — AST + import + pytest 344 + doc-lint 0 + BPE 0 (1건 정정).
+
+Phase 2 누계 = 151 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6 + x3dh 11 + sound 19 + chat_view_sound 9 + settings_dialog 28).
+
+signature sound chain 3 cycle 완성 — 사이클 38 wrapper layer + 사이클 39 trigger integration + 사이클 40 control dialog. 잔존: main_window 의 SettingsDialog wire (메뉴 진입) + designer 최종 chiptune 교체 + Phase 3 의 user_settings table 영속화.
 
 ### 2.28 ChatView SoundPlayer trigger 연결 — deeper integration (신규 사이클 39)
 
