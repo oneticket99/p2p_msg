@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 15:30 KST (사이클 41 — MainWindow SoundPlayer wire + signature sound chain 4 cycle 완성 + 자율 chain 연속 사이클 37~41 drift 0건 5 연속)
+> 최근 갱신 시점: 2026-05-20 16:00 KST (사이클 42 — multi-device sync skeleton + 26 PASS + Phase 2 누계 177 케이스 + 자율 chain drift 0건 6 연속 사이클 37~42)
 
 ---
 
@@ -30,15 +30,15 @@ status: active
 | 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.65 / 10 | 9.6 → 9.65 ▲ | 41 cycle 누계 + 사이클 37~41 자율 chain 연속 drift 0건 5 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
+| 사이클 효율 | 9.7 / 10 | 9.65 → 9.7 ▲ | 42 cycle 누계 + 사이클 37~42 자율 chain 연속 drift 0건 6 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
-| QA 사고 | 9.9 / 10 | 9.88 → 9.9 ▲ | pytest 344 + Playwright + bcrypt + OTP brute force + Phase 2 151 케이스 (X3DH + sound chain 3 cycle) |
+| QA 사고 | 9.92 / 10 | 9.9 → 9.92 ▲ | pytest 370 + Playwright + bcrypt + OTP brute force + Phase 2 177 케이스 (X3DH + sound 4 cycle + multi-device skeleton) |
 | 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.68 / 10** | 9.66 → 9.68 ▲ | **사이클 41 MainWindow wire + signature sound chain 4 cycle 완성 (wrapper → trigger → control → wire) + 자율 chain 연속 사이클 37~41 drift 0건 5 연속. 실 사용 가능 종단 흐름 정합** |
+| **종합** | **9.7 / 10** | 9.68 → 9.7 ▲ | **사이클 42 multi-device sync skeleton (DeviceIdentity + DeviceRegistry + 6 wire format) + 26 PASS. Phase 2 핵심 잔존 진입. 자율 chain drift 0건 6 연속 사이클 37~42** |
 
 ---
 
@@ -109,6 +109,25 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.36 Phase 2 핵심 잔존 진입 — multi-device sync skeleton (신규 사이클 42)
+
+사용자 directive "진행해" 자율 GO. signature sound chain 4 cycle 완성 직후 Phase 2 핵심 잔존 진입 = multi-device sync skeleton.
+
+우선순위 의사결정:
+- Phase 2 잔존 4종 (multi-device + push + 백업 + designer chiptune)
+- multi-device = Signal Protocol 핵심 모델 (1 user N device) + 추후 sender keys (그룹 chat) 의 기반
+- minimal scope = device_registry skeleton (in-memory + wire format) → 서버 endpoint + fan-out 의 별도 cycle
+
+설계 패턴 정합 — 사이클 38~41 의 helper 분리 패턴 연속 적용:
+- frozen dataclass + post_init 검증 = X3DH PreKeyBundle + DeviceIdentity 일관
+- wire format = base64 + JSON ensure_ascii=False (한글 보존 의무)
+- mutation 격리 = get_devices 의 의 list copy 반환 (외부 mutation → 내부 보존)
+- graceful 폴백 = remove 실패 False + get_device 미발견 None (KeyError 회피)
+
+자율 chain drift 0건 6 연속 (사이클 37 X3DH + 38 wrapper + 39 trigger + 40 dialog + 41 wire + 42 multi-device). signature sound feature complete + 다음 feature 진입 = scope 분리 + commit 단위 정렬 완벽.
+
+종합 9.68 → 9.7 ▲. 사이클 효율 9.65 → 9.7 ▲ + QA 사고 9.9 → 9.92 ▲ (370 PASS).
 
 ### 2.35 vertical slice 완성 패턴 — signature sound chain 4 cycle (신규 사이클 41)
 
