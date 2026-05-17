@@ -56,9 +56,10 @@ PR 본문 = H2 시작 의무 (GitHub PR 제목 → H1 역할), MD041 disable 정
 
 ## CI 3 workflow 결과
 
-- [ ] `ci.yml` 7 게이트 GREEN
+- [ ] `ci.yml` 8 job GREEN (docs-lint + M2 + M3 + root-freeze + import-smoke macOS + pytest macOS + M1/M4 PR-only — Windows matrix entry 영구 비활성 → wine cross-compile 대체)
 - [ ] `docs-lint.yml` GREEN
 - [ ] `doc-gardener.yml` (스케쥴 외 dispatch 시) GREEN
+- [ ] `build.yml` (Phase 1 후반 신설) — macOS self-hosted native + Ubuntu wine docker (cdrx/pyinstaller-windows) 듀얼
 
 ## reviewer-agent + qa-agent + observability-agent
 
@@ -72,7 +73,18 @@ PR 본문 = H2 시작 의무 (GitHub PR 제목 → H1 역할), MD041 disable 정
 
 - 출처:
 - 원문:
-- 가드레일 정합 (해당 시): [[feedback-...]]
+- 가드레일 정합 (해당 시): [[feedback-...]] (영구 메모리 22 인덱스 — CLAUDE.md §7)
+
+## 라이선스 + visibility 정합
+
+- [ ] 신규 `.py` / `.js` / `.html` / `.css` / `.sql` / `.sh` 의 SPDX header (`# SPDX-License-Identifier: GPL-3.0-or-later`) 의무 (사용자 directive 2026-05-17 — GPLv3 확정, [[project-license-gpl]])
+- [ ] 신규 의존성 의 라이선스 GPLv3 호환 검증 (BSD/Apache/LGPL/MIT 의 흡수 가능 — incompat 시 PR 차단)
+- [ ] visibility 전환 영향 명시 (Phase 완료 시 private 전환 가능성 — [[project-visibility-transition]])
+
+## enforcement layer sketch 정합
+
+- [ ] `.claude/settings.json.disabled` 의 임의 활성 금지 (사용자 directive 정합 의 의무 발동 시점 만 `mv` — [[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]])
+- [ ] `tools/hook_*.sh` 변경 시 self-test PASS + executable 권한 + M4 한글 주석 정합
 
 ## 후속 task
 
