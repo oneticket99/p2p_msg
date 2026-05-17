@@ -7,3 +7,5 @@ aiofiles>=23.2
 python-dotenv>=1.0
 # MariaDB driver (사용자 directive 2026-05-17 — 영속화 DB)
 asyncmy>=0.2.10
+# Phase 2 E2EE — AES-256-GCM + X25519 ECDH + HKDF (PyCA cryptography)
+cryptography>=42.0
