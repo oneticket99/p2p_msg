@@ -175,7 +175,11 @@ flowchart LR
 | `TURN_CREDENTIAL` | `""` | TURN 비밀값 | — |
 | `USER_NICKNAME` | `guest` | 클라이언트 표시명 | — |
 | `LOG_LEVEL` | `INFO` | 로깅 레벨 | 허용 외 → `INFO` |
-| `LOCAL_DB_PATH` | `./data/local.sqlite` | SQLite 로컬 저장 경로 | — |
+| `DB_HOST` | `127.0.0.1` | MariaDB 호스트 (사용자 directive 2026-05-17) | — |
+| `DB_PORT` | `3306` | MariaDB 포트 | 정수 변환 실패 → 기본값 |
+| `DB_USER` | `tootalk` | MariaDB 사용자 | — |
+| `DB_PASS` | `""` | MariaDB 비밀번호 (`.env.local` 격리) | — |
+| `DB_NAME` | `tootalk` | MariaDB 스키마 | — |
 | `MEDIA_CACHE_DIR` | `./media_cache` | 이미지·파일 캐시 디렉토리 | — |
 | `SIGNAL_SERVER_BIND` | `0.0.0.0` | 시그널링 서버 바인드 주소 (서버 전용) | — |
 | `SIGNAL_SERVER_LOG_FILE` | `./logs/signaling.log` | 서버 로그 출력 경로 | — |
