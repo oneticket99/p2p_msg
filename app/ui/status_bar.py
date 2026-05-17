@@ -56,7 +56,7 @@ class StatusBar(QStatusBar):
         self._state_label.setText(normalized)
 
     def set_peer_count(self, count: int) -> None:
-        """동일 방 안의 다른 peer 수 표시 갱신 (본인 제외).
+        """동일 방 안의 다른 peer 수 표시 갱신 (self 제외).
 
         Parameters
         ----------

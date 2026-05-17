@@ -83,7 +83,7 @@ class ChatView(QScrollArea):
         ts : datetime
             메시지 도착 시각.
         is_self : bool
-            ``True`` 인 경우 본인 발신 — 버블이 우측 정렬되고 색상 분기.
+            ``True`` 인 경우 self 발신 — 버블이 우측 정렬되고 색상 분기.
         """
 
         bubble = MessageBubble(

@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
     def _on_send_clicked(self) -> None:
         """보내기 버튼 / Enter 키 슬롯.
 
-        입력창 텍스트를 가져와 ChatView 에 본인 발신으로 추가한다. 본 Phase
+        입력창 텍스트를 가져와 ChatView 에 self 발신으로 추가한다. 본 Phase
         스켈레톤에서는 echo 처리만 수행하며, 실제 WebRTC DataChannel 송신은
         Task #16 에서 활성화한다.
         """
@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
         peer_id, ok2 = QInputDialog.getText(
             self,
             "방 입장",
-            "Peer ID (본인 식별자) 를 입력하세요:",
+            "Peer ID (self 식별자) 를 입력하세요:",
             QLineEdit.EchoMode.Normal,
             self._state.peer_id or self._config.user_nickname,
         )

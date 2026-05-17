@@ -1,9 +1,9 @@
 """MessageBubble — 단일 메시지 표시 위젯 (텍스트 + 타임스탬프).
 
-본인 발신 / 타인 발신 분기:
+self 발신 / peer 발신 분기:
 
-- 본인 발신 (``is_self=True``)  : 버블이 우측 정렬, 배경색 분기
-- 타인 발신 (``is_self=False``) : 버블이 좌측 정렬, 발신자 라벨 노출
+- self 발신 (``is_self=True``)  : 버블이 우측 정렬, 배경색 분기
+- peer 발신 (``is_self=False``) : 버블이 좌측 정렬, 발신자 라벨 노출
 
 색상값은 하드코딩하지 않고 객체 속성 이름으로만 노출하며, 실제 색상은
 Phase 후반의 통합 테마 시트(``app/ui/theme.qss``)에서 ``objectName`` 셀렉터
@@ -33,7 +33,7 @@ class MessageBubble(QFrame):
     레이아웃:
 
     ```
-    [발신자 표시명]                     ← 타인 발신 시에만 노출
+    [발신자 표시명]                     ← peer 발신 시에만 노출
     [메시지 본문 ……………………………]
                           [HH:MM]       ← 타임스탬프 (우측 하단)
     ```
@@ -41,13 +41,13 @@ class MessageBubble(QFrame):
     Parameters
     ----------
     sender : str
-        발신자 표시명 — 본인 발신일 때도 보관하지만 라벨로 표시하지는 않는다.
+        발신자 표시명 — self 발신일 때도 보관하지만 라벨로 표시하지는 않는다.
     text : str
         메시지 본문 텍스트.
     ts : datetime
         메시지 도착 시각.
     is_self : bool
-        본인 발신 여부 — 정렬·색상 분기 기준.
+        self 발신 여부 — 정렬·색상 분기 기준.
     parent : QWidget | None
         상위 위젯.
     """
@@ -81,7 +81,7 @@ class MessageBubble(QFrame):
         outer = QHBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
 
-        # 본인 발신 — 좌측 stretch 로 우측 밀어두기
+        # self 발신 — 좌측 stretch 로 우측 밀어두기
         if is_self:
             outer.addStretch(1)
 
@@ -92,7 +92,7 @@ class MessageBubble(QFrame):
         bubble_layout.setContentsMargins(8, 6, 8, 6)
         bubble_layout.setSpacing(2)
 
-        # 타인 발신 시 발신자 라벨 노출
+        # peer 발신 시 발신자 라벨 노출
         if not is_self:
             sender_label = QLabel(sender, bubble)
             sender_label.setStyleSheet(
@@ -118,7 +118,7 @@ class MessageBubble(QFrame):
         )
         bubble_layout.addWidget(ts_label)
 
-        # 말풍선 스타일 — 본인/타인 색상 분기
+        # 말풍선 스타일 — self/peer 색상 분기
         bg = self._COLOR_SELF_BG if is_self else self._COLOR_PEER_BG
         bubble.setStyleSheet(
             "QFrame#messageBubble {"
@@ -131,7 +131,7 @@ class MessageBubble(QFrame):
 
         outer.addWidget(bubble)
 
-        # 타인 발신 — 우측 stretch 로 좌측 정렬
+        # peer 발신 — 우측 stretch 로 좌측 정렬
         if not is_self:
             outer.addStretch(1)
 
