@@ -20,13 +20,18 @@ status: active
 
 ## 1. 매트릭스 + 라벨 명세
 
-| Runner OS | 라벨 (정확히 일치) | 빌드 산출물 | 호스트 후보 |
+| Runner | 라벨 (정확히 일치) | 빌드 산출물 | 호스트 |
 |---|---|---|---|
-| macOS arm64 | `[self-hosted, macOS, arm64]` | TooTalk.app + macOS zip | 사용자 본 Mac (현 작업 머신) |
-| Windows x64 | `[self-hosted, Windows, x64]` | TooTalk Windows zip | 사용자 Windows 머신 또는 VM |
+| **macOS arm64 self-hosted** | `[self-hosted, macOS, arm64]` | TooTalk.app + macOS zip + ci/docs-lint/doc-gardener 게이트 | 사용자 본 Mac (id=2, launchd PID 62533, online) |
+| **GitHub-hosted Ubuntu** | `ubuntu-latest` | TooTalk Windows zip (wine cross-compile, Phase 1 후반 build.yml) | GitHub 무료 (public repo) |
 
-> Linux runner 후보 (`114.207.112.73` Ubuntu) 는 Phase 1 제외 — 사용자 directive 2026-05-17
-> "macOS arm64 + Windows x64" 매트릭스 단독.
+> **Windows self-hosted runner 의 의무 = 영구 회수** (사용자 directive 2026-05-17
+> "윈도우 빌드는 wine을 이용해서 할꺼야"). Windows 빌드 = GitHub-hosted Ubuntu 의
+> wine cross-compile (docker `cdrx/pyinstaller-windows`) — 영구 메모리
+> [[project-windows-build-via-wine]] 정합.
+>
+> Linux self-hosted runner 후보 (`114.207.112.73` Ubuntu) 는 Phase 2+ 검토 —
+> 사용자 directive 2026-05-17 macOS arm64 단독 + GitHub-hosted Ubuntu 듀얼.
 
 라벨 배열 매칭 = AND. GitHub Actions 매트릭스 job 은 모든 라벨 충족 runner 를 선택. 라벨 1개라도
 어긋나면 workflow 는 `queued` 상태로 무한 대기한다.
@@ -43,13 +48,14 @@ status: active
 - **node + npx** (`brew install node`) — `markdownlint-cli2` 의 `npx --yes` 실행 의존
 - **git 2.30 이상** (Xcode CLT 동봉본 또는 `brew install git`)
 
-### 2.2 Windows x64 (필수)
+### 2.2 ~~Windows x64 self-hosted runner~~ (영구 회수)
 
-- **Python 3.13** ([python.org](https://www.python.org) 공식 인스톨러, "Add to PATH" 체크)
-- **PowerShell 5.1 이상** (Windows 10/11 동봉본 충분)
-- **git for Windows** (`git-bash` 동봉 — bash shell step 에서 사용 가능)
-- **node + npx** ([nodejs.org](https://nodejs.org) LTS) — docs-lint 단계에서 필요 시
-- Visual C++ Build Tools (`aiortc` 일부 의존성 의 wheel 미가용 시 빌드 필요)
+본 영역 의 의무 = 2026-05-17 사용자 directive 정합 영구 회수. Windows 빌드 의
+host = GitHub-hosted Ubuntu (`ubuntu-latest`) + docker `cdrx/pyinstaller-windows`
+의 wine cross-compile. 사용자 Windows 머신 + VM + dependency 설치 의무 = 모두 회피.
+
+자세한 정합 정책 = 영구 메모리 [[project-windows-build-via-wine]] + 본 문서 §11
+(신규 wine cross-compile 영역).
 
 ### 2.3 공통 권장
 
@@ -95,29 +101,9 @@ tar xzf ./actions-runner.tar.gz
 > `self-hosted` 라벨은 GitHub 가 자동 부여. 사용자 라벨 = `macOS,arm64` 만 지정.
 > 매트릭스 `[self-hosted, macOS, arm64]` 3개 라벨 AND 매칭.
 
-### 3.3 Windows x64 등록 단계
+### 3.3 ~~Windows x64 등록 단계~~ (영구 회수 — §11 wine cross-compile 정합)
 
-```powershell
-# Windows PowerShell — 관리자 권한 권장
-mkdir C:\actions-runner-tootalk
-cd C:\actions-runner-tootalk
-
-# 최신 runner 다운로드
-Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.319.1/actions-runner-win-x64-2.319.1.zip -OutFile actions-runner.zip
-Expand-Archive -Path actions-runner.zip -DestinationPath .
-
-# 라벨 정확히 일치 — Windows, x64
-.\config.cmd `
-  --url https://github.com/oneticket99/p2p_msg `
-  --token <발급_토큰> `
-  --name tootalk-windows-x64 `
-  --labels Windows,x64 `
-  --work _work
-
-# 서비스 등록 (재부팅 시 자동 시작)
-.\svc.cmd install
-.\svc.cmd start
-```
+본 영역 의 의무 = 영구 회수. Windows 빌드 = §11 의 wine cross-compile 패턴 정합.
 
 ---
 
@@ -125,8 +111,14 @@ Expand-Archive -Path actions-runner.zip -DestinationPath .
 
 ### 4.1 GitHub runner 상태 확인
 
-<https://github.com/oneticket99/p2p_msg/settings/actions/runners> 에 두 runner 모두 `Idle`
-상태로 표시 = 정상.
+<https://github.com/oneticket99/p2p_msg/settings/actions/runners> 에 macOS arm64
+runner 단독 `Idle` 또는 `Active` 상태 = 정상. Windows runner 없음 = 정합.
+
+```bash
+# gh CLI 검증 명령
+gh api repos/oneticket99/p2p_msg/actions/runners | \
+  python3 -c "import sys,json;d=json.load(sys.stdin);[print(r['name'],r['status'],r['labels']) for r in d['runners']]"
+```
 
 ### 4.2 워크플로우 수동 실행
 
@@ -228,18 +220,70 @@ cd .. && rm -rf actions-runner-tootalk
 
 ## 9. 운영 체크리스트
 
-- [ ] macOS runner 등록 + `Idle` 상태 확인
-- [ ] Windows runner 등록 + `Idle` 상태 확인
-- [ ] `brew install bash node` (macOS) 완료
-- [ ] Python 3.13 PATH 등록 (양 runner)
-- [ ] fork PR workflow 승인 설정 적용
-- [ ] `gh workflow run docs-lint.yml` 수동 trigger 의 GREEN 확인
-- [ ] `gh workflow run doc-gardener.yml` 수동 trigger 의 GREEN 확인
-- [ ] 더미 PR commit 으로 `ci.yml` 7 게이트 GREEN 확인
+- [x] macOS runner 등록 + `online` 상태 확인 (2026-05-17 id=2 launchd PID 62533)
+- [x] `brew install bash node python@3.13` (macOS) 완료
+- [x] Python 3.13 PATH 등록 (`/opt/homebrew/opt/python@3.13/libexec/bin`)
+- [ ] fork PR workflow 승인 설정 적용 (Settings UI — Task #4)
+- [x] `gh workflow run docs-lint.yml` 수동 trigger 의 GREEN 확인
+- [x] `gh workflow run doc-gardener.yml` 수동 trigger 의 GREEN 확인
+- [x] push trigger 의 `ci.yml` 8 job GREEN 확인 (2026-05-17 commit e68f818)
+- [ ] Phase 1 후반 `build.yml` 신설 + Windows wine cross-compile job 동작 검증 (§11)
 
 ---
 
 ## 10. 참조
+
+- [정본 §L](../../CLAUDE_HARNESS_IMPORTANT.md) — CI 강제 게이트
+- `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_ci_self_hosted.md` — 사용자 directive 본문
+- `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_windows_build_via_wine.md` — Windows 빌드 wine 정책
+- [GitHub Docs — Adding self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners)
+- [GitHub Docs — Security hardening for GitHub Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [cdrx/pyinstaller-windows](https://github.com/cdrx/docker-pyinstaller) — docker image (wine + Python + PyInstaller)
+- 본 문서 owner: oneticket99 · last_verified: 2026-05-17 · status: active
+
+---
+
+## 11. Windows 빌드 — wine cross-compile (사용자 directive 2026-05-17)
+
+### 11.1 정책 확정
+
+- Windows self-hosted runner 의 의무 = **영구 회수**
+- Windows 빌드 host = **GitHub-hosted Ubuntu** (`ubuntu-latest`) + docker `cdrx/pyinstaller-windows` 의 wine 실행
+- 사유: 사용자 Windows 머신 + VM + dependency 설치 의무 회피 + GitHub-hosted Ubuntu 의 무료 + ephemeral 격리 + matrix scale
+
+### 11.2 패턴
+
+```yaml
+build-windows:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - name: PyInstaller wine cross-compile
+      uses: cdrx/pyinstaller-windows@master
+      with:
+        spec: tools/build.spec
+        requirements: app/requirements.txt
+    - name: zip 패키징
+      run: |
+        cd dist/windows
+        zip -r ../TooTalk-${{ github.ref_name }}-windows-x64.zip .
+    - uses: actions/upload-artifact@v4
+      with:
+        name: TooTalk-windows-x64
+        path: dist/*.zip
+```
+
+### 11.3 검증 의무 (Phase 1 후반)
+
+- hello-world PyQt6 빌드 의 wine 안 수행 + Windows native 머신 실행 검증 (사용자 직접)
+- aiortc 의 native 모듈 (`av` + `cffi`) 의 Windows wheel `pip --only-binary=:all:` 자동 fetch 검증
+- PyQt6 Qt6 dlls 의 wine 안 PyInstaller 자동 수집 검증
+
+### 11.4 대안 (cdrx 의 한계 시)
+
+- alternative A: ubuntu-latest 직접 setup — `apt install wine winetricks` + native PyInstaller
+- alternative B: 자체 docker image (Python 3.13 의무 시)
+- alternative C: macOS runner 안 wine-stable (apple silicon native 9.x) — fallback
 
 - [정본 §L](../../CLAUDE_HARNESS_IMPORTANT.md) — CI 강제 게이트
 - `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_ci_self_hosted.md` — 사용자 directive 본문 (저장소 외부 영구 메모리)
