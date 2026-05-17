@@ -262,7 +262,113 @@ sequenceDiagram
 
 ---
 
-## 14. 참조
+## 14. Wireframe / Mockup (mermaid block diagram)
+
+### 14.1 메인 채팅 화면 (1280x800 기본)
+
+```mermaid
+flowchart TB
+    subgraph MW["MainWindow 1280 x 800"]
+        direction TB
+
+        subgraph TB1["MenuBar (높이 28)"]
+            M1[설정]
+            M2[방]
+            M3[도움말]
+        end
+
+        subgraph BODY["Body (분할 가로 280 + 1000)"]
+            direction LR
+            subgraph SP["Side Panel 280px"]
+                direction TB
+                RM[Room 목록]
+                PR[Peer 목록<br/>연결 N명]
+            end
+            subgraph CH["Chat Area 1000px"]
+                direction TB
+                CV2[ChatView<br/>QScrollArea<br/>높이 가변]
+                IN2[InputRow 높이 96<br/>QLineEdit + 첨부 + 송신]
+            end
+        end
+
+        subgraph FT1["StatusBar 높이 24"]
+            ST1[connect:OK]
+            ST2[peers:3]
+            ST3[upload:42%]
+        end
+    end
+```
+
+### 14.2 메시지 버블 배치 (ChatView 안)
+
+```mermaid
+flowchart TD
+    subgraph CV3["ChatView 1000 폭 안의 메시지 영역"]
+        direction TB
+        B1["타인 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
+        B2["타인 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
+        B3["본인 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
+        B4["본인 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
+        B5["타인 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
+    end
+    B1 --> B2 --> B3 --> B4 --> B5
+```
+
+### 14.3 파일 진행 위젯 상세
+
+```mermaid
+flowchart TD
+    subgraph FPS["FileProgressWidget 송신 role"]
+        direction TB
+        T1["filename.zip · 12.3 MB"]
+        BAR1["회색 bar<br/>송신 buffer: 78%"]
+        BAR2["파란 bar<br/>수신 확정: 64%"]
+    end
+    subgraph FPR["FileProgressWidget 수신 role"]
+        direction TB
+        T2["filename.zip · 12.3 MB"]
+        BAR3["파란 bar<br/>수신: 64% (7.8/12.3 MB)"]
+    end
+```
+
+### 14.4 화면 전환 다이어그램
+
+```mermaid
+flowchart LR
+    LAUNCH[앱 실행<br/>QApplication 시작]
+    LAUNCH --> CONN[연결 다이얼로그<br/>room id 입력]
+    CONN -->|JOIN 성공| MAIN[메인 채팅 화면]
+    CONN -->|JOIN 실패| ERR1[에러 토스트<br/>StatusBar 빨강]
+    ERR1 --> CONN
+
+    MAIN --> SET[설정 다이얼로그<br/>nickname · STUN · TURN]
+    SET --> MAIN
+
+    MAIN --> ABOUT[About 다이얼로그<br/>TooTalk 버전 · 라이선스]
+    ABOUT --> MAIN
+
+    MAIN -->|Ctrl+Q 또는 닫기| QUIT[graceful disconnect<br/>SignalingClient.disconnect]
+    QUIT --> END[프로세스 종료]
+```
+
+### 14.5 설계 제약
+
+| 항목 | 기준값 | 비고 |
+|---|---|---|
+| 메인 윈도우 최소 사이즈 | 800 x 600 | 사이드 패널 자동 접힘 < 1024 |
+| 메인 윈도우 기본 사이즈 | 1280 x 800 | 첫 실행 시 |
+| 사이드 패널 폭 | 280 ~ 360 | 드래그 조절 |
+| 채팅 입력창 높이 | 96 | 다중 라인 시 192 까지 자동 확장 |
+| StatusBar 높이 | 24 | 변동 없음 |
+| 메시지 버블 최대 가로 | 380 | §2.4 메시지 가독성 정합 |
+| 파일 진행 위젯 높이 | 송신 72 · 수신 56 | 2-stack vs 1-stack |
+| 첨부 버튼 한 변 | 36 | 클릭 영역 확보 |
+
+본 wireframe 은 **레이아웃 의도**만 정의한다. 실제 픽셀·색상값은 `app/ui/theme.qss` (Phase 1 후반 신설 예정) 와 `app/ui/*.py` 구현 본문이 따른다.
+
+---
+
+## 15. 참조
 
 | 주제 | 문서 |
 |---|---|
