@@ -162,7 +162,7 @@ flowchart LR
 
 ---
 
-## 7. 영구 가드레일 인덱스 (22건)
+## 7. 영구 가드레일 인덱스 (25건)
 
 - 위치: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/`
 - 인덱스 파일: `MEMORY.md`
@@ -191,6 +191,9 @@ flowchart LR
 | 20 | `project_smtp_demo_server.md` | SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 |
 | 21 | `project_license_gpl.md` | TooTalk 라이선스 = GPLv3 + LICENSE 저장소 루트 + SPDX header |
 | 22 | `project_visibility_transition.md` | GitHub visibility = public (현재) → private 전환 가능성 |
+| 23 | `feedback_emoji_telegram_compat.md` | 보고/문서/텔레그램 송신 emoji = 표준 Unicode BMP/supplementary plane (vendor-specific + 신생 ZWJ 회피) |
+| 24 | `project_emoji_pack_share.md` | TooTalk 의 텔레그램 sticker/custom emoji pack 등록 + 누구나 사용 가능 의 오픈 공유 (Phase 3+ 차별화) |
+| 25 | `project_bot_framework.md` | TooTalk 의 텔레그램 등가 bot framework (BotFather + Bot API + webhook + inline + payment, Phase 3+ 차별화) |
 
 > 가드레일은 세션 시작 시 `MEMORY.md` 인덱스 정독 의무. 우선순위 1번 (도구 사용 우선순위 §6).
 
