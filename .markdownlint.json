@@ -12,7 +12,7 @@
   "MD026": { "punctuation": ".,;:" },
   "MD029": { "style": "ordered" },
   "MD033": {
-    "allowed_elements": ["br", "details", "summary", "kbd", "sub", "sup"]
+    "allowed_elements": ["br", "details", "summary", "kbd", "sub", "sup", "span", "div"]
   },
   "MD034": false,
   "MD036": false,

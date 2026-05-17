@@ -63,6 +63,16 @@
   a:hover { text-decoration: underline; }
   ul, ol { padding-left: 1.6em; }
   li { margin: 0.25em 0; }
+  /* 색상 swatch — 색상 변수 표 가시화 (사용자 directive 2026-05-17) */
+  .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #999;
+    vertical-align: middle;
+    margin-right: 6px;
+    border-radius: 2px;
+  }
 </style>
 </head>
 <body>
@@ -166,15 +176,15 @@ flowchart TD
 </thead>
 <tbody>
 <tr><td><code>--primary</code></td><td>미확정 후크</td><td>미확정 후크</td><td>보내기 버튼 · 강조 액션</td></tr>
-<tr><td><code>--bg</code></td><td><code>#ffffff</code></td><td><code>#1e1e1e</code></td><td>윈도우 배경</td></tr>
-<tr><td><code>--fg</code></td><td><code>#1a1a1a</code></td><td><code>#e5e5e5</code></td><td>본문 텍스트</td></tr>
-<tr><td><code>--bubble-self</code></td><td><code>#dcf8c6</code></td><td><code>#2d5a3f</code></td><td>내가 발신한 버블 배경 (self)</td></tr>
-<tr><td><code>--bubble-other</code></td><td><code>#ffffff</code></td><td><code>#2a2a2a</code></td><td>상대가 발신한 버블 배경 (peer)</td></tr>
-<tr><td><code>--bubble-border</code></td><td><code>#dddddd</code></td><td><code>#3a3a3a</code></td><td>버블 경계선</td></tr>
-<tr><td><code>--text-timestamp</code></td><td><code>#888888</code></td><td><code>#9a9a9a</code></td><td>타임스탬프 회색</td></tr>
-<tr><td><code>--text-sender</code></td><td><code>#555555</code></td><td><code>#b5b5b5</code></td><td>발신자 라벨</td></tr>
-<tr><td><code>--status-connected</code></td><td><code>#22c55e</code></td><td><code>#22c55e</code></td><td>연결 정상</td></tr>
-<tr><td><code>--status-error</code></td><td><code>#dc2626</code></td><td><code>#ef4444</code></td><td>연결 오류</td></tr>
+<tr><td><code>--bg</code></td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#1e1e1e"></span><code>#1e1e1e</code></td><td>윈도우 배경</td></tr>
+<tr><td><code>--fg</code></td><td><span class="swatch" style="background:#1a1a1a"></span><code>#1a1a1a</code></td><td><span class="swatch" style="background:#e5e5e5"></span><code>#e5e5e5</code></td><td>본문 텍스트</td></tr>
+<tr><td><code>--bubble-self</code></td><td><span class="swatch" style="background:#dcf8c6"></span><code>#dcf8c6</code></td><td><span class="swatch" style="background:#2d5a3f"></span><code>#2d5a3f</code></td><td>내가 발신한 버블 배경 (self)</td></tr>
+<tr><td><code>--bubble-other</code></td><td><span class="swatch" style="background:#ffffff"></span><code>#ffffff</code></td><td><span class="swatch" style="background:#2a2a2a"></span><code>#2a2a2a</code></td><td>상대가 발신한 버블 배경 (peer)</td></tr>
+<tr><td><code>--bubble-border</code></td><td><span class="swatch" style="background:#dddddd"></span><code>#dddddd</code></td><td><span class="swatch" style="background:#3a3a3a"></span><code>#3a3a3a</code></td><td>버블 경계선</td></tr>
+<tr><td><code>--text-timestamp</code></td><td><span class="swatch" style="background:#888888"></span><code>#888888</code></td><td><span class="swatch" style="background:#9a9a9a"></span><code>#9a9a9a</code></td><td>타임스탬프 회색</td></tr>
+<tr><td><code>--text-sender</code></td><td><span class="swatch" style="background:#555555"></span><code>#555555</code></td><td><span class="swatch" style="background:#b5b5b5"></span><code>#b5b5b5</code></td><td>발신자 라벨</td></tr>
+<tr><td><code>--status-connected</code></td><td><span class="swatch" style="background:#22c55e"></span><code>#22c55e</code></td><td><span class="swatch" style="background:#22c55e"></span><code>#22c55e</code></td><td>연결 정상</td></tr>
+<tr><td><code>--status-error</code></td><td><span class="swatch" style="background:#dc2626"></span><code>#dc2626</code></td><td><span class="swatch" style="background:#ef4444"></span><code>#ef4444</code></td><td>연결 오류</td></tr>
 <tr><td><code>--progress-acked</code></td><td>미확정 후크</td><td>미확정 후크</td><td>ACK 누적 진행 막대</td></tr>
 <tr><td><code>--progress-inflight</code></td><td>미확정 후크</td><td>미확정 후크</td><td>송신 큐 대기 막대</td></tr>
 </tbody>

@@ -86,15 +86,15 @@ flowchart TD
 | 변수명 | 라이트 임시값 | 다크 임시값 | 용도 |
 |---|---|---|---|
 | `--primary` | 미확정 후크 | 미확정 후크 | 보내기 버튼 · 강조 액션 |
-| `--bg` | `#ffffff` | `#1e1e1e` | 윈도우 배경 |
-| `--fg` | `#1a1a1a` | `#e5e5e5` | 본문 텍스트 |
-| `--bubble-self` | `#dcf8c6` | `#2d5a3f` | 내가 발신한 버블 배경 (self) |
-| `--bubble-other` | `#ffffff` | `#2a2a2a` | 상대가 발신한 버블 배경 (peer) |
-| `--bubble-border` | `#dddddd` | `#3a3a3a` | 버블 경계선 |
-| `--text-timestamp` | `#888888` | `#9a9a9a` | 타임스탬프 회색 |
-| `--text-sender` | `#555555` | `#b5b5b5` | 발신자 라벨 |
-| `--status-connected` | `#22c55e` | `#22c55e` | 연결 정상 |
-| `--status-error` | `#dc2626` | `#ef4444` | 연결 오류 |
+| `--bg` | <span style="display:inline-block;width:14px;height:14px;background:#ffffff;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#ffffff` | <span style="display:inline-block;width:14px;height:14px;background:#1e1e1e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#1e1e1e` | 윈도우 배경 |
+| `--fg` | <span style="display:inline-block;width:14px;height:14px;background:#1a1a1a;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#1a1a1a` | <span style="display:inline-block;width:14px;height:14px;background:#e5e5e5;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#e5e5e5` | 본문 텍스트 |
+| `--bubble-self` | <span style="display:inline-block;width:14px;height:14px;background:#dcf8c6;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#dcf8c6` | <span style="display:inline-block;width:14px;height:14px;background:#2d5a3f;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#2d5a3f` | 내가 발신한 버블 배경 (self) |
+| `--bubble-other` | <span style="display:inline-block;width:14px;height:14px;background:#ffffff;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#ffffff` | <span style="display:inline-block;width:14px;height:14px;background:#2a2a2a;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#2a2a2a` | 상대가 발신한 버블 배경 (peer) |
+| `--bubble-border` | <span style="display:inline-block;width:14px;height:14px;background:#dddddd;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#dddddd` | <span style="display:inline-block;width:14px;height:14px;background:#3a3a3a;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#3a3a3a` | 버블 경계선 |
+| `--text-timestamp` | <span style="display:inline-block;width:14px;height:14px;background:#888888;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#888888` | <span style="display:inline-block;width:14px;height:14px;background:#9a9a9a;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#9a9a9a` | 타임스탬프 회색 |
+| `--text-sender` | <span style="display:inline-block;width:14px;height:14px;background:#555555;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#555555` | <span style="display:inline-block;width:14px;height:14px;background:#b5b5b5;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#b5b5b5` | 발신자 라벨 |
+| `--status-connected` | <span style="display:inline-block;width:14px;height:14px;background:#22c55e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#22c55e` | <span style="display:inline-block;width:14px;height:14px;background:#22c55e;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#22c55e` | 연결 정상 |
+| `--status-error` | <span style="display:inline-block;width:14px;height:14px;background:#dc2626;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#dc2626` | <span style="display:inline-block;width:14px;height:14px;background:#ef4444;border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>`#ef4444` | 연결 오류 |
 | `--progress-acked` | 미확정 후크 | 미확정 후크 | ACK 누적 진행 막대 |
 | `--progress-inflight` | 미확정 후크 | 미확정 후크 | 송신 큐 대기 막대 |
 
