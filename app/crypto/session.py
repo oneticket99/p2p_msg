@@ -119,6 +119,8 @@ class SessionState:
     sending_chain: Optional[ChainKey] = None
     receiving_chain: Optional[ChainKey] = None
     peer_dh_public: Optional[bytes] = None
+    # 사이클 35 — out-of-order delivery + 과거 chain skip 보관
+    skipped_store: Optional[SkippedKeyStore] = None
 
     def __post_init__(self) -> None:
         if len(self.root_key) != 32:
@@ -330,5 +332,77 @@ def decrypt_with_session(
         peer_dh_public=state.peer_dh_public,
         sending_chain=state.sending_chain,
         receiving_chain=next_chain,
+        skipped_store=state.skipped_store,
+    )
+    return (plaintext, new_state)
+
+
+def decrypt_with_session_ooo(
+    state: SessionState,
+    payload: EncryptedPayload,
+    *,
+    sender_dh_public: bytes,
+    counter: int,
+    associated_data: bytes | None = None,
+) -> Tuple[bytes, SessionState]:
+    """out-of-order delivery 지원 복호화.
+
+    흐름:
+    1. (sender_dh_public, counter) 의 store get — 보관된 skipped key 있으면 즉시 복호화
+    2. receiving_chain counter ≤ 도착 counter 시 = forward skip + chain advance + 복호화
+    3. receiving_chain counter > 도착 counter 시 = ValueError (store get 부재 + 과거 chain message)
+
+    Parameters
+    ----------
+    sender_dh_public : bytes
+        peer 의 X25519 public — store key prefix.
+    counter : int
+        메시지 의 counter (송신 측 chain counter 시점).
+
+    Raises
+    ------
+    RuntimeError
+        receiving_chain + skipped_store 미초기화.
+    ValueError
+        counter < current chain counter + store fallback 부재 (replay 또는 손실).
+    cryptography.exceptions.InvalidTag
+        AES-GCM 검증 실패 (tampering 또는 wrong key).
+    """
+
+    if state.receiving_chain is None:
+        raise RuntimeError("receiving_chain 미초기화")
+    if state.skipped_store is None:
+        raise RuntimeError("skipped_store 미초기화 — SessionState(skipped_store=SkippedKeyStore()) 의무")
+
+    # 1. store fallback — 보관된 key 우선 (one-shot)
+    cached_mk = state.skipped_store.get(sender_dh_public, counter)
+    if cached_mk is not None:
+        plaintext = aes_gcm_decrypt(cached_mk, payload, associated_data=associated_data)
+        # chain state 변경 무 (이미 사용 + 폐기)
+        return (plaintext, state)
+
+    # 2. forward skip — receiving_chain counter ≤ 도착 counter
+    if counter < state.receiving_chain.counter:
+        raise ValueError(
+            f"counter {counter} < chain.counter {state.receiving_chain.counter} "
+            "(store 부재 — replay 또는 손실)"
+        )
+
+    # chain 을 도착 counter 까지 forward — 중간 keys 보관
+    advanced_chain = _skip_forward_chain_keys(
+        state.receiving_chain, counter, sender_dh_public, state.skipped_store
+    )
+    # 도착 메시지 의 chain → message key + next chain
+    mk, next_chain = ratchet_chain(advanced_chain)
+    plaintext = aes_gcm_decrypt(mk, payload, associated_data=associated_data)
+
+    new_state = SessionState(
+        root_key=state.root_key,
+        my_dh_private=state.my_dh_private,
+        my_dh_public=state.my_dh_public,
+        peer_dh_public=state.peer_dh_public,
+        sending_chain=state.sending_chain,
+        receiving_chain=next_chain,
+        skipped_store=state.skipped_store,
     )
     return (plaintext, new_state)
