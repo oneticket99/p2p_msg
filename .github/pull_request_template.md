@@ -1,7 +1,9 @@
+<!-- markdownlint-disable MD041 -->
 <!--
 TooTalk(p2p_msg) PR 템플릿 — release-agent 정합
 사용자 directive 2026-05-17 — 모든 PR 의 본 양식 충족 의무.
 정본 [CLAUDE_HARNESS_IMPORTANT.md] §L (CI 강제 게이트) + §R (작업 완료 정의) 정합.
+PR 본문 = H2 시작 의무 (GitHub PR 제목 → H1 역할), MD041 disable 정합.
 -->
 
 ## 요약 (1~3 문장)
