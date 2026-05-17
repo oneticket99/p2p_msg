@@ -153,9 +153,12 @@ status: active
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 14:42)
 
-### 8.1 누계 commit (본 세션 28건, 직전 인계 시점 = `f500104`)
+### 8.1 누계 commit (본 세션 31건, 직전 인계 시점 = `f500104`)
 
 ```text
+400bd0c  fix(canon): History.md + README.md prepend BPE 잔존 5건 정정 (전수 저장소 0건)
+70aceb5  fix(canon): CLAUDE_HARNESS_IMPORTANT.md 정본 BPE 25건 일괄 정정
+b793318  docs(handoff): 세션 인계 사이클 2 갱신 — 28 commit 반영
 67c898a  docs: 평가 snapshot 사이클 4 (productization 3.6 + vibe-coding 4.85)
 5486c72  docs(html): HTML 3종 재생성 — auth + wireframe + 모듈 책임
 ec3f90c  docs(auth): auth 인프라 정책 본문 5 — P3 재조정 + DB 4→7 + 모듈 + wireframe
@@ -305,4 +308,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 14:42 — 사이클 2 갱신 (본 세션 누계 commit 28 반영, 가드레일 16, 텔레그램 송신 24건, HTML 6, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, snapshot 사이클 4 — productization 3.6 + vibe-coding 4.85, sub-agent 누계 16 spawn)
+마지막 갱신: 2026-05-17 14:48 — 사이클 2.1 minor (본 세션 누계 commit 31 + BPE 전수 0건 도달 반영, 가드레일 16, 텔레그램 송신 25건, HTML 6, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, snapshot 사이클 4 — productization 3.6 + vibe-coding 4.85, sub-agent 누계 16 spawn, 세션 종료 직전)
