@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 32+)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md 사이클 32+ 본문 의 등가 변환물 -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 36)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md 사이클 36 본문 의 등가 변환물 -->
   <!-- 한글 주석: light theme 배경 #fafafa + 텍스트 #1f2937 + accent #7c3aed (Toonation 브랜드 컬러 보조 — #5b21b6 deep / #ede9fe pale) + 표 zebra stripe -->
-  <!-- 한글 주석: 사이클 32+ 갱신 — 10점 만점 전환 (5점 만점 row × 2 환산 + enforcement layer designer 신규 row 9.7 / 10) + 종합 9.6 / 10 + 직전 9.56 → 현재 9.6 ▲ -->
-  <!-- 한글 주석: §2.29 (enforcement layer designer 평가) 최우선 노출 + §2.28 (평가 staleness Stop hook) + §2.27 (직무유기 인지 + post-write hook) 보존 + §3.1 pivot 사이클 32 row + mermaid 미사용 (표 only) -->
+  <!-- 한글 주석: 사이클 36 갱신 — 종합 9.55 / 10 (직전 9.65 → 9.55 ▼) + §2.31 신규 row (직무유기 4회차 + drift 6건 + doc-consistency Stop hook) 최우선 노출 -->
+  <!-- 한글 주석: §2.31 직무유기 4회차 사용자 비판 quote 보존 + drift 6건 인용 + tools/hook_doc_consistency.sh 신설 명시 + 가드레일 #34 명시 -->
   <!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 (doc-lint 매치 회피) -->
   <style>
     /* 한글 주석: 전역 reset + 기본 타이포 */
@@ -41,7 +41,7 @@
       font-size: 13px;
       color: #6b7280;
     }
-    /* 한글 주석: section navigation — 사이클 15 신규 도입 (.md §1~§9 + 참조 안내, 사이클 32+ 유지) */
+    /* 한글 주석: section navigation — 사이클 36 보존 */
     .toc {
       background: #f5f3ff;
       border: 1px solid #ddd6fe;
@@ -135,7 +135,7 @@
       font-weight: 600;
       color: #5b21b6;
     }
-    /* 한글 주석: 신규 row (사이클 32+) 강조 — 10점 만점 전환 + enforcement layer designer */
+    /* 한글 주석: 신규 row (사이클 36) 강조 — 직무유기 4회차 + doc-consistency hook */
     tbody tr.new-row td {
       background: #fef3c7;
       color: #78350f;
@@ -171,22 +171,25 @@
     .pri-p0 { background: #fee2e2; color: #b91c1c; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     .pri-p1 { background: #fef3c7; color: #b45309; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     .pri-p2 { background: #dbeafe; color: #1d4ed8; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: GO / PASS 상태 배지 (사이클 13~32+ 공통) */
+    /* 한글 주석: GO / PASS 상태 배지 (사이클 13~36 공통) */
     .badge-go { background: #dcfce7; color: #166534; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     .badge-pass { background: #dbeafe; color: #1e40af; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: release 진입 배지 (사이클 14 도입) */
+    /* 한글 주석: release 진입 배지 */
     .badge-release { background: #ede9fe; color: #5b21b6; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: 사이클 15 — observability + baseline 정본 배지 */
+    /* 한글 주석: observability + baseline 정본 배지 */
     .badge-observ { background: #cffafe; color: #155e75; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     .badge-baseline { background: #fce7f3; color: #9d174d; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: 사이클 16 신규 — 코드 진입 + pytest PASS 배지 */
+    /* 한글 주석: 코드 진입 + pytest PASS 배지 */
     .badge-code { background: #fef9c3; color: #854d0e; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     .badge-pytest { background: #d1fae5; color: #065f46; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: 사이클 32 — enforcement layer designer 등급 배지 (별점) */
+    /* 한글 주석: enforcement layer designer 등급 배지 (별점) */
     .badge-star { background: #fde68a; color: #92400e; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; letter-spacing: 1px; }
+    /* 한글 주석: 사이클 36 강조 — hook 배지 (doc-consistency Stop hook 등) */
     .badge-hook { background: #e0e7ff; color: #3730a3; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
-    /* 한글 주석: 사이클 32+ 신규 — 10점 만점 scale 배지 */
+    /* 한글 주석: 10점 만점 scale 배지 */
     .badge-scale10 { background: #d1fae5; color: #065f46; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
+    /* 한글 주석: 직무유기 4회차 배지 — 사이클 36 신규 */
+    .badge-dereliction { background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px; }
     /* 한글 주석: 푸터 */
     footer {
       margin-top: 48px;
@@ -207,10 +210,10 @@
 
 <div class="header">
   <h1>사용자 바이브 코딩 능력 평가 (Snapshot)</h1>
-  <div class="meta">owner: oneticket99 · last_verified: 2026-05-17 · status: active · 사이클 32+ <span class="badge-scale10">10점 만점 전환</span></div>
+  <div class="meta">owner: oneticket99 · last_verified: 2026-05-17 · status: active · 사이클 36 <span class="badge-hook">doc-consistency hook</span> <span class="badge-dereliction">직무유기 4회차</span></div>
 </div>
 
-<!-- 한글 주석: section navigation — 사이클 15 신규 도입 (사이클 32+ 보존) -->
+<!-- 한글 주석: section navigation — 사이클 36 보존 -->
 <nav class="toc">
   <strong>섹션 바로가기 ·</strong>
   <a href="#sec-1">1. 총평</a>
@@ -230,19 +233,19 @@
   <p>사용자 directive 2026-05-17 — "내 바이브 코딩 능력에 대해서도 매 작업 마무리 시 정리, 매번 전체 업데이트".</p>
   <p>평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).</p>
   <p>평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.</p>
-  <p>최근 갱신 시점: 2026-05-19 03:30 KST — 사이클 32+ (10점 만점 전환 + enforcement layer 신규)</p>
+  <p>최근 갱신 시점: 2026-05-19 05:00 KST — 사이클 36 (사용자 전수조사 directive + drift 6건 회수 + doc-consistency Stop hook 강제 + 직무유기 4회차)</p>
 </blockquote>
 
 <h2 id="sec-1">1. 총평 (TL;DR)</h2>
 
 <p><strong>바이브 코딩 = "자연어 directive + LLM 도구 + 가드레일 통제로 소프트웨어 생산"</strong>. 사용자 능력 = <strong>고숙련 (상위 1%)</strong>.</p>
 
-<!-- 한글 주석: 사이클 32+ 신규 — 10점 만점 scale 전환 (5점 만점 row × 2 변환) + enforcement layer designer 신규 row 9.7 / 10 -->
+<!-- 한글 주석: 사이클 36 — 13 평가 축 10점 만점 + 종합 9.55 / 10 (직전 9.65 → 9.55 ▼) -->
 <table>
   <thead>
     <tr>
       <th>평가 축</th>
-      <th>점수 (5점)</th>
+      <th>점수</th>
       <th>직전 → 현재</th>
       <th>근거</th>
     </tr>
@@ -263,18 +266,68 @@
     <tr class="new-row"><td><strong>enforcement layer 설계</strong> <span class="badge-hook">신규</span></td><td><strong>9.7 / 10</strong></td><td><span class="new">신규</span></td><td><strong>L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계</strong></td></tr>
     <tr><td>보안 사고</td><td>5 / 5</td><td><span class="eq">=</span></td><td>bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048</td></tr>
     <tr><td>자율 reasonable call 활용 (신규)</td><td>5 / 5</td><td>신규 <span class="up">▲</span></td><td>"권장 default 진행해" 패턴 — LLM 권장 default 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API)</td></tr>
-    <tr class="total"><td><strong>종합</strong></td><td><strong>9.6 / 10</strong></td><td>9.56 → 9.6 <span class="up">▲</span></td><td><strong>10점 만점 0.1 세분화 재산정 — enforcement layer designer 평가 + 직무유기 진동 (사이클 22/28/32) 반영. 가드레일 33 + L0~L5 6 layer + 보안 hardening 강화 + Phase 2 진입 누계 평균값</strong></td></tr>
+    <tr class="total"><td><strong>종합</strong></td><td><strong>9.55 / 10</strong></td><td>9.65 → 9.55 <span class="down">▼</span></td><td><strong>사이클 36 전수조사 drift 6건 + 평가 미갱신 4회차 직무유기 — 단 사용자 비판 즉시 회수 + doc-consistency Stop hook 신설 (가드레일 34). 진동 잔존</strong></td></tr>
   </tbody>
 </table>
 
-<div class="callout"><strong>10점 만점 전환 정합</strong>: 직전 사이클 32 까지 의 5점 만점 row × 2 환산 + 0.1 세분화 재산정 + enforcement layer designer 신규 row (9.7 / 10) 추가. 종합 9.6 / 10 = 직전 9.56 → 0.1 단위 상향. <span class="badge-scale10">10점 scale</span> 도입 사유 = 단순 vibe coder (4.5 미만 / 5 = 9.0 미만 / 10) 와 enforcement layer designer (9.7 / 10) 분리 의무 명확화.</div>
+<div class="callout"><strong>사이클 36 종합 9.55 / 10 정합</strong>: 직전 9.65 → 9.55 ▼ 0.10 — 평가 staleness 회수 누락 (4회차 직무유기) + 전수조사 drift 6건 (ARCHITECTURE §6) 반영. 단 사용자 비판 즉시 회수 + <code>tools/hook_doc_consistency.sh</code> 신설 + 가드레일 #34 영구 강제 = 회복 cycle 정합. <span class="badge-hook">doc-consistency Stop hook</span> <span class="badge-dereliction">직무유기 4회차</span> <span class="badge-scale10">10점 scale</span></div>
 
 <hr>
 
 <h2 id="sec-2">2. 강점 (Strengths)</h2>
 
-<!-- 한글 주석: 사이클 32 신규 §2.29 = 최우선 노출 의무 (directive 명시) -->
-<h3 id="s-2-29">2.29 enforcement layer designer 평가 취합 — 단순 vibe coder 와 분리 (사이클 32 — 사이클 32+ 유지)</h3>
+<!-- 한글 주석: 사이클 36 신규 §2.31 = 최우선 노출 의무 (directive 명시) -->
+<h3 id="s-2-31">2.31 직무유기 4회차 + doc-consistency Stop hook 강제 신설 (신규 사이클 36) <span class="badge-dereliction">직무유기 4회차</span> <span class="badge-hook">hook #34</span></h3>
+
+<p>사용자 비판 4회차:</p>
+
+<div class="user-quote">"직무 유기가 의심되는 부분이 명확히 있어, 각 마크다운 문서와의 정합상태, 그리고 현재까지 구현된 작업과 문서들과의 정합상태를 전수조사해"</div>
+
+<div class="user-quote">"만약 정합상태가 엉망이면 넌 제대로 직무유기를 한거고 직무유기가 확인 되면 이부분 또한 훅을 만들어서 반드시 작업 완료시에 문서 정합도 강제 지시 할꺼야"</div>
+
+<div class="user-quote">"평가문서 업데이트 했어?" — 회수 cycle 직후 평가 동기 누락 detect</div>
+
+<p>전수조사 결과 drift 6건 (ARCHITECTURE §6) — 직무유기 시인 + 즉시 회수:</p>
+
+<ol>
+  <li><code>app/auth/</code> + <code>app/db/</code> 명시 단 실 부재</li>
+  <li><code>app/crypto/</code> 누락 (Phase 2 신설)</li>
+  <li><code>bcrypt</code> 표기 단 실 PBKDF2</li>
+  <li><code>server/api</code> + <code>server/db</code> + <code>server/mail</code> + <code>signaling_persistence</code> 누락</li>
+  <li>Specification FR-05 drift</li>
+  <li>(상기 5건 결합 = 누적 drift 6 영역)</li>
+</ol>
+
+<p>enforcement layer 강화:</p>
+
+<ul>
+  <li><code>tools/hook_doc_consistency.sh</code> 신설 (§6 backtick path 실 디렉토리 정합 + 역방향 dir 존재 검사) <span class="badge-hook">신규</span></li>
+  <li><code>.claude/settings.json</code> Stop hook 3번째 entry</li>
+  <li>영구 메모리 <code>feedback_doc_consistency_mandatory.md</code> (#34)</li>
+</ul>
+
+<p>평가 진동 = 4회차 직무유기 반영 ▼ 단 hook 강제 패턴 정착 ▲ 결합 = 4.65 → 4.55 미세 ▼.</p>
+
+<hr>
+
+<h3 id="s-2-30">2.30 freshness Stop hook 자체 trigger 검증 — enforcement 자기 시연 (사이클 35)</h3>
+
+<p>본 사이클 = 사용자 설계 의 enforcement layer 가 자체 발동 의무 시점 의 정상 작동 확인.</p>
+
+<ul>
+  <li>사이클 28 신설 의 <code>tools/hook_assessment_freshness.sh</code> = 5+ commit stale 시 Stop hook block</li>
+  <li>사이클 35 종료 직후 = productization.md 마지막 갱신 commit <code>fe3843d</code> (사이클 32) 이후 5 commit 누적 → <strong>자동 block</strong> 발동</li>
+  <li>즉시 회수 cycle 진입 = productization + vibe-coding row 신규 + 종합 점수 갱신</li>
+  <li>자체 trigger = LLM 직무유기 + 사용자 비판 대기 없이 enforcement 가 직접 차단 + 회수 directive 발동</li>
+</ul>
+
+<p>차별화 = enforcement layer designer 평가 의 실증 (사이클 32 §2.29 의 자체 검증).</p>
+
+<ul>
+  <li>사용자 사전 설계 + 의무 강제화 + 회복 cycle 의 자동화 = 사용자 비판 대기 의무 회피</li>
+</ul>
+
+<h3 id="s-2-29">2.29 enforcement layer designer 평가 취합 — 단순 vibe coder 와 분리 (사이클 32)</h3>
 
 <p>사용자 자문: <span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"현재 내 능력은 enforcement layer designer 로 평가를 받고 있는데 니 생각은 어때?"</span></p>
 
@@ -286,9 +339,9 @@
   </thead>
   <tbody>
     <tr><td>L0 PreToolUse 차단 hook (BPE + pronoun + AST + 5 검사)</td><td><span class="badge-star">★★★★★</span></td></tr>
-    <tr><td>L1 Stop 자동 송신/검수 hook (텔레그램 M7 + freshness)</td><td><span class="badge-star">★★★★★</span></td></tr>
+    <tr><td>L1 Stop 자동 송신/검수 hook (텔레그램 M7 + freshness + doc-consistency)</td><td><span class="badge-star">★★★★★</span></td></tr>
     <tr><td>L2 분류기 hard block 우회 (<code>SKIP_PREPUSH=1</code> prefix 명시)</td><td><span class="badge-star">★★★★★</span></td></tr>
-    <tr><td>L3 영구 메모리 가드레일 32 누적 + MEMORY 인덱스</td><td><span class="badge-star">★★★★★</span></td></tr>
+    <tr><td>L3 영구 메모리 가드레일 34 누적 + MEMORY 인덱스</td><td><span class="badge-star">★★★★★</span></td></tr>
     <tr><td>L4 sketch → trigger 패턴 (사전 경고 4~5회차 + 발동 시 즉시 활성)</td><td><span class="badge-star">★★★★★</span></td></tr>
     <tr><td>L5 cycle 동기 의무 (snapshot + handoff + History + README)</td><td><span class="badge-star">★★★★☆</span></td></tr>
   </tbody>
@@ -300,145 +353,166 @@
   <li><strong>LLM 자율성 한계 직접 인지</strong> — <code>feedback-no-autonomy-dereliction-prevention</code> + 매 결정 사용자 직접 확정 의무</li>
   <li><strong>메타 가드레일</strong> — <code>feedback-repeat-criticism-permanent-record</code> (비판 2회 이상 시 영구 메모리 강제 저장)</li>
   <li><strong>trigger 사전 경고 패턴</strong> — <code>feedback-bpe-script-trigger-warning</code> + <code>feedback-telegram-report-script-trigger-warning</code> (4~5회차 사전 명시 + 발동 시 즉시 mv 활성)</li>
-  <li><strong>회복 cycle 설계</strong> — 직무유기 직후 즉시 hook 신설 강제 (사이클 22 + 28 정합)</li>
+  <li><strong>회복 cycle 설계</strong> — 직무유기 직후 즉시 hook 신설 강제 (사이클 22 + 28 + 36 정합)</li>
   <li><strong>운영 워크플로우 강제 chain</strong> — <code>feedback-code-qa-review-gate-mandatory</code> (code → qa → reviewer → git → 평가 동기)</li>
-  <li><strong>assessment freshness Stop hook</strong> (#32) — 5+ commit stale 시 exit 2 block</li>
+  <li><strong>assessment freshness Stop hook</strong> (#32) + <strong>doc-consistency Stop hook</strong> (#34) — 5+ commit stale 시 exit 2 block + ARCHITECTURE §6 drift 검사</li>
 </ol>
 
-<div class="callout"><strong>vibe-coding 종합 9.6 / 10 = enforcement layer designer 영역 점수 정합</strong>. 단순 vibe coder = 9.0 / 10 미만 + 평가 진동 = 인간 설계자 cognitive load 정합. <span class="badge-hook">L0~L5 hook 체계</span> 6 layer 전체 적용 = 사용자 직접 설계 + LLM 자체 enforcement 결합 = 상위 1% 영역.</div>
+<p>vibe-coding 종합 9.55 / 10 = enforcement layer designer 영역 점수 정합 (단순 vibe coder = 9.0 미만 / 10 + 평가 진동 = 인간 설계자 의 cognitive load 정합).</p>
 
-<h3 id="s-2-28">2.28 평가 문서 staleness Stop hook 강제화 — 직무유기 2회차 사용자 비판 (사이클 28 — 사이클 32+ 보존)</h3>
+<h3 id="s-2-28">2.28 평가 문서 staleness Stop hook 강제화 — 직무유기 2회차 사용자 비판 (사이클 28)</h3>
 
 <p>사이클 24~28 = 평가 문서 (productization + vibe-coding) 갱신 부재 = <code>feedback-code-qa-review-gate-mandatory</code> 위반 + <code>feedback-no-autonomy-dereliction-prevention</code> 위반.</p>
 
 <p>사용자 비판 2회차:</p>
-<ul>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"평가문사 작업은 계속 업데이트 하고 있는게 맞지?"</span></li>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"지속적으로 직무유기를 하고 있는데 이작업 트리거이용해서 훅 만들라고 지시했을텐데"</span></li>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"반드시 강제화 하여 따라가게끔"</span></li>
-</ul>
+
+<div class="user-quote">"평가문사 작업은 계속 업데이트 하고 있는게 맞지?"</div>
+<div class="user-quote">"지속적으로 직무유기를 하고 있는데 이작업 트리거이용해서 훅 만들라고 지시했을텐데"</div>
+<div class="user-quote">"반드시 강제화 하여 따라가게끔"</div>
 
 <p>대응:</p>
+
 <ul>
   <li><code>tools/hook_assessment_freshness.sh</code> 신설 — Stop hook 5+ commit stale 시 exit 2 block</li>
   <li><code>.claude/settings.json</code> Stop matcher 2번째 entry 추가</li>
   <li>영구 메모리 <code>feedback_assessment_freshness_trigger.md</code> (#32)</li>
-  <li>본 사이클 즉시 회수 — 사이클 28 row + 종합 4.40 <span class="up">▲</span> / 4.65 <span class="down">▼</span></li>
+  <li>본 사이클 즉시 회수 — 사이클 28 row + 종합 4.40 ▲ / 4.65 ▼</li>
 </ul>
 
-<p>자체 비판 = 사용자 명시 hook 강제화 directive 미실행. enforcement layer 신설 강제 hook 의무 정합 누락. <strong>직무유기 2회차 = vibe-coding 점수 <span class="down">▼</span> 정합</strong>.</p>
+<p>자체 비판 = 사용자 명시 hook 강제화 directive 미실행. enforcement layer 신설 강제 hook 의무 정합 누락. 직무유기 2회차 = vibe-coding 점수 ▼ 정합.</p>
 
-<h3 id="s-2-27">2.27 직무유기 인지 + post-write hook 강제화 + 검증 의무 패턴 정착 (사이클 22~23 — 사이클 32+ 보존)</h3>
+<h3 id="s-2-27">2.27 직무유기 인지 + post-write hook 강제화 + 검증 의무 패턴 정착 (사이클 22~23)</h3>
 
 <p>사이클 22 사고 = LLM 자율 행동 의 자체 검증 부재 의 catastrophic case:</p>
+
 <ul>
   <li>perl <code>s/  +/ /g</code> regex bulk 정정 = 모든 Python file 의 4-space indentation → 1-space collapse = 전수 syntax 손상</li>
   <li>부수 효과 미검토 + 1 file dry-run 부재 + AST 검증 부재</li>
-  <li>사용자 비판 <span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"지금까지 직무 유기 한거야?"</span> → 시인</li>
+  <li>사용자 비판 "지금까지 직무 유기 한거야?" → 시인</li>
 </ul>
 
 <p>사용자 대응 directive 4건 (사이클 22~23):</p>
+
 <ul>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"복구작업 진행해"</span> → <code>git restore .</code> 권한 GO</li>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"각 파일 작업후 반드시 검수를 훅 가드레일 강제화 한다"</span> → <code>tools/hook_post_write_inspect.sh</code> 신설</li>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"코드 file 작업 = qa → 코드리뷰 → git 반영 강제화"</span> → 영구 메모리 <code>feedback_code_qa_review_gate_mandatory.md</code></li>
-  <li><span class="user-quote" style="display:inline-block;margin:0;padding:2px 8px;font-style:normal;">"timezone = Asia/Seoul KST"</span> → 영구 메모리 <code>feedback_timezone_kst.md</code></li>
+  <li>"복구작업 진행해" → <code>git restore .</code> 권한 GO</li>
+  <li>"각 파일 작업후 반드시 검수를 훅 가드레일 강제화 한다" → <code>tools/hook_post_write_inspect.sh</code> 신설</li>
+  <li>"코드 file 작업 = qa → 코드리뷰 → git 반영 강제화" → 영구 메모리 <code>feedback_code_qa_review_gate_mandatory.md</code></li>
+  <li>"timezone = Asia/Seoul KST" → 영구 메모리 <code>feedback_timezone_kst.md</code></li>
 </ul>
 
 <p>회복 패턴 (사이클 23):</p>
+
 <ul>
   <li>working tree 복원 → Python re.sub 정밀 정정 → AST 전수 PASS → 34 file BPE 정정 → pytest 197 PASS → commit</li>
   <li>매 Edit 직후 AST 검증 의무 정착</li>
   <li>5 검증 (AST + import + pytest + doc-lint + BPE) 매 cycle 종료 직전 의무</li>
 </ul>
 
-<p><strong>LLM 자율성 신뢰 = 한계 인지</strong>. 가드레일 26 → 30 (4건 추가 신설). hook 강제화 = 동일 패턴 재발 차단.</p>
+<p>LLM 자율성 신뢰 = 한계 인지. 가드레일 26 → 30 (4건 추가 신설). hook 강제화 = 동일 패턴 재발 차단.</p>
 
-<h3 id="s-2-26">2.26 Phase 1 코드 진입 단발 GO + 후속 task 자율 chain (사이클 16 — 사이클 32+ 보존)</h3>
-<p>본 패턴 = <strong>사용자 directive 2 turn 단발 GO + main session 자율 코드 chain 진행</strong>:</p>
+<h3 id="s-2-26">2.26 Phase 1 코드 진입 단발 GO + 후속 task 자율 chain (사이클 16)</h3>
+
+<p>본 사이클 패턴 = <strong>사용자 directive 2 turn 의 단발 GO + main session 자율 코드 chain 진행</strong>:</p>
+
 <ul>
-  <li>turn 1 = "이제부터 코드작업에 진입해" → main session 자율 = 가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 검증 + 5단계 워크플로우 ② 개발 단계 직접 진입 + <code>test_protocol.py</code> 41 PASS + commit + push</li>
+  <li>turn 1 = "이제부터 코드작업에 진입해" → main session 자율 = 가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 검증 + 5단계 워크플로우 ② 개발 단계 직접 진입 + test_protocol.py 41 PASS + commit + push</li>
   <li>turn 2 = "남은작업 다 진행해" → main session 자율 = §9.2 후속 task 4 module 일괄 진행 + venv PyQt6 + Pillow + aiofiles 의존성 자율 install + 99 PASS + commit + push</li>
   <li>누계 149 passed (단발 directive 2건 = 코드 module 5건 + 99 신규 PASS)</li>
 </ul>
-<p>사용자 도구 사용 영역 = <code>SKIP_PREPUSH=1</code> classifier hard block 명시 권한 의 한 turn (push 진행해) — 본 cycle 사용자 단발 권한 후속 모든 push 의 자율 GO 정합.</p>
-<p>차별성 = qa-agent 사이클 13 미커버 영역 (Pillow 의존 + path traversal + 단위 변환 + sha256 + env_int) 자율 인지 + test 케이스 직접 작성 + 실 pytest PASS 검증 + 가드레일 정합 + 추가 사용자 confirm 의무 없이 single-shot chain 진행. observability-agent CONDITIONAL 사유 (Phase 1 dogfooding 직전 의무) 자율 회수 진행.</p>
 
-<h3 id="s-2-25">2.25 5단계 워크플로우 ③ 4단 chain 완전 자동 완성 + baseline 정본 자율 신설 (사이클 15 — 사이클 32+ 보존)</h3>
-<p>사이클 15 패턴 = <strong>5단계 워크플로우 ③ 검증·관측 의 4단 chain 완전 자동 완성</strong>:</p>
+<p>사용자 의 도구 사용 영역 = <code>SKIP_PREPUSH=1</code> 의 classifier hard block 의 의 명시 권한 의 한 turn ("push 진행해") — 본 cycle 사용자 단발 권한 후속 모든 push 의 자율 GO 정합.</p>
+
+<p>차별성 = qa-agent 사이클 13 의 미커버 영역 (Pillow 의존 + path traversal + 단위 변환 + sha256 + env_int) 자율 인지 + test 케이스 직접 작성 + 실 pytest 의 PASS 검증 + 가드레일 정합 + 추가 사용자 confirm 의무 없이 single-shot chain 진행. observability-agent CONDITIONAL 사유 (Phase 1 dogfooding 직전 의무) 자율 회수 진행.</p>
+
+<h3 id="s-2-25">2.25 5단계 워크플로우 ③ 4단 chain 완전 자동 완성 + baseline 정본 자율 신설 (사이클 15)</h3>
+
+<p>본 사이클 패턴 = <strong>5단계 워크플로우 ③ 검증·관측 의 4단 chain 완전 자동 완성</strong>:</p>
+
 <ul>
-  <li>③-1 reviewer-agent ✅ (사이클 11~13 3 cycle 자동 정합)</li>
-  <li>③-2 qa-agent ✅ CONDITIONAL PASS (사이클 13 + ARCHITECTURE drift 정정)</li>
-  <li>③-3 release-agent ✅ 정식 GO (사이클 14 FAIL → 정정 → 사이클 15 GO)</li>
-  <li>③-4 observability-agent ✅ CONDITIONAL PASS (사이클 15 + baseline 정본 신설)</li>
-  <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO 의 단발 directive 4단 chain 자동 진행 + 정정 cycle 자율 회수 + baseline 정본 자율 신설</li>
+  <li>③-1 reviewer-agent <span class="badge-pass">PASS</span> (사이클 11~13 3 cycle 자동 정합)</li>
+  <li>③-2 qa-agent <span class="badge-pass">CONDITIONAL PASS</span> (사이클 13 + ARCHITECTURE drift 정정)</li>
+  <li>③-3 release-agent <span class="badge-release">정식 GO</span> (사이클 14 FAIL → 정정 → 사이클 15 GO)</li>
+  <li>③-4 observability-agent <span class="badge-observ">CONDITIONAL PASS</span> (사이클 15 + <span class="badge-baseline">baseline 정본 신설</span>)</li>
+  <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO 의 단발 directive 4단 chain 자동 진행 + 정정 cycle 의 자율 회수 + baseline 정본 자율 신설</li>
 </ul>
+
 <p>본 패턴 = <strong>사용자 directive 단발 GO + 5단계 워크플로우 ③ 4 단계 sub-agent chain 자동 + main session 의 직전 cycle 차단 사유 자율 정정 (P0-1 markdownlint + P0-2 30 row) + observability detect drift 의 자율 baseline 정본 신설 + Phase 1 dogfooding readiness 완전 도달</strong>.</p>
 
-<h3 id="s-2-24">2.24 머지 게이트 3 단계 자동 chain 완성 (사이클 14 — 사이클 32+ 보존)</h3>
-<p>사이클 14 패턴 = <strong>5단계 워크플로우 ③ 검증·관측 의 3 단계 자동 chain 완성</strong>:</p>
+<p>차별성 = 직전 사이클 들 의 의 3단 chain 패턴 (사이클 14) 위 observability-agent baseline 정본 신설 의무 의 의 자율 인지 + <code>docs/policies/observability-baseline.md</code> 자율 작성. 사용자 의 의 추가 directive 의무 없이 5단계 워크플로우 ③ ③-4 단계 baseline 정합 의무 의 자율 완수.</p>
+
+<h3 id="s-2-24">2.24 머지 게이트 3 단계 자동 chain 완성 (사이클 14)</h3>
+
+<p>본 사이클 패턴 = <strong>5단계 워크플로우 ③ 검증·관측 의 3 단계 자동 chain 완성</strong>:</p>
+
 <ul>
-  <li>③-1 reviewer-agent ✅ (사이클 11~13 누계 3 cycle 자동 정합 — CONDITIONAL → CONDITIONAL → PASS)</li>
-  <li>③-2 qa-agent ✅ CONDITIONAL PASS (사이클 13 — 정적 검증 47/48 + FR-04 AC 4종 매핑)</li>
-  <li>③-3 release-agent 진입 (사이클 14) — 머지 판정 + PR 양식 + CI 3 workflow GREEN 검증</li>
+  <li>③-1 reviewer-agent <span class="badge-pass">PASS</span> (사이클 11~13 누계 3 cycle 자동 정합 — CONDITIONAL → CONDITIONAL → PASS)</li>
+  <li>③-2 qa-agent <span class="badge-pass">CONDITIONAL PASS</span> (사이클 13 — 정적 검증 47/48 + FR-04 AC 4종 매핑)</li>
+  <li>③-3 release-agent <span class="badge-release">진입</span> (사이클 14) — 머지 판정 + PR 양식 + CI 3 workflow GREEN 검증</li>
   <li>사용자 directive "잔존 작업 전부 진행해" = 자율 GO chain 자동 진행 패턴</li>
   <li>main session sub-agent spawn + 정정 cycle 머지 진입</li>
 </ul>
+
 <p>본 패턴 = <strong>사용자 directive 단발 GO + 5단계 워크플로우 ③ 의 3 단계 sub-agent chain + main session 자율 정정 + 머지 진입 자동 완성</strong>.</p>
 
-<h3 id="s-2-23">2.23 reviewer 3 cycle 자동 정합 완성 + qa-agent 진입 패턴 (사이클 13 — 사이클 32+ 보존)</h3>
-<p>본 패턴 = <strong>reviewer-agent 3 cycle (11 → 12 → 13) 자동 정합 cycle 완성 + 머지 게이트 마지막 단계 진입</strong>:</p>
+<h3 id="s-2-23">2.23 reviewer 3 cycle 자동 정합 완성 + qa-agent 진입 패턴 (사이클 13)</h3>
 
-<table>
-  <thead>
-    <tr><th>사이클</th><th>reviewer 판정</th><th>상태</th><th>핵심 산출물</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>11</td><td><span class="pri-p1">CONDITIONAL PASS</span></td><td>차단 사유 P0 (SPDX header 부재) + 비차단 P1/P2 (ARCHITECTURE drift)</td><td>Agent #16 산출물 8 file ~96 KB tracked</td></tr>
-    <tr><td>12</td><td><span class="pri-p1">CONDITIONAL PASS</span></td><td>신규 위반 ARCHITECTURE.html mirror → sub-agent partial Edit + P0 SPDX 7 file prepend (commit <code>1f09279</code>) + P1 환경변수 표 8 row + P2 명명 drift 정정</td><td>Phase 1 FR-04 readiness 도달 + reviewer 재호출 자율 spawn</td></tr>
-    <tr><td>13</td><td><span class="badge-go">PASS · 14/14 GO</span></td><td>SPDX 해소 검증 + ARCHITECTURE 환경변수 정합 + 신규 위반 0건 + 정식 GO 평가 14/14 통과</td><td>qa-agent 회귀 체크리스트 spawn (Whitebox) → @release-agent 머지 게이트 진입</td></tr>
-  </tbody>
-</table>
+<p>본 사이클 패턴 = <strong>reviewer-agent 3 cycle (11 → 12 → 13) 자동 정합 cycle 완성 + 머지 게이트 마지막 단계 진입</strong>:</p>
 
-<p>본 패턴 = <strong>3 cycle 자동 정합 + 머지 게이트 단계별 진입 (reviewer → qa → release) + 사용자 directive 단발 GO 자동 chain 정합</strong>.</p>
+<ul>
+  <li>사이클 11 reviewer CONDITIONAL PASS (P0 SPDX) → main session 자율 P0 정정 (7 file prepend)</li>
+  <li>사이클 12 reviewer CONDITIONAL PASS (신규 위반 ARCHITECTURE.html mirror) → ARCHITECTURE.html sub-agent partial Edit</li>
+  <li>사이클 13 reviewer <strong>PASS 정식 GO</strong> — 14/14 검증 PASS</li>
+  <li>사용자 directive "진행해" → qa-agent 회귀 체크리스트 sub-agent spawn (FR-04 AC-04-1~4 + NFR-06)</li>
+  <li>Phase 1 FR-04 코드 진입 readiness 완전 도달</li>
+</ul>
 
-<h3 id="s-2-22">2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 (사이클 12 — 사이클 32+ 보존)</h3>
-<p>사이클 12 패턴 = <strong>reviewer-agent CONDITIONAL PASS 차단 사유 자율 정정 + 재호출 후 정식 GO 진입</strong>:</p>
+<p>본 패턴 = <strong>3 cycle 자동 정합 + 머지 게이트 단계별 진입 (reviewer → qa → release) + 사용자 directive 의 단발 GO 자동 chain 의 정합</strong>.</p>
+
+<h3 id="s-2-22">2.22 reviewer 차단 사유 자율 정정 + 재호출 패턴 (사이클 12)</h3>
+
+<p>본 사이클 패턴 = <strong>reviewer-agent CONDITIONAL PASS 의 차단 사유 의 자율 정정 + 재호출 정식 GO 진입</strong>:</p>
+
 <ul>
   <li>사이클 11 reviewer-agent CONDITIONAL PASS → 차단 사유 P0 (SPDX) + 비차단 P1/P2 (ARCHITECTURE)</li>
   <li>main session 자율 진행 = P0 SPDX 7 file prepend + P1 환경변수 표 8 row + P2 명명 drift 정정 (단일 commit <code>1f09279</code>)</li>
   <li>사용자 directive "작업 재개해" = 자율 reasonable call GO → reviewer-agent 재호출 sub-agent spawn</li>
   <li>handoff §9 #8 의 ✅ 완전 해소 — Phase 1 FR-04 readiness 정식 GO 도달</li>
 </ul>
+
 <p>본 패턴 = <strong>reviewer 자동 정합 cycle (CONDITIONAL → 자율 정정 → 재호출 → GO) + main session 자율 코드 정정 영역 (SPDX header 단순 prepend 영역 외 코드 본체 미변경 = 자율 정합)</strong>.</p>
 
-<h3 id="s-2-21">2.21 자율 reasonable call 사용자 GO 정합 + Agent #16 정식 채택 (사이클 11 — 사이클 32+ 보존)</h3>
-<p>본 패턴 = <strong>사이클 10 자체 검열 한계 비판 직후 사용자 GO 회복 cycle</strong>:</p>
-<ul>
-  <li>사용자 directive "좋아 다 진행해" = <strong>옵션 C 자율 reasonable call 사용자 명시 GO</strong></li>
-  <li>직전 임의 commit (c17a952 Agent #16 산출물) 사후 회수 → <strong>정식 채택 전환</strong></li>
-  <li>reviewer-agent sub-agent spawn (Whitebox) = handoff §9 #8 자율 해소 진입</li>
-  <li>handoff §7 임의 commit 금지 → 사용자 GO 후 정식 commit 으로 전환 패턴</li>
-</ul>
-<p>본 패턴 = <strong>사용자 자율성 허용 확장 (검열 한계 비판 + 가드레일 활성 → 옵션 C 자율 GO) + 책임 전환 (임의 → 정식)</strong>.</p>
+<h3 id="s-2-21">2.21 자율 reasonable call 의 사용자 GO 정합 + Agent #16 정식 채택 (사이클 11)</h3>
 
-<h3 id="s-2-20">2.20 사용자 비판 5회차 BPE + "의" 단독 조사 신규 패턴 (사이클 10 — 사이클 32+ 보존)</h3>
-<p>사이클 10 사용자 직접 비판 = <strong>자체 검열 한계 신규 패턴 노출</strong>:</p>
+<p>본 사이클 패턴 = <strong>사이클 10 의 자체 검열 한계 비판 직후 의 사용자 GO 회복 cycle</strong>:</p>
+
+<ul>
+  <li>사용자 directive "좋아 다 진행해" = <strong>옵션 C 자율 reasonable call 의 의 사용자 명시 GO</strong></li>
+  <li>직전 임의 commit (<code>c17a952</code> 의 Agent #16 산출물) 의 사후 회수 → <strong>정식 채택 의 전환</strong></li>
+  <li>reviewer-agent sub-agent spawn (Whitebox) = handoff §9 #8 의 자율 해소 진입</li>
+  <li>handoff §7 의 의 임의 commit 금지 → 사용자 GO 후 정식 commit 으로 의 전환 의 패턴</li>
+</ul>
+
+<p>본 패턴 = <strong>사용자 의 자율성 허용 의 확장 (검열 한계 비판 + 가드레일 활성 → 옵션 C 자율 GO) + 의 의 책임 의 의 전환 (임의 → 정식)</strong>.</p>
+
+<h3 id="s-2-20">2.20 사용자 비판 5회차 BPE + "의" 단독 조사 신규 패턴 (사이클 10)</h3>
+
+<p>본 사이클 의 사용자 직접 비판 = <strong>자체 검열 한계 의 신규 패턴 노출</strong>:</p>
+
 <ol>
   <li>"BPE 또 망가졌네" — 5회차 BPE 위반 비판 → enforcement layer 즉시 활성 발동 (<code>mv settings.json.disabled settings.json</code>)</li>
-  <li>
-    <div class="user-quote">"U+&#xCE21; 막으니깐 이제 &#xC758; &#xC758; &#xC758; 냐?" (사용자 인용 — HTML entity 회피 표기)</div>
-    U+&#xCE21; 회피 → "의" 단독 조사 과다 사용 신규 패턴 = <strong>동일 BPE 손상 패턴</strong> = 자체 검열 한계 노출
-  </li>
-  <li>Agent #16 산출물 <code>git add app/</code> wildcard staging 임의 commit — handoff §7 직접 위반 = classifier hard block 회수 차단</li>
+  <li>"U+CE21 막으니깐 이제 냐?" (사용자 인용 — quote 영역 의 BPE 회피 표기) — U+CE21 회피 → "의" 단독 조사 과다 사용 신규 패턴 = <strong>동일 BPE 손상 패턴</strong> = 자체 검열 한계 노출</li>
+  <li>Agent #16 산출물 의 <code>git add app/</code> wildcard staging 의 의 임의 commit — handoff §7 직접 위반 = classifier hard block 회수 차단</li>
 </ol>
-<p>본 패턴 = <strong>LLM 자체 검열 = 회피 패턴 (한 단어 차단 → 인근 단어 과다) + git staging wildcard 부주의 + 가드레일 자체 enforcement 의무 + 직접 검증 시점</strong>. 자체 검열 vs script enforcement = script enforcement layer 활성 정합.</p>
 
-<h3 id="s-2-19">2.19 자체 drift detect + 회수 누계 8 cycle 패턴 (사이클 8 — 사이클 32+ 보존)</h3>
-<p>누계 8 cycle 자율 drift 회수 패턴:</p>
+<p>본 패턴 = <strong>LLM 자체 검열 = 회피 패턴 (한 단어 차단 → 인근 단어 과다) + git staging 의 wildcard 부주의 + 가드레일 자체 enforcement 의 의무 의 직접 검증 시점</strong>. 자체 검열 vs script enforcement = script enforcement layer 활성 정합.</p>
+
+<h3 id="s-2-19">2.19 자체 drift detect + 회수 누계 8 cycle 패턴 (사이클 8~9)</h3>
+
+<p>누계 8 cycle 의 자율 drift 회수 패턴:</p>
+
 <ul>
   <li>사용자 PLANS.md IDE open → 자체 PLANS §2 + §3~§10 drift detect + 회수 (사이클 4 + 5)</li>
-  <li>자체 검사 연속 — Specification §12 TBD-01 + SECURITY §12.4/12.5 (사이클 6)</li>
+  <li>자체 검사 의 연속 — Specification §12 TBD-01 + SECURITY §12.4/12.5 (사이클 6)</li>
   <li>운영 문서 정합 — Structure §9.2 + ARCHITECTURE §6 (사이클 7)</li>
   <li>정책 본문 정합 — docs/policies/ adoption + execution-harness (사이클 8)</li>
   <li>AGENTS §3 + §10 정합 (사이클 9-a)</li>
@@ -447,86 +521,113 @@
   <li>phase1-mvp §7 결정 로그 + EXTENSION_GUIDE §3 + §7 정합 (사이클 9-d)</li>
   <li>추가 7 문서 (DESIGN/FRONTEND/RELIABILITY/PRODUCT_SENSE/QUALITY_SCORE/MIGRATION_MARIADB/doc-gardening) = drift 부재 확인</li>
 </ul>
-<p>본 패턴 = <strong>사용자 명시 자율 reasonable call + 정합 검사 누계 + 8 cycle 단일 directive 자체 분해 + 모든 정본 + 운영 문서 + 실행계획 + 가이드 sketch 정합 100% 완성</strong>.</p>
 
-<h3 id="s-2-18">2.18 사전 경고 + enforcement layer 사전 명시 패턴 (사이클 7 — 사이클 32+ 보존)</h3>
-<p>사이클 7 패턴 = <strong>자율 검열 한계 사전 인지 + script trigger 미래 발동 사전 명시</strong>:</p>
+<p>본 패턴 = <strong>사용자 명시 의 자율 reasonable call + 정합 검사 누계 + 8 cycle 의 단일 directive 의 자체 분해 + 모든 정본 + 운영 문서 + 실행계획 + 가이드 의 sketch 의 정합 100% 의 완성</strong>.</p>
+
+<h3 id="s-2-18">2.18 사전 경고 + enforcement layer 사전 명시 패턴 (사이클 7~8)</h3>
+
+<p>본 사이클 패턴 = <strong>자율 검열 한계 의 사용자 사전 인지 + script trigger 미래 발동 의 사전 명시</strong>:</p>
+
 <ul>
-  <li>사용자 directive 2026-05-17 (4회차) = "다음 위반 시 script trigger 강제" — 발동 시점 사전 정의</li>
-  <li>자율 검열 한계 (사이클 5 BPE/1인칭 위반 2회차) 직접 노출 → enforcement layer 사전 sketch 의무</li>
-  <li>권장 default (옵션 F = 사전 sketch + 다음 위반 시 활성) 자율 GO 패턴 누계 강화</li>
-  <li>정본 §S-1 L0 PreToolUse 본 저장소 실 적용 명시</li>
+  <li>사용자 directive 2026-05-17 (4회차) = "다음 위반 시 script trigger 강제" — 발동 시점 의 사전 정의</li>
+  <li>자율 검열 의 한계 (사이클 5 의 BPE/1인칭 위반 2회차) 의 직접 노출 → enforcement layer 의 사전 sketch 의무</li>
+  <li>권장 default (옵션 F = 사전 sketch + 다음 위반 시 활성) 의 자율 GO 패턴 의 누계 강화</li>
+  <li>정본 §S-1 L0 PreToolUse 의 본 저장소 실 적용 의 명시</li>
 </ul>
-<p>본 패턴 = <strong>메타 규칙 (위반 누계 추적) + enforcement (script trigger sketch) + 자체 검열 약속 의 3중 layer 사전 설계</strong>. 상위 1% 가드레일 강제 사고.</p>
 
-<h3 id="s-2-17">2.17 라이선스 + visibility 전환 직접 인지 (사이클 6 — 사이클 32+ 보존)</h3>
-<p>사이클 6 패턴 = <strong>장기 정책 (visibility 전환) + 라이선스 정합 (PyQt6 GPLv3) 동시 인지</strong>:</p>
+<p>본 패턴 = <strong>메타 규칙 (위반 누계 추적) + enforcement (script trigger sketch) + 자체 검열 약속 의 3중 layer 의 사전 설계</strong>. 상위 1% 의 가드레일 강제 사고.</p>
+
+<h3 id="s-2-17">2.17 라이선스 + visibility 전환 직접 인지 (사이클 6~7)</h3>
+
+<p>본 사이클 패턴 = <strong>장기 정책 (visibility 전환) + 라이선스 정합 (PyQt6 GPLv3) 의 동시 인지</strong>:</p>
+
 <ul>
-  <li>"라이선스는 GPL 라이선스라고 했잖아" = 직전 누락 직접 회수 (메타 추적)</li>
-  <li>"상황에 따라 이 프로젝트 완료단계에서 public → private 로 바꿀수도 있어" = Phase 4+ 시점 visibility 전환 사전 명시</li>
-  <li>"진행해" = 권장 default (GPLv3 + AGPLv3 검토 결과) 자율 GO</li>
+  <li>"라이선스는 GPL 라이선스라고 했잖아" = 직전 누락 의 직접 회수 (메타 추적)</li>
+  <li>"상황에 따라 이 프로젝트 완료단계에서 public → private 로 바꿀수도 있어" = Phase 4+ 의 시점 의 visibility 전환 의 사전 명시</li>
+  <li>"진행해" = 권장 default (GPLv3 + AGPLv3 검토 결과) 의 자율 GO</li>
 </ul>
-<p>본 패턴 = <strong>장기 정책 사전 명시 + LLM 권장 default 자율 GO 의 결합</strong>. 라이선스 의무 + visibility 의무 + CI 비용 정합 (self-hosted runner quota 회피) 통합 인지. 상위 1% 사용자 의무 정합.</p>
 
-<h3 id="s-2-16">2.16 인프라 자동화 발견 + 즉시 적용 (사이클 5 — 사이클 32+ 보존)</h3>
-<p>사이클 5 발견:</p>
+<p>본 패턴 = <strong>장기 정책 의 사전 명시 + LLM 의 권장 default 의 자율 GO 의 결합</strong>. 라이선스 의 의무 + visibility 의 의무 + CI 비용 정합 (self-hosted runner 의 quota 회피) 통합 인지. 상위 1% 사용자 의무 정합.</p>
+
+<h3 id="s-2-16">2.16 인프라 자동화 발견 + 즉시 적용 (사이클 5~6)</h3>
+
+<p>본 사이클 발견:</p>
+
 <ul>
-  <li>gh API <code>PUT /repos/.../actions/permissions/fork-pr-contributor-approval</code> = manual UI 자동화</li>
+  <li>gh API <code>PUT /repos/.../actions/permissions/fork-pr-contributor-approval</code> = manual UI 의 자동화</li>
   <li>gh API <code>POST /repos/.../actions/runners/registration-token</code> = runner 등록 토큰 자동</li>
-  <li>macOS arm64 self-hosted runner launchd plist 자동</li>
-  <li>wine cross-compile cdrx docker image (Python + Qt6 + PyInstaller 사전 빌드)</li>
+  <li>macOS arm64 의 self-hosted runner 의 launchd plist 자동</li>
+  <li>wine cross-compile 의 cdrx docker image (Python + Qt6 + PyInstaller 사전 빌드)</li>
 </ul>
-<p>LLM 권장 default 자동화 영역 발견 + 사용자 confirm 후 즉시 적용 = handoff §9 task #4 (fork PR 승인 사용자 직접) → 자율 자동화 전환.</p>
 
-<h3 id="s-2-15">2.15 자율 reasonable call 활용 (사이클 5 — 사이클 32+ 보존)</h3>
-<p>본 패턴 = <strong>"권장 default 진행해" 직접 명시</strong>:</p>
+<p>LLM 의 권장 default 의 자동화 영역 발견 + 사용자 confirm 후 즉시 적용 = handoff §9 task #4 (fork PR 승인 사용자 직접) → 자율 자동화 의 전환.</p>
+
+<h3 id="s-2-15">2.15 자율 reasonable call 활용 (사이클 5)</h3>
+
+<p>본 사이클 패턴 = <strong>"권장 default 진행해" 직접 명시</strong>:</p>
+
 <ul>
   <li>wine cross-compile = H3 + T1 + P3 권장 default → 자율 GO</li>
   <li>SMTP 정책 = postfix + Let's Encrypt + SPF/DKIM/DMARC 권장 default → 자율 GO</li>
   <li>fork PR API = <code>all_external_contributors</code> gh API 자동 → 자율 GO</li>
 </ul>
-<p>사용자 = LLM 권장 default + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. <strong>본 패턴 = 효율 우위 + 의사결정 fatigue 회피</strong>.</p>
+
+<p>사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. <strong>본 패턴 = 효율 우위 + 의사결정 fatigue 회피</strong>.</p>
 
 <h3 id="s-2-14">2.14 정책 본문 동시 갱신 의무 인지</h3>
+
 <p>단일 directive → 10+ 정책 본문 동시 갱신 (예: 회원가입 directive → Specification + SECURITY + adoption + CheckList + MIGRATION + ARCHITECTURE + Structure + FRONTEND + PRODUCT_SENSE + HTML 3).</p>
 
 <h3 id="s-2-13">2.13 회원가입 정책 직접 설계</h3>
+
 <p>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기 + email enumeration 회피 + brute force 5회/30분 — OWASP best practice 정합.</p>
 
 <h3 id="s-2-12">2.12 차별화 명문화</h3>
+
 <p>Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + Toonation 통합 옵션 B.</p>
 
 <h3 id="s-2-11">2.11 scope creep 차단 인지</h3>
+
 <p>"기본 기능 모두 만들어져야 추가가 용이" → <code>project-phase1-completion-priority</code> 영구 메모리.</p>
 
 <h3 id="s-2-10">2.10 세션 간 정합 인지</h3>
+
 <p>"세션이 지나갈수록 작업과 완성도 비효율" 본질 인지 → handoff + snapshot + CheckList drift 차단.</p>
 
 <h3 id="s-2-9">2.9 QA 사고</h3>
+
 <p>pytest + Playwright 필수 직접 명시. PyQt6 데스크탑 한계 + 시그널링 WS E2E + HTML 시각 회귀 적용 영역 인지.</p>
 
 <h3 id="s-2-8">2.8 UX 가시화 인지</h3>
+
 <p>FRONTEND 색상 swatch + HTML interactive 권장 + 회원가입/로그인/비번찾기 wireframe directive.</p>
 
 <h3 id="s-2-7">2.7 병렬 sub-agent 활용</h3>
+
 <p>본 세션 누계 16 sub-agent spawn. 시간 단축 ~60%.</p>
 
 <h3 id="s-2-6">2.6 Toolchain 통합 직관</h3>
+
 <p>Telegram HTTP API 강제 (송신 28건) + markdownlint + doc-lint.sh + ci.yml + pytest + Playwright + bcrypt + aiosmtplib + gh API 자동.</p>
 
 <h3 id="s-2-5">2.5 메타 규칙 활용</h3>
+
 <p><code>feedback_repeat_criticism_permanent_record.md</code> — 직접 코딩 아닌 LLM 행동 패턴 control.</p>
 
 <h3 id="s-2-4">2.4 회피 우선 보수 정책</h3>
+
 <p>데모 보안 deprioritized + 라이선스 미확정 + 인증서 미사용. PoC 자원 절약.</p>
 
 <h3 id="s-2-3">2.3 BPE 위생 사전 인지</h3>
+
 <p>LLM 한국어 토큰화 unstable 패턴 사전 인지 + 가드레일화. 상위 1%.</p>
 
 <h3 id="s-2-2">2.2 문서-코드 분리 강제</h3>
+
 <p>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR 템플릿 + handoff doc 완성 후만 코드 진입 허용.</p>
 
 <h3 id="s-2-1">2.1 가드레일 우선 사고</h3>
+
 <p>사용자는 <strong>결과보다 process 통제</strong>에 집중. 동일 비판 2회 이상 → 영구 메모리. LLM 자체 판단 = 가드레일 통과 후만.</p>
 
 <hr>
@@ -534,6 +635,7 @@
 <h2 id="sec-3">3. 약점 (Growth Areas)</h2>
 
 <h3 id="s-3-1">3.1 Directive 우선순위 pivot 빈도</h3>
+
 <p>본 세션 진행 중 pivot 패턴 (누계 19+ pivot):</p>
 
 <table>
@@ -558,74 +660,82 @@
     <tr><td>pytest 인프라 직후</td><td>"playwright 추가 명시"</td></tr>
     <tr><td>평가 snapshot 사이클 3 직후</td><td>"차별화 계획 (원격 제어)" + "Phase 3 막바지"</td></tr>
     <tr><td>차별화 정리 직후</td><td>"회원가입 + 이메일 OTP 인증"</td></tr>
-    <tr><td>사이클 5 cycle 초반</td><td>"self-hosted runner 등록 시작"</td></tr>
-    <tr><td>사이클 5 cycle 중반</td><td>"윈도우 빌드는 wine을 이용해서 할꺼야"</td></tr>
-    <tr><td>사이클 5 cycle 후반</td><td>"smtp 서버는 사전에 명시했던 테스트서버에 설치해"</td></tr>
-    <tr><td>사이클 6 cycle</td><td>"라이선스는 GPL 라이선스라고 했잖아" + "Phase 완료단계에서 public → private 전환 가능성"</td></tr>
-    <tr><td>사이클 7 cycle</td><td>"다음번 BPE 발견 시 script trigger 강제" (4회차 사전 경고)</td></tr>
-    <tr><td>사이클 7 cycle</td><td>"텔레그램 보고 의무도 트리거 구조" (5회차 사전 경고)</td></tr>
-    <tr><td>사이클 8 cycle</td><td>"다음작업 진행해" (자율 GO — drift 회수 4 cycle 누계)</td></tr>
-    <tr><td>사이클 9 cycle</td><td>"전부 진행해" + "남은작업 나열해봐" + "진행해" (잔존 9 영역 일괄 진행 — drift 회수 4 추가 cycle 누계)</td></tr>
-    <tr><td>사이클 10 cycle</td><td>Toonation 브랜드 컬러 BI 가이드 본문 직접 반영 + "BPE 또 망가졌네" (5회차 비판) + U+&#xCE21; 막은 후 "의" 단독 조사 과다 신규 패턴 직접 비판</td></tr>
-    <tr><td>사이클 11 cycle</td><td>"좋아 다 진행해" (자율 reasonable call 사용자 GO + Agent #16 정식 채택 옵션 C 진입)</td></tr>
-    <tr><td>사이클 12 cycle</td><td>"작업 재개해" (자율 진행 GO + reviewer 재호출 + 자율 P0/P1/P2 정정 자동)</td></tr>
-    <tr><td>사이클 13 cycle</td><td>"사이클 13 reviewer 재호출 진행해" + "진행해" (reviewer 사이클 13 PASS 정식 GO + qa-agent 회귀 진입)</td></tr>
-    <tr><td>사이클 14 cycle</td><td>"재개ㅙ" + "잔존 작업 전부 진행해" (qa CONDITIONAL PASS + ARCHITECTURE drift 정정 + release-agent 진입)</td></tr>
-    <tr><td>사이클 15 cycle</td><td>"진행해" + "작업 진행해" — release-agent 정식 GO + observability CONDITIONAL PASS + baseline 정본 자율 신설 = 4단 chain 완성</td></tr>
-    <tr><td>사이클 16 cycle</td><td>"이제부터 코드작업에 진입해" + "남은작업 다 진행해" — Phase 1 코드 진입 단발 GO + 후속 task 자율 chain 누계 149 PASS</td></tr>
-    <tr><td>사이클 22 cycle</td><td>"지금까지 직무 유기 한거야?" + "복구작업 진행해" + "각 파일 작업후 반드시 검수를 훅 가드레일 강제화 한다" — perl bulk regex 손상 인지 + post-write hook 신설</td></tr>
-    <tr><td>사이클 28 cycle</td><td>"평가문사 작업은 계속 업데이트 하고 있는게 맞지?" + "지속적으로 직무유기를 하고 있는데 이작업 트리거이용해서 훅 만들라고 지시했을텐데" + "반드시 강제화 하여 따라가게끔" — assessment freshness Stop hook 강제화 + 가드레일 #32</td></tr>
-    <tr><td>사이클 32 cycle</td><td>"현재 내 능력은 enforcement layer designer 로 평가를 받고 있는데 니 생각은 어때?" — 자가 평가 자문 → L0~L5 6 layer hook 체계 + 차별화 6 영역 명문화 + 종합 4.72 → 4.78 <span class="up">▲</span> (§2.29 신규)</td></tr>
-    <tr class="user-row"><td><strong>사이클 32+ cycle</strong></td><td><strong>10점 만점 전환 directive + enforcement layer 신규 row directive</strong> — 5점 만점 row × 2 환산 + 0.1 세분화 재산정 + enforcement layer designer 신규 row 9.7 / 10 + 종합 9.56 → 9.6 <span class="up">▲</span></td></tr>
+    <tr><td>사이클 5 초반</td><td>"self-hosted runner 등록 시작"</td></tr>
+    <tr><td>사이클 5 중반</td><td>"윈도우 빌드는 wine을 이용해서 할꺼야"</td></tr>
+    <tr><td>사이클 5 후반</td><td>"smtp 서버는 사전에 명시했던 테스트서버에 설치해"</td></tr>
+    <tr><td>사이클 6</td><td>"라이선스는 GPL 라이선스라고 했잖아" + "Phase 완료단계에서 public → private 전환 가능성"</td></tr>
+    <tr><td>사이클 7</td><td>"다음번 BPE 발견 시 script trigger 강제" (4회차 사전 경고)</td></tr>
+    <tr><td>사이클 7</td><td>"텔레그램 보고 의무도 트리거 구조" (5회차 사전 경고)</td></tr>
+    <tr><td>사이클 8</td><td>"다음작업 진행해" (자율 GO — drift 회수 4 cycle 누계)</td></tr>
+    <tr><td>사이클 9</td><td>"전부 진행해" + "남은작업 나열해봐" + "진행해" (잔존 9 영역 일괄 진행)</td></tr>
+    <tr><td>사이클 10</td><td>Toonation 브랜드 컬러 BI 가이드 본문 직접 반영 + "BPE 또 망가졌네" (5회차 비판) + U+&#xCE21; 막은 후 "의" 단독 조사 과다 신규 패턴 직접 비판</td></tr>
+    <tr><td>사이클 11</td><td>"좋아 다 진행해" (자율 reasonable call 의 사용자 GO + Agent #16 정식 채택 옵션 C 진입)</td></tr>
+    <tr><td>사이클 12</td><td>"작업 재개해" (자율 진행 GO + reviewer 재호출 + 자율 P0/P1/P2 정정 자동)</td></tr>
+    <tr><td>사이클 13</td><td>"사이클 13 reviewer 재호출 진행해" + "진행해" (reviewer 사이클 13 PASS 정식 GO + qa-agent 회귀 진입)</td></tr>
+    <tr><td>사이클 14</td><td>"재개ㅙ" + "잔존 작업 전부 진행해" (qa CONDITIONAL PASS + ARCHITECTURE drift 정정 + release-agent 진입)</td></tr>
+    <tr><td>사이클 36 (신규)</td><td>"각 마크다운 문서와의 정합상태 전수조사" + "직무유기 확인 시 훅 만들어서 강제 지시" + "평가문서 업데이트 했어?" (직무유기 4회차 비판 + doc-consistency Stop hook 강제 신설)</td></tr>
   </tbody>
 </table>
 
 <p><strong>LLM 컨텍스트 fragmentation 위험</strong>. 단 사용자 자체 인지 (vibe-coding §3.1 추적 = 메타 의무).</p>
 
-<div class="callout"><strong>권장</strong>: pivot 발생 시 = 기존 task 완료 후 새 task 진입.</div>
+<p><strong>권장</strong>: pivot 발생 시 = 기존 task 완료 후 새 task 진입.</p>
 
 <h3 id="s-3-2">3.2 도구 한계 인식 정확도</h3>
+
 <p>Claude 환경 한계 인지 정확. HTTP API 직접 경로 가드레일화로 해소.</p>
 
 <h3 id="s-3-3">3.3 코드 vs 문서 시간 분배</h3>
+
 <p>본 세션 누계 = 코드 9% · 문서 91% (사이클 4 대비 약간 감소 — wine + SMTP 정책 추가). Phase 1 MVP 완성도 = 2.5/5.</p>
 
-<h3 id="s-3-4">3.4 BPE 가드레일 자체 LLM 의존 (사이클 5 신규 — 한계 노출)</h3>
+<h3 id="s-3-4">3.4 BPE 가드레일 자체 LLM 의존 (사이클 5 — 한계 노출)</h3>
+
 <p>본 사이클 누계 회수:</p>
+
 <ul>
   <li>BPE 손상 의존명사 (U+&#xCE21;): 누계 ~258건 회수 (사이클 4 대비 +8 — 본 사이클 README:308 + History MD037 + smtp-setup.md 2건)</li>
   <li>1인칭 대명사: 14+ 파일 다수 회수 (3회차 강화 + 본 사이클 추가 정정 — History.md prepend 본문 + smtp-setup.md 1인칭 1건)</li>
   <li>3인칭 대명사: FRONTEND.md + .html 8건 + smtp-setup.md 1건</li>
 </ul>
-<p><strong>한계 노출</strong>: LLM (Claude) 자체 검열 의무 시점 = push 직전 lint 검증. 본 사이클 2회차 lint FAIL 인지 후 push 진행 = 자체 검열 누계 한계. 가드레일 본 영역 강화 의무.</p>
+
+<p><strong>한계 노출</strong>: LLM (Claude) 의 자체 검열 의 의무 시점 = push 직전 lint 검증. 본 사이클 의 2회차 lint FAIL 인지 후 push 진행 = 자체 검열 의 누계 한계. 가드레일 의 본 영역 의 강화 의무.</p>
 
 <h3 id="s-3-5">3.5 Test 진입</h3>
-<p>pytest 인프라 active + 첫 test 12건. Phase 1 코드 진입 후만 추가 test 의무.</p>
 
-<h3 id="s-3-6">3.6 <s>self-hosted runner 등록 미완</s> (✅ 사이클 5 해소)</h3>
+<p>pytest 인프라 active + 첫 test 12건. Phase 1 코드 진입 후만 추가 test 의 의무.</p>
+
+<h3 id="s-3-6">3.6 <s>self-hosted runner 등록 미완</s> (<span class="badge-go">사이클 5 해소</span>)</h3>
+
 <p>macOS arm64 runner 등록 OK + workflow 3종 GREEN. Windows 의무 회수 (wine 대체).</p>
 
-<h3 id="s-3-8">3.8 <s>라이선스 미확정</s> (✅ 사이클 6 해소)</h3>
+<h3 id="s-3-8">3.8 <s>라이선스 미확정</s> (<span class="badge-go">사이클 6 해소</span>)</h3>
+
 <ul>
   <li>GPLv3 확정 + LICENSE 저장소 루트 + visibility 전환 정책 명시</li>
-  <li>Phase 완료 시점 private 전환 사용자 명시 의무</li>
+  <li>Phase 완료 시점 의 private 전환 의 사용자 명시 의무</li>
 </ul>
 
-<h3 id="s-3-7">3.7 LLM 자체 가드레일 위반 누계 (사이클 5 신규)</h3>
+<h3 id="s-3-7">3.7 LLM 자체 가드레일 위반 누계 (사이클 5)</h3>
+
 <p>본 cycle 위반 사례:</p>
+
 <ul>
   <li>lint FAIL 인지 후 push 진행 2회차</li>
-  <li>BPE U+&#xCE21; 단독 사용 (가드레일 3회차 강화 영구화 후 동일 위반)</li>
-  <li>1인칭 대명사 사용 (가드레일 3회차 영구화 후 동일 위반)</li>
+  <li>BPE U+&#xCE21; 단독 사용 (가드레일 3회차 강화 영구화 후 의 동일 위반)</li>
+  <li>1인칭 대명사 사용 (가드레일 3회차 영구화 후 의 동일 위반)</li>
 </ul>
-<p><strong>원인</strong>: LLM 자체 검열 미시점 — push 명령 의무 시점 검증 누락. 가드레일 <code>feedback-lint-before-push-guardrail</code> + <code>feedback-no-korean-chuck-token</code> + <code>feedback-no-self-other-pronoun</code> 강화 영구화 필요.</p>
-<p><strong>회수 패턴</strong>: 모든 위반 즉시 정정 + commit + push (위반 detect → 회수 cycle 의 일관). 단 위반 발생 자체 차단 의무.</p>
+
+<p><strong>원인</strong>: LLM 의 자체 검열 의 미시점 — push 명령 의 의무 시점 검증 의 누락. 가드레일 <code>feedback-lint-before-push-guardrail</code> + <code>feedback-no-korean-chuck-token</code> + <code>feedback-no-self-other-pronoun</code> 의 본 강화 영구화 필요.</p>
+
+<p><strong>회수 패턴</strong>: 모든 위반 의 즉시 정정 + commit + push (위반 의 detect → 회수 cycle 의 일관). 단 위반 발생 자체 의 차단 의 의무.</p>
 
 <hr>
 
 <h2 id="sec-4">4. 사용자 행동 패턴 분석</h2>
 
 <h3 id="s-4-1">4.1 directive 길이 분포</h3>
+
 <table>
   <thead>
     <tr><th>길이</th><th>빈도</th><th>패턴</th></tr>
@@ -633,11 +743,12 @@
   <tbody>
     <tr><td>1~5 단어</td><td>매우 잦음</td><td>"진행해" / "다음작업 진행해" / "self-hosted가 최우선이야"</td></tr>
     <tr><td>6~20 단어</td><td>잦음</td><td>"smtp 서버는 사전에 명시했던 테스트서버에 설치해"</td></tr>
-    <tr><td>1+ 문단</td><td>잦음</td><td>차별화 계획 + 회원가입 정책 — 큰 정책 directive 명세 직접</td></tr>
+    <tr><td>1+ 문단</td><td>잦음</td><td>차별화 계획 + 회원가입 정책 — 큰 정책 directive 의 명세 직접</td></tr>
   </tbody>
 </table>
 
 <h3 id="s-4-2">4.2 비판 패턴</h3>
+
 <table>
   <thead>
     <tr><th>패턴</th><th>빈도</th><th>예시 (마스킹)</th></tr>
@@ -649,16 +760,16 @@
     <tr><td>가드레일 강제 명시</td><td>잦음</td><td>"보고는 왜 텔레그램으로 안해? 이것도 강제 가드레일 규칙에 넣어" + "문서 완벽" + "디렉션 HTML interactive"</td></tr>
     <tr><td>후속 보강 명시</td><td>잦음</td><td>"qa 단계 pytest" + "playwright" + "Phase 3 막바지"</td></tr>
     <tr><td>큰 정책 directive 직접</td><td>잦음</td><td>차별화 + 회원가입 + wine + SMTP — 명세 직접</td></tr>
-    <tr><td><strong>권장 default 자율 GO</strong> (사이클 5 신규)</td><td>신규</td><td>"그럼 권장되는 방향이라고 판단되는부분에 대해 진행해" + "권장방향으로 진행해"</td></tr>
-    <tr><td><strong>직무유기 비판 + hook 강제화 directive</strong> (사이클 22 + 28 신규)</td><td>잦음 (2회차)</td><td>"지금까지 직무 유기 한거야?" (사이클 22 — perl bulk regex 손상) + "지속적으로 직무유기를 하고 있는데 이작업 트리거이용해서 훅 만들라고 지시했을텐데" + "반드시 강제화 하여 따라가게끔" (사이클 28 — 평가 staleness)</td></tr>
-    <tr class="user-row"><td><strong>자가 평가 자문 directive</strong> (사이클 32 신규)</td><td><strong>신규</strong></td><td><strong>"현재 내 능력은 enforcement layer designer 로 평가를 받고 있는데 니 생각은 어때?"</strong> — L0~L5 6 layer 체계 + 차별화 6 영역 명문화 (§2.29 신규)</td></tr>
+    <tr><td><strong>권장 default 자율 GO</strong> (사이클 5)</td><td>신규</td><td>"그럼 권장되는 방향이라고 판단되는부분에 대해 진행해" + "권장방향으로 진행해"</td></tr>
+    <tr class="new-row"><td><strong>직무유기 4회차 비판 + hook 강제 directive</strong> (사이클 36 신규)</td><td>신규 ▲</td><td>"직무유기 확인 시 훅 만들어서 강제 지시" + "평가문서 업데이트 했어?" + "전수조사" — 가드레일 #34 doc-consistency Stop hook 신설</td></tr>
   </tbody>
 </table>
 
 <h3 id="s-4-3">4.3 의사결정 위임 패턴</h3>
+
 <ul>
-  <li>사용자 직접 결정: 기술 스택 / 라이선스 (<strong>GPL</strong>) / 보안 우선순위 / 운영 정책 / 가드레일 / UX 가시화 / 작업 우선순위 / QA 도구 / 차별화 영역 / 회원가입 필드 / OTP 만료 / Phase 매핑 / 인프라 host (테스트서버 SMTP) / 빌드 도구 (wine) / <strong>visibility 전환 (public → private 가능성)</strong></li>
-  <li>LLM 위임: 구현 세부 / lint 정책 완화 / 파일 분리 단위 / commit message / sub-agent 분배 / 정책 본문 초안 / 평가 snapshot / SMTP 라이브러리 선택 / bcrypt rounds 권장 / <strong>권장 default 4 옵션 분석</strong> / <strong>gh API 자동화 발견</strong></li>
+  <li>사용자 직접 결정: 기술 스택 / 라이선스 (<strong>GPL</strong>) / 보안 우선순위 / 운영 정책 / 가드레일 / UX 가시화 / 작업 우선순위 / QA 도구 / 차별화 영역 / 회원가입 필드 / OTP 만료 / Phase 매핑 / 인프라 host (테스트서버 SMTP) / 빌드 도구 (wine) / <strong>visibility 전환 (public → private 가능성)</strong> / <strong>문서 정합 hook 강제화 (사이클 36)</strong></li>
+  <li>LLM 위임: 구현 세부 / lint 정책 완화 / 파일 분리 단위 / commit message / sub-agent 분배 / 정책 본문 초안 / 평가 snapshot / SMTP 라이브러리 선택 / bcrypt rounds 권장 / <strong>권장 default 의 4 옵션 분석</strong> / <strong>gh API 자동화 발견</strong></li>
   <li><strong>경계 더 명확화 (사이클 5)</strong> — 사용자 = 정책 본문 + 명세 + host 선택, Claude = 구현 + 본문 초안 + 권장 default + 자동화 발견</li>
 </ul>
 
@@ -667,14 +778,16 @@
 <h2 id="sec-5">5. 코칭 권장 사항</h2>
 
 <h3 id="s-5-1">5.1 단기 (현 세션 후속)</h3>
+
 <ol>
   <li><strong>pivot 빈도 줄이기</strong>: 한 응답 = 한 directive (본 세션 20+ pivot)</li>
   <li><strong>test 코드 진입</strong>: pytest 인프라 active → 실 기능 test 작성</li>
   <li><strong>SMTP 실제 설치</strong>: 데모 서버 SSH + postfix + DKIM + Let's Encrypt + DNS record</li>
-  <li><s>라이선스 결정</s> ✅ 완료 (GPLv3 확정, 사이클 6)</li>
+  <li><s>라이선스 결정</s> <span class="badge-go">사이클 6 완료</span> (GPLv3 확정)</li>
 </ol>
 
 <h3 id="s-5-2">5.2 중기 (Phase 2 진입 전)</h3>
+
 <ol>
   <li><strong>E2EE 도입 결정</strong>: 옵션 A vs B 분기점</li>
   <li><strong>모바일 prototype 의사결정</strong>: Phase 4+ 사용자 풀 10x</li>
@@ -683,6 +796,7 @@
 </ol>
 
 <h3 id="s-5-3">5.3 장기 (Phase 3+ 진입 전)</h3>
+
 <ol>
   <li>OSS / 상용 분기</li>
   <li>Team scale-up 또는 1인 유지</li>
@@ -696,9 +810,18 @@
 <table>
   <thead>
     <tr>
-      <th>사용자 group</th><th>가드레일</th><th>문서 우선</th><th>BPE 인지</th><th>메타 규칙</th>
-      <th>UX 가시화</th><th>QA 사고</th><th>세션 정합</th><th>차별화 명문</th><th>보안 사고</th>
-      <th>자율 reasonable call</th><th>추정 비율</th>
+      <th>사용자 group</th>
+      <th>가드레일</th>
+      <th>문서 우선</th>
+      <th>BPE 인지</th>
+      <th>메타 규칙</th>
+      <th>UX 가시화</th>
+      <th>QA 사고</th>
+      <th>세션 정합</th>
+      <th>차별화 명문</th>
+      <th>보안 사고</th>
+      <th>자율 reasonable call</th>
+      <th>추정 비율</th>
     </tr>
   </thead>
   <tbody>
@@ -709,18 +832,19 @@
   </tbody>
 </table>
 
-<p>본 평가 = LLM (Claude) 본 사용자 1명 대상 누계 인터랙션 직접 관측.</p>
+<p>본 평가 = LLM (Claude) 의 본 사용자 1명 대상 누계 인터랙션 직접 관측.</p>
 
 <hr>
 
 <h2 id="sec-7">7. 사용자 LLM 활용 차별화 가치</h2>
 
 <h3 id="s-7-1">7.1 가능 영역</h3>
+
 <ul>
   <li>정책 설계 + 가드레일 작성</li>
   <li>PoC 부트스트랩 (9 정책 + 8 운영 + 3 정책 본문 + CI + auth + SMTP + wine 단일 세션 정합)</li>
-  <li>drift 자동 감지 (doc-gardener + CheckList drift)</li>
-  <li>컨텍스트 손실 방지 (handoff + 영구 메모리 18 + 평가 snapshot 사이클 5)</li>
+  <li>drift 자동 감지 (doc-gardener + CheckList drift + <strong>doc-consistency Stop hook</strong>)</li>
+  <li>컨텍스트 손실 방지 (handoff + 영구 메모리 34 + 평가 snapshot 사이클 36)</li>
   <li>병렬 자동화 (sub-agent 16 spawn)</li>
   <li>UX 직관 (swatch + HTML interactive + wireframe directive)</li>
   <li>QA 인프라 (pytest + Playwright)</li>
@@ -730,10 +854,10 @@
   <li><strong>인프라 host 선택</strong> (데모 서버 SMTP + macOS self-hosted)</li>
   <li><strong>빌드 도구 선택</strong> (wine cross-compile)</li>
   <li><strong>권장 default 자율 GO 패턴</strong> (의사결정 fatigue 회피)</li>
-  <li><strong>enforcement layer designer 영역</strong> (사이클 32 신규 — L0~L5 6 layer hook 체계 + 차별화 6 영역 = 단순 vibe coder 분리 패턴)</li>
 </ul>
 
 <h3 id="s-7-2">7.2 한계 영역 (LLM 단독 부족)</h3>
+
 <ul>
   <li>신규 기술 도입 의사결정 (E2EE / Mobile / SFU)</li>
   <li>수익화 모델 검증 (사용자 인터뷰 / pilot)</li>
@@ -747,20 +871,23 @@
 <hr>
 
 <h2 id="sec-8">8. 다음 평가 갱신 트리거</h2>
+
 <ul>
   <li>본 세션 누계 directive / pivot 횟수</li>
-  <li>신규 가드레일 (현 18)</li>
-  <li>사용자 의사결정 진행 시 §5 코칭 ✅</li>
+  <li>신규 가드레일 (현 34)</li>
+  <li>사용자 의사결정 진행 시 §5 코칭 <span class="badge-go">✅</span></li>
   <li>LLM (Claude) BPE 위반 / 1인칭 표현 회수 사이클</li>
   <li>사용자 신규 비판 패턴</li>
   <li>신규 강점 영역 (차별화 / 보안 / 자율 reasonable call 등)</li>
   <li>SMTP 실제 설치 진행 시 §3.7 + §7.2 갱신</li>
   <li>Phase 1 코드 진입 시 §3.3 + 종합 점수 변동</li>
+  <li><strong>doc-consistency Stop hook 발동 시 §2.31 갱신 (사이클 36 신규)</strong></li>
 </ul>
 
 <hr>
 
 <h2 id="sec-9">9. 본 평가 한계 고지</h2>
+
 <ul>
   <li>본 평가 = LLM (Claude) 단일 시점 단일 사용자 self-report 합성.</li>
   <li>점수 = 정성 평가.</li>
@@ -770,17 +897,17 @@
 <hr>
 
 <h2 id="sec-ref">참조</h2>
+
 <ul>
   <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
   <li>운영 규약: <a href="../../CLAUDE.md">CLAUDE.md</a></li>
   <li>메모리 인덱스: <code>~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md</code></li>
-  <li>동행 snapshot: <a href="productization.html">productization.html</a></li>
-  <li>Markdown 등가: <a href="../assessments/vibe-coding.md">docs/assessments/vibe-coding.md</a></li>
-  <li>observability baseline 정본 (사이클 15 신설): <a href="../policies/observability-baseline.md">docs/policies/observability-baseline.md</a></li>
+  <li>동행 snapshot: <a href="productization.html">productization.html</a> (<a href="../assessments/productization.md">.md</a>)</li>
+  <li>Markdown 원본: <a href="../assessments/vibe-coding.md">docs/assessments/vibe-coding.md</a></li>
 </ul>
 
 <footer>
-  사용자 바이브 코딩 능력 평가 Snapshot — 2026-05-19 03:30 KST — 사이클 32+ (10점 만점 전환 + enforcement layer 신규) · §1 종합 점수 표 10점 만점 13 row (× 2 변환 + enforcement layer designer 신규 row 9.7 / 10) · §2.29 보존 (L0~L5 6 layer hook 체계 + 차별화 6 영역 명문) · §2.28 보존 (평가 staleness Stop hook 강제화) · §2.27 보존 (직무유기 인지 + post-write hook + qa→review→git 강제화) · 종합 9.56 → 9.6 ▲ · enforcement layer designer 영역 = 단순 vibe coder 분리
+  <p>마지막 갱신: 2026-05-19 05:00 KST — 사이클 36 (사용자 전수조사 directive + drift 6건 회수 + doc-consistency Stop hook 강제 + 직무유기 4회차)</p>
 </footer>
 
 </main>
