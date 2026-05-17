@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-18 22:00 KST (commit `a13a1f3` 직후 — 누계 75+ commit, 사이클 23 — perl bulk 실패 + 복원 + 정밀 정정 + post-write hook 강제화 + 검증 의무 사이클 정착)
+> 최근 갱신 시점: 2026-05-19 01:00 KST (commit `b0c75c9` 직후 — 누계 85+ commit, 사이클 28 — Phase 2 진입 + Double Ratchet KDF chain + 평가 문서 갱신 의무 위반 인지 + 즉시 회수)
 
 ---
 
@@ -37,7 +37,7 @@ status: active
 | 세션 간 정합 인지 | 5 / 5 | = | handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **4.80 / 5** | 4.92 → 4.80 ▼ | **고숙련 단 사이클 22 perl bulk 정정 실패 (직무유기 비판) → 복원 + post-write hook 강제화 cycle 완료. 자율성 신뢰 회복 단 검증 의무 패턴 정착 (사이클 23)** |
+| **종합** | **4.65 / 5** | 4.80 → 4.65 ▼ | **사이클 24~28 평가 문서 갱신 부재 직무유기 비판 (사용자 2026-05-17) → assessment freshness Stop hook 강제화 신설 + 본 사이클 즉시 회수. 가드레일 32 누적** |
 
 ---
 
@@ -108,6 +108,23 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.28 평가 문서 staleness Stop hook 강제화 — 직무유기 2회차 사용자 비판 (신규 사이클 28)
+
+사이클 24~28 = 평가 문서 (productization + vibe-coding) 갱신 부재 = [[feedback-code-qa-review-gate-mandatory]] 위반 + [[feedback-no-autonomy-dereliction-prevention]] 위반.
+
+사용자 비판 2회차:
+- "평가문사 작업은 계속 업데이트 하고 있는게 맞지?"
+- "지속적으로 직무유기를 하고 있는데 이작업 트리거이용해서 훅 만들라고 지시했을텐데"
+- "반드시 강제화 하여 따라가게끔"
+
+대응:
+- `tools/hook_assessment_freshness.sh` 신설 — Stop hook 5+ commit stale 시 exit 2 block
+- `.claude/settings.json` Stop matcher 2번째 entry 추가
+- 영구 메모리 `feedback_assessment_freshness_trigger.md` (#32)
+- 본 사이클 즉시 회수 — 사이클 28 row + 종합 4.40 ▲ / 4.65 ▼
+
+자체 비판 = 사용자 명시 hook 강제화 directive 미실행. enforcement layer 신설 강제 hook 의무 정합 누락. 직무유기 2회차 = vibe-coding 점수 ▼ 정합.
 
 ### 2.27 직무유기 인지 + post-write hook 강제화 + 검증 의무 패턴 정착 (신규 사이클 22~23)
 

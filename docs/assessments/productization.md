@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-18 22:00 KST (commit `a13a1f3` 직후 — 누계 75+ commit, 사이클 23 — Phase 1 자율 chain 전면 확장 + post-write hook 강제화 + KST timezone 의무)
+> 최근 갱신 시점: 2026-05-19 01:00 KST (commit `b0c75c9` 직후 — 누계 85+ commit, 사이클 28 — Phase 1 완성 + signaling DB 통합 + Phase 2 진입 (E2EE) + Double Ratchet KDF chain)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,7 +29,7 @@ status: active
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 5 + snapshot 8 + CheckList drift 차단 + drift 회수 누계 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) |
-| **종합** | **4.25 / 5** | 4.15 → 4.25 ▲ | **Phase 1 자율 chain 전면 확장 — security/DB/SMTP/auth use case 5/repositories 7/REST 5 endpoint/UI 4 dialog/main_window 통합/PyInstaller + post-write hook 강제화 + KST timezone + 사이클 23 회수 cycle 완료** |
+| **종합** | **4.40 / 5** | 4.25 → 4.40 ▲ | **Phase 1 완성 (signaling DB 통합) + Phase 2 진입 (E2EE — AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) + 237 pytest PASS + 검증 의무 cycle 정착** |
 
 ---
 
@@ -139,6 +139,16 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.24 Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) (신규 사이클 27~28)
+
+- 사용자 directive "진행해" + "작업 재개해" — Phase 2 자율 GO
+- `app/crypto/e2ee.py` — 7 함수 (AES-256-GCM + X25519 ECDH + HKDF-SHA256 + ecdh_derive_aes_key 통합) + `EncryptedPayload` wire format
+- `app/crypto/double_ratchet.py` — `ChainKey` dataclass + Signal Protocol KDF separator (0x01 message + 0x02 chain) + ratchet_chain atomic + encrypt/decrypt_message
+- cryptography>=42.0 의존 (PyCA)
+- 40 신규 pytest 케이스 (TestAesGcm 10 + TestEncryptedPayloadWireFormat 3 + TestX25519Ecdh 5 + TestHkdf 4 + TestE2EEFullFlow 2 Alice/Bob/Eve + TestChainKey 3 + TestDeriveMessageKey 3 + TestAdvanceChainKey 4 + TestRatchetChain 2 forward secrecy 100 step + TestEncryptDecryptMessage 4)
+- 전체 pytest = 237 PASS (197 → 221 → 237)
+- 잔존 = DH ratchet step + session state + skipped keys + multi-device + push + 백업 → reviewer-agent → handoff doc
 
 ### 2.23 Phase 1 자율 chain 전면 확장 + post-write hook 강제화 (신규 사이클 23)
 
