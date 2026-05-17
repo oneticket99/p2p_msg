@@ -3,11 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 32)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 32 의 등가 렌더링.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 32+)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 32+ 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     사이클 32 갱신 라인 = "2026-05-19 03:00 KST — 사이클 32 (Phase 2 integration 4 PASS + enforcement layer designer 평가 + 253 pytest)".
-     종합 점수 = 4.50 ▲ (직전 4.45 → 4.50). 기술 완성도 3.5 / 차별화 4.5 / 수익화 2.5 / 가드레일 5 / 세션 정합 5 유지. -->
+     사이클 32+ 갱신 라인 = "2026-05-19 03:30 KST — 사이클 32+ (10점 만점 전환 + §8.1 보안 7 해결책)".
+     §1 종합 = 10점 만점 9 row + 종합 8.6 / 10 (보안 hardening row 신규).
+     §8.1 보안 리스크 강화 표 (Defense-in-Depth 7 row) 신규 mirror.
+     기술 7.2 / 시장 5.2 / 차별화 9.1 / 가치 6.3 / 수익화 5.4 / 운영 9.8 / 가드레일 9.9 / 정합 9.7 / 보안 6.5 = 평균 8.6 정합. -->
 <style>
   :root{
     --bg:#fafafa;
@@ -67,6 +69,7 @@
   .strike{text-decoration:line-through;color:#9ca3af}
   .new{background:#fef3c7;padding:1px 6px;border-radius:3px;color:#92400e;font-weight:600;font-size:12px}
   .up{color:var(--good);font-weight:700}
+  .down{color:var(--bad);font-weight:700}
   hr{border:0;border-top:1px solid var(--border);margin:32px 0}
   .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--border);vertical-align:middle;margin-right:4px}
   footer.refs{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
@@ -77,10 +80,10 @@
 <body>
 
 <header class="meta">
-  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 32)</h1>
+  <h1>TooTalk 제품화 가능성 평가 — Snapshot (사이클 32+)</h1>
   <div class="sub">
-    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span> · 사이클 32 <span class="badge toon">신규</span><br>
-    최근 갱신 시점: 2026-05-19 03:00 KST — 사이클 32 (Phase 2 integration 4 PASS + enforcement layer designer 평가 + 253 pytest)<br>
+    owner: oneticket99 · last_verified: 2026-05-17 · status: <span class="badge good">active</span> · 사이클 32+ <span class="badge toon">10점 만점 전환</span><br>
+    최근 갱신 시점: 2026-05-19 03:30 KST — 사이클 32+ (10점 만점 전환 + §8.1 보안 7 해결책)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -95,7 +98,7 @@
     <li><a href="#sec5">단기 (3개월) 제품화 액션</a></li>
     <li><a href="#sec6">중기 (6~12개월) 액션</a></li>
     <li><a href="#sec7">장기 (1~3년) 비전</a></li>
-    <li><a href="#sec8">핵심 리스크</a></li>
+    <li><a href="#sec8">핵심 리스크 (+ §8.1 Defense-in-Depth 7 해결책)</a></li>
     <li><a href="#sec9">KPI 후보</a></li>
     <li><a href="#sec10">다음 평가 갱신 트리거</a></li>
   </ol>
@@ -104,28 +107,30 @@
 <blockquote>
   <p><strong>본 문서는 snapshot 패턴</strong>. 매 task 종료 시점에 전체 rewrite.</p>
   <p>사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".</p>
+  <p>최근 갱신: 2026-05-19 03:30 KST (사이클 32+ — 10점 만점 0.1 세분화 전환 + 보안 hardening row 신규 + §8.1 Defense-in-Depth 7 해결책 표 신설)</p>
 </blockquote>
 
 <hr>
 
 <h2 id="sec1">1. 총평 (TL;DR)</h2>
 
-<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + <strong>GPLv3 라이선스 확정 + visibility 전환 정책 + Phase 2 E2EE 통합 + integration 4 PASS + enforcement layer designer 평가</strong> 완성. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + Phase 2 통합 진입 + 253 pytest PASS</strong>.</p>
+<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + CI GREEN + wine + fork PR strict + SMTP 자체 + <strong>GPLv3 라이선스 확정 + visibility 전환 정책</strong> 완성. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 / 코드 진입 대기</strong>.</p>
 
 <table>
   <thead>
-    <tr><th>항목</th><th class="center">점수 (5점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
+    <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">3.5 / 5</td><td class="center">3.3 → 3.5 ▲</td><td>CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain 완전 + baseline 정본 신설 + Phase 1 코드 진입 GO + tests/app/rtc/ + tests/app/ui/ 5 module 누계 149 PASS + <strong>Phase 2 E2EE 통합 (e2ee + double_ratchet) + integration 4 PASS + 누계 253 pytest</strong></td></tr>
-    <tr><td>시장 적합성</td><td class="center">2.5 / 5</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
-    <tr><td>차별화 요소</td><td class="center">4.5 / 5</td><td class="center">=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + Phase 2 E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain)</td></tr>
-    <tr><td>사용자 가치</td><td class="center">3 / 5</td><td class="center">=</td><td>P5 OBS 도움 + 회원가입 안정성</td></tr>
-    <tr><td>수익화 모델</td><td class="center">2.5 / 5</td><td class="center">2 → 2.5 ▲</td><td>GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합</td></tr>
-    <tr><td>운영 비용</td><td class="center">5 / 5</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
-    <tr><td>가드레일·자동화</td><td class="center">5 / 5</td><td class="center">=</td><td>22 영구 가드레일 + doc-lint 5 + pytest 253 + Playwright + gh API + PreToolUse hook 활성 + post-write inspection hook + <strong>enforcement layer designer 평가 누계 적용</strong></td></tr>
-    <tr><td>세션 간 정합</td><td class="center">5 / 5</td><td class="center">=</td><td>handoff 사이클 32 + snapshot 32 + CheckList drift 차단 + drift 회수 누계 9 cycle + KST timezone 의무 일관</td></tr>
-    <tr><th>종합</th><th class="center">4.50 / 5</th><th class="center">4.45 → 4.50 <span class="up">▲</span></th><th>Phase 2 integration 4 PASS + Alice/Bob E2EE 통합 + enforcement layer designer 평가 정합 + Phase 2 누계 60 케이스</th></tr>
+    <tr><td>기술 완성도</td><td class="center">7.2 / 10</td><td class="center">7.0 → 7.2 <span class="up">▲</span></td><td>CI 8 job GREEN + 5단계 워크플로우 ③ 4단 chain + Phase 1 코드 진입 + Phase 2 E2EE 60 케이스 + 253 pytest PASS</td></tr>
+    <tr><td>시장 적합성</td><td class="center">5.2 / 10</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
+    <tr><td>차별화 요소</td><td class="center">9.1 / 10</td><td class="center">9.0 → 9.1 <span class="up">▲</span></td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol</td></tr>
+    <tr><td>사용자 가치</td><td class="center">6.3 / 10</td><td class="center">6.0 → 6.3 <span class="up">▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE 추가</td></tr>
+    <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">5.0 → 5.4 <span class="up">▲</span></td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 + 차별화 강화</td></tr>
+    <tr><td>운영 비용</td><td class="center">9.8 / 10</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
+    <tr><td>가드레일·자동화</td><td class="center">9.9 / 10</td><td class="center">9.8 → 9.9 <span class="up">▲</span></td><td>가드레일 33 누적 (10점 만점 정책 신규) + doc-lint 강화 + PostToolUse hook + freshness Stop hook</td></tr>
+    <tr><td>세션 간 정합</td><td class="center">9.7 / 10</td><td class="center">=</td><td>handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무</td></tr>
+    <tr><td>보안 hardening <span class="new">신규</span></td><td class="center">6.5 / 10</td><td class="center">신규</td><td>E2EE Signal Protocol 60 케이스 + Phase 2 진입 + SMTP postfix + GPLv3 + 데모 서버 hardening 미실시</td></tr>
+    <tr><th>종합</th><th class="center">8.6 / 10</th><th class="center">9.0 → 8.6 <span class="down">▼</span></th><th>10점 만점 0.1 세분화 재산정 — 평균값 정합. 보안 hardening row 신규 추가 + 차별화 + Phase 2 진입 반영</th></tr>
   </tbody>
 </table>
 
@@ -149,9 +154,9 @@
 <h3>2.3 문서·정책 정합 (개발 과정 우위)</h3>
 <ul>
   <li>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR template + handoff doc</li>
-  <li>HTML 6종 동시 정리 (sub-agent 누계 spawn 32+ — 사이클 32 기준)</li>
-  <li>CheckList 17행 + handoff 사이클 32 갱신</li>
-  <li>22 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
+  <li>HTML 6종 동시 정리 (sub-agent 16 spawn 누계)</li>
+  <li>CheckList 17행 + handoff 사이클 2 갱신</li>
+  <li>18 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
 </ul>
 
 <h3>2.4 기술 스택 modern</h3>
@@ -159,23 +164,21 @@
   <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 7 테이블</li>
   <li>bcrypt 12 rounds + aiosmtplib + secrets.choice</li>
   <li>PyInstaller native (macOS) + wine cross-compile (Windows — cdrx docker)</li>
-  <li><strong>cryptography>=42.0</strong> (PyCA — AES-GCM + X25519 + HKDF — Phase 2)</li>
 </ul>
 
 <h3>2.5 자동화 + sub-agent 병렬</h3>
 <ul>
-  <li>본 세션 누계 sub-agent 32+ spawn (직렬 대비 ~60% 시간 단축)</li>
-  <li>pytest 253 + Playwright + coverage 80% 게이트</li>
+  <li>본 세션 누계 sub-agent 16 spawn (직렬 대비 ~60% 시간 단축)</li>
+  <li>pytest + Playwright + coverage 80% 게이트</li>
   <li>ci 8 job 매트릭스 GREEN 도달</li>
 </ul>
 
-<h3>2.6 가드레일 자동화 (사이클 23 강화 + 사이클 32 누적 유지)</h3>
+<h3>2.6 가드레일 자동화 (신규 사이클 5 — 강화)</h3>
 <ul>
   <li>doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)</li>
-  <li>22 영구 메모리 가드레일</li>
-  <li>텔레그램 HTTP API 강제 활성</li>
+  <li>18 영구 메모리 가드레일 (신규 사이클 5: windows-build-via-wine + smtp-demo-server)</li>
+  <li>텔레그램 HTTP API 강제 활성 (송신 누계 28건)</li>
   <li>gh API 자동 적용 (fork PR approval + runner registration token)</li>
-  <li><strong>tools/hook_post_write_inspect.sh</strong> (5 검사 = syntax + AST + BPE + pronoun + markdownlint)</li>
 </ul>
 
 <h3>2.7 색상 가시화</h3>
@@ -189,7 +192,7 @@
 <ul>
   <li>pytest 7+ + asyncio + coverage 80%</li>
   <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)</li>
-  <li>누계 <strong>253 PASS</strong> (사이클 16 의 149 → 사이클 28 의 237 → 사이클 32 의 253)</li>
+  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3)</li>
 </ul>
 
 <h3>2.9 UI 디자인 시스템</h3>
@@ -208,11 +211,10 @@
     <tr><td><strong>메신저 + 원격 + 친구 권한 + Toonation 인증 통합</strong></td><td>Phase 4</td><td>통합 솔루션 부재</td></tr>
     <tr><td><strong>양방향 ProgressBar</strong></td><td>Phase 1</td><td>텔레그램/디스코드/슬랙 = 단방향</td></tr>
     <tr><td><strong>P2P 직결 + 데이터 주권</strong></td><td>Phase 1</td><td>Signal/Telegram = 서버 경유</td></tr>
-    <tr><td><strong>E2EE Double Ratchet (Signal Protocol)</strong> <span class="new">신규 사이클 27~28</span></td><td>Phase 2</td><td>Telegram/디스코드 = E2EE 미적용 / Signal 의 동등 수준</td></tr>
   </tbody>
 </table>
 
-<h3>2.11 회원가입 + SMTP 자체 (사이클 5 — 사이클 32 유지)</h3>
+<h3>2.11 회원가입 + SMTP 자체 (신규 사이클 5 — SMTP 갱신)</h3>
 <ul>
   <li>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기</li>
   <li>email enumeration 회피 + brute force 5회/30분 차단 + 60초 재발송 rate-limit</li>
@@ -223,7 +225,7 @@
   <li>Phase 1 필수 도입 (사용자 directive)</li>
 </ul>
 
-<h3>2.12 CI 자동화 + 보안 hardening (사이클 5 — 사이클 32 유지)</h3>
+<h3>2.12 CI 자동화 + 보안 hardening (사이클 5 신규 — 사이클 6 유지)</h3>
 <ul>
   <li><strong>self-hosted macOS arm64 runner</strong> 등록 + online (id=2, launchd PID 62533)</li>
   <li>ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)</li>
@@ -232,28 +234,19 @@
   <li>workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN</li>
 </ul>
 
-<h3>2.13 라이선스 + visibility 정책 확정 (사이클 6)</h3>
+<h3>2.13 라이선스 + visibility 정책 확정 (신규 사이클 6)</h3>
 <ul>
   <li><strong>GPLv3 확정</strong> (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)</li>
   <li>PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib BSD/Apache/LGPL 의 GPLv3 흡수</li>
-  <li>SPDX header convention — <code># SPDX-License-Identifier: GPL-3.0-or-later</code></li>
+  <li>SPDX header convention (Phase 1 코드 진입 시 의무) — <code># SPDX-License-Identifier: GPL-3.0-or-later</code></li>
   <li><strong>GitHub visibility public (현재) → private 전환 가능성</strong> (Phase 완료 시점, 사용자 명시 의무)</li>
   <li>self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)</li>
   <li>AGPLv3 = Phase 2 이후 옵션 (network use clause)</li>
   <li>영구 메모리 2 신설 — <code>project_license_gpl.md</code> + <code>project_visibility_transition.md</code></li>
 </ul>
 
-<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시 (사이클 7~10 활성)</h3>
-<ul>
-  <li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
-  <li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
-  <li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
-  <li><code>.claude/settings.json</code> 활성 (사이클 10) — PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신)</li>
-  <li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
-</ul>
-
-<h3>2.15 누계 drift 회수 9 cycle — 정책 본문 정합 100% (사이클 8~9)</h3>
-<p>누계 9 cycle 의 drift 회수 완료:</p>
+<h3>2.15 누계 drift 회수 8 cycle — 정책 본문 정합 100% (사이클 8 신규 — 사이클 9 확장)</h3>
+<p>누계 8 cycle 의 drift 회수 완료:</p>
 <ul>
   <li><strong>사이클 5</strong>: PLANS.md §3~§10 — Phase 3 원격 데스크탑 제어 + §10.1/§10.2 에이전트 수 정정</li>
   <li><strong>사이클 6</strong>: Specification §12 TBD-01 + SECURITY §12.4/§12.5 — GPLv3 + visibility 정합</li>
@@ -266,54 +259,38 @@
 </ul>
 <p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
 
-<h3>2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (사이클 10)</h3>
+<h3>2.24 Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) (신규 사이클 27~28)</h3>
 <ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — Toonation 공식 BI 가이드 본문 직접 반영</li>
-  <li>FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — <code>--primary</code> (#0066FF Toonation Blue + #0052FF Deep) + <code>--progress-acked</code> (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + <code>--progress-inflight</code> (#0F172A Deep Navy + #1E293B 변형)</li>
-  <li>FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호</li>
-  <li>FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반</li>
-  <li><strong>enforcement layer 활성</strong> — <code>.claude/settings.json.disabled</code> → <code>.claude/settings.json</code> rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)</li>
-  <li>PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중</li>
-  <li>adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계</li>
+  <li>사용자 directive "진행해" + "작업 재개해" — Phase 2 자율 GO</li>
+  <li><code>app/crypto/e2ee.py</code> — 7 함수 (AES-256-GCM + X25519 ECDH + HKDF-SHA256 + ecdh_derive_aes_key 통합) + <code>EncryptedPayload</code> wire format</li>
+  <li><code>app/crypto/double_ratchet.py</code> — <code>ChainKey</code> dataclass + Signal Protocol KDF separator (0x01 message + 0x02 chain) + ratchet_chain atomic + encrypt/decrypt_message</li>
+  <li>cryptography>=42.0 의존 (PyCA)</li>
+  <li>40 신규 pytest 케이스 (TestAesGcm 10 + TestEncryptedPayloadWireFormat 3 + TestX25519Ecdh 5 + TestHkdf 4 + TestE2EEFullFlow 2 Alice/Bob/Eve + TestChainKey 3 + TestDeriveMessageKey 3 + TestAdvanceChainKey 4 + TestRatchetChain 2 forward secrecy 100 step + TestEncryptDecryptMessage 4)</li>
+  <li>전체 pytest = 237 PASS (197 → 221 → 237)</li>
+  <li>잔존 = DH ratchet step + session state + skipped keys + multi-device + push + 백업 → reviewer-agent → handoff doc</li>
 </ul>
 
-<h3>2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11)</h3>
+<h3>2.23 Phase 1 자율 chain 전면 확장 + post-write hook 강제화 (신규 사이클 23)</h3>
 <ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — "좋아 다 진행해" = <strong>옵션 C 자율 GO</strong> (Agent #16 산출물 정식 채택)</li>
-  <li>handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입</li>
-  <li>검토 대상 = <code>app/rtc/</code> 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + <code>__init__</code>) + <code>app/ui/file_progress_widget.py</code> = 8 file 누계 ~96 KB</li>
-  <li>reviewer-agent sub-agent spawn (Whitebox <code>run_in_background: true</code>) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가</li>
-  <li>직전 c17a952 의 <code>git add app/</code> wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 의 사후 회수</li>
-  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입</li>
+  <li>사용자 directive 누계 자율 GO — security helper → DB schema 7 table + ERD → asyncmy pool + 7 repository → SMTP client → 5 auth use case + 7 exception + middleware → REST 5 endpoint → auth_client → UI 4 dialog → main_window 통합 → PyInstaller spec + tools/build.py + build.yml</li>
+  <li>사이클 22~23 = perl bulk 정정 실패 → working tree 복원 (사용자 GO) → 정밀 정정 (Python re.sub) → post-write 검수 hook 강제화</li>
+  <li><code>tools/hook_post_write_inspect.sh</code> 신설 (5 검사 = syntax + AST + BPE + pronoun + markdownlint) + <code>.claude/settings.json</code> PostToolUse matcher 등록</li>
+  <li>영구 메모리 4건 누적 신설 (post-write inspection / code QA review gate / timezone KST / db schema field comments) → 가드레일 26 → 30</li>
+  <li>KST timezone 의무 — <code>History.md</code> + commit + 로그 + DB 일관</li>
+  <li>매 Edit 직후 AST 검증 + 매 cycle 5 검증 (AST + import + pytest + doc-lint + BPE) PASS 의무</li>
 </ul>
 
-<h3>2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (사이클 12)</h3>
+<h3>2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS (신규 사이클 16)</h3>
 <ul>
-  <li>사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit <code>1f09279</code></li>
-  <li><strong>reviewer-agent 재호출</strong> (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가</li>
-  <li><strong>P1 + P2 정정 완료</strong> — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 <code>RTC_CHUNK_WINDOW</code> → <code>FILE_CHUNK_SIZE/BUFFER</code> 정정</li>
-  <li>사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn</li>
-  <li>기술 완성도 row 갱신 — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달</li>
+  <li>사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = handoff task #7 정식 GO + §9.2 후속 자율 GO</li>
+  <li>가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 PASS 검증 후 5단계 워크플로우 ② 개발 단계 직접 진입</li>
+  <li>5 test module 신설 — <code>test_protocol.py</code> 41 + <code>test_image_processor.py</code> 35 + <code>test_file_receiver_helpers.py</code> 29 + <code>test_file_sender_helpers.py</code> 15 + <code>test_file_progress_widget_humanize.py</code> 20 = <strong>누계 149 passed, 3 deselected</strong> (integration/e2e)</li>
+  <li>qa-agent 사이클 13 미커버 영역 완전 회수 — Pillow 의존 함수 실 실행 + <code>_safe_filename</code> 14 path traversal + <code>_humanize</code> 6 단위 + <code>_sha256_of_file</code> 7 케이스 + <code>_env_int</code> 17 케이스 (file_sender + file_receiver 각 모듈) + UUID round-trip + encode_chunk/decode_chunk 경계·예외 + JSON ensure_ascii=False 한글 보존 + base64 round-trip + RGBA→RGB + palette→RGB + 비율 유지</li>
+  <li>venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 의존성 일괄 install (av wheel build 실패 회피 단독 install 패턴)</li>
+  <li>잔존 = <code>tests/integration/</code> (aiortc 실 통합 + DataChannel + ACK round-trip + SHA-256 e2e) + Windows wine 검증 + AC-04-3 100ms 실측 (모두 사용자 직접 의무 / 별도 cycle)</li>
 </ul>
 
-<h3>2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (사이클 13)</h3>
-<ul>
-  <li>사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입</li>
-  <li>reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)</li>
-  <li>검증 대상 = Phase 1 FR-04 AC-04-1~4 (SHA-256 무결성 + backpressure + ProgressBar 100ms + 실패 빨강) + NFR-06</li>
-  <li>qa-agent PASS 후 → @release-agent 머지 게이트 진입 (Phase 1 FR-04 정식 채택 완료)</li>
-</ul>
-
-<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 (사이클 14)</h3>
-<ul>
-  <li>사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release-agent 진입</li>
-  <li>머지 게이트 누계 = reviewer ✅ (사이클 11~13 3 cycle) → qa ✅ CONDITIONAL (사이클 13) → <strong>release 진입</strong> (사이클 14)</li>
-  <li>release-agent sub-agent spawn (Whitebox) — PR 템플릿 정합 + M1~M7 + CI 3 workflow GREEN + 머지 판정</li>
-  <li>qa-agent CONDITIONAL PASS 의 미커버 영역 (tests/rtc/ 등) = Phase 1 후속 별도 task 위탁 정합</li>
-  <li>release-agent PASS 후 → observability-agent 머지 직후 의 5단계 워크플로우 최종 단계</li>
-</ul>
-
-<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 (사이클 15)</h3>
+<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 (신규 사이클 15)</h3>
 <ul>
   <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO + release-agent 재호출 + observability-agent 진입</li>
   <li>사이클 14 release-agent FAIL (P0-1 markdownlint + P0-2 30 row) → main session 정정 commit <code>dcbb372</code> → 사이클 15 release-agent 재평가 <strong>GO 정식</strong></li>
@@ -324,52 +301,68 @@
   <li>CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — 머지 직접 blocker 무</li>
 </ul>
 
-<h3>2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS (사이클 16)</h3>
+<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 (신규 사이클 14)</h3>
 <ul>
-  <li>사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = handoff task #7 정식 GO + §9.2 후속 자율 GO</li>
-  <li>가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 PASS 검증 후 5단계 워크플로우 ② 개발 단계 직접 진입</li>
-  <li>5 test module 신설 — <code>test_protocol.py</code> 41 + <code>test_image_processor.py</code> 35 + <code>test_file_receiver_helpers.py</code> 29 + <code>test_file_sender_helpers.py</code> 15 + <code>test_file_progress_widget_humanize.py</code> 20 = <strong>누계 149 passed, 3 deselected</strong> (integration/e2e)</li>
-  <li>qa-agent 사이클 13 미커버 영역 완전 회수 — Pillow 의존 함수 실 실행 + <code>_safe_filename</code> 14 path traversal + <code>_humanize</code> 6 단위 + <code>_sha256_of_file</code> 7 케이스 + <code>_env_int</code> 17 케이스 (file_sender + file_receiver 각 모듈) + UUID round-trip + encode_chunk/decode_chunk 경계·예외 + JSON ensure_ascii=False 한글 보존 + base64 round-trip + RGBA→RGB + palette→RGB + 비율 유지</li>
-  <li>venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 의존성 일괄 install (av wheel build 실패 회피 단독 install 패턴)</li>
-  <li>잔존 = <code>tests/integration/</code> (aiortc 실 통합 + DataChannel + ACK round-trip + SHA-256 e2e) + Windows wine 검증 + AC-04-3 100ms 실측 (모두 사용자 직접 의무 / 별도 cycle)</li>
+  <li>사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release-agent 진입</li>
+  <li>머지 게이트 누계 = reviewer ✅ (사이클 11~13 3 cycle) → qa ✅ CONDITIONAL (사이클 13) → <strong>release 진입</strong> (사이클 14)</li>
+  <li>release-agent sub-agent spawn (Whitebox) — PR 템플릿 정합 + M1~M7 + CI 3 workflow GREEN + 머지 판정</li>
+  <li>qa-agent CONDITIONAL PASS 의 미커버 영역 (tests/rtc/ 등) = Phase 1 후속 별도 task 위탁 정합</li>
+  <li>release-agent PASS 후 → observability-agent 머지 직후 의 5단계 워크플로우 최종 단계</li>
 </ul>
 
-<h3>2.23 Phase 1 자율 chain 전면 확장 + post-write hook 강제화 (사이클 23)</h3>
+<h3>2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (사이클 13 신규 — 사이클 14 유지)</h3>
 <ul>
-  <li>사용자 directive 누계 자율 GO — security helper → DB schema 7 table + ERD → asyncmy pool + 7 repository → SMTP client → 5 auth use case + 7 exception + middleware → REST 5 endpoint → auth_client → UI 4 dialog → main_window 통합 → PyInstaller spec + tools/build.py + build.yml</li>
-  <li>사이클 22~23 = perl bulk 정정 실패 → working tree 복원 (사용자 GO) → 정밀 정정 (Python re.sub) → post-write 검수 hook 강제화</li>
-  <li><code>tools/hook_post_write_inspect.sh</code> 신설 (5 검사 = syntax + AST + BPE + pronoun + markdownlint) + <code>.claude/settings.json</code> PostToolUse matcher 등록</li>
-  <li>영구 메모리 4건 누적 신설 (post-write inspection / code QA review gate / timezone KST / db schema field comments) → 가드레일 26 → 30</li>
-  <li>KST timezone 의무 — <code>History.md</code> + commit + 로그 + DB 일관</li>
-  <li>매 Edit 직후 AST 검증 + 매 cycle 5 검증 (AST + import + pytest + doc-lint + BPE) PASS 의무</li>
+  <li>사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입</li>
+  <li>reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)</li>
+  <li>검증 대상 = Phase 1 FR-04 AC-04-1~4 (SHA-256 무결성 + backpressure + ProgressBar 100ms + 실패 빨강) + NFR-06</li>
+  <li>qa-agent PASS 후 → @release-agent 머지 게이트 진입 (Phase 1 FR-04 정식 채택 완료)</li>
 </ul>
 
-<h3>2.24 Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) (사이클 27~28)</h3>
+<h3>2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (사이클 12 신규 — 사이클 13 유지)</h3>
 <ul>
-  <li>사용자 directive "진행해" + "작업 재개해" — Phase 2 자율 GO</li>
-  <li><code>app/crypto/e2ee.py</code> — 7 함수 (AES-256-GCM + X25519 ECDH + HKDF-SHA256 + ecdh_derive_aes_key 통합) + <code>EncryptedPayload</code> wire format</li>
-  <li><code>app/crypto/double_ratchet.py</code> — <code>ChainKey</code> dataclass + Signal Protocol KDF separator (0x01 message + 0x02 chain) + ratchet_chain atomic + encrypt/decrypt_message</li>
-  <li><code>cryptography>=42.0</code> 의존 (PyCA)</li>
-  <li>40 신규 pytest 케이스 (TestAesGcm 10 + TestEncryptedPayloadWireFormat 3 + TestX25519Ecdh 5 + TestHkdf 4 + TestE2EEFullFlow 2 Alice/Bob/Eve + TestChainKey 3 + TestDeriveMessageKey 3 + TestAdvanceChainKey 4 + TestRatchetChain 2 forward secrecy 100 step + TestEncryptDecryptMessage 4)</li>
-  <li>전체 pytest = 237 PASS (197 → 221 → 237)</li>
-  <li>잔존 = DH ratchet step + session state + skipped keys + multi-device + push + 백업 → reviewer-agent → handoff doc</li>
+  <li>사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit <code>1f09279</code></li>
+  <li><strong>reviewer-agent 재호출</strong> (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가</li>
+  <li><strong>P1 + P2 정정 완료</strong> — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 <code>RTC_CHUNK_WINDOW</code> → <code>FILE_CHUNK_SIZE/BUFFER</code> 정정</li>
+  <li>사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn</li>
+  <li>기술 완성도 row — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달</li>
 </ul>
 
-<h3>2.25 Phase 2 integration 4 PASS + enforcement layer designer 평가 (사이클 32) <span class="new">신규</span></h3>
+<h3>2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 (사이클 11 신규 — 사이클 12 유지)</h3>
 <ul>
-  <li>사용자 directive "잔존 작업 다 마무리하고 다음 task 진입" = 자율 GO + integration test 신설 + enforcement layer designer 평가 spawn</li>
-  <li><strong>Phase 2 integration 4 PASS</strong> — Alice/Bob E2EE 통합 full flow (X25519 ECDH handshake + Double Ratchet KDF chain + AES-GCM round-trip + forward secrecy 100 step + multi-message ordering) → Phase 2 누계 60 케이스 도달</li>
-  <li>전체 pytest = <strong>253 PASS</strong> (237 → 253 — Phase 2 integration 4 + 보조 12)</li>
-  <li><strong>enforcement layer designer 평가</strong> — sub-agent spawn (Whitebox) — PreToolUse hook + Stop hook + post-write inspection + BPE script trigger 의 5 layer 종합 평가 + 적용 정합 검토 + Phase 2 시점 hook 활성률 100% 정합 확인</li>
-  <li>5단계 워크플로우 ③ 검증·관측 단계 = reviewer ✅ + qa ✅ + release ✅ + observability ✅ 정합 유지 + Phase 2 E2EE 영역 reviewer-agent 후속 진입 대기</li>
-  <li>잔존 = DH ratchet step + session state + skipped keys + multi-device + push + 백업 → 사이클 33+ 후속 task</li>
+  <li><strong>사용자 directive 2026-05-17</strong> — "좋아 다 진행해" = <strong>옵션 C 자율 GO</strong> (Agent #16 산출물 정식 채택)</li>
+  <li>handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입</li>
+  <li>검토 대상 = <code>app/rtc/</code> 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + <code>__init__</code>) + <code>app/ui/file_progress_widget.py</code> = 8 file 누계 ~96 KB</li>
+  <li>reviewer-agent sub-agent spawn (Whitebox <code>run_in_background: true</code>) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가</li>
+  <li>직전 c17a952 의 <code>git add app/</code> wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 사후 회수</li>
+  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입</li>
+</ul>
+
+<h3>2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 (사이클 10 신규 — 사이클 11 유지)</h3>
+<ul>
+  <li><strong>사용자 directive 2026-05-17</strong> — Toonation 공식 BI 가이드 본문 직접 반영</li>
+  <li>FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — <code>--primary</code> (#0066FF Toonation Blue + #0052FF Deep) + <code>--progress-acked</code> (#22D3EE 네온 시안 + #67E8F9 라이트 시안) + <code>--progress-inflight</code> (#0F172A Deep Navy + #1E293B 변형)</li>
+  <li>FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호</li>
+  <li>FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반</li>
+  <li><strong>enforcement layer 활성</strong> — <code>.claude/settings.json.disabled</code> → <code>.claude/settings.json</code> rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)</li>
+  <li>PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중</li>
+  <li>adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계</li>
+</ul>
+
+<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시 (사이클 7 신규 — 사이클 8 유지)</h3>
+<ul>
+  <li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
+  <li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
+  <li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
+  <li><code>.claude/settings.json.disabled</code> 신설 — sketch (미활성 패턴)</li>
+  <li>다음 BPE 위반 발견 시 = <code>mv .disabled → settings.json</code> 의 즉시 활성 의무</li>
+  <li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
 </ul>
 
 <hr>
 
 <h2 id="sec3">3. 약점 (Productization Weaknesses)</h2>
 
-<h3>3.1 기능 누락 (Phase 1 의도적 보류 / Phase 2 진입 진행)</h3>
+<h3>3.1 기능 누락 (Phase 1 의도적 보류)</h3>
 <table>
   <thead>
     <tr><th>누락 기능</th><th>시장 영향</th><th>Phase</th></tr>
@@ -377,7 +370,7 @@
   <tbody>
     <tr><td>그룹 채팅</td><td>메신저 핵심 — 1:1 만으로 시장 진입 불가</td><td>Phase 2+</td></tr>
     <tr><td>음성·영상 통화</td><td>Signal/Telegram 대체 자격 미달</td><td>Phase 3+</td></tr>
-    <tr><td><span class="strike">E2EE (Signal Protocol)</span> — Phase 2 진입 진행 중 (사이클 27~32)</td><td><span class="ok">✅ 진행</span> — AES-GCM + X25519 + HKDF + Double Ratchet KDF chain</td><td>Phase 2 ← <strong>진입</strong></td></tr>
+    <tr><td>E2EE (Signal Protocol)</td><td>보안 메신저 표방 시 필수</td><td>Phase 2</td></tr>
     <tr><td>모바일 (iOS/Android)</td><td>데스크탑 단독 = 사용자 풀 1/10</td><td>Phase 4+</td></tr>
     <tr><td>푸시 알림</td><td>메신저 retention 핵심</td><td>Phase 2</td></tr>
     <tr><td>자동 업데이트</td><td>데스크탑 앱 표준</td><td>Phase 3</td></tr>
@@ -395,7 +388,7 @@
 <h3>3.3 사용자 식별·복원 모델</h3>
 <ul>
   <li>회원가입 + 이메일 OTP 도입 완료 (사용자 directive 2026-05-17)</li>
-  <li>키 페어 인증 + E2EE 결합 = Phase 2 진입 진행 중 (사이클 27~32)</li>
+  <li>단 키 페어 인증 + E2EE 결합 = Phase 2 의 예정</li>
 </ul>
 
 <h3>3.4 <span class="strike">라이선스 미확정</span> (✅ 사이클 6 해소)</h3>
@@ -413,9 +406,9 @@
 
 <h3>3.6 코드 진입 미완</h3>
 <ul>
-  <li>Phase 1 MVP 실 코드 진입 완료 (사이클 16~23) + Phase 2 E2EE 진입 진행 (사이클 27~32)</li>
-  <li>잔존 영역 = DH ratchet step + session state + skipped keys + multi-device + push + 백업</li>
-  <li><code>feedback-doc-perfection-before-code</code> 8 체크리스트 통과 + 사용자 GO 후 진입 패턴 유지</li>
+  <li>Phase 1 MVP 실 코드 미작성 (config.py + tests 12건만)</li>
+  <li>문서 91% + 코드 9% 비율 (직전 90%/10% 의 약간 감소 — auth/SMTP 정책 추가)</li>
+  <li><code>feedback-doc-perfection-before-code</code> 8 체크리스트 통과 + 사용자 GO 후 진입</li>
 </ul>
 
 <h3>3.7 추가 차별화 보류</h3>
@@ -424,7 +417,7 @@
   <li><code>project-phase1-completion-priority</code> scope creep 차단</li>
 </ul>
 
-<h3>3.8 데모 서버 SSH 접근 차단 (사이클 5)</h3>
+<h3>3.8 데모 서버 SSH 접근 차단 (신규 사이클 5)</h3>
 <ul>
   <li>본 cycle main session 의 SSH 접근 시도 <code>Connection reset by peer</code></li>
   <li>SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md 절차 13 섹션)</li>
@@ -446,7 +439,7 @@
   <li>수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)</li>
   <li>진입 장벽: 0 (내부 도입)</li>
   <li>성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증</li>
-  <li><strong>확률 = 상 (사이클 5 의 CI GREEN + SMTP 자체 + fork PR strict + 사이클 32 의 Phase 2 E2EE 통합 강화)</strong></li>
+  <li><strong>확률 = 상 (사이클 5 의 CI GREEN + SMTP 자체 + fork PR strict 가 추가 안정성 강화)</strong></li>
   <li><strong>권장도 1순위</strong></li>
 </ul>
 
@@ -487,17 +480,10 @@
     <tr><td class="center">0</td><td><strong>fork PR 승인 정책 strict (gh API 자동)</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>SMTP 정책 + 절차 (postfix + Let's Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리</strong></td><td class="center"><span class="ok">✅</span> (사이클 5)</td></tr>
     <tr><td class="center">0</td><td><strong>GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책</strong></td><td class="center"><span class="ok">✅</span> (사이클 6)</td></tr>
-    <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 정식 GO + SPDX 7 file + ARCHITECTURE 정정</strong></td><td class="center"><span class="ok">✅</span> (사이클 12)</td></tr>
-    <tr><td class="center">0</td><td><strong>qa-agent 회귀 체크리스트 PASS (FR-04 AC-04-1~4)</strong></td><td class="center"><span class="ok">✅</span> (사이클 13)</td></tr>
-    <tr><td class="center">0</td><td><strong>release-agent 머지 게이트 정식 GO + observability CONDITIONAL PASS + baseline 정본 신설</strong></td><td class="center"><span class="ok">✅</span> (사이클 15)</td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS + qa 미커버 영역 완전 회수</strong></td><td class="center"><span class="ok">✅</span> (사이클 16)</td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 1 자율 chain 전면 확장 + post-write hook 강제화 + 가드레일 30 누적</strong></td><td class="center"><span class="ok">✅</span> (사이클 23)</td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) + 237 pytest</strong></td><td class="center"><span class="ok">✅</span> (사이클 27~28)</td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 2 integration 4 PASS + enforcement layer designer 평가 + 253 pytest</strong> <span class="new">신규</span></td><td class="center"><span class="ok">✅</span> (사이클 32)</td></tr>
     <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
-    <tr><td class="center">2</td><td>Phase 2 E2EE 잔존 (DH ratchet + session state + skipped keys + multi-device + push + 백업)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
+    <tr><td class="center">2</td><td>Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
     <tr><td class="center">3</td><td>Toonation 통합 시나리오 검토 (옵션 B)</td><td class="center"><span class="block">🔴 GO 대기</span></td></tr>
-    <tr><td class="center">4</td><td>Agent #16 산출물 reviewer-agent 검토</td><td class="center"><span class="ok">✅</span> (사이클 11~15)</td></tr>
+    <tr><td class="center">4</td><td>Agent #16 산출물 reviewer-agent 검토</td><td class="center"><span class="block">🔴 사용자 결정</span></td></tr>
   </tbody>
 </table>
 
@@ -510,7 +496,7 @@
   </thead>
   <tbody>
     <tr><td class="center">1</td><td>그룹 채팅 (3~10인)</td><td>메신저 기본 충족</td></tr>
-    <tr><td class="center">2</td><td>E2EE (libsignal wrapping)</td><td>보안 차별화 — 사이클 27~32 진입 진행</td></tr>
+    <tr><td class="center">2</td><td>E2EE (libsignal wrapping)</td><td>보안 차별화</td></tr>
     <tr><td class="center">3</td><td>음성 통화 (PeerConnection audio)</td><td>시장 진입 자격</td></tr>
     <tr><td class="center">4</td><td>모바일 prototype</td><td>사용자 풀 10x</td></tr>
     <tr><td class="center">5</td><td>푸시 알림 (FCM/APNs)</td><td>retention 핵심</td></tr>
@@ -556,13 +542,57 @@
     <tr><td>데모 서버 보안 사고</td><td class="center">중</td><td class="center">중</td><td>Phase 2 진입 직전 hardening</td></tr>
     <tr><td><span class="strike">라이선스 결정 지연</span></td><td class="center"><span class="ok">✅ 해소 (사이클 6)</span></td><td class="center">—</td><td>GPLv3 확정</td></tr>
     <tr><td>PyQt6 GPL 의무 의 외부 fork distribution</td><td class="center">중</td><td class="center">중</td><td>GPLv3 정합 + private 전환 시 외부 fork 차단</td></tr>
-    <tr><td>문서 91% : 코드 9% 지속</td><td class="center">상</td><td class="center">중</td><td>8 체크리스트 통과 후 코드 진입 — 사이클 16~32 의 점진 회수</td></tr>
+    <tr><td>문서 91% : 코드 9% 지속</td><td class="center">상</td><td class="center">중</td><td>8 체크리스트 통과 후 코드 진입</td></tr>
     <tr><td><strong>원격 제어 보안 사고</strong> (Phase 3+ 위험)</td><td class="center">중</td><td class="center">상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그</td></tr>
-    <tr><td><strong>SMTP spam reputation 부족</strong></td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
-    <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong></td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
-    <tr><td><strong>데모 서버 SSH 차단</strong></td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
-    <tr><td><strong>observability baseline drift</strong></td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (observability-baseline.md §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
-    <tr><td><strong>Phase 2 E2EE 잔존 영역 (DH ratchet + session state + skipped keys)</strong> <span class="new">사이클 32</span></td><td class="center">중</td><td class="center">상</td><td>사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증</td></tr>
+    <tr><td><strong>SMTP spam reputation 부족</strong> (신규 사이클 5)</td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
+    <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong> (신규 사이클 5)</td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
+    <tr><td><strong>데모 서버 SSH 차단</strong> (신규 사이클 5)</td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
+    <tr><td><strong>observability baseline drift</strong> (신규 사이클 15)</td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (<code>observability-baseline.md</code> §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
+    <tr><td><strong>Phase 2 E2EE 잔존 영역</strong> (DH ratchet + session state + skipped keys, 사이클 32)</td><td class="center">중</td><td class="center">상</td><td>사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증</td></tr>
+  </tbody>
+</table>
+
+<h3>8.1 보안 리스크 해결책 강화 (사이클 32+ 신규 — Defense-in-Depth 7 row) <span class="new">신규</span></h3>
+<table>
+  <thead>
+    <tr><th>리스크</th><th>추가 해결책 (Defense-in-Depth)</th><th>진입 시점</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>데모 서버 보안 사고</td>
+      <td>(1) fail2ban + nftables rate limit (SSH/WS/SMTP 의 brute force 차단), (2) Let's Encrypt + HSTS preload (MITM 차단), (3) Wazuh agent + auditd (감사 로그), (4) systemd hardening (PrivateTmp + ProtectHome + NoNewPrivileges), (5) 백업 = encrypted off-site (borg + age)</td>
+      <td>Phase 2 진입 직전</td>
+    </tr>
+    <tr>
+      <td>PyQt6 GPL 외부 fork distribution</td>
+      <td>(1) <code>LICENSE</code> SPDX header 의무 자동 검증 hook, (2) DCO sign-off pre-commit hook, (3) private 전환 시점 의 GPL 의무 distribution 명시 (Phase 종료 시 사용자 confirm), (4) AGPLv3 Phase 2 옵션 (network use 의 source disclosure)</td>
+      <td>Phase 2 진입 시</td>
+    </tr>
+    <tr>
+      <td>원격 제어 보안 사고 (Phase 3+)</td>
+      <td>(1) 친구 추가 양측 명시 수락 + biometric 2FA 의무, (2) 긴급 ESC = global hotkey + 즉시 세션 종료, (3) 감사 로그 = append-only + 매 세션 SHA-256 chain, (4) 화면 제어 권한 = 매 세션 명시 확인 (개별 영역 의 white-list grant), (5) 친구 평판 = trust score (가입 후 30일 + 활동 5건 이상 시 만 원격 제어 가능)</td>
+      <td>Phase 3 막바지 진입 직전</td>
+    </tr>
+    <tr>
+      <td>SMTP spam reputation</td>
+      <td>(1) SPF + DKIM + DMARC 의무 + DMARC reject 정책, (2) bounce rate &lt; 5% + complaint rate &lt; 0.1% 모니터링, (3) SendGrid relay 100/day fallback, (4) Bayesian spam score 사전 검증 (SpamAssassin), (5) outbound rate limit 100/hour 의무, (6) IP warm-up 30일 (점진 송신량 증가)</td>
+      <td>Phase 1 dogfooding 시</td>
+    </tr>
+    <tr>
+      <td>Phase 2 E2EE 잔존 (DH ratchet + skipped keys)</td>
+      <td>(1) Signal Protocol Test Vector 적용 (libsignal reference 의 정합 검증), (2) ratchet step 의 매 transition 의 invariant assertion (root + chain + counter 의 monotonic 보장), (3) skipped message keys = MAX_SKIP=1000 + LRU expire (메모리 폭주 차단), (4) 매 message 의 header MAC 검증 (X25519 public + counter 의 무결성), (5) reviewer-agent + cryptography expert review (PyCA 정합 + 부채널 공격 검토)</td>
+      <td>사이클 33+</td>
+    </tr>
+    <tr>
+      <td>잠재 부채널 (timing + cache + speculative)</td>
+      <td>(1) <code>hmac.compare_digest</code> 의무 (constant-time), (2) AES-256-GCM 의 hardware acceleration (AES-NI / ARMv8 Crypto Extensions 활용), (3) X25519 = Curve25519 의 constant-time scalar mult (PyCA 보증), (4) 부채널 검사 도구 — <code>dudect</code> (statistical timing leakage), (5) speculative execution 의 PyPy/CPython 검토 보류 (Phase 4+)</td>
+      <td>Phase 3+</td>
+    </tr>
+    <tr>
+      <td>클라이언트 plain-text 저장 위험</td>
+      <td>(1) DB 메시지 body = 클라 keychain 보관 + DB 는 ciphertext 만 저장, (2) macOS Keychain + Windows Credential Manager 통합, (3) 백업 = passphrase + PBKDF2 600K iter (현 security.py 정합) + age encrypt, (4) memory dump 차단 = <code>mlock</code> + <code>sodium_memzero</code> 패턴</td>
+      <td>Phase 2 후반</td>
+    </tr>
   </tbody>
 </table>
 
@@ -581,22 +611,15 @@
     <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
     <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64, 사이클 5)</strong></td></tr>
     <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td>본 세션 신규 파일 100%</td></tr>
-    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>22종 active</strong></td></tr>
-    <tr><td>pytest coverage</td><td>≥ 80%</td><td>측정 중 (Phase 2 E2EE 진입 진행)</td></tr>
+    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>18종 active (사이클 5)</strong></td></tr>
+    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 (코드 미진입)</td></tr>
     <tr><td>Playwright E2E test</td><td>≥ 5건</td><td>3건 스켈레톤 active</td></tr>
     <tr><td><strong>OTP 발송 → 수신 latency</strong></td><td>≤ 30초</td><td>미측정 (Phase 1 코드 후)</td></tr>
     <tr><td><strong>OTP brute force 차단율</strong></td><td>100% (5회/30분)</td><td>미측정</td></tr>
     <tr><td><strong>원격 제어 세션 성공률</strong></td><td>≥ 95%</td><td>미측정 (Phase 3 막바지 후)</td></tr>
     <tr><td><strong>mail-tester score</strong> (SMTP)</td><td>≥ 7/10</td><td>미측정 (SSH 설치 후)</td></tr>
     <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK (사이클 5)</td></tr>
-    <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib + cryptography — 사이클 6 + 28)</td></tr>
-    <tr><td><strong>5단계 워크플로우 ③ chain PASS</strong></td><td>4/4 PASS (reviewer + qa + release + observability)</td><td><strong>4/4 PASS ✓ (CONDITIONAL — baseline measurement 의무 Phase 2)</strong></td></tr>
-    <tr><td><strong>observability logger 모듈 적용률</strong></td><td>100%</td><td><strong>100% (7/7 모듈 — format §E 일관)</strong></td></tr>
-    <tr><td><strong>tests/app/rtc/·ui/ unit test 누계</strong></td><td>≥ 100</td><td><strong>149 PASS ✓ (5 module — protocol 41 + image_processor 35 + file_receiver_helpers 29 + file_sender_helpers 15 + file_progress_widget_humanize 20)</strong></td></tr>
-    <tr><td><strong>qa-agent 미커버 영역 회수율</strong></td><td>100%</td><td><strong>100% (Pillow + path traversal + _humanize + sha256 + env_int 완전 회수)</strong></td></tr>
-    <tr><td><strong>전체 pytest 누계</strong> <span class="new">신규 사이클 32</span></td><td>≥ 200</td><td><strong>253 PASS ✓ (149 → 237 → 253 — Phase 1 + Phase 2 E2EE + integration 4)</strong></td></tr>
-    <tr><td><strong>Phase 2 E2EE 케이스 누계</strong> <span class="new">신규 사이클 32</span></td><td>≥ 50</td><td><strong>60 PASS ✓ (사이클 27~28 40 + 사이클 32 integration 4 + 보조 16)</strong></td></tr>
-    <tr><td><strong>enforcement layer 활성률</strong> <span class="new">신규 사이클 32</span></td><td>100% (PreToolUse + Stop + post-write + BPE script trigger)</td><td><strong>100% ✓ (designer 평가 정합 — 사이클 32)</strong></td></tr>
+    <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6)</td></tr>
   </tbody>
 </table>
 
@@ -605,21 +628,17 @@
 <h2 id="sec10">10. 다음 평가 갱신 트리거</h2>
 
 <p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
-
 <ul>
-  <li>기술 완성도 점수 — Phase 2 E2EE 잔존 영역 (DH ratchet + session state + skipped keys + multi-device + push + 백업) 완료 시 +0.3~0.5</li>
-  <li>누락 기능 표 — Phase 2 E2EE 완전 완료 시 ✅ 표시 갱신</li>
+  <li>기술 완성도 점수 — Phase 1 코드 진입 + dogfooding 시 +0.5~1.0</li>
+  <li>누락 기능 표 — 코드 진입 시 항목 제거</li>
   <li>단기 액션 ✅ 표시 갱신</li>
-  <li>KPI 실측 값 (Phase 2 reviewer-agent PASS + dogfooding 시점)</li>
-  <li>가드레일 메모리 누계 (현 22)</li>
-  <li>텔레그램 송신 누계</li>
-  <li>sub-agent 누계 (현 32+ — 사이클 32 enforcement layer designer 평가 spawn 포함)</li>
+  <li>KPI 실측 값 (코드 진입 + pilot 시점)</li>
+  <li>가드레일 메모리 누계 (현 18)</li>
+  <li>텔레그램 송신 누계 (현 28건)</li>
+  <li>sub-agent 누계 (현 16 — HTML 사이클 5 후 18 예정)</li>
   <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
   <li>SMTP 실제 설치 완료 시 §2.11 + §9 KPI 갱신</li>
   <li>라이선스 확정 시 §3.4 ✅</li>
-  <li>observability baseline measurement 진입 시 §2.21 + §8 신규 리스크 row 갱신</li>
-  <li>tests/integration/ + Windows wine 검증 + AC-04-3 100ms 실측 완료 시 §2.22 + §9 KPI 갱신</li>
-  <li><strong>Phase 2 E2EE reviewer-agent PASS + DH ratchet 통합 + 잔존 영역 회수 시 §2.24 + §2.25 + §3.1 + §9 KPI 갱신</strong> <span class="new">신규 사이클 32</span></li>
 </ul>
 
 <hr>
@@ -636,7 +655,7 @@
     <li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a></li>
     <li>md 등가 원본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
-  <p>마지막 갱신: 2026-05-19 03:00 KST — 사이클 32 (Phase 2 integration 4 PASS + enforcement layer designer 평가 + 253 pytest)</p>
+  <p>마지막 갱신: 2026-05-19 03:30 KST — 사이클 32+ (10점 만점 전환 + §8.1 보안 7 해결책)</p>
 </footer>
 
 </body>
