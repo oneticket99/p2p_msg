@@ -73,8 +73,9 @@
 - **클라우드 백업** — 사용자 패스프레이즈 파생 키 기반 zero-knowledge 백업. 백엔드는 암호문만 저장.
 - **그룹 SFU 도입** — 8명 초과 그룹 통화/회의 필요 시 mediasoup 또는 LiveKit 통합.
 - **Linux 빌드** — AppImage · Flatpak · `.deb` 배포 추가.
+- **친구간 원격 데스크탑 제어 (Phase 3 막바지 — 핵심 차별화)** — 패턴 A 원격 도움 요청 (P5 라이브 크리에이터 OBS 도움 시나리오) + 패턴 B 원격 제어 요청 (P6 기술 도움 제공자 가 P5 컴퓨터 제어). 권한 모델 = 친구 추가 사전 + 명시 수락 모달 + 긴급 ESC + 감사 로그. 기술 = WebRTC video track + 화면 캡처 (mss / Qt QScreen) + 입력 주입 (pynput / pywinauto / pyobjc) + x264/VP9/AV1 인코딩. 정합 = [[project-phase2-remote-control-differentiator]].
 
-**완료 정의**: 데스크탑 + 모바일 양 디바이스 동시 로그인 + 푸시 수신 + 패스프레이즈 복구 시나리오 통과.
+**완료 정의**: 데스크탑 + 모바일 양 디바이스 동시 로그인 + 푸시 수신 + 패스프레이즈 복구 시나리오 통과 + 친구간 원격 제어 패턴 A+B 동작 + 권한 모델 PASS.
 
 ---
 
@@ -117,12 +118,13 @@ gantt
     코드 서명 + 자동 업데이트         :p2s, after p2v, 30d
     시그널링 hardening               :p2h, 2026-07-01, 30d
 
-    section Phase 3 멀티+푸시+백업
+    section Phase 3 멀티+푸시+백업+원격
     멀티 디바이스 동기                :p3m, 2027-01-01, 60d
     푸시 알림 APNs/FCM               :p3p, after p3m, 45d
     모바일 클라이언트                 :p3mo, after p3p, 60d
     클라우드 백업 zero-knowledge      :p3b, after p3mo, 30d
     Linux 빌드                       :p3l, 2027-01-01, 30d
+    원격 데스크탑 제어 (차별화)        :p3r, after p3b, 45d
 
     section Phase 4 Federation
     Federation 프로토콜               :p4f, 2027-07-01, 75d
@@ -139,7 +141,7 @@ gantt
 |-------|--------------|---------------------------------------------------------------------------------|---------------------------------------|
 | 1     | 2026-06-30   | PyQt6 1:1 채팅 + zip 빌드 + self-hosted Actions + 정책 18 문서                  | (없음 — 부트스트랩)                  |
 | 2     | 2026-12-31   | 그룹 mesh 3~8명 + Signal Protocol E2EE + 음성/영상 통화 + 코드 서명             | Phase 1 envelope · 시그널링 서버 안정 |
-| 3     | 2027-06-30   | 멀티 디바이스 동기 + APNs/FCM 푸시 + 모바일 클라이언트 + zero-knowledge 백업    | Phase 2 E2EE 키 교환 + 그룹 토폴로지   |
+| 3     | 2027-06-30   | 멀티 디바이스 동기 + APNs/FCM 푸시 + 모바일 클라이언트 + zero-knowledge 백업 + **친구간 원격 데스크탑 제어 (막바지 차별화)** | Phase 2 E2EE 키 교환 + 그룹 토폴로지   |
 | 4     | 2027-12-31   | Federation 프로토콜 + docker-compose 번들 + 자체 호스팅 가이드 + bridge PoC     | Phase 3 멀티 디바이스 ID 체계         |
 
 Phase 별 세부 마일스톤(M1~Mn) 은 해당 Phase 의 Exec Plan 문서에서 단독 관리. 본 표는 Phase 헤더만 누계.
@@ -162,6 +164,7 @@ flowchart TB
         B2[멀티 디바이스 동기<br/>Phase 3]
         B3[Federation 프로토콜<br/>Phase 4]
         B4[음성/영상 + 에코 캔슬링<br/>Phase 2]
+        B5[원격 데스크탑 제어 차별화<br/>Phase 3 막바지]
     end
     subgraph Q3[저영향 · 저노력 — 틈새 처리]
         C1[README 다국어 안내<br/>Phase 1 후반]
@@ -221,7 +224,7 @@ flowchart TB
 
 - **문서**: AGENTS.md + 루트 9 정책 문서 + `Specification.md` · `Structure.md` · `CheckList.md` · `History.md` · `README.md` · `EXTENSION_GUIDE.md`.
 - **자동화 수준**: CI 3 워크플로우 (`ci.yml` · `docs-lint.yml` · `doc-gardener.yml`) + L0~L4 hook layer (정본 §S-1).
-- **에이전트 역할 분리**: 7 프로세스 에이전트 + 4 문서 에이전트 = 11 정의. 본 저장소는 12 에이전트.
+- **에이전트 역할 분리**: 7 프로세스 에이전트 (planning · reviewer · qa · observability · release · doc-gardener · history). 본 저장소 `.claude/agents/` 7 에이전트 활성.
 - **필요 도구**: `tools/md_agents.py` · `tools/db_init.py` · self-hosted Actions runner 2종 (macOS · Windows).
 - **운영 방식**: feature branch + PR · main 직접 push 금지 · `SKIP_PREPUSH=1 git push origin main` 표준 (정본 §S-3).
 
@@ -231,7 +234,7 @@ flowchart TB
 
 - **문서**: MVP 문서 전부 + `docs/design-docs/` 깊이 보강 (모듈별 설계 문서) + `docs/product-specs/` 사용자 시나리오 문서 + `docs/references/` 외부 라이브러리 인덱스.
 - **자동화 수준**: MVP + 보안 lint (bandit · safety) + 정적 분석 (mypy strict · ruff) + 의존성 SBOM 생성 + secret scanning.
-- **에이전트 역할 분리**: MVP 11~12 에이전트 + `@security-agent` · `@perf-agent` 신설 검토.
+- **에이전트 역할 분리**: MVP 7 에이전트 + `@security-agent` · `@perf-agent` 신설 검토.
 - **필요 도구**: pre-commit 프레임워크 · renovate bot · CodeQL · Grafana 운영 대시보드 초기 골격.
 - **운영 방식**: 주간 doc-gardener 자동 PR · 월간 retrospective · `tech-debt-tracker.md` 검토 격주.
 
