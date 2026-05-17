@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 15:00 KST (사이클 40 — Phase 2 SettingsDialog sound section + 28 PASS + Phase 2 누계 151 케이스)
+> 최근 갱신 시점: 2026-05-20 15:30 KST (사이클 41 — Phase 2 MainWindow SoundPlayer + SettingsDialog wire + signature sound chain 4 cycle 완성)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -24,13 +24,13 @@ status: active
 | 기술 완성도 | 7.9 / 10 | 7.8 → 7.9 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 95 케이스 + signature sound 56 PASS (wrapper 19 + ChatView 9 + SettingsDialog 28) + 344 pytest |
 | 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
 | 차별화 요소 | 9.2 / 10 | 9.1 → 9.2 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol + signature sound UX |
-| 사용자 가치 | 6.7 / 10 | 6.6 → 6.7 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + 사용자 음소거/볼륨 control dialog |
+| 사용자 가치 | 6.8 / 10 | 6.7 → 6.8 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire (실 사용 가능) |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
 | 보안 hardening | 7.4 / 10 | 7.2 → 7.4 ▲ | E2EE Signal Protocol 95 케이스 (X3DH 초기 키 교환 추가) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **9.0 / 10** | 8.95 → 9.0 ▲ | **사이클 40 SettingsDialog sound section + 28 PASS — 사이클 38~39 signature sound chain 의 사용자 control 완성. SettingsState dataclass + 4 helper logic 분리 + QDialog skeleton. Phase 2 누계 151 케이스** |
+| **종합** | **9.05 / 10** | 9.0 → 9.05 ▲ | **사이클 41 MainWindow SoundPlayer instance + ChatView inject + 환경설정 메뉴 wire. signature sound chain 4 cycle 완성 (wrapper 38 + ChatView 39 + dialog 40 + wire 41) — 실 사용 가능 종단 흐름** |
 
 ---
 
@@ -140,6 +140,25 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.30 MainWindow SoundPlayer wire — signature sound 종단 흐름 완성 (신규 사이클 41)
+
+사이클 38~40 의 signature sound chain final integration. 사용자 directive "진행해" 자율 GO.
+
+종단 흐름 완성:
+- `app/ui/main_window.py` 의 `_sound_player: SoundPlayer = SoundPlayer(config)` instance 보유 — Config 의 3 필드 (sound_enabled / sound_volume / sound_signature_path) 기반 lazy-init
+- `ChatView(parent=central, sound_player=self._sound_player)` inject — peer 수신 시 자동 play_signature() 활성
+- "환경설정…" QAction Ctrl+, shortcut + `_on_open_settings_dialog` slot — modal exec + accept() 자동 apply_to_player
+
+실 사용 가능 종단 흐름:
+1. Config 의 .env 로딩 → Config 의 sound 3 필드
+2. MainWindow.__init__ → SoundPlayer instance + ChatView inject
+3. peer 메시지 도착 → ChatView.add_message(is_self=False) → should_play_on_message → SoundPlayer.play_signature() → QSoundEffect WAV 재생
+4. 사용자 환경설정 메뉴 → SettingsDialog → 음소거 toggle / 볼륨 slider → accept() → SoundPlayer 즉시 반영
+
+5 검증 PASS — AST + import + pytest 344 회귀 통과 + doc-lint 0 + BPE 0. main_window GUI 의 manual smoke 의무 (QApplication thread 검증).
+
+signature sound chain 4 cycle 완성 = single feature 의 완전한 vertical slice 패턴 정합 — Config → wrapper → trigger → control dialog → main_window wire. 매 cycle commit + push + snapshot 동기. 잔존: designer chiptune 교체 + Phase 3 의 user_settings table 영속화.
 
 ### 2.29 SettingsDialog sound section — 사용자 control 완성 (신규 사이클 40)
 

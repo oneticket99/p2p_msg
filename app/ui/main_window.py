@@ -51,7 +51,9 @@ from app.net.auth_client import AuthClient
 from app.ui.chat_view import ChatView
 from app.ui.login_dialog import LoginDialog
 from app.ui.password_reset_dialog import PasswordResetDialog
+from app.ui.settings_dialog import SettingsDialog
 from app.ui.signup_dialog import SignupDialog
+from app.ui.sound_player import SoundPlayer
 from app.ui.status_bar import StatusBar
 
 log = logging.getLogger(__name__)
@@ -94,6 +96,10 @@ class MainWindow(QMainWindow):
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
 
+        # 0-1) 시그니처 사운드 player — Config 의 sound_* 3 필드 기반 init
+        # (사이클 38~40 chain — wrapper + ChatView trigger + SettingsDialog)
+        self._sound_player: SoundPlayer = SoundPlayer(config)
+
         # 1) 윈도우 기본 속성 — 명명 규약 정합: UI 표기는 "TooTalk"
         self.setWindowTitle("TooTalk")
         self.setMinimumSize(480, 640)
@@ -104,8 +110,8 @@ class MainWindow(QMainWindow):
         root_layout.setContentsMargins(0, 0, 0, 0)
         root_layout.setSpacing(0)
 
-        # 3) ChatView — 스크롤 가능한 메시지 리스트
-        self._chat_view = ChatView(parent=central)
+        # 3) ChatView — 스크롤 가능한 메시지 리스트 + SoundPlayer 의 peer 수신 trigger inject
+        self._chat_view = ChatView(parent=central, sound_player=self._sound_player)
         root_layout.addWidget(self._chat_view, stretch=1)
 
         # 4) 입력 영역 (첨부 + 입력창 + 보내기)
@@ -170,6 +176,12 @@ class MainWindow(QMainWindow):
         act_room.setShortcut(QKeySequence("Ctrl+R"))
         act_room.triggered.connect(self._on_open_room_dialog)
         menu_settings.addAction(act_room)
+
+        # 사운드/UI 의 사용자 control (사이클 40 신설, 41 wire)
+        act_pref = QAction("환경설정…", self)
+        act_pref.setShortcut(QKeySequence("Ctrl+,"))
+        act_pref.triggered.connect(self._on_open_settings_dialog)
+        menu_settings.addAction(act_pref)
 
         menu_settings.addSeparator()
 
@@ -287,6 +299,20 @@ class MainWindow(QMainWindow):
 
         # TODO(Task #16): DataChannel 송신 코루틴 예약
         # asyncio.create_task(self._datachannel.send(text))
+
+    @pyqtSlot()
+    def _on_open_settings_dialog(self) -> None:
+        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영.
+
+        ``SettingsDialog`` 의 accept() 안에서 ``apply_to_player`` 가
+        ``SoundPlayer.set_enabled`` + ``set_volume`` 을 호출하므로 본 메서드는
+        단순 modal 호출 + 결과 로깅만 수행. Phase 3 의 user_settings table
+        영속화 시 이 자리에서 DB 저장 코루틴 추가 예정.
+        """
+
+        dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
+        result = dialog.exec()
+        log.debug("SettingsDialog 종료 — result=%s", result)
 
     @pyqtSlot()
     def _on_open_room_dialog(self) -> None:
