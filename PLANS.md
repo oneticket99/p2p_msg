@@ -44,20 +44,30 @@
 
 ---
 
-## 3. Phase 2 그룹 채팅 + E2EE + 음성/영상 통화 (2026-07-01 ~ 2026-12-31)
+## 3. Phase 2 그룹 채팅 + E2EE + 음성/영상 통화 (조기 진입 2026-05-18 ~ 2026-12-31)
 
 **목표**: 1:1 한계를 넘어 **3명 이상 다자 통신 + 종단간 암호 + 음성/영상 통화** 도입.
 
+**진입 시점 drift 회수** (사이클 36): 원안 = 2026-07-01 진입. 실 = **2026-05-18 조기 진입** (사이클 27 commit `c3eeaf4`). Phase 1 자율 chain 완성 + signaling DB 통합 직후 즉시 진입 의 의 의 패턴 = scope creep 회피 정합 — 단 일정 1.5개월 단축.
+
 **범위**:
 
-- **그룹 채팅 (3~8명 mesh)** — n^2 PeerConnection 토폴로지 우선 시도. 8명 초과 시 SFU 도입 검토 (Phase 3 로 이연 가능).
-- **E2EE Signal Protocol** — Double Ratchet + X3DH. 기존 텍스트 envelope 호환 마이그레이션 + 키 교환 UI.
-- **WebRTC MediaStream** — Opus 음성 + H.264/VP8 영상. 에코 캔슬링 (WebRTC AEC3) + 자동 이득 조절.
-- **코드 서명** — Apple Developer ID notarization + Windows Authenticode. TD-2 · TD-3 해소.
-- **시그널링 hardening** — TLS + 인증 토큰 + rate limit. TD-1 해소.
-- **자동 업데이트** — Sparkle (macOS) + WinSparkle (Windows) 통합.
+- **E2EE Signal Protocol** ✅ **사이클 27~35 핵심 완성** (Phase 2 누계 84 케이스):
+  - AES-256-GCM + X25519 ECDH + HKDF-SHA256 (`app/crypto/e2ee.py`, 24 PASS)
+  - Double Ratchet KDF chain (Signal Protocol 0x01/0x02 separator, `double_ratchet.py`, 16 PASS)
+  - SessionState + DH ratchet 3 step + skip helper (`session.py`, 20 PASS)
+  - skipped_keys LRU+TTL (`skipped_keys.py`, 14 PASS)
+  - decrypt_with_session_ooo out-of-order delivery (replay 차단, 6 PASS)
+  - Alice/Bob integration test (4 PASS)
+  - **잔존**: X3DH initial key exchange + multi-device sync + sender keys (그룹 chat)
+- **그룹 채팅 (3~8명 mesh)** — n^2 PeerConnection 토폴로지 우선. 8명 초과 시 SFU 도입 검토 (Phase 3 이연 가능). **사이클 36 시점 미시작**
+- **WebRTC MediaStream** — Opus 음성 + H.264/VP8 영상. 에코 캔슬링 (WebRTC AEC3) + 자동 이득 조절. **미시작**
+- **signature sound** ([[project-signature-sound]]) — PyQt6 QSoundEffect + 자체 "뿅" WAV (200~400ms chiptune, 사용자 directive 2026-05-18). UX brand recognition 차별화. **미시작 P1**
+- **코드 서명** — Apple Developer ID notarization + Windows Authenticode. TD-2 · TD-3 해소. **미시작**
+- **시그널링 hardening** — TLS + 인증 토큰 + rate limit. TD-1 해소. **부분 완성** (auth Bearer middleware = 사이클 20 완료, TLS = 미실시)
+- **자동 업데이트** — Sparkle (macOS) + WinSparkle (Windows) 통합. **미시작**
 
-**완료 정의**: 3명 그룹 채팅 + 1:1 영상통화 30분 안정 동작 + 정식 서명 zip 배포.
+**완료 정의**: 3명 그룹 채팅 + 1:1 영상통화 30분 안정 동작 + 정식 서명 zip 배포 + signature sound + E2EE 끝점 검증.
 
 ---
 

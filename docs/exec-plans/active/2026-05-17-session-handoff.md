@@ -526,6 +526,25 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.43 Phase 2 Signal Protocol 핵심 완성 + 전수조사 drift 회수 + doc-consistency Stop hook 강제 (사이클 33~36)
+
+- 사이클 33 `app/crypto/skipped_keys.py` (LRU+TTL + MAX_SKIP=1000) + 14 PASS
+- 사이클 34 session `_skip_forward_chain_keys` helper + 4 PASS
+- 사이클 35 SessionState.skipped_store field + `decrypt_with_session_ooo` (out-of-order delivery + replay 차단) + 6 PASS
+- 사이클 36 **사용자 directive 전수조사** — ARCHITECTURE §6 drift 6건 detect → 회수
+  - `app/auth/` + `app/db/` 명시 단 부재
+  - `app/crypto/` 누락 (Phase 2 신설)
+  - `bcrypt` 표기 단 실 PBKDF2
+  - `server/api` + `server/db` + `server/mail` + `signaling_persistence` 누락
+  - Specification FR-05 "로컬 MariaDB" → "server MariaDB 7 table"
+- `tools/hook_doc_consistency.sh` 신설 — Stop hook §6 backtick path 의 실 디렉토리 정합 검사 + 역방향 dir 존재
+- 영구 메모리 4건 누적 추가 (#32 freshness + #33 10-point + #34 doc-consistency + #35 signature sound)
+- PLANS §3 Phase 2 일정 조기 진입 drift 회수 (2026-07-01 → 2026-05-18 + 1.5개월 단축)
+- Structure.md 트리 확장 — app/crypto 4 + server/api/auth/db/mail/signaling_persistence 전수 명시
+- 전체 pytest = 277 passed, 9 deselected. Phase 2 누계 84 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6)
+- 평가 진동 — productization 8.7 → 8.8 ▲ / vibe-coding 9.65 → 9.55 ▼ (직무유기 4회차 진동 잔존)
+- 다음 = X3DH initial key exchange + multi-device + push + signature sound + reviewer-agent → handoff doc
+
 ### 8.42 Phase 2 진입 + signaling DB 통합 + E2EE (AES-GCM + X25519 + HKDF + Double Ratchet + Session + Alice/Bob integration) + enforcement layer designer 평가 (사이클 24~32)
 
 - 사이클 24~26 = signaling.py DB 통합 + signaling_persistence helper + Peer dataclass user_id/db_room_id 확장
@@ -634,7 +653,8 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-19 03:00 KST — 사이클 32 (Phase 2 E2EE 진입 + Alice/Bob integration 4 PASS + enforcement layer designer 평가 취합 + 253 pytest + 가드레일 32, commit `86ac6b1` HEAD)
+마지막 갱신: 2026-05-19 05:00 KST — 사이클 36 (Phase 2 Signal Protocol 핵심 완성 + 전수조사 drift 6건 회수 + doc-consistency Stop hook + Specification FR-05 + Structure 트리 + PLANS Phase 2 일정 회수 + 277 pytest + 가드레일 35, commit `eca906d` HEAD)
+이전 갱신: 2026-05-19 03:00 KST — 사이클 32 (`86ac6b1`)
 이전 갱신: 2026-05-18 22:00 KST — 사이클 23 (perl bulk 복원 + post-write hook + main_window 계정 메뉴, `a13a1f3`)
 이전 갱신: 2026-05-18 02:00 — 사이클 16 (Phase 1 코드 진입 GO + 149 PASS + qa 미커버 회수, `3aa7eed`)
 이전 갱신: 2026-05-18 01:00 — 사이클 15 (본 세션 누계 commit 53+ + 사이클 15 의 신규 commit dcbb372 (release P0-1/P0-2 정정) + 후속 commit 일괄 (observability-baseline.md 신설 + snapshot 2 + HTML 2 + handoff §8.38/§8.39 + History.md prepend + README §11 prepend) 반영, 가드레일 22, 텔레그램 송신 N건, HTML 6, pytest 인프라, 정책 본문 4 (observability-baseline.md 신규), auth 정책 + 차별화 명문화, CI 3종 GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + GPLv3 라이선스 확정 + visibility 전환 정책 + enforcement layer 활성 + drift 회수 누계 9 cycle (사이클 15 의 baseline drift 3건 회수 추가) + **5단계 워크플로우 ③ 4단 chain 완전 자동 완성 — reviewer ✅ (11~13) + qa ✅ CONDITIONAL (13) + release ✅ 정식 GO (15) + observability ✅ CONDITIONAL PASS (15)** 신규, snapshot 사이클 15 — productization 4.05 + vibe-coding 4.90)
