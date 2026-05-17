@@ -47,7 +47,11 @@ from PyQt6.QtWidgets import (
 
 from app.core.app_state import AppState
 from app.core.config import Config
+from app.net.auth_client import AuthClient
 from app.ui.chat_view import ChatView
+from app.ui.login_dialog import LoginDialog
+from app.ui.password_reset_dialog import PasswordResetDialog
+from app.ui.signup_dialog import SignupDialog
 from app.ui.status_bar import StatusBar
 
 log = logging.getLogger(__name__)
@@ -64,7 +68,13 @@ class MainWindow(QMainWindow):
     를 통해 ``app.net.signaling_client`` 의 코루틴을 예약한다 (정본 §E).
     """
 
-    def __init__(self, config: Config, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self,
+        config: Config,
+        parent: Optional[QWidget] = None,
+        *,
+        auth_client: Optional[AuthClient] = None,
+    ) -> None:
         """초기 위젯 트리 구성 + 메뉴/StatusBar/입력 영역 배치.
 
         Parameters
@@ -80,6 +90,9 @@ class MainWindow(QMainWindow):
         # 0) 외부 의존 보관
         self._config: Config = config
         self._state: AppState = AppState.instance()
+        self._auth_client: Optional[AuthClient] = auth_client
+        self._session_token: Optional[str] = None
+        self._current_user_id: Optional[int] = None
 
         # 1) 윈도우 기본 속성 — 명명 규약 정합: UI 표기는 "TooTalk"
         self.setWindowTitle("TooTalk")
@@ -165,6 +178,28 @@ class MainWindow(QMainWindow):
         act_quit.triggered.connect(self.close)
         menu_settings.addAction(act_quit)
 
+        # "계정" 메뉴 — 회원가입/로그인/비번 재설정/로그아웃 (사이클 23)
+        menu_account = menubar.addMenu("계정")
+
+        act_signup = QAction("회원가입…", self)
+        act_signup.triggered.connect(self._on_open_signup)
+        menu_account.addAction(act_signup)
+
+        act_login = QAction("로그인…", self)
+        act_login.setShortcut(QKeySequence("Ctrl+L"))
+        act_login.triggered.connect(self._on_open_login)
+        menu_account.addAction(act_login)
+
+        act_reset = QAction("비밀번호 재설정…", self)
+        act_reset.triggered.connect(self._on_open_reset)
+        menu_account.addAction(act_reset)
+
+        menu_account.addSeparator()
+
+        act_logout = QAction("로그아웃", self)
+        act_logout.triggered.connect(self._on_logout)
+        menu_account.addAction(act_logout)
+
         # "도움말" 메뉴 — About
         menu_help = menubar.addMenu("도움말")
         act_about = QAction("TooTalk 정보…", self)
@@ -174,6 +209,60 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Qt slot — 사용자 입력 핸들러
     # ------------------------------------------------------------------
+
+    def _require_auth_client(self) -> Optional[AuthClient]:
+        """AuthClient 미주입 시 경고."""
+
+        if self._auth_client is None:
+            QMessageBox.warning(self, "TooTalk", "AuthClient 미초기화 — main 진입점 의무")
+            return None
+        return self._auth_client
+
+    @pyqtSlot()
+    def _on_open_signup(self) -> None:
+        """회원가입 다이얼로그."""
+
+        client = self._require_auth_client()
+        if client is None:
+            return
+        dialog = SignupDialog(client, self)
+        dialog.exec()
+
+    @pyqtSlot()
+    def _on_open_login(self) -> None:
+        """로그인 다이얼로그 — PASS 시 세션 토큰 보관."""
+
+        client = self._require_auth_client()
+        if client is None:
+            return
+        dialog = LoginDialog(client, self)
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self._session_token = dialog.token
+            self._current_user_id = dialog.user_id
+            log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
+            QMessageBox.information(
+                self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
+            )
+
+    @pyqtSlot()
+    def _on_open_reset(self) -> None:
+        """비밀번호 재설정."""
+
+        client = self._require_auth_client()
+        if client is None:
+            return
+        PasswordResetDialog(client, self).exec()
+
+    @pyqtSlot()
+    def _on_logout(self) -> None:
+        """세션 토큰 폐기."""
+
+        if self._session_token is None:
+            QMessageBox.information(self, "TooTalk", "로그인 상태 아님")
+            return
+        self._session_token = None
+        self._current_user_id = None
+        QMessageBox.information(self, "TooTalk", "로그아웃 완료")
 
     @pyqtSlot()
     def _on_send_clicked(self) -> None:
