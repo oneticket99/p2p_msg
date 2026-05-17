@@ -5,13 +5,16 @@ from __future__ import annotations
 
 import pytest
 
+from app.crypto.double_ratchet import ChainKey
 from app.crypto.e2ee import generate_x25519_keypair
 from app.crypto.session import (
     SessionState,
+    _skip_forward_chain_keys,
     advance_dh_ratchet,
     initialize_session_initiator,
     initialize_session_responder,
 )
+from app.crypto.skipped_keys import SkippedKeyStore
 
 
 class TestSessionStateValidation:
@@ -157,3 +160,35 @@ class TestAdvanceDhRatchet:
         s2 = advance_dh_ratchet(state, peer_pk)
         # my_dh keypair 의 random → sending_chain 별개
         assert s1.sending_chain.key != s2.sending_chain.key
+
+
+class TestSkipForwardChainKeys:
+    def test_no_skip(self) -> None:
+        store = SkippedKeyStore()
+        chain = ChainKey(key=b"\x42" * 32, counter=0)
+        result = _skip_forward_chain_keys(chain, 0, b"\x01" * 32, store)
+        # 동일 counter — skip 0
+        assert result.counter == 0
+        assert len(store) == 0
+
+    def test_skip_3(self) -> None:
+        store = SkippedKeyStore()
+        chain = ChainKey(key=b"\x42" * 32, counter=0)
+        result = _skip_forward_chain_keys(chain, 3, b"\x01" * 32, store)
+        # 3 skip — store 의 counter 0, 1, 2 보관
+        assert result.counter == 3
+        assert len(store) == 3
+        # counter 0, 1, 2 의 key 조회 가능 (one-shot)
+        assert store.get(b"\x01" * 32, 0) is not None
+
+    def test_target_less_than_current(self) -> None:
+        store = SkippedKeyStore()
+        chain = ChainKey(key=b"\x42" * 32, counter=5)
+        with pytest.raises(ValueError, match="target_counter"):
+            _skip_forward_chain_keys(chain, 3, b"\x01" * 32, store)
+
+    def test_max_skip_exceeded(self) -> None:
+        store = SkippedKeyStore(max_skip=200)
+        chain = ChainKey(key=b"\x42" * 32, counter=0)
+        with pytest.raises(ValueError, match="MAX_SKIP_PER_CHAIN"):
+            _skip_forward_chain_keys(chain, 101, b"\x01" * 32, store)

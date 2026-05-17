@@ -24,14 +24,68 @@ from typing import Optional, Tuple
 from app.crypto.double_ratchet import (
     ChainKey,
     decrypt_message,
+    derive_message_key,
     encrypt_message,
+    ratchet_chain,
 )
 from app.crypto.e2ee import (
     EncryptedPayload,
+    aes_gcm_decrypt,
     generate_x25519_keypair,
     hkdf_derive,
     x25519_shared_secret,
 )
+from app.crypto.skipped_keys import SkippedKeyStore
+
+# 동일 chain 의 forward skip 상한 (Signal Protocol 권장 — chain max skip)
+_MAX_SKIP_PER_CHAIN: int = 100
+
+
+def _skip_forward_chain_keys(
+    chain: ChainKey,
+    target_counter: int,
+    dh_public_raw: bytes,
+    store: SkippedKeyStore,
+) -> ChainKey:
+    """chain 을 target_counter 까지 advance + 중간 message key 의 store 보관.
+
+    Parameters
+    ----------
+    chain : ChainKey
+        현재 chain (counter ≤ target_counter 의무).
+    target_counter : int
+        도착 메시지 의 counter.
+    dh_public_raw : bytes
+        peer DH public — store key prefix.
+    store : SkippedKeyStore
+        skipped key 보관 store.
+
+    Returns
+    -------
+    ChainKey
+        target_counter 도달 직전 chain (caller 가 마지막 advance + message key derive).
+
+    Raises
+    ------
+    ValueError
+        target_counter < chain.counter (이미 advance 됨) 또는
+        skip 수 > _MAX_SKIP_PER_CHAIN.
+    """
+
+    if target_counter < chain.counter:
+        raise ValueError(
+            f"target_counter {target_counter} < chain.counter {chain.counter}"
+        )
+    skip = target_counter - chain.counter
+    if skip > _MAX_SKIP_PER_CHAIN:
+        raise ValueError(f"skip {skip} > MAX_SKIP_PER_CHAIN {_MAX_SKIP_PER_CHAIN}")
+
+    current = chain
+    while current.counter < target_counter:
+        mk, current = ratchet_chain(current)
+        # 중간 message key store 보관 (counter = 직전 chain counter)
+        store.put(dh_public_raw, current.counter - 1, mk)
+    return current
 
 
 # HKDF info string — domain separation (Signal Protocol 정합)
