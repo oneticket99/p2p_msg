@@ -198,7 +198,7 @@ sequenceDiagram
 | `FILE_BUFFER_HIGH` | 클라 | `16777216` (16 MiB) | `app/rtc/file_sender.py` (backpressure 상한 — 16 MiB 이상 시 송신 대기) |
 | `FILE_BUFFER_LOW` | 클라 | `4194304` (4 MiB) | `app/rtc/file_sender.py` (backpressure 하한 — 4 MiB 이하 시 송신 재개) |
 | `FILE_BACKPRESSURE_POLL_MS` | 클라 | `50` | `app/rtc/file_sender.py` (`bufferedAmount` 폴링 간격) |
-| `FILE_ACK_INTERVAL_BYTES` | 클라 | `524288` (512 KiB) | `app/rtc/file_receiver.py` (수신 ACK 발송 간격) |
+| `FILE_ACK_INTERVAL_BYTES` | 클라 | `262144` (256 KiB) | `app/rtc/file_receiver.py` (수신 ACK 발송 간격, qa-agent 사이클 13 코드 정합 회수) |
 | `FILE_RECEIVE_DIR` | 클라 | `~/Downloads/TooTalk` | `app/rtc/file_receiver.py` (수신 파일 저장 디렉토리) |
 | `THUMB_MAX_PX` | 클라 | `200` | `app/rtc/image_processor.py` (Pillow 썸네일 최대 픽셀) |
 | `THUMB_QUALITY` | 클라 | `80` | `app/rtc/image_processor.py` (JPEG 품질) |

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 22:40 (commit `1f09279` 직후 — 본 세션 누계 49 commit 반영, 사이클 12 — reviewer-agent 재호출 + 정식 GO 평가)
+> 최근 갱신 시점: 2026-05-17 23:25 (commit `e418b39` 직후 — 본 세션 누계 51 commit 반영, 사이클 13 — qa-agent 회귀 진입)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -140,7 +140,14 @@ status: active
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
-### 2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (신규 사이클 12)
+### 2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 (신규 사이클 13)
+
+- 사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입
+- reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)
+- 검증 대상 = Phase 1 FR-04 AC-04-1~4 (SHA-256 무결성 + backpressure + ProgressBar 100ms + 실패 빨강) + NFR-06
+- qa-agent PASS 후 → @release-agent 머지 게이트 진입 (Phase 1 FR-04 정식 채택 완료)
+
+### 2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 (사이클 12 신규 — 사이클 13 유지)
 
 - 사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit `1f09279`
 - **reviewer-agent 재호출** (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가

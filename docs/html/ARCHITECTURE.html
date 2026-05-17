@@ -247,7 +247,7 @@ sequenceDiagram
     <tr><td><code>FILE_BUFFER_HIGH</code></td><td>클라</td><td><code>16777216</code> (16 MiB)</td><td><code>app/rtc/file_sender.py</code> (backpressure 상한 — 16 MiB 이상 시 송신 대기)</td></tr>
     <tr><td><code>FILE_BUFFER_LOW</code></td><td>클라</td><td><code>4194304</code> (4 MiB)</td><td><code>app/rtc/file_sender.py</code> (backpressure 하한 — 4 MiB 이하 시 송신 재개)</td></tr>
     <tr><td><code>FILE_BACKPRESSURE_POLL_MS</code></td><td>클라</td><td><code>50</code></td><td><code>app/rtc/file_sender.py</code> (<code>bufferedAmount</code> 폴링 간격)</td></tr>
-    <tr><td><code>FILE_ACK_INTERVAL_BYTES</code></td><td>클라</td><td><code>524288</code> (512 KiB)</td><td><code>app/rtc/file_receiver.py</code> (수신 ACK 발송 간격)</td></tr>
+    <tr><td><code>FILE_ACK_INTERVAL_BYTES</code></td><td>클라</td><td><code>262144</code> (256 KiB)</td><td><code>app/rtc/file_receiver.py</code> (수신 ACK 발송 간격 — qa-agent 사이클 13 코드 정합 회수)</td></tr>
     <tr><td><code>FILE_RECEIVE_DIR</code></td><td>클라</td><td><code>~/Downloads/TooTalk</code></td><td><code>app/rtc/file_receiver.py</code> (수신 파일 저장 디렉토리)</td></tr>
     <tr><td><code>THUMB_MAX_PX</code></td><td>클라</td><td><code>200</code></td><td><code>app/rtc/image_processor.py</code> (Pillow 썸네일 최대 픽셀)</td></tr>
     <tr><td><code>THUMB_QUALITY</code></td><td>클라</td><td><code>80</code></td><td><code>app/rtc/image_processor.py</code> (JPEG 품질)</td></tr>

@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 22:45 (사이클 10 갱신 — 본 세션 누계 commit 50+ 반영, reviewer 재호출 + Agent #16 정식 GO + snapshot 사이클 12). 최신 commit `1f09279`.
+> 본 인계 시점: 2026-05-17 23:30 (사이클 12 갱신 — 본 세션 누계 commit 52+ 반영, reviewer 3 cycle 정식 GO + qa-agent 회귀 진입 + snapshot 사이클 13). 최신 commit `e418b39`.
 
 ---
 
@@ -479,6 +479,16 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - 종합 판정 = **PASS 정식 GO** (Phase 1 FR-04 코드 진입 readiness 완전 도달)
 - handoff = main session → `@qa-agent` 회귀 체크리스트 → 코드 진입 권장
 - handoff §9 #8 ✅ **완전 해소** (3 cycle 누계 — 11 + 12 + 13)
+
+### 8.36 qa-agent 회귀 + ARCHITECTURE.md drift 정정 + snapshot 사이클 13 (사이클 12 신규)
+
+- 사용자 directive "진행해" + "재개ㅙ" — 자율 GO + qa-agent 진입
+- @qa-agent sub-agent 결과 = **CONDITIONAL PASS** (정적 검증 47/48 PASS + 코드 정합 완전 + FR-04 AC 4종 매핑 충족)
+- FAIL 1건 = ARCHITECTURE §7 `FILE_ACK_INTERVAL_BYTES` drift (문서 524288 vs 코드 262144) — **옵션 B 코드 우선 채택** → ARCHITECTURE.md L201 + .html mirror 정정 (524288 → 262144)
+- 미커버 영역 = tests/rtc/ unit test 부재 (Phase 1 후속 별도 task 위탁)
+- snapshot 사이클 13 — productization §2.19 신규 (qa 회귀 진입 + 머지 게이트 마지막) + vibe-coding §2.23 신규 (reviewer 3 cycle 자동 정합 + qa 진입 패턴)
+- HTML 2종 sub-agent 병렬 재생성 + ARCHITECTURE.html mirror sub-agent (4 sub-agent 누계)
+- 머지 게이트 단계 = reviewer ✅ → qa ✅ CONDITIONAL → release-agent 머지 (next, 옵션 A 권장)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
