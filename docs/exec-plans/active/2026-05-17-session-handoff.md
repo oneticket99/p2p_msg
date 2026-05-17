@@ -17,7 +17,7 @@ status: active
 - **너는 Watcher** 다. 보고는 세밀 (모든 도구 1:1), 유휴 폴백 `/loop 2m` (조건 A ∧ B).
 - **서브에이전트는 Whitebox** — `run_in_background: true` + `Monitor`/`TaskOutput` 표준.
 - **5단계 워크플로우 절대 준수** — 문서 → 문서 검토 → 개발 → QA → 코드 리뷰. ②~⑤ 진입 전 ① 단계 완료 의무.
-- **9 영구 가드레일** 모두 hard constraint. 본인 자율 판단 위 우선. trade-off 정당화 금지.
+- **9 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선. trade-off 정당화 금지.
 - **파일 1건 작성/수정/삭제 시 즉시 git commit + push** + markdown/doc lint 통과 의무.
 - **BPE 손상 의존명사 단독 사용 영구 금지** (한국어 토큰화 불안정). 매 응답 자체 검열 grep 의무. 가드레일 본문 참조.
 - **DB = MariaDB**, GUI = PyQt6, Python = 3.13, CI = self-hosted, repo = public.
@@ -59,7 +59,7 @@ status: active
 
 ## 4. 영구 가드레일 인덱스 9건 (hard constraint)
 
-본 가드레일은 **본인 자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
+본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
 | 파일 (`~/.claude/projects/.../memory/`) | 핵심 규칙 |
 |---|---|

@@ -334,7 +334,7 @@ flowchart LR
 <tr><td><code>app/README.md</code></td><td>공통</td><td>클라 빠른 시작·환경변수·계층 의존도·플랫폼별 주의사항</td></tr>
 <tr><td><code>app/ui/main_window.py</code></td><td>ui</td><td><code>QMainWindow</code> — 메뉴바·ChatView·입력바·StatusBar 결합</td></tr>
 <tr><td><code>app/ui/chat_view.py</code></td><td>ui</td><td><code>QScrollArea</code> + <code>QVBoxLayout</code> — <code>MessageBubble</code> 누적·자동 스크롤</td></tr>
-<tr><td><code>app/ui/message_bubble.py</code></td><td>ui</td><td>단일 메시지 표시 위젯 (본인/타인 좌우 정렬 + 타임스탬프)</td></tr>
+<tr><td><code>app/ui/message_bubble.py</code></td><td>ui</td><td>단일 메시지 표시 위젯 (내/상대 좌우 정렬 + 타임스탬프)</td></tr>
 <tr><td><code>app/ui/status_bar.py</code></td><td>ui</td><td>시그널링 연결 상태 + 동일 방 peer 수 표시 (화이트리스트 검증)</td></tr>
 <tr><td><code>app/ui/file_progress_widget.py</code></td><td>ui</td><td>송수신 양방향 ProgressBar (회색 = 송신 큐, 파란 = ACK 누적)</td></tr>
 <tr><td><code>app/core/app_state.py</code></td><td>core</td><td>프로세스 단일 <code>AppState</code> 싱글톤 — room/peer/연결 상태/known_peers</td></tr>

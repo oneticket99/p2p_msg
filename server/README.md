@@ -84,7 +84,7 @@ websocat ws://localhost:8765/ws
 
 | 타입          | 필드                                       | 의미                                                  |
 |---------------|--------------------------------------------|-------------------------------------------------------|
-| `PEERS`       | `room` (str), `peers` (str[])              | JOIN 응답 — 동일 방의 기존 peer_id 목록 (본인 제외)    |
+| `PEERS`       | `room` (str), `peers` (str[])              | JOIN 응답 — 동일 방의 기존 peer_id 목록 (요청자 제외)    |
 | `PEER_JOINED` | `peer_id` (str)                            | 동일 방에 신규 peer 합류 알림                          |
 | `PEER_LEFT`   | `peer_id` (str)                            | 동일 방의 peer 이탈 알림 (LEAVE 또는 연결 종료)        |
 | `ERROR`       | `code` (str), `message` (str)              | 프로토콜 위반·라우팅 실패 응답                          |

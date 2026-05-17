@@ -71,7 +71,7 @@ color: red
 - 하드코딩 설정값 금지 — `.env` 또는 DB 상수 테이블로만 관리.
 - 로그 형식 `[YYYY-mm-dd H:i:s]` 위반 시 차단.
 - Backend 계층 분리 (`Router → Service → Model`) · 비동기 전용 위반 시 차단.
-- Whitebox 규약 (정본 §P): 본 에이전트는 다른 에이전트를 spawn 하지 않는다 — 모든 검토는 본인이 직접 수행.
+- Whitebox 규약 (정본 §P): 본 에이전트는 다른 에이전트를 spawn 하지 않는다 — 모든 검토는 자신이 직접 수행.
 - M5 정합 확인: PR 직전 `git status -sb` 클린 + `origin/main` 동기 여부 검증.
 
 리뷰 리포트 형식:

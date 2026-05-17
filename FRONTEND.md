@@ -29,7 +29,7 @@
 4. **메시지 가독성** — 본문 폰트 14px 이상, 줄간격 1.4, 한 버블 최대 가로 380px. 한 호흡에 읽히는 가로 폭 유지.
 5. **다크모드 후크** — `app/ui/theme.qss` 단일 파일에서 `--bg` / `--fg` / `--bubble-*` 변수를 토글하면 전 위젯이 일괄 전환되도록 `objectName` 기반 셀렉터로 위임.
 6. **하드코딩 금지** — 색상·간격·폰트 패밀리 직접 문자열 금지 ([정본 §E](CLAUDE_HARNESS_IMPORTANT.md)). 본 문서 §4 변수 표 경유.
-7. **본인/타인 시각 분기** — 좌(타인) / 우(본인) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.
+7. **내/상대 시각 분기** — 좌(상대) / 우(나) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.
 8. **상태 즉시 가시화** — 시그널링 연결 상태·peer 수·파일 진행률은 항상 화면 1 영역(StatusBar 또는 인라인 위젯)에 노출. 모달로 숨기지 않는다.
 9. **비동기 IO 비차단** — 시그널링·DataChannel·디스크 IO 는 모두 `asyncio.create_task` 로 예약하고, Qt slot 본문은 UI 업데이트만 수행 ([정본 §E](CLAUDE_HARNESS_IMPORTANT.md) 비동기 전용).
 10. **점진적 강조** — 신규 메시지 도착 시 자동 스크롤은 1회용 시그널로 처리해 사용자가 위로 스크롤 중일 때 강제 점프를 피한다.
@@ -88,8 +88,8 @@ flowchart TD
 | `--primary` | 미확정 후크 | 미확정 후크 | 보내기 버튼 · 강조 액션 |
 | `--bg` | `#ffffff` | `#1e1e1e` | 윈도우 배경 |
 | `--fg` | `#1a1a1a` | `#e5e5e5` | 본문 텍스트 |
-| `--bubble-self` | `#dcf8c6` | `#2d5a3f` | 본인 발신 버블 배경 |
-| `--bubble-other` | `#ffffff` | `#2a2a2a` | 타인 발신 버블 배경 |
+| `--bubble-self` | `#dcf8c6` | `#2d5a3f` | 내가 발신한 버블 배경 (self) |
+| `--bubble-other` | `#ffffff` | `#2a2a2a` | 상대가 발신한 버블 배경 (peer) |
 | `--bubble-border` | `#dddddd` | `#3a3a3a` | 버블 경계선 |
 | `--text-timestamp` | `#888888` | `#9a9a9a` | 타임스탬프 회색 |
 | `--text-sender` | `#555555` | `#b5b5b5` | 발신자 라벨 |
@@ -126,8 +126,8 @@ flowchart TD
 
 | 발신자 | 정렬 | 배경 변수 | 발신자 라벨 |
 |---|---|---|---|
-| 본인 (`is_self=True`) | 우측 | `--bubble-self` | 미노출 |
-| 타인 (`is_self=False`) | 좌측 | `--bubble-other` | 상단 노출 |
+| 내 메시지 (`is_self=True`) | 우측 | `--bubble-self` | 미노출 |
+| 상대 메시지 (`is_self=False`) | 좌측 | `--bubble-other` | 상단 노출 |
 | 시스템 안내 | 좌측 | `--bubble-other` | `sender="system"` |
 
 ### 6.2 타임스탬프 위치
@@ -186,7 +186,7 @@ flowchart TD
 | 상태 | 위치 | 표시 형식 |
 |---|---|---|
 | 시그널링 연결 | StatusBar 좌측 | `DISCONNECTED` / `CONNECTING` / `CONNECTED` / `ERROR` |
-| Peer 수 | StatusBar 우측 | `peers: N` (본인 제외) |
+| Peer 수 | StatusBar 우측 | `peers: N` (나 제외) |
 | 현재 방 | 메뉴바 또는 윈도우 제목 | `TooTalk — room: <id>` (Phase 1 후반) |
 | 파일 진행률 | 인라인 위젯 | `1.2/3.4 MB · 35%` |
 | 시스템 안내 | ChatView 시스템 버블 | `sender="system"` |
@@ -305,11 +305,11 @@ flowchart TB
 flowchart TD
     subgraph CV3["ChatView 1000 폭 안의 메시지 영역"]
         direction TB
-        B1["타인 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
-        B2["타인 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
-        B3["본인 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
-        B4["본인 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
-        B5["타인 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
+        B1["상대 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
+        B2["상대 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
+        B3["내가 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
+        B4["내가 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
+        B5["상대 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
     end
     B1 --> B2 --> B3 --> B4 --> B5
 ```

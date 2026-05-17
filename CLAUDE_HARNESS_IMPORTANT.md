@@ -482,7 +482,7 @@ git push origin main
 
 ### S-1) Tier 1 자동화 layer 5단 — 결정적 enforcement
 
-본인이 직접 코드를 거의 작성하지 않으면서도 코드 품질을 통제하는 핵심 = **enforcement layer 가 매 응답 측 자동 작동**.
+사용자가 직접 코드를 거의 작성하지 않으면서도 코드 품질을 통제하는 핵심 = **enforcement layer 가 매 응답 측 자동 작동**.
 
 ```mermaid
 flowchart LR
@@ -580,7 +580,7 @@ fi
 
 **사용자 directive 2026-05-15**: "claude 에게 자율의지를 안주는 이유는 직무유기가 심하기때문이야."
 
-**의미**: 본인의 보수 룰 (`watcher_role_only` / `no_edit_intervention` / `git_auto_push_no_confirm` / `subagent_completion_immediate_report` / `reviewer_agent_mandatory_trigger` 등) 은 trade-off 가 아니라 **직무유기 방지 본질 의무**. Claude 자율 진행 시 4 전형 실패 패턴 (false positive 보고 / 표면 fix / 범위 폭주 / 컨텍스트 손실) 누적.
+**의미**: 어시스턴트의 보수 룰 (`watcher_role_only` / `no_edit_intervention` / `git_auto_push_no_confirm` / `subagent_completion_immediate_report` / `reviewer_agent_mandatory_trigger` 등) 은 trade-off 가 아니라 **직무유기 방지 본질 의무**. Claude 자율 진행 시 4 전형 실패 패턴 (false positive 보고 / 표면 fix / 범위 폭주 / 컨텍스트 손실) 누적.
 
 **평가 frame**: "보수성 vs 속도 trade-off" 가정 금지. 본 cycle 측 cycle 손실 (예: P0-#1 옵션 A 1 cycle 지연) 은 보수 룰 정합 측 정합 패턴 — 차감 사유 아님.
 
@@ -588,7 +588,7 @@ fi
 
 - 메모리 `feedback_claude_no_autonomy_due_to_dereliction.md` 영구화 (MEMORY.md index 최상단)
 - 평가 측 "자율 의지 보류 (직무유기 방지)" row 신규 A+
-- 본인 비판 0회 cycle 도달 시점에야 자율 의지 검토 가능 (현재 직무유기 누적 잔존)
+- 사용자 비판 0회 cycle 도달 시점에야 자율 의지 검토 가능 (현재 직무유기 누적 잔존)
 
 ### S-6) 적용 순서 — 새 세션 진입 시
 

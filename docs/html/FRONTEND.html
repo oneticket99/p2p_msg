@@ -103,7 +103,7 @@
 <li><strong>메시지 가독성</strong> — 본문 폰트 14px 이상, 줄간격 1.4, 한 버블 최대 가로 380px. 한 호흡에 읽히는 가로 폭 유지.</li>
 <li><strong>다크모드 후크</strong> — <code>app/ui/theme.qss</code> 단일 파일에서 <code>--bg</code> / <code>--fg</code> / <code>--bubble-*</code> 변수를 토글하면 전 위젯이 일괄 전환되도록 <code>objectName</code> 기반 셀렉터로 위임.</li>
 <li><strong>하드코딩 금지</strong> — 색상·간격·폰트 패밀리 직접 문자열 금지 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a>). 본 문서 §4 변수 표 경유.</li>
-<li><strong>본인/타인 시각 분기</strong> — 좌(타인) / 우(본인) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.</li>
+<li><strong>내/상대 시각 분기</strong> — 좌(상대) / 우(나) 정렬 + 배경색 분기로 시선 흐름을 좌→우 일방향으로 고정.</li>
 <li><strong>상태 즉시 가시화</strong> — 시그널링 연결 상태·peer 수·파일 진행률은 항상 화면 1 영역(StatusBar 또는 인라인 위젯)에 노출. 모달로 숨기지 않는다.</li>
 <li><strong>비동기 IO 비차단</strong> — 시그널링·DataChannel·디스크 IO 는 모두 <code>asyncio.create_task</code> 로 예약하고, Qt slot 본문은 UI 업데이트만 수행 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §E</a> 비동기 전용).</li>
 <li><strong>점진적 강조</strong> — 신규 메시지 도착 시 자동 스크롤은 1회용 시그널로 처리해 사용자가 위로 스크롤 중일 때 강제 점프를 피한다.</li>
@@ -168,8 +168,8 @@ flowchart TD
 <tr><td><code>--primary</code></td><td>미확정 후크</td><td>미확정 후크</td><td>보내기 버튼 · 강조 액션</td></tr>
 <tr><td><code>--bg</code></td><td><code>#ffffff</code></td><td><code>#1e1e1e</code></td><td>윈도우 배경</td></tr>
 <tr><td><code>--fg</code></td><td><code>#1a1a1a</code></td><td><code>#e5e5e5</code></td><td>본문 텍스트</td></tr>
-<tr><td><code>--bubble-self</code></td><td><code>#dcf8c6</code></td><td><code>#2d5a3f</code></td><td>본인 발신 버블 배경</td></tr>
-<tr><td><code>--bubble-other</code></td><td><code>#ffffff</code></td><td><code>#2a2a2a</code></td><td>타인 발신 버블 배경</td></tr>
+<tr><td><code>--bubble-self</code></td><td><code>#dcf8c6</code></td><td><code>#2d5a3f</code></td><td>내가 발신한 버블 배경 (self)</td></tr>
+<tr><td><code>--bubble-other</code></td><td><code>#ffffff</code></td><td><code>#2a2a2a</code></td><td>상대가 발신한 버블 배경 (peer)</td></tr>
 <tr><td><code>--bubble-border</code></td><td><code>#dddddd</code></td><td><code>#3a3a3a</code></td><td>버블 경계선</td></tr>
 <tr><td><code>--text-timestamp</code></td><td><code>#888888</code></td><td><code>#9a9a9a</code></td><td>타임스탬프 회색</td></tr>
 <tr><td><code>--text-sender</code></td><td><code>#555555</code></td><td><code>#b5b5b5</code></td><td>발신자 라벨</td></tr>
@@ -221,8 +221,8 @@ flowchart TD
 <tr><th>발신자</th><th>정렬</th><th>배경 변수</th><th>발신자 라벨</th></tr>
 </thead>
 <tbody>
-<tr><td>본인 (<code>is_self=True</code>)</td><td>우측</td><td><code>--bubble-self</code></td><td>미노출</td></tr>
-<tr><td>타인 (<code>is_self=False</code>)</td><td>좌측</td><td><code>--bubble-other</code></td><td>상단 노출</td></tr>
+<tr><td>내 메시지 (<code>is_self=True</code>)</td><td>우측</td><td><code>--bubble-self</code></td><td>미노출</td></tr>
+<tr><td>상대 메시지 (<code>is_self=False</code>)</td><td>좌측</td><td><code>--bubble-other</code></td><td>상단 노출</td></tr>
 <tr><td>시스템 안내</td><td>좌측</td><td><code>--bubble-other</code></td><td><code>sender="system"</code></td></tr>
 </tbody>
 </table>
@@ -305,7 +305,7 @@ flowchart TD
 </thead>
 <tbody>
 <tr><td>시그널링 연결</td><td>StatusBar 좌측</td><td><code>DISCONNECTED</code> / <code>CONNECTING</code> / <code>CONNECTED</code> / <code>ERROR</code></td></tr>
-<tr><td>Peer 수</td><td>StatusBar 우측</td><td><code>peers: N</code> (본인 제외)</td></tr>
+<tr><td>Peer 수</td><td>StatusBar 우측</td><td><code>peers: N</code> (나 제외)</td></tr>
 <tr><td>현재 방</td><td>메뉴바 또는 윈도우 제목</td><td><code>TooTalk — room: &lt;id&gt;</code> (Phase 1 후반)</td></tr>
 <tr><td>파일 진행률</td><td>인라인 위젯</td><td><code>1.2/3.4 MB · 35%</code></td></tr>
 <tr><td>시스템 안내</td><td>ChatView 시스템 버블</td><td><code>sender="system"</code></td></tr>
@@ -435,11 +435,11 @@ flowchart TB
 flowchart TD
     subgraph CV3["ChatView 1000 폭 안의 메시지 영역"]
         direction TB
-        B1["타인 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
-        B2["타인 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
-        B3["본인 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
-        B4["본인 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
-        B5["타인 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
+        B1["상대 발신 좌측 정렬<br/>회색 배경<br/>max-width 380px<br/>09:32 우측 하단"]
+        B2["상대 발신 좌측 정렬<br/>회색 배경<br/>이미지 인라인 + 썸네일"]
+        B3["내가 발신 우측 정렬<br/>파란 배경 흰 글자<br/>09:35"]
+        B4["내가 발신 우측 정렬<br/>파란 배경<br/>FileProgressWidget 2-stack<br/>회색 sent + 파란 acked"]
+        B5["상대 발신 좌측 정렬<br/>파란 배경<br/>FileProgressWidget 1-stack<br/>파란 received"]
     end
     B1 --> B2 --> B3 --> B4 --> B5
 </pre>
