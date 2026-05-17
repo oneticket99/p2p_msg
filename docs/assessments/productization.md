@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-17 17:35 (commit `5f36517` 직후 — 본 세션 누계 27 commit 반영, 사이클 6)
+> 최근 갱신 시점: 2026-05-17 18:10 (commit `34e8119` 직후 — 본 세션 누계 31 commit 반영, 사이클 7)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -27,7 +27,7 @@ status: active
 | 사용자 가치 | 3 / 5 | = | P5 OBS 도움 + 회원가입 안정성 |
 | 수익화 모델 | 2.5 / 5 | 2 → 2.5 ▲ | GPLv3 = OSS 사업 모델 명확화 + Toonation 옵션 B 의 내부 도입 라이선스 정합 |
 | 운영 비용 | 5 / 5 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 5 / 5 | = | 20 영구 가드레일 (신규 2 — license-gpl + visibility-transition) + doc-lint 5 + pytest + Playwright + gh API |
+| 가드레일·자동화 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning) + doc-lint 5 + pytest + Playwright + gh API + PreToolUse hook sketch |
 | 세션 간 정합 | 5 / 5 | = | handoff 사이클 3 + snapshot 6 + CheckList drift 차단 |
 | **종합** | **3.95 / 5** | 3.85 → 3.95 ▲ | **인프라/문서/QA/차별화/CI/보안/라이선스 완성 — 옵션 B Toonation 통합 즉시 진입 가능 + private 전환 시점 명시** |
 
@@ -124,6 +124,15 @@ status: active
 - self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)
 - AGPLv3 = Phase 2 이후 옵션 (network use clause)
 - 영구 메모리 2 신설 — `project_license_gpl.md` + `project_visibility_transition.md`
+
+### 2.14 BPE script trigger sketch — enforcement layer 사전 명시 (신규 사이클 7)
+
+- 사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"
+- 영구 메모리 `feedback_bpe_script_trigger_warning.md` 신설
+- `tools/hook_check_bpe_token_input.sh` 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)
+- `.claude/settings.json.disabled` 신설 — sketch (미활성 패턴)
+- 다음 BPE 위반 발견 시 = `mv .disabled → settings.json` 의 즉시 활성 의무
+- 정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합
 
 ---
 

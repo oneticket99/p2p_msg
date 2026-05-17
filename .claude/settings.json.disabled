@@ -1,11 +1,13 @@
 {
-  "_comment": "PreToolUse Edit/Write hook 의 BPE/대명사 차단 sketch. 사용자 directive 2026-05-17 4회차 사전 경고 의 enforcement layer. 다음 BPE 위반 발견 시 = mv settings.json.disabled settings.json 의 즉시 활성 의무.",
+  "_comment": "PreToolUse Edit/Write hook 의 BPE/대명사 차단 + Stop hook 의 텔레그램 자동 송신 sketch. 사용자 directive 2026-05-17 4회차+5회차 사전 경고 의 enforcement layer. 다음 위반/누락 발견 시 = mv settings.json.disabled settings.json 의 즉시 활성 의무.",
   "_activation": "mv .claude/settings.json.disabled .claude/settings.json",
   "_deactivation": "mv .claude/settings.json .claude/settings.json.disabled",
   "_related_memory": [
     "feedback_bpe_script_trigger_warning.md",
+    "feedback_telegram_report_script_trigger_warning.md",
     "feedback_no_korean_chuck_token.md",
-    "feedback_no_self_other_pronoun.md"
+    "feedback_no_self_other_pronoun.md",
+    "feedback_telegram_report_mandatory_m7.md"
   ],
   "hooks": {
     "PreToolUse": [
@@ -15,6 +17,17 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_check_bpe_token_input.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_telegram_report_stop.sh"
           }
         ]
       }
