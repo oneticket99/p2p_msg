@@ -51,7 +51,7 @@ status: active
   - **로그인 흐름 PASS** (email + password + 세션 토큰)
   - **아이디·비밀번호 찾기 흐름 PASS** (username + email → 비밀번호 재설정 메일 30분 유효)
   - **DB 스키마 3 테이블 active** (users + email_verification + password_reset)
-  - **SMTP 발송 PASS** (Gmail/SendGrid/Mailgun 중 1종)
+  - **SMTP 발송 PASS** — 데모 서버 (`114.207.112.73`) 안 postfix 자체 설치 (사용자 directive 2026-05-17) + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib client + SendGrid fallback. 절차 = [docs/references/smtp-setup.md](../references/smtp-setup.md)
 - **KPI**:
   - dogfooding 의 1주 누계 메시지 100건 + 파일 10건
   - 크래시 0건

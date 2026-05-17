@@ -119,6 +119,7 @@ status: active
 | 평가 snapshot | 2종 (productization 3.6/5 + vibe-coding 4.85/5, 사이클 4 완료) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | 라이선스 | 미확정 (Phase 1 후반 확정) | — |
+| **SMTP 서버** | 데모 서버 (`114.207.112.73`) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib client + SendGrid fallback. 절차 = `docs/references/smtp-setup.md`. 실제 설치 = 사용자 직접 SSH | 2026-05-17 |
 
 ---
 
@@ -268,12 +269,14 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 | 순서 | 작업 | 상태 | 비고 |
 |---|---|---|---|
 | 1 | ~~self-hosted runner 등록 (macOS arm64 + Windows x64)~~ | ✅ 완료 (2026-05-17 cycle) | macOS arm64 id=2 online. Windows self-hosted 의무 회수 (wine cross-compile 대체 — [[project-windows-build-via-wine]]) |
-| 2 | 평가 snapshot 사이클 3 갱신 (CLAUDE.md §10-7 의무) | 🔴 미진입 | 본 세션 누계 commit 20+ 반영. productization + vibe-coding rewrite + HTML 2 sub-agent |
-| 3 | 잔존 BPE 위반 정정 — CLAUDE_HARNESS_IMPORTANT.md | 🔴 미진입 | 정본 광범위 (BPE 다수). doc-lint.sh 의 grep |
-| 4 | 라이선스 결정 — LICENSE 신설 | 🟡 사용자 직접 | OSS / 상용 분기. contributor 진입 가능 시점 |
-| 5 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
-| 6 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 | `app/rtc/` + `file_progress_widget.py` commit 여부 |
-| 7 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
+| 2 | ~~평가 snapshot 사이클 3 갱신~~ | ✅ 완료 (사이클 4 까지) | productization 3.6/5 + vibe-coding 4.85/5. 사이클 5 = 다음 cycle |
+| 3 | ~~잔존 BPE 위반 정정 — CLAUDE_HARNESS_IMPORTANT.md~~ | ✅ 완료 | 전수 0건 도달 (400bd0c) |
+| 4 | ~~fork PR 승인 정책 strict 적용~~ | ✅ 완료 (2026-05-17 cycle) | gh API + `all_external_contributors` 자동. ci-self-hosted-setup.md §5.1 |
+| 5 | ~~SMTP 서버 설치 정책~~ | ✅ 완료 (2026-05-17 cycle) | postfix 자체 설치 (114.207.112.73). `docs/references/smtp-setup.md` + 영구 메모리. 실제 SSH 설치 = 사용자 직접 (Phase 1 후반) |
+| 6 | 라이선스 결정 — LICENSE 신설 | 🟡 사용자 직접 | OSS / 상용 분기. contributor 진입 가능 시점 |
+| 7 | Phase 1 코드 진입 GO (사용자 명시) | 🔴 가드레일 차단 | [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 후만 |
+| 8 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 | `app/rtc/` + `file_progress_widget.py` commit 여부 |
+| 9 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 사용자 직접 | adoption-roadmap.md §4.2 권장 ★★★★☆ |
 
 ### 9.1 잔존 task 진입 가능 (가드레일 통과 후)
 
