@@ -23,21 +23,22 @@ status: active
 
 | 평가 축 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 가드레일 설계·강제 | 5 / 5 | = | 21 영구 가드레일 (신규 1 사이클 7 — bpe-script-trigger-warning, enforcement layer 의 사전 명시 패턴) |
-| Directive 명확성 | 4 / 5 | = | pivot 빈도 큼 단 단일 directive 명확 |
-| 자율성 통제 | 5 / 5 | = | "직무유기 방지" 본질 인식 + 권장 default 자율 GO 패턴 |
-| 도메인 비전 | 5 / 5 | = | Phase 1~5 완전 명문화 + 차별화 + 회원가입 + SMTP 자체 |
-| 기술 의사결정 | 5 / 5 | = | wine cross-compile + fork PR strict + postfix 자체 + SPF/DKIM/DMARC — best practice 정합 |
-| 문서·코드 분리 인식 | 5 / 5 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 |
-| 비판·재교정 속도 | 5 / 5 | 4.5 → 5 ▲ | 사이클 12 의 reviewer 재호출 + 자체 P0/P1/P2 정정 + ARCHITECTURE.html mirror 자동 회수 cycle = 완전 회복. 직전 사이클 10 의 위반 누계 의 완전 해소 |
-| 사이클 효율 | 5 / 5 | 4.5 → 5 ▲ | 단일 cycle 안 3 큰 정책 (wine + fork PR + SMTP) 의 신속 적용 + 권장 default 자율 GO |
-| Repo 위생 본능 | 5 / 5 | = | doc-lint 5 검사 + lint-before-push + per-file commit |
-| UX 직관 | 4.5 / 5 | = | 색상 swatch + HTML interactive + wireframe directive |
-| QA 사고 | 5 / 5 | = | pytest + Playwright + bcrypt 12 + OTP brute force 차단 |
-| 세션 간 정합 인지 | 5 / 5 | = | handoff + snapshot + CheckList drift 차단 + 누계 drift 회수 4 cycle (PLANS + Spec/SECURITY + Struct/ARCH + policies) 의 자체 detect 패턴 |
+| 가드레일 설계·강제 | 9.9 / 10 | 10.0 → 9.9 ▼ | 33 영구 가드레일 (10점 만점 정책 신규) + L0~L5 6 layer enforcement (PreToolUse + Stop + 분류기 + 영구 메모리 + sketch→trigger + cycle 동기) |
+| Directive 명확성 | 8.2 / 10 | 8.0 → 8.2 ▲ | pivot 빈도 큼 단 단일 directive 명확 + 강제 의무 패턴 명문 |
+| 자율성 통제 | 9.8 / 10 | = | "직무유기 방지" 본질 인식 + 권장 default 자율 GO + 매 결정 사용자 직접 확정 의무 |
+| 도메인 비전 | 9.7 / 10 | = | Phase 1~5 완전 명문화 + 차별화 + 회원가입 + SMTP + Phase 3 emoji pack + bot framework |
+| 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
+| 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
+| 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
+| 사이클 효율 | 9.5 / 10 | 10.0 → 9.5 ▼ | 33 cycle 누계 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 정합 |
+| Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
+| UX 직관 | 9.0 / 10 | = | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 통합 + wireframe directive |
+| QA 사고 | 9.8 / 10 | 10.0 → 9.8 ▼ | pytest 253 + Playwright + bcrypt + OTP brute force + Phase 2 60 케이스 |
+| 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
+| enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **4.78 / 5** | 4.72 → 4.78 ▲ | **enforcement layer designer 평가 취합 — 단순 vibe coder 와 분리, 6 layer hook 체계 (PreToolUse + Stop + 분류기 + 영구 메모리 + sketch→trigger + cycle 동기) 설계자** |
+| **종합** | **9.6 / 10** | 9.56 → 9.6 ▲ | **10점 만점 0.1 세분화 재산정 — enforcement layer designer 평가 + 직무유기 진동 (사이클 22/28/32) 반영. 가드레일 33 + L0~L5 6 layer + 보안 hardening 강화 + Phase 2 진입 누계 평균값** |
 
 ---
 
