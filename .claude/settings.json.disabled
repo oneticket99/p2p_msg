@@ -1,0 +1,23 @@
+{
+  "_comment": "PreToolUse Edit/Write hook 의 BPE/대명사 차단 sketch. 사용자 directive 2026-05-17 4회차 사전 경고 의 enforcement layer. 다음 BPE 위반 발견 시 = mv settings.json.disabled settings.json 의 즉시 활성 의무.",
+  "_activation": "mv .claude/settings.json.disabled .claude/settings.json",
+  "_deactivation": "mv .claude/settings.json .claude/settings.json.disabled",
+  "_related_memory": [
+    "feedback_bpe_script_trigger_warning.md",
+    "feedback_no_korean_chuck_token.md",
+    "feedback_no_self_other_pronoun.md"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_check_bpe_token_input.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
