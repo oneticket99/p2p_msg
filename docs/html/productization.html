@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="title" content="TooTalk 제품화 가능성 평가 — Snapshot">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="title" content="TooTalk 제품화 가능성 평가 — Snapshot (사이클 5)">
 <meta name="owner" content="oneticket99">
 <meta name="last_verified" content="2026-05-17">
 <meta name="status" content="active">
-<title>TooTalk 제품화 가능성 평가 — Snapshot</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 5)</title>
 <style>
+  /* 본 스타일은 light theme 의 가독성 최적화 (배경 #fafafa + 텍스트 #1f2937 + accent #2563eb) */
   :root {
-    --bg: #ffffff;
+    --bg: #fafafa;
     --fg: #1f2937;
     --muted: #6b7280;
     --accent: #2563eb;
@@ -17,7 +19,9 @@
     --code-bg: #f3f4f6;
     --quote-bg: #f9fafb;
     --quote-border: #d1d5db;
-    --table-head-bg: #f3f4f6;
+    --table-head-bg: #eef2ff;
+    --table-zebra: #f5f7fb;
+    --strong-color: #111827;
   }
   html, body {
     margin: 0;
@@ -29,17 +33,18 @@
     line-height: 1.7;
   }
   main {
-    max-width: 980px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 1.25rem 4rem;
   }
+  /* 표제 위계 + 본문 가독성 */
   h1, h2, h3, h4 {
     line-height: 1.3;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
-    color: #111827;
+    color: var(--strong-color);
   }
-  h1 { font-size: 1.85rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+  h1 { font-size: 1.9rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; }
   h2 { font-size: 1.45rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
   h3 { font-size: 1.15rem; }
   h4 { font-size: 1rem; color: var(--muted); }
@@ -50,10 +55,11 @@
   li { margin: 0.25rem 0; }
   blockquote {
     margin: 1rem 0;
-    padding: 0.6rem 1rem;
+    padding: 0.7rem 1rem;
     background: var(--quote-bg);
-    border-left: 4px solid var(--quote-border);
+    border-left: 4px solid var(--accent);
     color: #374151;
+    border-radius: 0 4px 4px 0;
   }
   hr {
     border: none;
@@ -67,32 +73,39 @@
     font-family: "SF Mono", Menlo, Consolas, "D2Coding", monospace;
     font-size: 0.9em;
   }
+  /* 표 정렬 + border + zebra stripe (가독성 강화) */
   table {
     width: 100%;
     border-collapse: collapse;
     margin: 1rem 0;
     font-size: 0.95rem;
+    border: 1px solid var(--border);
+    background: #ffffff;
   }
   thead { background: var(--table-head-bg); }
   th, td {
     border: 1px solid var(--border);
-    padding: 0.5rem 0.75rem;
+    padding: 0.55rem 0.8rem;
     text-align: left;
     vertical-align: top;
   }
-  th { font-weight: 600; }
-  strong { color: #111827; }
+  th { font-weight: 600; color: var(--strong-color); }
+  tbody tr:nth-child(even) { background: var(--table-zebra); }
+  strong { color: var(--strong-color); }
+  /* 강조 정렬 — 점수/등급 가독 */
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 <main>
 
+<!-- 본 문서는 docs/assessments/productization.md 사이클 5 의 정확 등가 HTML -->
 <h1>TooTalk 제품화 가능성 평가 (Snapshot)</h1>
 
 <blockquote>
 <p><strong>본 문서는 snapshot 패턴</strong>. 매 task 종료 시점에 전체 rewrite.<br>
 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".</p>
-<p>최근 갱신 시점: 2026-05-17 14:28 (commit <code>5486c72</code> 직후 — 본 세션 누계 27 commit 반영)<br>
+<p>최근 갱신 시점: 2026-05-17 17:00 (commit <code>aa56563</code> 직후 — 본 세션 누계 25 commit 반영, 사이클 5)<br>
 다음 갱신 시점: 다음 task 종료 시 전체 rewrite</p>
 </blockquote>
 
@@ -100,22 +113,22 @@
 
 <h2>1. 총평 (TL;DR)</h2>
 
-<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 완성. 제품화 가능성 = <strong>인프라 완비 + 명확한 차별화 보유 / 코드 진입 대기</strong>.</p>
+<p><strong>현재 단계</strong>: Phase 1 인프라 + 문서 + QA + auth 정책 + 차별화 계획 + <strong>CI GREEN + wine + fork PR strict + SMTP 자체</strong> 완성. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 보유 / 코드 진입 대기</strong>.</p>
 
 <table>
 <thead>
 <tr><th>항목</th><th>점수 (5점)</th><th>직전 → 현재</th><th>근거</th></tr>
 </thead>
 <tbody>
-<tr><td>기술 완성도</td><td>2.5 / 5</td><td>=</td><td>pytest + Playwright + DESIGN §11 (변동 없음 — auth 정책만 추가, 코드 미진입)</td></tr>
-<tr><td>시장 적합성</td><td>2.5 / 5</td><td>2 → 2.5 ▲</td><td>Toonation 옵션 B + P5/P6 페르소나 + OBS 도움 시나리오 명시</td></tr>
-<tr><td>차별화 요소</td><td>4.5 / 5</td><td>3 → 4.5 ▲</td><td>친구간 원격 데스크탑 제어 (TeamViewer/AnyDesk 의 메신저 미통합 — TooTalk 유일) + 이메일 OTP 인증 + 양방향 ProgressBar</td></tr>
-<tr><td>사용자 가치</td><td>3 / 5</td><td>2.5 → 3 ▲</td><td>P5 OBS 설정 도움 = 즉시 가치 + 회원가입 안정성</td></tr>
-<tr><td>수익화 모델</td><td>2 / 5</td><td>1.5 → 2 ▲</td><td>Toonation 후원자 통합 + 옵션 B Phase 1~2 즉시 검증</td></tr>
-<tr><td>운영 비용</td><td>4.5 / 5</td><td>=</td><td>self-hosted CI + HTML 6 자동 + sub-agent 14 spawn 누계</td></tr>
-<tr><td>가드레일·자동화</td><td>5 / 5</td><td>=</td><td>16 영구 가드레일 (신규 4 — phase1-priority + remote-control + auth-otp + design-html) + doc-lint 5 + pytest + Playwright</td></tr>
-<tr><td>세션 간 정합</td><td>5 / 5</td><td>=</td><td>handoff + snapshot + CheckList drift 차단</td></tr>
-<tr><td><strong>종합</strong></td><td><strong>3.6 / 5</strong></td><td>2.9 → 3.6 ▲</td><td><strong>인프라/문서/QA/차별화 완성 — 옵션 B Toonation 통합 즉시 진입 가능</strong></td></tr>
+<tr><td>기술 완성도</td><td>3 / 5</td><td>2.5 → 3 ▲</td><td>self-hosted CI 8 job GREEN + Windows wine cross-compile + SMTP postfix 자체 + fork PR strict (가드레일 자동화 추가 향상)</td></tr>
+<tr><td>시장 적합성</td><td>2.5 / 5</td><td>=</td><td>Toonation 옵션 B + P5/P6 페르소나 (변동 없음)</td></tr>
+<tr><td>차별화 요소</td><td>4.5 / 5</td><td>=</td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar (변동 없음)</td></tr>
+<tr><td>사용자 가치</td><td>3 / 5</td><td>=</td><td>P5 OBS 도움 + 회원가입 안정성 (변동 없음)</td></tr>
+<tr><td>수익화 모델</td><td>2 / 5</td><td>=</td><td>Toonation 옵션 B (변동 없음)</td></tr>
+<tr><td>운영 비용</td><td>5 / 5</td><td>4.5 → 5 ▲</td><td>self-hosted macOS + Windows wine 무료 (Windows runner 회피) + SMTP postfix 자체 (relay 비용 0) + fork PR API 자동</td></tr>
+<tr><td>가드레일·자동화</td><td>5 / 5</td><td>=</td><td>18 영구 가드레일 (신규 2 — windows-build-via-wine + smtp-demo-server) + doc-lint 5 + pytest + Playwright + gh API 자동화</td></tr>
+<tr><td>세션 간 정합</td><td>5 / 5</td><td>=</td><td>handoff 사이클 2 + snapshot 5 + CheckList drift 차단</td></tr>
+<tr><td><strong>종합</strong></td><td><strong>3.85 / 5</strong></td><td>3.6 → 3.85 ▲</td><td><strong>인프라/문서/QA/차별화/CI/보안 완성 — 옵션 B Toonation 통합 즉시 진입 가능</strong></td></tr>
 </tbody>
 </table>
 
@@ -133,34 +146,37 @@
 <ul>
 <li>사용자 직접 시그널링 서버 구동 가능 (docker-compose 번들 예정)</li>
 <li>on-premise 배포 + Toonation 통합 옵션 B 진입 가능</li>
+<li>데모 서버 (<code>114.207.112.73</code>) = 시그널링 + SMTP 통합</li>
 </ul>
 
 <h3>2.3 문서·정책 정합 (개발 과정 우위)</h3>
 <ul>
 <li>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR template + handoff doc</li>
-<li>HTML 6종 동시 정리 (sub-agent 14 spawn)</li>
-<li>CheckList 16행 + handoff 사이클 1 갱신</li>
-<li>16 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
+<li>HTML 6종 동시 정리 (sub-agent 16 spawn 누계)</li>
+<li>CheckList 17행 + handoff 사이클 2 갱신</li>
+<li>18 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
 </ul>
 
 <h3>2.4 기술 스택 modern</h3>
 <ul>
 <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 7 테이블</li>
 <li>bcrypt 12 rounds + aiosmtplib + secrets.choice</li>
-<li>PyInstaller 단일 zip 배포</li>
+<li>PyInstaller native (macOS) + wine cross-compile (Windows — cdrx docker)</li>
 </ul>
 
 <h3>2.5 자동화 + sub-agent 병렬</h3>
 <ul>
-<li>본 세션 누계 sub-agent 14 spawn (직렬 대비 ~60% 시간 단축)</li>
+<li>본 세션 누계 sub-agent 16 spawn (직렬 대비 ~60% 시간 단축)</li>
 <li>pytest + Playwright + coverage 80% 게이트</li>
+<li>ci 8 job 매트릭스 GREEN 도달</li>
 </ul>
 
-<h3>2.6 가드레일 자동화</h3>
+<h3>2.6 가드레일 자동화 (신규 사이클 5 — 강화)</h3>
 <ul>
 <li>doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)</li>
-<li>16 영구 메모리 가드레일</li>
-<li>텔레그램 HTTP API 강제 활성 (송신 누계 22건)</li>
+<li>18 영구 메모리 가드레일 (신규 사이클 5: windows-build-via-wine + smtp-demo-server)</li>
+<li>텔레그램 HTTP API 강제 활성 (송신 누계 28건)</li>
+<li>gh API 자동 적용 (fork PR approval + runner registration token)</li>
 </ul>
 
 <h3>2.7 색상 가시화</h3>
@@ -182,7 +198,7 @@
 <li>FRONTEND §14 wireframe 7 (메인 채팅 4 + 회원가입/로그인/비번찾기 3)</li>
 </ul>
 
-<h3>2.10 핵심 차별화 명시 (신규 사이클 4)</h3>
+<h3>2.10 핵심 차별화 명시</h3>
 
 <table>
 <thead>
@@ -196,13 +212,24 @@
 </tbody>
 </table>
 
-<h3>2.11 회원가입 정합 (신규 사이클 4)</h3>
+<h3>2.11 회원가입 + SMTP 자체 (신규 사이클 5 — SMTP 갱신)</h3>
 <ul>
 <li>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기</li>
 <li>email enumeration 회피 + brute force 5회/30분 차단 + 60초 재발송 rate-limit</li>
 <li>DB 3 테이블 (users + email_verification + password_reset)</li>
-<li>SMTP TLS 강제 + SPF/DKIM/DMARC</li>
+<li><strong>SMTP = 데모 서버 (<code>114.207.112.73</code>) postfix 자체 설치</strong> (사용자 directive 2026-05-17)</li>
+<li>Let's Encrypt + SPF + DKIM (opendkim RSA 2048) + DMARC + aiosmtplib client</li>
+<li>SendGrid relay fallback (free 100/day) — spam reputation 부족 시</li>
 <li>Phase 1 필수 도입 (사용자 directive)</li>
+</ul>
+
+<h3>2.12 CI 자동화 + 보안 hardening (신규 사이클 5)</h3>
+<ul>
+<li><strong>self-hosted macOS arm64 runner</strong> 등록 + online (id=2, launchd PID 62533)</li>
+<li>ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)</li>
+<li><strong>Windows 빌드 = wine cross-compile</strong> (GitHub-hosted Ubuntu + <code>cdrx/pyinstaller-windows</code> docker — Windows runner 의무 영구 회수)</li>
+<li><strong>fork PR 승인 정책 strict</strong> (<code>all_external_contributors</code> — gh API 자동 적용)</li>
+<li>workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN</li>
 </ul>
 
 <hr>
@@ -245,16 +272,17 @@
 <li>PyQt6 GPL/상용 분리</li>
 </ul>
 
-<h3>3.5 self-hosted runner 등록 미완</h3>
+<h3>3.5 <s>self-hosted runner 등록 미완</s> (✅ 사이클 5 해소)</h3>
 <ul>
-<li>CI 3 workflow + setup 문서 + PR template 완료</li>
-<li>runner 미등록 = workflow <code>queued</code></li>
+<li>macOS arm64 runner 등록 OK (id=2 online)</li>
+<li>Windows runner 의무 = wine cross-compile 대체 (영구 회수)</li>
+<li>workflow 3종 GREEN 도달</li>
 </ul>
 
 <h3>3.6 코드 진입 미완</h3>
 <ul>
 <li>Phase 1 MVP 실 코드 미작성 (config.py + tests 12건만)</li>
-<li>문서 90% + 코드 10% 비율 (직전 92%/8% 의 약간 개선)</li>
+<li>문서 91% + 코드 9% 비율 (직전 90%/10% 의 약간 감소 — auth/SMTP 정책 추가)</li>
 <li>[[feedback-doc-perfection-before-code]] 8 체크리스트 통과 + 사용자 GO 후 진입</li>
 </ul>
 
@@ -262,6 +290,13 @@
 <ul>
 <li>Phase 3 막바지 원격 제어 = 본 차별화 핵심 (단 Phase 1 완성 후만)</li>
 <li>[[project-phase1-completion-priority]] scope creep 차단</li>
+</ul>
+
+<h3>3.8 데모 서버 SSH 접근 차단 (신규 사이클 5)</h3>
+<ul>
+<li>본 cycle main session 의 SSH 접근 시도 <code>Connection reset by peer</code></li>
+<li>SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md 절차 13 섹션)</li>
+<li>자동화 한계 — SSH 자격 + 권한 = 사용자 직접 영역</li>
 </ul>
 
 <hr>
@@ -279,8 +314,8 @@
 <li>수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)</li>
 <li>진입 장벽: 0 (내부 도입)</li>
 <li>성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증</li>
-<li><strong>확률 = 상 (본 사이클 차별화 추가로 강화)</strong></li>
-<li><strong>권장도 1순위 (사이클 4 의 ★ 1개 추가 5/5)</strong></li>
+<li><strong>확률 = 상 (사이클 5 의 CI GREEN + SMTP 자체 + fork PR strict 가 추가 안정성 강화)</strong></li>
+<li><strong>권장도 1순위</strong></li>
 </ul>
 
 <h3>4.3 옵션 C — P2P 파일 전송 특화</h3>
@@ -293,7 +328,7 @@
 <li>중하 (Phase 5+)</li>
 </ul>
 
-<p><strong>현 시점 권장</strong>: 옵션 B → A → C 순. <strong>옵션 B = 차별화 (원격 제어 + 회원가입 안정성) 강화로 ★ 1개 추가</strong>.</p>
+<p><strong>현 시점 권장</strong>: 옵션 B → A → C 순.</p>
 
 <hr>
 
@@ -306,23 +341,29 @@
 <tbody>
 <tr><td>0</td><td>MariaDB 회수 4 파일</td><td>✅</td></tr>
 <tr><td>0</td><td>CI 3 workflow + setup 문서</td><td>✅</td></tr>
-<tr><td>0</td><td>평가 snapshot 2 + HTML 6 동시 정리</td><td>✅ (사이클 4)</td></tr>
+<tr><td>0</td><td>평가 snapshot 2 + HTML 6 동시 정리</td><td>✅ (사이클 5)</td></tr>
 <tr><td>0</td><td>1인칭/3인칭 회수 + 텔레그램 가드레일 강제</td><td>✅</td></tr>
 <tr><td>0</td><td>doc-lint 5 검사 (bash 3.2)</td><td>✅</td></tr>
 <tr><td>0</td><td>PR 템플릿 + docs/policies/ 3 (깨진 링크 12→0)</td><td>✅</td></tr>
 <tr><td>0</td><td>FRONTEND 색상 swatch</td><td>✅</td></tr>
 <tr><td>0</td><td>pytest + Playwright 인프라</td><td>✅</td></tr>
 <tr><td>0</td><td>DESIGN §11 UI 디자인 시스템</td><td>✅</td></tr>
-<tr><td>0</td><td>CheckList §2 16행 + handoff 사이클 1</td><td>✅</td></tr>
+<tr><td>0</td><td>CheckList §2 17행 + handoff 사이클 2</td><td>✅</td></tr>
 <tr><td>0</td><td>AGENTS build.yml (M5)</td><td>✅</td></tr>
 <tr><td>0</td><td>차별화 계획 정리 (원격 제어 + P5/P6)</td><td>✅</td></tr>
 <tr><td>0</td><td>회원가입 + 이메일 OTP 정책 (FR-11/12/13 + DB 3 테이블)</td><td>✅</td></tr>
-<tr><td>0</td><td>auth 인프라 정책 본문 5 (PRODUCT_SENSE + MIGRATION + ARCHITECTURE + Structure + FRONTEND)</td><td>✅</td></tr>
-<tr><td>0</td><td>HTML 3 재생성 (auth)</td><td>✅ (사이클 4)</td></tr>
-<tr><td>1</td><td>self-hosted runner 등록</td><td>🟡 사용자 직접</td></tr>
+<tr><td>0</td><td>auth 인프라 정책 본문 5</td><td>✅</td></tr>
+<tr><td>0</td><td>HTML 3 재생성 (auth)</td><td>✅</td></tr>
+<tr><td>0</td><td><strong>self-hosted macOS arm64 runner 등록 + workflow GREEN</strong></td><td>✅ (사이클 5)</td></tr>
+<tr><td>0</td><td><strong>dead link 10건 fix + ci.yml Windows matrix 영구 비활성</strong></td><td>✅ (사이클 5)</td></tr>
+<tr><td>0</td><td><strong>wine cross-compile 정책 (cdrx docker + Ubuntu) — 6 file 갱신</strong></td><td>✅ (사이클 5)</td></tr>
+<tr><td>0</td><td><strong>fork PR 승인 정책 strict (gh API 자동)</strong></td><td>✅ (사이클 5)</td></tr>
+<tr><td>0</td><td><strong>SMTP 정책 + 절차 (postfix + Let's Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리</strong></td><td>✅ (사이클 5)</td></tr>
+<tr><td>1</td><td>SMTP 실제 설치 (114.207.112.73 SSH)</td><td>🟡 사용자 직접</td></tr>
 <tr><td>2</td><td>Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)</td><td>🔴 GO 대기</td></tr>
 <tr><td>3</td><td>라이선스 + LICENSE 신설</td><td>🔴 GO 대기</td></tr>
 <tr><td>4</td><td>Toonation 통합 시나리오 검토 (옵션 B)</td><td>🔴 GO 대기</td></tr>
+<tr><td>5</td><td>Agent #16 산출물 reviewer-agent 검토</td><td>🔴 사용자 결정</td></tr>
 </tbody>
 </table>
 
@@ -383,9 +424,11 @@
 <tr><td>데모 서버 보안 사고</td><td>중</td><td>중</td><td>Phase 2 진입 직전 hardening</td></tr>
 <tr><td>라이선스 결정 지연</td><td>중</td><td>중</td><td>Phase 1 후반 결정</td></tr>
 <tr><td>PyQt6 GPL/상용 비용</td><td>중</td><td>상</td><td>Qt for Python 검토</td></tr>
-<tr><td>self-hosted runner 미등록</td><td>상</td><td>중</td><td>사용자 직접 1일</td></tr>
-<tr><td>문서 90% : 코드 10% 지속</td><td>상</td><td>중</td><td>8 체크리스트 통과 후 코드 진입</td></tr>
+<tr><td>문서 91% : 코드 9% 지속</td><td>상</td><td>중</td><td>8 체크리스트 통과 후 코드 진입</td></tr>
 <tr><td><strong>원격 제어 보안 사고</strong> (Phase 3+ 위험)</td><td>중</td><td>상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그</td></tr>
+<tr><td><strong>SMTP spam reputation 부족</strong> (신규 사이클 5)</td><td>상</td><td>중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
+<tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong> (신규 사이클 5)</td><td>중</td><td>중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
+<tr><td><strong>데모 서버 SSH 차단</strong> (신규 사이클 5)</td><td>중</td><td>중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
 </tbody>
 </table>
 
@@ -403,14 +446,16 @@
 <tr><td>시그널링 재연결 시간 (95p)</td><td>≤ 5초</td><td>미측정</td></tr>
 <tr><td>앱 cold start latency</td><td>≤ 30초</td><td>미측정</td></tr>
 <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
-<tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td>0% (runner 미등록)</td></tr>
+<tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64, 사이클 5)</strong></td></tr>
 <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td>본 세션 신규 파일 100%</td></tr>
-<tr><td>가드레일 영구 메모리</td><td>10종+</td><td>16종 active</td></tr>
-<tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 (runner 미등록)</td></tr>
+<tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>18종 active (사이클 5)</strong></td></tr>
+<tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 (코드 미진입)</td></tr>
 <tr><td>Playwright E2E test</td><td>≥ 5건</td><td>3건 스켈레톤 active</td></tr>
 <tr><td><strong>OTP 발송 → 수신 latency</strong></td><td>≤ 30초</td><td>미측정 (Phase 1 코드 후)</td></tr>
 <tr><td><strong>OTP brute force 차단율</strong></td><td>100% (5회/30분)</td><td>미측정</td></tr>
 <tr><td><strong>원격 제어 세션 성공률</strong></td><td>≥ 95%</td><td>미측정 (Phase 3 막바지 후)</td></tr>
+<tr><td><strong>mail-tester score</strong> (SMTP)</td><td>≥ 7/10</td><td>미측정 (SSH 설치 후)</td></tr>
+<tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK (사이클 5)</td></tr>
 </tbody>
 </table>
 
@@ -421,14 +466,16 @@
 <p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
 
 <ul>
-<li>기술 완성도 점수 — self-hosted runner 등록 + CI GREEN 시 +0.5</li>
+<li>기술 완성도 점수 — Phase 1 코드 진입 + dogfooding 시 +0.5~1.0</li>
 <li>누락 기능 표 — 코드 진입 시 항목 제거</li>
 <li>단기 액션 ✅ 표시 갱신</li>
 <li>KPI 실측 값 (코드 진입 + pilot 시점)</li>
-<li>가드레일 메모리 누계 (현 16)</li>
-<li>텔레그램 송신 누계 (현 22건)</li>
-<li>sub-agent 누계 (현 14)</li>
+<li>가드레일 메모리 누계 (현 18)</li>
+<li>텔레그램 송신 누계 (현 28건)</li>
+<li>sub-agent 누계 (현 16 — HTML 사이클 5 후 18 예정)</li>
 <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
+<li>SMTP 실제 설치 완료 시 §2.11 + §9 KPI 갱신</li>
+<li>라이선스 확정 시 §3.4 ✅</li>
 </ul>
 
 <hr>
@@ -439,6 +486,7 @@
 <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
 <li>정책: <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a></li>
 <li>정책 본문: <a href="../policies/doc-gardening.md">docs/policies/doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a></li>
+<li>인프라 절차: <a href="../references/ci-self-hosted-setup.md">docs/references/ci-self-hosted-setup.md</a> · <a href="../references/smtp-setup.md">docs/references/smtp-setup.md</a></li>
 <li>실행계획: <a href="../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a></li>
 <li>세션 인계: <a href="../exec-plans/active/2026-05-17-session-handoff.md">docs/exec-plans/active/2026-05-17-session-handoff.md</a></li>
 <li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a></li>

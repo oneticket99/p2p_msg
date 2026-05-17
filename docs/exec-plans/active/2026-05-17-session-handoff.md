@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 14:42 (사이클 2 갱신 — 본 세션 누계 commit 28 반영). 최신 commit `67c898a`.
+> 본 인계 시점: 2026-05-17 17:15 (사이클 3 갱신 — 본 세션 누계 commit 26+ 반영). 최신 commit `57fd732`.
 
 ---
 
@@ -17,7 +17,7 @@ status: active
 - **Watcher 역할** — 보고 Fine-Grained (모든 도구 1:1), 유휴 폴백 `/loop 2m`
 - **서브에이전트 Whitebox** — `run_in_background: true` + 자동 notify
 - **5단계 워크플로우 절대** — 문서 → 검토 → 개발 → QA → 리뷰. ②~⑤ 진입 전 ① 완료 의무
-- **16 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 2 — phase1-priority + remote-control + auth-otp + design-html)
+- **18 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 3 — windows-build-via-wine + smtp-demo-server)
 - **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
 - **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
 - **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
@@ -26,7 +26,11 @@ status: active
 - **Phase 3 막바지 원격 데스크탑 제어 차별화** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어, [[project-phase2-remote-control-differentiator]])
 - **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
 - **HTML 동시 정리 6종** — Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding
-- **평가 snapshot 2종** — productization (3.6/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 4 완료)
+- **평가 snapshot 2종** — productization (3.85/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 5 완료)
+- **CI 8 job GREEN** — self-hosted macOS arm64 runner 등록 + workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN
+- **wine cross-compile** — Windows 빌드 = GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker (Windows self-hosted runner 의무 영구 회수)
+- **fork PR strict** — `all_external_contributors` (gh API 자동 적용)
+- **SMTP 자체 설치** — 데모 서버 (114.207.112.73) postfix + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback ([docs/references/smtp-setup.md](../../references/smtp-setup.md))
 
 ---
 
@@ -34,12 +38,12 @@ status: active
 
 1. **본 문서 전체 정독** — §1~§10
 2. **정본 정독** — [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §1~5 + §A~S
-3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 14 가드레일 전부
+3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 18 가드레일 전부
 4. **CLAUDE.md §10-6/7 정독** — HTML 6종 + 평가 snapshot 2종 동시 갱신 의무
 5. **AGENTS.md 정독** — §1~11
 6. **현 활성 실행계획** — [2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
 7. **누계 git log** — `git -C /Users/oneticket_toonation/Documents/vscode_work/p2p_msg log --oneline`
-8. **CheckList §2 진행률 표 정독** — 16행 진행률 표 (drift 차단)
+8. **CheckList §2 진행률 표 정독** — 18행 진행률 표 (drift 차단)
 9. **TL;DR 사용자 재선언** (Q-2 등가 첫 응답 템플릿)
 10. **텔레그램 세션 재진입 송신** — HTTP API 의 첫 송신 의무
 
@@ -51,7 +55,7 @@ status: active
 [Watcher] 세션 재진입 — TooTalk 가드레일 활성.
 - 본 인계 로드 OK: docs/exec-plans/active/2026-05-17-session-handoff.md §1~10
 - 정본 로드 OK: CLAUDE_HARNESS_IMPORTANT.md §1~5, §A~S
-- 메모리 14 가드레일 로드 OK
+- 메모리 18 가드레일 로드 OK
 - CLAUDE.md §10-6/7 동시 갱신 의무 인지 OK
 - 정책 상태:
   · 보고 세밀도 = Fine-Grained
@@ -70,27 +74,29 @@ status: active
 
 ---
 
-## 4. 영구 가드레일 인덱스 16건 (hard constraint)
+## 4. 영구 가드레일 인덱스 18건 (hard constraint)
 
 본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
 | 파일 (`~/.claude/projects/.../memory/`) | 핵심 규칙 |
 |---|---|
-| `feedback_no_korean_chuck_token.md` | BPE 손상 U+CE21 단독 사용 절대 금지 |
-| `feedback_no_self_other_pronoun.md` | **신규 본 세션**. 1인칭/3인칭 대명사 영구 금지 (3회차 강화) |
+| `feedback_no_korean_chuck_token.md` | BPE 손상 U+CE21 단독 사용 절대 금지 (3회차 강화 영구화) |
+| `feedback_no_self_other_pronoun.md` | 1인칭/3인칭 대명사 영구 금지 (3회차 강화) |
 | `feedback_no_autonomy_dereliction_prevention.md` | 자율성 제한 = 직무유기 방지 본질 의무 |
 | `feedback_workflow_strict_doc_first.md` | 문서 → 검토 → 개발 → QA → 리뷰 절대 워크플로우 |
-| `feedback_doc_perfection_before_code.md` | **신규 본 세션**. 큰 프로젝트 8 체크리스트 + 간단 작업 완화 |
+| `feedback_doc_perfection_before_code.md` | 큰 프로젝트 8 체크리스트 + 간단 작업 완화 |
 | `feedback_per_file_immediate_push.md` | 파일 1건 = 1 commit + 1 push (즉시) |
 | `feedback_repeat_criticism_permanent_record.md` | 동일 비판 2회 이상 = 영구 메모리 강제 저장 메타 규칙 |
 | `feedback_lint_before_push_guardrail.md` | 파일 수정 후 markdown + doc-lint.sh 5 검사 통과 후 push |
-| `feedback_telegram_report_mandatory_m7.md` | **본 세션 강화**. HTTP API 직접 + 매 응답/task 종료 강제 송신 |
+| `feedback_telegram_report_mandatory_m7.md` | HTTP API 직접 + 매 응답/task 종료 강제 송신 |
 | `feedback_m7_caveman_ultra_simplify.md` | 텔레그램 송신 본문 caveman ultra (5줄 이하) |
 | `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 본 인계 문서 작성 트리거 |
-| `feedback_design_interactive_html.md` | **신규 본 세션**. 디자인 directive HTML interactive 권장 |
-| `project_phase1_completion_priority.md` | **신규 본 세션**. Phase 1 기본 8 완성 후 추가 차별화 진입 (scope creep 차단) |
-| `project_phase2_remote_control_differentiator.md` | **신규 본 세션 (사이클 2)**. Phase 3 막바지 친구간 원격 데스크탑 제어 차별화 (P5/P6 OBS 도움) |
-| `project_auth_email_otp_required.md` | **신규 본 세션 (사이클 2)**. Phase 1 회원가입 + 이메일 OTP 필수 (bcrypt 12 + 3분 + DB 3 테이블 + 아이디/비번 찾기) |
+| `feedback_design_interactive_html.md` | 디자인 directive HTML interactive 권장 |
+| `project_phase1_completion_priority.md` | Phase 1 기본 8 완성 후 추가 차별화 진입 (scope creep 차단) |
+| `project_phase2_remote_control_differentiator.md` | Phase 3 막바지 친구간 원격 데스크탑 제어 차별화 (P5/P6 OBS 도움) |
+| `project_auth_email_otp_required.md` | Phase 1 회원가입 + 이메일 OTP 필수 (bcrypt 12 + 3분 + DB 3 테이블 + 아이디/비번 찾기) |
+| `project_windows_build_via_wine.md` | **신규 사이클 3 (2026-05-17)**. Windows 빌드 = wine cross-compile (GitHub-hosted Ubuntu + cdrx docker). Windows runner 의무 영구 회수 |
+| `project_smtp_demo_server.md` | **신규 사이클 3 (2026-05-17)**. SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback |
 | `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
 
 ---
@@ -116,7 +122,8 @@ status: active
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
 | HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
-| 평가 snapshot | 2종 (productization 3.6/5 + vibe-coding 4.85/5, 사이클 4 완료) | 2026-05-17 |
+| 평가 snapshot | 2종 (productization 3.85/5 + vibe-coding 4.85/5, 사이클 5 완료) | 2026-05-17 |
+| fork PR 승인 정책 | `all_external_contributors` (gh API 자동 적용, 사이클 3) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | 라이선스 | 미확정 (Phase 1 후반 확정) | — |
 | **SMTP 서버** | 데모 서버 (`114.207.112.73`) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib client + SendGrid fallback. 절차 = `docs/references/smtp-setup.md`. 실제 설치 = 사용자 직접 SSH | 2026-05-17 |
@@ -152,11 +159,29 @@ status: active
 
 ---
 
-## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 14:42)
+## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
-### 8.1 누계 commit (본 세션 31건, 직전 인계 시점 = `f500104`)
+### 8.1 누계 commit (본 세션 직전 인계 시점 = `f500104`, 본 사이클 3 시점 = `57fd732`)
 
 ```text
+57fd732  docs: 평가 snapshot 사이클 5 (productization 3.85 + vibe-coding 4.85)
+aa56563  docs(smtp): 정책 정합 다중 — adoption + CheckList + handoff
+b7cd936  docs(security): §9-2.3 SMTP 보안 9 row + History MD037 fix
+9109b54  feat(smtp): docs/references/smtp-setup.md 신설 (13 섹션) + 영구 메모리
+97e1a31  fix(docs): README:308 BPE 정정 (가드레일 회수)
+40d1419  feat(security): fork PR 승인 정책 strict (gh API 자동 + all_external_contributors)
+1fd3e2a  fix(ci): Windows matrix 영구 비활성 주석 + AGENTS §1 + handoff §5 + CheckList §2
+7a7875f  docs(checklist): §2 self-hosted runner 1/1 + Windows matrix + wine
+0854f5a  docs(handoff): §5 정책 표 + §9 task #1 갱신 (wine 정합)
+2864efa  docs(agents): §1 빌드 row 갱신 (wine 명시)
+22111f0  fix(docs): History.md 1인칭 대명사 회수 (가드레일 위반)
+78d14c9  docs(ci-setup): wine cross-compile 정책 §11 신설
+da5a92e  fix(ci): venv setup step (PEP 668 externally-managed 회피)
+a85bb75  fix(ci): M2 regex + M3 grep + Python PATH (4 게이트)
+42f649f  fix(docs): History.md MD038 (code span leading space)
+2f20650  fix(ci): dead link 10건 (예정) 마커 + Windows matrix 임시 비활성
+50c5c40  feat(ci): self-hosted macOS arm64 runner 등록 + MD041 fix
+474b31f  docs(handoff): 세션 종료 — 사이클 2.1 minor
 400bd0c  fix(canon): History.md + README.md prepend BPE 잔존 5건 정정 (전수 저장소 0건)
 70aceb5  fix(canon): CLAUDE_HARNESS_IMPORTANT.md 정본 BPE 25건 일괄 정정
 b793318  docs(handoff): 세션 인계 사이클 2 갱신 — 28 commit 반영
@@ -227,10 +252,10 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ### 8.7 가드레일 인프라
 
-- `tools/doc-lint.sh` (5 검사 — BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭, bash 3.2 호환)
+- `tools/doc-lint.sh` (5 검사 — BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭, bash 3.2 호환 + `(예정)` marker skip rule)
 - `tools/claude-telegram.sh` (Telegram CLI wrapper)
 - `.markdownlint.json` (MD013/MD025/MD032/MD060 완화 + MD033 span/div 허용)
-- 영구 메모리 **16종** (신규 본 세션 6 — no-self-other-pronoun + doc-perfection-before-code + design-interactive-html + phase1-completion-priority + **phase2-remote-control-differentiator** + **auth-email-otp-required**)
+- 영구 메모리 **18종** (신규 사이클 3 — **windows-build-via-wine** + **smtp-demo-server**)
 
 ### 8.8 회원가입 + 이메일 OTP 정책 (Phase 1 필수, 사이클 2 신규)
 
@@ -250,16 +275,54 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - 페르소나 P5 (라이브 크리에이터) + P6 (기술 도움 제공자) 신규
 - Toonation 옵션 B (★★★★★ 권장도 1순위) 핵심 차별화
 
-### 8.8 텔레그램 강제 활성
+### 8.10 텔레그램 강제 활성
 
 - HTTP API 직접 (bot `8753967007` + chat `201073550`)
-- 본 세션 송신 누계 14건 (msg 1052 ~ 1066)
-- `.env.local` 의 자격 격리 (`.gitignore` `.env.*`)
+- 본 세션 송신 누계 28건
+- `.env.telegram` 의 자격 격리 (`.gitignore` `.env.*`)
 
-### 8.9 Agent #16 산출물 untracked 보존
+### 8.11 Agent #16 산출물 untracked 보존
 
 - `app/rtc/` (file_sender + file_receiver + image_processor + peer + protocol + README) ❌ untracked
 - `app/ui/file_progress_widget.py` ❌ untracked
+
+### 8.12 self-hosted runner + CI 8 job GREEN (사이클 3 신규)
+
+- macOS arm64 runner 등록 OK (id=2 online, launchd PID 62533, `~/actions-runner-tootalk/`)
+- ci.yml 8 job 모두 GREEN (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest macOS + m1/m4 skipped)
+- workflow 3종 GREEN (ci + docs-lint + doc-gardener)
+- Windows matrix entry 영구 비활성 → wine cross-compile 대체
+
+### 8.13 wine cross-compile 정책 (사이클 3 신규)
+
+- host = GitHub-hosted Ubuntu (`ubuntu-latest`, 무료 + ephemeral 격리)
+- docker = `cdrx/pyinstaller-windows:python3` (사전 빌드 + wine + Python + Qt6)
+- Windows self-hosted runner 의무 = **영구 회수**
+- 정합: AGENTS §1 + handoff §5 + CheckList §2 + ci.yml + ci-self-hosted-setup.md §11 + 영구 메모리
+
+### 8.14 fork PR 승인 정책 strict (사이클 3 신규)
+
+- `approval_policy=all_external_contributors` (gh API `PUT /actions/permissions/fork-pr-contributor-approval`)
+- 모든 outside collaborator 의 maintainer approval 의무
+- public repo + self-hosted runner + wine 의 보안 hardening
+
+### 8.15 SMTP 서버 정책 + 절차 (사이클 3 신규)
+
+- host = 데모 서버 (`114.207.112.73`) postfix 자체 설치
+- TLS = Let's Encrypt (certbot)
+- 인증 = SPF + DKIM (opendkim RSA 2048) + DMARC
+- port = 587 STARTTLS (inbound 25 block)
+- client = aiosmtplib (Python async)
+- fallback = SendGrid relay (free 100/day)
+- 절차 = `docs/references/smtp-setup.md` (13 섹션)
+- 영구 메모리 = `project_smtp_demo_server.md`
+- 실제 SSH 설치 = 사용자 직접 의무 (main session SSH `Connection reset by peer`)
+
+### 8.16 평가 snapshot 사이클 5 (사이클 3 신규)
+
+- productization 3.6 → 3.85 ▲ (기술 완성도 + 운영 비용 상승)
+- vibe-coding 4.85 (변동 없음 — 비판 ▼ + 사이클 효율 ▲ + 자율 reasonable call ▲ 상쇄)
+- HTML 2종 sub-agent 병렬 재생성 (productization.html 498 lines + vibe-coding.html 신규)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -311,4 +374,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 14:48 — 사이클 2.1 minor (본 세션 누계 commit 31 + BPE 전수 0건 도달 반영, 가드레일 16, 텔레그램 송신 25건, HTML 6, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, snapshot 사이클 4 — productization 3.6 + vibe-coding 4.85, sub-agent 누계 16 spawn, 세션 종료 직전)
+마지막 갱신: 2026-05-17 17:15 — 사이클 3 (본 세션 누계 commit 51+ + 사이클 3 의 17 신규 commit 50c5c40 → 57fd732 반영, 가드레일 18, 텔레그램 송신 28건, HTML 6 + sub-agent 18 spawn, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, **CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책** 신규, snapshot 사이클 5 — productization 3.85 + vibe-coding 4.85)
