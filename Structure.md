@@ -99,9 +99,17 @@ p2p_msg/
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── app_state.py
-│   │   └── config.py
+│   │   ├── config.py
+│   │   └── security.py            # 사이클 18 — PBKDF2-SHA256 + OTP + session token
+│   ├── crypto/                    # 사이클 27~35 — Phase 2 E2EE Signal Protocol
+│   │   ├── __init__.py
+│   │   ├── double_ratchet.py      # KDF chain (0x01 message + 0x02 chain)
+│   │   ├── e2ee.py                # AES-256-GCM + X25519 + HKDF
+│   │   ├── session.py             # SessionState + DH ratchet + skip helper
+│   │   └── skipped_keys.py        # LRU+TTL out-of-order delivery
 │   ├── net/
 │   │   ├── __init__.py
+│   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
 │   │   └── signaling_client.py
 │   ├── rtc/
 │   │   ├── __init__.py
@@ -125,11 +133,40 @@ p2p_msg/
 ├── server/
 │   ├── __init__.py
 │   ├── README.md
-│   ├── main.py
+│   ├── main.py                    # 사이클 22 — DB pool + auth middleware + session_store
 │   ├── protocol.py
 │   ├── requirements.txt
-│   ├── room.py
-│   └── signaling.py
+│   ├── room.py                    # 사이클 25 — Peer.user_id + db_room_id field 추가
+│   ├── signaling.py               # 사이클 26 — DB 영속화 dependency injection
+│   ├── signaling_persistence.py   # 사이클 24 — DB 영속화 helper (rooms/peers/messages)
+│   ├── api/                       # 사이클 21 — REST endpoint
+│   │   ├── __init__.py
+│   │   └── auth_handlers.py       # /api/auth/{register,verify,login,reset/*}
+│   ├── auth/                      # 사이클 20 — 5 use case + middleware
+│   │   ├── __init__.py
+│   │   ├── exceptions.py          # 7 도메인 예외 + HTTP status 매핑
+│   │   ├── login.py               # 비번 검증 + 세션 토큰
+│   │   ├── middleware.py          # aiohttp Bearer + public path skip
+│   │   ├── register.py            # email/username/password 검증 + OTP 발급
+│   │   ├── reset_password.py      # 비번 재설정 silent success
+│   │   └── verify.py              # signup OTP 검증
+│   ├── db/                        # 사이클 18~19 — MariaDB asyncmy pool + 7 repository
+│   │   ├── __init__.py
+│   │   ├── connection.py          # asyncmy create_pool + 환경변수 8
+│   │   ├── migrations/
+│   │   │   └── 0001_init.sql      # 7 table 52 필드 COMMENT 5요소 의무
+│   │   └── repositories/
+│   │       ├── __init__.py
+│   │       ├── email_verification.py
+│   │       ├── file_meta.py
+│   │       ├── messages.py
+│   │       ├── password_reset.py
+│   │       ├── peers.py
+│   │       ├── rooms.py
+│   │       └── users.py
+│   └── mail/                      # 사이클 19 — aiosmtplib client
+│       ├── __init__.py
+│       └── smtp_client.py
 └── tools/
     ├── claude-telegram.sh
     └── doc-lint.sh
