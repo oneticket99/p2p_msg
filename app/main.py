@@ -1,0 +1,90 @@
+"""TooTalk PyQt6 클라이언트 진입점 — qasync 통합 이벤트 루프 부트스트랩.
+
+본 모듈은 다음 순서로 애플리케이션을 기동한다.
+
+1. ``app.core.config`` 가 ``.env`` 로딩 후 ``Config`` 인스턴스 반환
+2. ``logging`` 포맷터를 ``[YYYY-mm-dd H:i:s]`` 형식으로 설정 (정본 §E)
+3. ``QApplication`` 생성 후 ``qasync.QEventLoop`` 을 단일 asyncio 이벤트
+   루프로 채택하여 Qt 시그널과 비동기 코루틴을 동일 스레드에서 운용
+4. ``MainWindow`` 표시 후 ``loop.run_forever()`` 로 진입
+
+비동기 전용 규약(정본 §E): Qt slot 내부 동기 코드는 허용되나 IO 가 필요한
+경우 반드시 ``asyncio.create_task`` 또는 ``asyncio.ensure_future`` 로
+코루틴을 예약해야 한다. ``time.sleep`` 등 블로킹 IO 금지.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import sys
+
+import qasync
+from PyQt6.QtWidgets import QApplication
+
+from app.core.config import Config, load_config
+from app.ui.main_window import MainWindow
+
+
+def _configure_logging(level: str) -> None:
+    """루트 로거 포맷 통일.
+
+    정본 §E 규약: 로그 형식 ``[YYYY-mm-dd H:i:s]``. ``datefmt`` 에 24시간
+    표기 사용. 이미 핸들러가 붙어 있으면 중복 추가하지 않는다.
+    """
+
+    # 동일 프로세스 안에서 main() 이 두 번 호출돼도 핸들러가 누적되지
+    # 않도록 기존 핸들러를 제거한 뒤 재설정한다.
+    root = logging.getLogger()
+    for handler in list(root.handlers):
+        root.removeHandler(handler)
+
+    handler = logging.StreamHandler(stream=sys.stderr)
+    handler.setFormatter(
+        logging.Formatter(
+            fmt="[%(asctime)s] %(levelname)s %(name)s — %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+    root.addHandler(handler)
+    root.setLevel(getattr(logging, level.upper(), logging.INFO))
+
+
+def main() -> int:
+    """애플리케이션 메인 — QApplication + qasync.QEventLoop 진입.
+
+    Returns
+    -------
+    int
+        프로세스 종료 코드. ``loop.run_forever()`` 는 일반적으로 None 을
+        반환하므로 호출 지점에서 ``or 0`` 으로 보정한다.
+    """
+
+    # 1) 환경변수 로딩 (.env → Config dataclass)
+    config: Config = load_config()
+
+    # 2) 로깅 포맷 통일
+    _configure_logging(config.log_level)
+    log = logging.getLogger(__name__)
+    log.info("TooTalk 클라이언트 기동 — signaling=%s", config.signaling_url)
+
+    # 3) QApplication + qasync 이벤트 루프 결합
+    qt_app = QApplication(sys.argv)
+    qt_app.setApplicationName("TooTalk")
+    qt_app.setOrganizationName("TooTalk")
+
+    loop = qasync.QEventLoop(qt_app)
+    asyncio.set_event_loop(loop)
+
+    # 4) 메인 윈도우 표시
+    window = MainWindow(config=config)
+    window.show()
+
+    # 5) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리
+    with loop:
+        loop.run_forever()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)
