@@ -162,7 +162,7 @@ flowchart LR
 
 ---
 
-## 7. 영구 가드레일 인덱스 (9건)
+## 7. 영구 가드레일 인덱스 (22건)
 
 - 위치: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/`
 - 인덱스 파일: `MEMORY.md`
@@ -171,13 +171,26 @@ flowchart LR
 | --- | --- | --- |
 | 1 | `feedback_no_autonomy_dereliction_prevention.md` | 자율 의지 보류 = 직무유기 방지 본질 (정본 §S-5) |
 | 2 | `feedback_workflow_strict_doc_first.md` | 문서 → 검토 → 개발 → QA → 코드리뷰 절대 워크플로우 |
-| 3 | `feedback_per_file_immediate_push.md` | 파일 1건 작업 직후 즉시 commit + push (M5 강화) |
-| 4 | `feedback_repeat_criticism_permanent_record.md` | 동일 비판 2회 이상 시 영구 메모리 강제 저장 |
-| 5 | `feedback_lint_before_push_guardrail.md` | 파일 수정 → markdown lint + doc lint PASS → push |
-| 6 | `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 다음 세션 인계 문서 작성 (정본 §Q) |
-| 7 | `feedback_no_korean_chuck_token.md` | U+CE21 단독 사용 절대 금지 (본 문서 §5-1) |
-| 8 | `feedback_telegram_report_mandatory_m7.md` | 모든 작업 보고 텔레그램 동시 송신 필수 (M7) |
-| 9 | `feedback_m7_caveman_ultra_simplify.md` | 텔레그램 송신 본문 5줄 이하 단순화 |
+| 3 | `feedback_doc_perfection_before_code.md` | 큰 프로젝트 8 체크리스트 + 간단 작업 완화 |
+| 4 | `feedback_per_file_immediate_push.md` | 파일 1건 작업 직후 즉시 commit + push (M5 강화) |
+| 5 | `feedback_repeat_criticism_permanent_record.md` | 동일 비판 2회 이상 시 영구 메모리 강제 저장 |
+| 6 | `feedback_lint_before_push_guardrail.md` | 파일 수정 → markdown lint + doc lint PASS → push |
+| 7 | `feedback_session_handoff_on_doc_complete.md` | 문서 작업 완료 시 다음 세션 인계 문서 작성 (정본 §Q) |
+| 8 | `feedback_no_korean_chuck_token.md` | U+CE21 단독 사용 절대 금지 (4회차 강화) |
+| 9 | `feedback_no_self_other_pronoun.md` | 1인칭/3인칭 대명사 절대 금지 (3회차 강화) |
+| 10 | `feedback_bpe_script_trigger_warning.md` | 다음 BPE 위반 시 PreToolUse hook 강제 활성 (4회차 사전 경고) |
+| 11 | `feedback_telegram_report_mandatory_m7.md` | 모든 작업 보고 텔레그램 동시 송신 필수 (M7) |
+| 12 | `feedback_telegram_report_script_trigger_warning.md` | 다음 송신 누락 시 Stop hook 강제 활성 (5회차 사전 경고) |
+| 13 | `feedback_m7_caveman_ultra_simplify.md` | 텔레그램 송신 본문 5줄 이하 단순화 |
+| 14 | `feedback_design_interactive_html.md` | 디자인 directive HTML interactive 권장 |
+| 15 | `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
+| 16 | `project_phase1_completion_priority.md` | Phase 1 기본 8 완성 후 추가 차별화 진입 (scope creep 차단) |
+| 17 | `project_phase2_remote_control_differentiator.md` | Phase 3 막바지 친구간 원격 데스크탑 제어 차별화 |
+| 18 | `project_auth_email_otp_required.md` | Phase 1 회원가입 + 이메일 OTP 필수 |
+| 19 | `project_windows_build_via_wine.md` | Windows 빌드 = wine cross-compile (GitHub-hosted Ubuntu) |
+| 20 | `project_smtp_demo_server.md` | SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 |
+| 21 | `project_license_gpl.md` | TooTalk 라이선스 = GPLv3 + LICENSE 저장소 루트 + SPDX header |
+| 22 | `project_visibility_transition.md` | GitHub visibility = public (현재) → private 전환 가능성 |
 
 > 가드레일은 세션 시작 시 `MEMORY.md` 인덱스 정독 의무. 우선순위 1번 (도구 사용 우선순위 §6).
 
