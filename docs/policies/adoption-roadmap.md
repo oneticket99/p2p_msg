@@ -40,17 +40,24 @@ status: active
 ### 3.1 Phase 1 — 단일 사용자 dogfooding (2026-06-30 목표)
 
 - **타겟**: P4 (저장소 owner)
-- **범위**: 1:1 채팅 · 이미지/파일 전송 · MariaDB 영속화 · macOS+Windows 빌드
+- **범위**: 1:1 채팅 · 이미지/파일 전송 · MariaDB 영속화 · macOS+Windows 빌드 · **회원가입 + 이메일 OTP 인증** (사용자 directive 2026-05-17 — TooTalk 이용 시 필수 조건, [[project-auth-email-otp-required]])
 - **배포**: GitHub Release zip + 사용자 직접 다운로드
 - **DoD**:
   - macOS ↔ Windows 의 양방향 텍스트 + 이미지 + 파일 송수신 회귀 PASS
   - PyInstaller zip 의 첫 실행 가능
   - CI 3 workflow GREEN
   - 9 정책 + 8 운영 문서 frontmatter `status: active`
+  - **회원가입 흐름 PASS** (email + username + password + OTP 3분 + verified=true)
+  - **로그인 흐름 PASS** (email + password + 세션 토큰)
+  - **아이디·비밀번호 찾기 흐름 PASS** (username + email → 비밀번호 재설정 메일 30분 유효)
+  - **DB 스키마 3 테이블 active** (users + email_verification + password_reset)
+  - **SMTP 발송 PASS** (Gmail/SendGrid/Mailgun 중 1종)
 - **KPI**:
   - dogfooding 의 1주 누계 메시지 100건 + 파일 10건
   - 크래시 0건
   - 시그널링 재연결 (95p) ≤ 5초
+  - **OTP 발송 → 수신 latency ≤ 30초**
+  - **OTP brute force 차단율 100% (5회 후 30분)**
 
 ### 3.2 Phase 2 — 소규모 closed beta (2026-09-30 목표)
 

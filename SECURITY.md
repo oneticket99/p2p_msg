@@ -241,6 +241,61 @@ Phase 2 진입과 동시에 §4 의 "악성 시그널링 서버 MitM = 미보장
 
 ---
 
+## 9-2. 회원가입 + 이메일 OTP 인증 보안 (Phase 1 의무 — 사용자 directive 2026-05-17)
+
+본 절은 회원가입 + 이메일 OTP 인증 관련 보안 정책. 정합 = [[project-auth-email-otp-required]] 메모리 본문.
+
+### 9-2.1 비밀번호 저장
+
+| 항목 | 정책 |
+|---|---|
+| 해시 알고리즘 | bcrypt 12 rounds 최소 (passlib) 또는 argon2id (argon2-cffi) |
+| 평문 저장 | **절대 금지** — DB / 로그 / 디버그 출력 모두 |
+| 송수신 | HTTPS / TLS 강제 (Phase 2 시그널링 서버 TLS 진입 후) — Phase 1 데모 단계 의 자체 책임 |
+| 비밀번호 정책 | 최소 8자 + 알파벳 + 숫자 권장 (강제 X — UX 마찰) |
+
+### 9-2.2 OTP 보안
+
+| 항목 | 정책 |
+|---|---|
+| 생성 | `secrets.choice` (CSPRNG) — 6자리 숫자 |
+| 만료 | **3분** (180초 — 사용자 directive 명시) |
+| 저장 | 평문 OK (짧은 윈도우 + DB 격리) — 만료 후 삭제 (consumed_at + cron) |
+| 입력 시도 제한 | 5회 후 30분 차단 (brute force 방어) |
+| 재발송 rate-limit | 60초 1회 (DoS 방어) |
+| 이메일 본문 | 코드 + 만료 시간 + 사용자 IP 마지막 octet (피싱 회피) |
+
+### 9-2.3 SMTP 보안
+
+| 항목 | 정책 |
+|---|---|
+| TLS | 강제 (port 587 STARTTLS 또는 465 TLS) — 평문 25 절대 금지 |
+| 자격증명 | `.env.local` 격리 (`SMTP_USER` / `SMTP_PASS`) — commit 절대 금지 |
+| 발신 도메인 | SPF + DKIM + DMARC 설정 (운영 단계) |
+| Reply-To | `no-reply@tootalk.example` (운영 도메인 결정 후) |
+
+### 9-2.4 아이디·비밀번호 찾기 보안
+
+| 항목 | 정책 |
+|---|---|
+| email enumeration | 회피 권장 — 가입 여부 정보 누출 차단 (단 사용자 directive 의 "가입된 내역이 없습니다" 메시지 명시 = trade-off 인지) |
+| reset_token | UUID4 (`secrets.token_urlsafe(32)`) — 30분 유효 + 1회 사용 (consumed_at) |
+| 링크 형식 | `https://tootalk.example/reset?token=<UUID>` — query string token (URL 의 노출 위험 인지) |
+| 토큰 송신 | SMTP TLS 강제 |
+
+### 9-2.5 회원가입 의 STRIDE 위협 모델 추가
+
+| 위협 | 영역 | 대응 |
+|---|---|---|
+| Spoofing | OTP 도청 → 가입 도용 | SMTP TLS + 3분 만료 |
+| Tampering | OTP 변조 | DB 의 직접 비교 (단방향 검증) |
+| Repudiation | 가입 부인 | created_at + verified flag + IP 로그 |
+| Information disclosure | email 가입 여부 누출 | enumeration 회피 메시지 |
+| DoS | OTP brute force / 재발송 폭주 | 5회 차단 + 60초 rate-limit |
+| Elevation of Privilege | 미인증 사용자 권한 획득 | verified=false 의 모든 기능 차단 |
+
+---
+
 ## 10. 위협 모델 — STRIDE
 
 본 절은 Phase 1 데모 단계에 한정된 STRIDE 위협 모델이다. Phase 2 hardening 후에는 본 표가 통째로 재작성된다.
