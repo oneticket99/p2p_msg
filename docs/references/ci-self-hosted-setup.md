@@ -143,13 +143,34 @@ hardening](https://docs.github.com/en/actions/security-guides/security-hardening
 정합. public repo 에서 self-hosted runner 사용 시 외부 contributor fork PR 의 악성 코드
 실행 위험 존재.
 
-### 5.1 fork PR workflow 승인 설정 (필수)
+### 5.1 fork PR workflow 승인 설정 (✅ 2026-05-17 적용 완료)
 
-1. <https://github.com/oneticket99/p2p_msg/settings/actions> 로 이동
-2. **Fork pull request workflows from outside collaborators** 섹션에서 다음 선택:
-   - `Require approval for all outside collaborators` (Phase 1 권장)
-   - 또는 `Require approval for first-time contributors who are new to GitHub` (Phase 2)
-3. **Save** 적용
+#### 5.1.1 자동 적용 (gh API)
+
+```bash
+# 현재 정책 조회
+gh api repos/oneticket99/p2p_msg/actions/permissions/fork-pr-contributor-approval
+
+# Phase 1 strict 적용 (모든 외부 contributor 의 approval 의무)
+gh api -X PUT repos/oneticket99/p2p_msg/actions/permissions/fork-pr-contributor-approval \
+  -f approval_policy=all_external_contributors
+```
+
+본 패턴 = 2026-05-17 cycle 적용 완료. 현재 정책 = `all_external_contributors`.
+
+#### 5.1.2 정책 옵션
+
+| `approval_policy` 값 | 의미 | Phase 정합 |
+|---|---|---|
+| `first_time_contributors_new_to_github` | GitHub 신규 + 첫 contribution 만 | Phase 3+ |
+| `first_time_contributors` | 본 repo 첫 contribution 만 (GitHub default) | Phase 2 |
+| `all_external_contributors` | 모든 outside collaborator (maintainer 외) | **Phase 1 권장 (적용 완료)** |
+
+#### 5.1.3 manual UI 설정 (대안)
+
+1. <https://github.com/oneticket99/p2p_msg/settings/actions> 이동
+2. **Fork pull request workflows from outside collaborators** 섹션
+3. `Require approval for all outside collaborators` 선택 + **Save**
 
 ### 5.2 secrets 노출 차단
 
