@@ -40,7 +40,8 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
-[2026-05-17 12:00:02] .github/workflows/doc-gardener.yml 신설 — 주 1회 drift 감지 워크플로우 (cron Monday 00:00 UTC + workflow_dispatch), 90일 스테일 + doc-lint + 루트 18 동결 검증, Phase 2 측 자동 PR 생성 위임 (커밋 대기)
+[2026-05-17 12:05:41] docs/references/ci-self-hosted-setup.md 신설 — self-hosted runner 등록 절차 (macOS arm64 + Windows x64), 라벨 명세 + 사전 의존성 + 보안 hardening + 트러블슈팅 + 운영 체크리스트 (커밋 대기)
+[2026-05-17 12:00:02] .github/workflows/doc-gardener.yml 신설 — 주 1회 drift 감지 워크플로우 (cron Monday 00:00 UTC + workflow_dispatch), 90일 스테일 + doc-lint + 루트 18 동결 검증, Phase 2 자동 PR 생성 위임 (6f39d32)
 [2026-05-17 11:57:51] .github/workflows/docs-lint.yml 신설 — 문서 lint 전용 워크플로우 (markdownlint + doc-lint.sh), 트리거 4종 (cron daily 00:00 UTC + workflow_dispatch + push + PR path-filter) (76313fe)
 [2026-05-17 11:54:45] .github/workflows/ci.yml 신설 — CI 게이트 7종 (docs-lint·root-18·M1·M2·M3·M4·import-smoke), self-hosted [macOS, arm64] + [Windows, x64] 매트릭스 (df7f581)
 [2026-05-17 11:23:50] Structure.md 신설 — 운영 3/8, 527행 mermaid 6 ERD + MariaDB 4 테이블 (39bd0a9)
