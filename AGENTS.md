@@ -62,6 +62,10 @@
 | 확장 가이드 (신규 에이전트·문서·모델) | [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) | 시스템 확장 전 |
 | 에이전트 개별 사양 | [.claude/agents/](.claude/agents/) `<name>.md` | 해당 에이전트 호출 직전 |
 | 정책 (doc-gardening · adoption · harness) | `docs/policies/` (3 문서 active) | 운영 정책 변경 시 |
+| 라이선스 본문 | [LICENSE](LICENSE) (GPLv3 GNU 표준 674 lines, 사용자 directive 2026-05-17) | 외부 distribution + SPDX header 적용 직전 |
+| 인프라 절차 | [docs/references/ci-self-hosted-setup.md](docs/references/ci-self-hosted-setup.md) · [docs/references/smtp-setup.md](docs/references/smtp-setup.md) | runner 등록 + SMTP 설치 시점 |
+| 평가 snapshot | [docs/assessments/productization.md](docs/assessments/productization.md) · [vibe-coding.md](docs/assessments/vibe-coding.md) | 매 task 종료 시 전체 rewrite (사이클 8) |
+| enforcement layer sketch | [.claude/settings.json.disabled](.claude/settings.json.disabled) · [tools/hook_check_bpe_token_input.sh](tools/hook_check_bpe_token_input.sh) · [tools/hook_telegram_report_stop.sh](tools/hook_telegram_report_stop.sh) | 다음 BPE 위반/텔레그램 누락 발견 시 활성 |
 
 > **루트 마크다운은 18개로 동결** ([정본 §K](CLAUDE_HARNESS_IMPORTANT.md)). 신규 문서는 반드시 `docs/` 하위에 생성.
 
@@ -200,6 +204,11 @@ PR 생성 전 다음 항목을 모두 체크한다. 미통과 항목 1개라도 
 11. **`Monitor`·`TaskOutput`·`TaskStop` 을 `ToolSearch` 없이 직접 호출 금지** — deferred tool 스키마 미로드 에러.
 12. **로그/증거 파일 삭제·수정 금지** — 감시자 역할 ([정본 §4](CLAUDE_HARNESS_IMPORTANT.md)).
 13. **사용자 승인 대기 중 침묵 금지** — `/loop 2m` 폴백 즉시 기동 ([정본 §3](CLAUDE_HARNESS_IMPORTANT.md)).
+14. **BPE U+CE21 단독 의존명사 사용 절대 금지** ([[feedback-no-korean-chuck-token]] 4회차 강화 영구화) — 합성어 측면/측정/관측 제외. doc-lint.sh 자동 grep + 다음 위반 발견 시 `.claude/settings.json.disabled` 의 PreToolUse hook 강제 활성 의무 ([[feedback-bpe-script-trigger-warning]]).
+15. **1인칭/3인칭 대명사 사용 절대 금지** ([[feedback-no-self-other-pronoun]] 3회차 강화) — 주어 생략 + 명사 직접 + 자체/사용자/요청자 대체.
+16. **텔레그램 송신 누락 금지** ([[feedback-telegram-report-mandatory-m7]] 강제 활성) — 매 응답 종료 + task 완료 시 의무. 다음 누락 발견 시 Stop hook 강제 활성 ([[feedback-telegram-report-script-trigger-warning]]).
+17. **LICENSE GPLv3 의무 위반 금지** — 모든 source file 의 SPDX header (`# SPDX-License-Identifier: GPL-3.0-or-later`) 의무 (Phase 1 코드 진입 시). 외부 distribution 시 GPL 의무 발동 ([[project-license-gpl]]).
+18. **`.claude/settings.json.disabled` 의 임의 활성 금지** — 사용자 directive 정합 의 의무 발동 시점 만 `mv` 의 활성 ([[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]]).
 
 ---
 
