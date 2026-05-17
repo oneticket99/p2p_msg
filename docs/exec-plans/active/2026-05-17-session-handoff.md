@@ -8,7 +8,7 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-17 17:15 (사이클 3 갱신 — 본 세션 누계 commit 26+ 반영). 최신 commit `57fd732`.
+> 본 인계 시점: 2026-05-17 17:45 (사이클 4 갱신 — 본 세션 누계 commit 28+ 반영, GPLv3 + visibility 정책 추가). 최신 commit `f160ba0`.
 
 ---
 
@@ -17,7 +17,7 @@ status: active
 - **Watcher 역할** — 보고 Fine-Grained (모든 도구 1:1), 유휴 폴백 `/loop 2m`
 - **서브에이전트 Whitebox** — `run_in_background: true` + 자동 notify
 - **5단계 워크플로우 절대** — 문서 → 검토 → 개발 → QA → 리뷰. ②~⑤ 진입 전 ① 완료 의무
-- **18 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 3 — windows-build-via-wine + smtp-demo-server)
+- **20 영구 가드레일** 모두 hard constraint. 자율 판단 위 우선 (신규 사이클 4 — license-gpl + visibility-transition)
 - **8 체크리스트** ([[feedback-doc-perfection-before-code]]) 충족 후 코드 진입
 - **파일 1건 작성/수정/삭제 시 즉시 commit + push** + lint 5 검사 통과 의무
 - **BPE U+CE21 단독 + 1인칭/3인칭 대명사 영구 금지** — doc-lint.sh 자동 grep
@@ -26,11 +26,13 @@ status: active
 - **Phase 3 막바지 원격 데스크탑 제어 차별화** (친구간 1:1, 패턴 A 도움 + 패턴 B 제어, [[project-phase2-remote-control-differentiator]])
 - **M7 텔레그램 송신 강제** — HTTP API 직접 (bot `8753967007` + chat `201073550`). 매 응답 종료 직전 + task 완료 시
 - **HTML 동시 정리 6종** — Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding
-- **평가 snapshot 2종** — productization (3.85/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 5 완료)
+- **평가 snapshot 2종** — productization (3.95/5) + vibe-coding (4.85/5) 매 task 종료 시 전체 rewrite (사이클 6 완료)
 - **CI 8 job GREEN** — self-hosted macOS arm64 runner 등록 + workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN
 - **wine cross-compile** — Windows 빌드 = GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker (Windows self-hosted runner 의무 영구 회수)
 - **fork PR strict** — `all_external_contributors` (gh API 자동 적용)
 - **SMTP 자체 설치** — 데모 서버 (114.207.112.73) postfix + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback ([docs/references/smtp-setup.md](../../references/smtp-setup.md))
+- **라이선스 = GPLv3** — LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환 + SPDX header convention ([[project-license-gpl]])
+- **visibility = public → private 전환 가능성** — Phase 완료 시점 사용자 명시 의무. self-hosted runner 의 quota 회피 정합 ([[project-visibility-transition]])
 
 ---
 
@@ -38,12 +40,12 @@ status: active
 
 1. **본 문서 전체 정독** — §1~§10
 2. **정본 정독** — [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §1~5 + §A~S
-3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 18 가드레일 전부
+3. **메모리 인덱스 로드** — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md` + 20 가드레일 전부
 4. **CLAUDE.md §10-6/7 정독** — HTML 6종 + 평가 snapshot 2종 동시 갱신 의무
 5. **AGENTS.md 정독** — §1~11
 6. **현 활성 실행계획** — [2026-05-17-tootalk-phase1-mvp.md](2026-05-17-tootalk-phase1-mvp.md)
 7. **누계 git log** — `git -C /Users/oneticket_toonation/Documents/vscode_work/p2p_msg log --oneline`
-8. **CheckList §2 진행률 표 정독** — 18행 진행률 표 (drift 차단)
+8. **CheckList §2 진행률 표 정독** — 20행 진행률 표 (drift 차단)
 9. **TL;DR 사용자 재선언** (Q-2 등가 첫 응답 템플릿)
 10. **텔레그램 세션 재진입 송신** — HTTP API 의 첫 송신 의무
 
@@ -55,7 +57,7 @@ status: active
 [Watcher] 세션 재진입 — TooTalk 가드레일 활성.
 - 본 인계 로드 OK: docs/exec-plans/active/2026-05-17-session-handoff.md §1~10
 - 정본 로드 OK: CLAUDE_HARNESS_IMPORTANT.md §1~5, §A~S
-- 메모리 18 가드레일 로드 OK
+- 메모리 20 가드레일 로드 OK
 - CLAUDE.md §10-6/7 동시 갱신 의무 인지 OK
 - 정책 상태:
   · 보고 세밀도 = Fine-Grained
@@ -74,7 +76,7 @@ status: active
 
 ---
 
-## 4. 영구 가드레일 인덱스 18건 (hard constraint)
+## 4. 영구 가드레일 인덱스 20건 (hard constraint)
 
 본 가드레일은 **자율 판단 위 우선**. 위반 = 직무유기 cycle 차감 + 추가 자율성 제한.
 
@@ -97,6 +99,8 @@ status: active
 | `project_auth_email_otp_required.md` | Phase 1 회원가입 + 이메일 OTP 필수 (bcrypt 12 + 3분 + DB 3 테이블 + 아이디/비번 찾기) |
 | `project_windows_build_via_wine.md` | **신규 사이클 3 (2026-05-17)**. Windows 빌드 = wine cross-compile (GitHub-hosted Ubuntu + cdrx docker). Windows runner 의무 영구 회수 |
 | `project_smtp_demo_server.md` | **신규 사이클 3 (2026-05-17)**. SMTP = 데모 서버 (114.207.112.73) postfix 자체 설치 + Let's Encrypt + SPF/DKIM/DMARC + aiosmtplib + SendGrid fallback |
+| `project_license_gpl.md` | **신규 사이클 4 (2026-05-17)**. TooTalk 라이선스 = GPLv3 (LICENSE 저장소 루트 + PyQt6 GPLv3 정합 + SPDX header) |
+| `project_visibility_transition.md` | **신규 사이클 4 (2026-05-17)**. GitHub visibility = public (현재) → private 전환 가능성 (Phase 완료 시점). self-hosted runner 의 의무 quota 회피 정합 |
 | `feedback_workflow_preferences.md` | 서브에이전트 적극 활용 + mermaid + 즉시 push |
 
 ---
@@ -122,7 +126,7 @@ status: active
 | branch | feature + PR (main 직접 push 금지 — 단 본 사이클 직접 허용) | 2026-05-17 |
 | **테스트** | **pytest + Playwright E2E** (DESIGN.md §10 정합, 본 세션 인프라 신설) | 2026-05-17 |
 | HTML 동시 정리 | 6종 (Structure/ARCHITECTURE/FRONTEND/DESIGN/productization/vibe-coding) | 2026-05-17 |
-| 평가 snapshot | 2종 (productization 3.85/5 + vibe-coding 4.85/5, 사이클 5 완료) | 2026-05-17 |
+| 평가 snapshot | 2종 (productization 3.95/5 + vibe-coding 4.85/5, 사이클 6 완료) | 2026-05-17 |
 | fork PR 승인 정책 | `all_external_contributors` (gh API 자동 적용, 사이클 3) | 2026-05-17 |
 | M7 텔레그램 bot | `8753967007` (chat `201073550`) — HTTP API 강제 활성 | 2026-05-17 |
 | **라이선스** | **GPLv3** (LICENSE 저장소 루트 — PyQt6 GPLv3 정합 + SPDX header 의무, [[project-license-gpl]]) | 2026-05-17 |
@@ -322,7 +326,23 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 - productization 3.6 → 3.85 ▲ (기술 완성도 + 운영 비용 상승)
 - vibe-coding 4.85 (변동 없음 — 비판 ▼ + 사이클 효율 ▲ + 자율 reasonable call ▲ 상쇄)
-- HTML 2종 sub-agent 병렬 재생성 (productization.html 498 lines + vibe-coding.html 신규)
+- HTML 2종 sub-agent 병렬 재생성 (productization.html 498 lines + vibe-coding.html 588 lines)
+
+### 8.17 GPLv3 라이선스 + visibility 전환 정책 (사이클 4 신규)
+
+- **GPLv3 확정** — LICENSE 저장소 루트 (GNU 표준 본문 674 lines) + PyQt6 GPLv3 직접 호환
+- **GitHub visibility public (현재) → private 전환 가능성** (Phase 완료 시점 의 사용자 명시 의무)
+- SPDX header convention — `# SPDX-License-Identifier: GPL-3.0-or-later` (Phase 1 코드 진입 시)
+- AGPLv3 검토 결과 = Phase 2 이후 옵션 (1인 PoC + Toonation 옵션 B 내부 도입 = GPLv3 단순화 우위)
+- 의존성 GPLv3 호환 100% — PyQt6 (GPLv3+) + aiortc/qasync/asyncmy/bcrypt/aiosmtplib (BSD/Apache/MIT 의 GPLv3 흡수)
+- 영구 메모리 2 신설 — `project_license_gpl.md` + `project_visibility_transition.md`
+
+### 8.18 평가 snapshot 사이클 6 (사이클 4 신규)
+
+- productization 3.85 → 3.95 ▲ (수익화 2 → 2.5 — GPLv3 OSS 사업 모델 명확화)
+- vibe-coding 4.85 (변동 없음) + §2.17 신규 (라이선스 + visibility 직접 인지 패턴)
+- HTML 2종 sub-agent 병렬 재생성 (사이클 6 정합)
+- 단기 액션 ✅ 1건 추가 (GPLv3 + LICENSE)
 - 사용자 명시 stop 의도 — 임의 commit 절대 금지
 
 ---
@@ -374,4 +394,4 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 
 ---
 
-마지막 갱신: 2026-05-17 17:15 — 사이클 3 (본 세션 누계 commit 51+ + 사이클 3 의 17 신규 commit 50c5c40 → 57fd732 반영, 가드레일 18, 텔레그램 송신 28건, HTML 6 + sub-agent 18 spawn, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, **CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책** 신규, snapshot 사이클 5 — productization 3.85 + vibe-coding 4.85)
+마지막 갱신: 2026-05-17 17:45 — 사이클 4 (본 세션 누계 commit 53+ + 사이클 4 의 2 신규 commit `5f36517` (GPLv3) + `f160ba0` (snapshot 6) 반영, 가드레일 20, 텔레그램 송신 30건, HTML 6 + sub-agent 20 spawn 예정, pytest 인프라, 정책 본문 3, auth 정책 + 차별화 명문화, CI 8 job GREEN + macOS arm64 runner 활성 + wine cross-compile + fork PR strict + SMTP 자체 설치 정책 + **GPLv3 라이선스 확정 + visibility 전환 정책** 신규, snapshot 사이클 6 — productization 3.95 + vibe-coding 4.85)

@@ -29,10 +29,14 @@
 - WebRTC DataChannel 1:1 (aiortc · STUN `stun.l.google.com:19302`)
 - 시그널링 서버 (aiohttp WebSocket · 데모 호스트 `114.207.112.73`)
 - 텍스트·이미지·파일 송수신 + 양방향 ProgressBar
-- SQLite 로컬 히스토리
-- PyInstaller macOS arm64 + Windows x64 zip 빌드
-- GitHub Actions **self-hosted** 매트릭스 CI
-- AGENTS.md + 루트 9 정책 + `.claude/agents/` 12 에이전트 + CI 5종 게이트
+- **회원가입 + 이메일 OTP 인증** (FR-11/12/13, 사용자 directive 2026-05-17 — bcrypt 12 + OTP 3분 + 아이디/비번 찾기)
+- **MariaDB 7 테이블** (users + email_verification + password_reset + rooms + peers + file_meta + messages) — SQLite 회수 (사용자 directive 2026-05-17)
+- **SMTP 데모 서버 자체 설치** — 114.207.112.73 postfix + Let's Encrypt + SPF/DKIM/DMARC ([docs/references/smtp-setup.md](docs/references/smtp-setup.md))
+- **PyInstaller macOS arm64 native** (self-hosted runner) + **Windows x64 wine cross-compile** (GitHub-hosted Ubuntu + `cdrx/pyinstaller-windows` docker) zip 빌드
+- GitHub Actions self-hosted macOS arm64 + GitHub-hosted Ubuntu 듀얼 CI (ci.yml 8 job GREEN + docs-lint + doc-gardener)
+- **GPLv3 라이선스** ([LICENSE](LICENSE) 저장소 루트) + GitHub visibility public (Phase 완료 시 private 전환 가능성)
+- **fork PR 승인 정책 strict** (`all_external_contributors` — gh API 자동)
+- AGENTS.md + 루트 9 정책 + `.claude/agents/` 7 프로세스 에이전트 + CI 8 job 게이트
 
 **상세 실행계획**: [docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md](docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md)
 
