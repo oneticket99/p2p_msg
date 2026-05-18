@@ -114,6 +114,9 @@ p2p_msg/
 │   ├── notifications/             # 사이클 47 — Phase 2 push 알림 skeleton
 │   │   ├── __init__.py
 │   │   └── push.py                # 4 platform (APNS/FCM/SILENT/PULL) + silent/visible
+│   ├── backup/                    # 사이클 48 — Phase 2 encrypted backup/restore
+│   │   ├── __init__.py
+│   │   └── encrypted_backup.py    # HKDF + AES-GCM + wire format bytes
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient

@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 19:30 KST (사이클 47 — Phase 2 push 알림 skeleton 4 platform + 31 PASS 6 TestClass + Phase 2 누계 265 케이스 + telegram 양방향 fallback 활성 (Bot API direct long-poll + Monitor stream))
+> 최근 갱신 시점: 2026-05-20 20:30 KST (사이클 48 — Phase 2 encrypted backup / restore + 22 PASS 5 TestClass + Phase 2 누계 287 케이스 + 480 pytest + drift 0건 11 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.3 / 10 | 8.25 → 8.3 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 178 + push skeleton 31 + signature sound 56 PASS + 458 pytest |
-| 시장 적합성 | 5.35 / 10 | 5.3 → 5.35 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX + push 알림 ready (offline device 깨움) |
-| 차별화 요소 | 9.4 / 10 | 9.35 → 9.4 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + E2EE Signal Protocol (X3DH + multi-device + group sender_keys) + signature sound + push 4 platform (APNS/FCM/SILENT/PULL) skeleton |
-| 사용자 가치 | 6.9 / 10 | 6.85 → 6.9 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push 알림 backbone |
+| 기술 완성도 | 8.35 / 10 | 8.3 → 8.35 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + push 31 + signature sound 56 + backup 22 PASS + 480 pytest |
+| 시장 적합성 | 5.4 / 10 | 5.35 → 5.4 ▲ | Toonation 옵션 B + P5/P6 + signature sound + push 알림 + encrypted backup (사용자 history 보호) |
+| 차별화 요소 | 9.45 / 10 | 9.4 → 9.45 ▲ | 친구간 원격 데스크탑 + 이메일 OTP + E2EE Signal Protocol (X3DH + multi-device + group sender_keys) + signature sound + push 4 platform + encrypted backup (HKDF + AES-GCM) |
+| 사용자 가치 | 6.95 / 10 | 6.9 → 6.95 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 + PostToolUse hook 의 settings.json 등록 활성 (사이클 47 의 BPE + 의 3회 + pronoun + markdownlint 5종 강제) + Stop hook 3 layer |
-| 세션 간 정합 | 9.72 / 10 | 9.7 → 9.72 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback 활성 (Bot API direct long-poll + Monitor stream — MCP plugin disconnect 회피) + 매 cycle 동기 의무 |
-| 보안 hardening | 7.85 / 10 | 7.8 → 7.85 ▲ | E2EE Signal Protocol 178 + push privacy-preserving (silent payload = plaintext 부재 + envelope_id 만 + collapse_key) + 31 push 검증 |
-| **종합** | **9.3 / 10** | 9.25 → 9.3 ▲ | **사이클 47 push 알림 skeleton transport-agnostic 4 platform + 31 PASS 6 TestClass. PostToolUse hook 의 settings.json 정식 활성 (사용자 directive 직무유기 방지). telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) — MCP plugin disconnect 회피. Phase 2 누계 265 케이스 (234+31). drift 0건 10 연속** |
+| 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
+| 보안 hardening | 7.9 / 10 | 7.85 → 7.9 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (HKDF 16B salt + AES-256-GCM + wrong password InvalidTag + tampered detect 22 PASS) + GPLv3 |
+| **종합** | **9.35 / 10** | 9.3 → 9.35 ▲ | **사이클 48 encrypted backup / restore (BackupEntry + BackupBundle + 5 함수 + HKDF + AES-GCM) + 22 PASS 5 TestClass. Phase 2 누계 287 케이스 (265+22) + 480 pytest. drift 0건 11 연속** |
 
 ---
 
