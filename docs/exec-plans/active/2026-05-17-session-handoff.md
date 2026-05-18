@@ -580,12 +580,41 @@ cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
 
 → `exec claude --plugin-dir <telegram_plugin_path>` = telegram plugin 강제 load + channel server 자동 spawn + 새 token 의 fresh polling + 큐 5 메시지 consume + 양방향 routing 활성
 
+**사이클 45 진단 추가 결과** (2026-05-20 후반 — `--resume` 의 routing 차단 발견):
+
+- **`./tools/claude-telegram.sh --resume` 실행 결과** (사이클 45 신규 session):
+  - channel server PID 95860 (`bun server.ts`) 정상 spawn — parent chain 95860 → 95851 (`bun run wrapper`) → 95829 (`claude --plugin-dir <telegram_plugin> --resume`)
+  - 송신 (out) 정상 — MCP reply tool message_id=21 PASS + HTTP API curl PASS
+  - getUpdates / getWebhookInfo — pending_update_count=0 (server polling 정상 + 큐 즉시 consume)
+  - **수신 (in) 차단** — 사용자 의 새 메시지 ("hi" 등) 송신 단 본 session 의 `<channel source="telegram" ...>` inbound tag 도달 차단
+- **원인 확정**:
+  - server.ts L957-959 의 inbound dispatch = `mcp.notification({ method: 'notifications/claude/channel', params: {...} })` (MCP custom notification, request 아님)
+  - Claude CLI session 의 client-side handler registration 의무 — handler 등록 미실행 시 notification silently drop
+  - `--resume` 옵션 의 startup race condition 의심 — direct conversation restore 시점 의 plugin channel subscription register 가 missed 가능
+- **`approved/<senderId>` 의무 분석**:
+  - 직전 cycle 의 `echo "201073550" > approved/201073550` 신설 후 channel server polling 의 consume + delete (3초 후 자동 삭제 검증)
+  - = 첫 pairing notification 1회용 file (skill spec step 7 의 "polls approved dir and sends you're in" 정합) — routing 의 영구 활성 trigger 아님
+  - access control 영구 활성 = access.json 의 allowFrom 만 (정상)
+
+**다음 session 진입 의무 — 수정된 권장**:
+
+```bash
+# (A) 권장 — fresh start 의 새 conversation
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg && ./tools/claude-telegram.sh
+
+# (B) 비권장 — --resume 시 channel subscription register 차단 가능 (사이클 45 검증 결과)
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg && ./tools/claude-telegram.sh --resume
+```
+
+→ 사이클 45 의 `--resume` 결과 = 송신 PASS + 수신 차단 발견 → fresh start (옵션 생략) 권장.
+
 **다음 session 검증 의무**:
 
 1. server 의 새 process spawn 확인 (`ps aux | grep "bun.*server.ts"`)
-2. 사용자 telegram 의 새 메시지 1건 발송 → session 의 `<channel source="telegram" ...>` incoming tag 도달 검증
+2. 사용자 telegram 의 새 메시지 1건 발송 → session 의 `<channel source="telegram" ...>` incoming tag 도달 검증 (핵심)
 3. session 의 reply tool 의 송신 시도 (양방향 확인)
-4. 큐 5 메시지 의 routing — channel server 의 의 의 의 의 의 의 의 의 의 의 consume 직후 사용자 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 acknowledgment 확인
+4. 만일 fresh start (옵션 생략) 의 routing 도 차단 시 = telegram plugin 0.0.6 bug 의심 → `claude plugin update telegram` 또는 GitHub issue 의무
+5. 회귀 검증 — 사이클 44 commit `89e608e` + handoff commit `1f9a80e` HEAD 정합 + pytest 408 전수 PASS
 
 **잔여 Phase 2 task** (다음 session 의 자율 GO 가능):
 
@@ -595,9 +624,10 @@ cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
 - designer 최종 chiptune asset (signature sound placeholder 교체)
 - reviewer-agent → handoff doc 추가
 
-**핵심 commit 누적** (사이클 37~44):
+**핵심 commit 누적** (사이클 37~45):
 
 ```
+1f9a80e docs(handoff): §8.44 + §8.45 사이클 38~44 누계 + telegram 재연결 미완료 (사이클 45)
 89e608e feat(crypto): Phase 2 X3DH session fan-out + 16 PASS + 평가 10점 회수 사이클 44
 8a0095c fix(docs): hook_doc_consistency drift 회수 — devices.py path 정합
 a6316f3 feat(server): Phase 2 multi-device server endpoint + 22 PASS 사이클 43
