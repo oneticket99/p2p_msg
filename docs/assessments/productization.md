@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 06:30 KST (사이클 65 — Phase 3 bot LLM proxy skeleton 26 PASS + 투네이션 고객센터 봇 default 의 LLM 연동 entry + RateLimitGate token bucket + 680 pytest + drift 0건 24 연속)
+> 최근 갱신 시점: 2026-05-21 07:30 KST (사이클 66 — default 투네이션 고객센터 봇 CustomerServiceBot + system prompt 5 영역 + history cap + 24 PASS + 704 pytest + drift 0건 25 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
-| **종합** | **9.65 / 10** | 9.62 → 9.65 ▲ | **사이클 65 Phase 3 bot framework entry — `app/bot/llm_proxy.py` (BotMessage + BotRole + LLMProvider Protocol + MockLLMProvider deterministic echo + AnthropicProvider placeholder + select_llm_provider factory + RateLimitGate token bucket) + 26 PASS 5 TestClass. 투네이션 고객센터 봇 default 의 LLM 연동 entry. 680 pytest + Phase 3 entry 누계 197. drift 0건 24 연속** |
+| **종합** | **9.67 / 10** | 9.65 → 9.67 ▲ | **사이클 66 default 투네이션 고객센터 봇 CustomerServiceBot — CustomerServiceConfig + default_system_prompt 5 영역 (후원/정산/OBS/사기 신고/환불) + truncate_history cap + answer() async + rate limit + LLM chain (system + history trim + new user) + 24 PASS 5 TestClass. 704 pytest + Phase 3 entry 누계 221. drift 0건 25 연속** |
 
 ---
 
