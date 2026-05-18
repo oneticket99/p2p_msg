@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 16:30 KST (사이클 43 — Phase 2 multi-device server endpoint POST/GET/DELETE + 22 PASS + Phase 2 누계 199 케이스)
+> 최근 갱신 시점: 2026-05-20 17:00 KST (사이클 44 — Phase 2 X3DH session fan-out + 16 PASS + Phase 2 누계 215 케이스 + multi-device chain 3 cycle 완성)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.1 / 10 | 8.0 → 8.1 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 143 케이스 (X3DH + Signal Protocol + multi-device skeleton 26 + server endpoint 22) + signature sound 56 PASS + 392 pytest |
+| 기술 완성도 | 8.2 / 10 | 8.1 → 8.2 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 159 케이스 (X3DH + Signal Protocol + multi-device 64 = skeleton 26 + endpoint 22 + fan-out 16) + signature sound 56 PASS + 408 pytest |
 | 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
-| 차별화 요소 | 9.25 / 10 | 9.2 → 9.25 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device skeleton) + signature sound UX |
+| 차별화 요소 | 9.3 / 10 | 9.25 → 9.3 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device 3 cycle 완성) + signature sound UX |
 | 사용자 가치 | 6.8 / 10 | 6.7 → 6.8 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire (실 사용 가능) |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
-| 보안 hardening | 7.6 / 10 | 7.5 → 7.6 ▲ | E2EE Signal Protocol 143 케이스 (X3DH + multi-device 48 = skeleton 26 + server endpoint 22) + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **9.15 / 10** | 9.1 → 9.15 ▲ | **사이클 43 multi-device server endpoint 3 종 (POST/GET/DELETE /api/devices) + migration + repository + 22 PASS. multi-device chain 2 cycle 완성 (client skeleton 42 + server endpoint 43). Phase 2 누계 199 케이스. drift 0건 7 연속** |
+| 보안 hardening | 7.7 / 10 | 7.6 → 7.7 ▲ | E2EE Signal Protocol 159 케이스 (multi-device 64 = skeleton 26 + endpoint 22 + fan-out 16 forward secrecy isolation) + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
+| **종합** | **9.2 / 10** | 9.15 → 9.2 ▲ | **사이클 44 X3DH session fan-out (FanOutEnvelope + FanOutBatch + 3 함수) + 16 PASS. multi-device chain 3 cycle 완성 (client 42 + server 43 + fan-out 44) — Signal Protocol multi-device 모델 종단 흐름 정합. Phase 2 누계 215 케이스. drift 0건 8 연속** |
 
 ---
 
@@ -140,6 +140,29 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.33 X3DH session fan-out — Signal Protocol N-device 종단 흐름 (신규 사이클 44)
+
+사이클 42~43 의 multi-device chain (client skeleton + server endpoint) 의 logical next layer = sender → N recipient device loop encrypt.
+
+fan-out logic 완성:
+- `app/crypto/fan_out.py` 신설
+- `FanOutEnvelope` frozen dataclass — device_id + payload Optional + error Optional + ok property
+- `FanOutBatch` frozen dataclass — envelopes + advanced_sessions + successes / failures / total properties
+- `encrypt_fan_out(plaintext, sessions, *, associated_data)` — per-device loop + 1 device 실패 격리 (RuntimeError catch + 다른 device 계속) + ordering 유지
+- `rotate_session(sessions, batch)` — immutable dict 갱신 (성공 advanced replace + 실패 stale 유지)
+- `collect_failures(batch)` — (device_id, error) tuple list 추출
+
+테스트 16 케이스 5 TestClass — FanOutEnvelope 3 + FanOutBatch 2 + EncryptFanOut 6 (empty + single + multi 3 device 별개 ciphertext + partial failure isolated + AAD 전파 + ordering) + RotateSession 3 + CollectFailures 2.
+
+5 검증 PASS — AST + import + pytest 408 + doc-lint 0 + BPE 0 (6건 정정).
+
+multi-device chain 3 cycle 완성:
+- 사이클 42 client skeleton (device_registry.py + 26 PASS)
+- 사이클 43 server endpoint (migration + repo + handlers + 22 PASS)
+- 사이클 44 fan-out logic (fan_out.py + 16 PASS)
+
+Phase 2 누계 = 215 케이스. Signal Protocol multi-device 모델 종단 흐름 정합 — sender encrypt → N device 별개 ciphertext + forward secrecy isolation 검증. 자율 chain drift 0건 8 연속 (사이클 37~44). 잔존: sender keys (그룹 chat N×M reduction) + push + 백업.
 
 ### 2.32 multi-device server endpoint — REST 3 종 + soft-delete revoke (신규 사이클 43)
 
