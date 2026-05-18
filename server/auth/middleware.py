@@ -55,4 +55,6 @@ async def auth_middleware(
         raise web.HTTPUnauthorized(reason="세션 토큰 무효")
 
     request["user_id"] = user_id
+    # cycle 120 — activity_middleware 의 user_sessions UPDATE 의 prerequisite
+    request["session_token"] = token
     return await handler(request)

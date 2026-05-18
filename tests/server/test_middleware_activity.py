@@ -165,6 +165,114 @@ class TestActivityMiddleware:
         assert tracker.size() == 1
 
     @pytest.mark.asyncio
+    async def test_pool_present_updates_session_last_active(self) -> None:
+        from contextlib import asynccontextmanager
+        from unittest.mock import AsyncMock
+
+        tracker = ActivityTracker(throttle_seconds=60)
+
+        cursor = MagicMock()
+        cursor.execute = AsyncMock()
+        cursor.rowcount = 1
+
+        @asynccontextmanager
+        async def cursor_cm() -> Any:
+            yield cursor
+
+        conn = MagicMock()
+        conn.cursor = lambda: cursor_cm()
+        conn.commit = AsyncMock()
+
+        @asynccontextmanager
+        async def acquire_cm() -> Any:
+            yield conn
+
+        pool = MagicMock()
+        pool.acquire = lambda: acquire_cm()
+
+        async def handler(req: Any) -> Any:
+            return MagicMock(status=200)
+
+        req = MagicMock()
+        app_data = {"db_pool": pool, "activity_tracker_obj": tracker}
+        req.app = MagicMock()
+        req.app.get = lambda k: (
+            tracker if k == APP_KEY_ACTIVITY else app_data.get(k)
+        )
+        req.get = lambda k, *args: {
+            "user_id": 42,
+            "session_token": "test-token-xyz",
+        }.get(k)
+        req.headers = MagicMock()
+        req.headers.get = lambda k, default="": default
+        req.path = "/api/test"
+        req.remote = "10.0.0.1"
+
+        await activity_middleware(req, handler)
+        # 한글 주석: update_session_last_active SQL 호출 검증
+        assert cursor.execute.called
+        sql, params = cursor.execute.call_args.args
+        assert "UPDATE user_sessions" in sql
+        assert "disconnected_at IS NULL" in sql
+        # 한글 주석: token_hash = SHA-256("test-token-xyz")
+        import hashlib
+
+        expected = hashlib.sha256(b"test-token-xyz").hexdigest()
+        assert params == (expected,)
+
+    @pytest.mark.asyncio
+    async def test_pool_present_no_token_skips(self) -> None:
+        tracker = ActivityTracker(throttle_seconds=60)
+        pool = MagicMock()
+
+        async def handler(req: Any) -> Any:
+            return MagicMock(status=200)
+
+        req = MagicMock()
+        req.app = MagicMock()
+        req.app.get = lambda k: (tracker if k == APP_KEY_ACTIVITY else (pool if k == "db_pool" else None))
+        req.get = lambda k, *args: 42 if k == "user_id" else None
+        req.headers = MagicMock()
+        req.headers.get = lambda k, default="": default
+        req.path = "/api/test"
+        req.remote = ""
+
+        # 한글 주석: session_token 부재 — pool 가용해도 skip
+        await activity_middleware(req, handler)
+        assert tracker.size() == 1
+        assert not pool.acquire.called
+
+    @pytest.mark.asyncio
+    async def test_db_raise_swallowed(self) -> None:
+        from contextlib import asynccontextmanager
+
+        tracker = ActivityTracker(throttle_seconds=60)
+        pool = MagicMock()
+
+        @asynccontextmanager
+        async def bad_acquire() -> Any:
+            raise RuntimeError("DB down")
+            yield  # unreachable
+
+        pool.acquire = lambda: bad_acquire()
+
+        async def handler(req: Any) -> Any:
+            return MagicMock(status=200)
+
+        req = MagicMock()
+        req.app = MagicMock()
+        req.app.get = lambda k: (tracker if k == APP_KEY_ACTIVITY else (pool if k == "db_pool" else None))
+        req.get = lambda k, *args: {"user_id": 1, "session_token": "t"}.get(k)
+        req.headers = MagicMock()
+        req.headers.get = lambda k, default="": default
+        req.path = "/api/test"
+        req.remote = ""
+
+        # 한글 주석: DB raise — middleware 자체 raise 부재 (graceful swallow)
+        response = await activity_middleware(req, handler)
+        assert response is not None
+
+    @pytest.mark.asyncio
     async def test_no_tracker_skips_gracefully(self) -> None:
         async def handler(req: Any) -> Any:
             return MagicMock(status=200)

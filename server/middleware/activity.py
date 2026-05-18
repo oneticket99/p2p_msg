@@ -129,7 +129,6 @@ async def activity_middleware(
 
     if tracker.should_update(user_id):
         client_ip = extract_client_ip(request)
-        # 본 cycle = throttle + hook base. 실 DB UPDATE = 별개 cycle 의무.
         log.info(
             "activity update user_id=%d ip=%s ua=%r path=%s",
             user_id,
@@ -137,4 +136,25 @@ async def activity_middleware(
             request.headers.get("User-Agent", ""),
             request.path,
         )
+        # cycle 120 — actual DB UPDATE wiring. pool 부재 graceful skip + 예외 swallow.
+        token = request.get("session_token") if hasattr(request, "get") else None
+        pool = request.app.get("db_pool") if hasattr(request.app, "get") else None
+        if pool is not None and isinstance(token, str) and token:
+            try:
+                import hashlib
+
+                from server.db.repositories.user_activity import (
+                    update_session_last_active,
+                )
+
+                token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+                await update_session_last_active(
+                    pool, session_token_hash=token_hash
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning(
+                    "user_sessions.last_active_at 갱신 실패 (user_id=%d): %s",
+                    user_id,
+                    exc,
+                )
     return response
