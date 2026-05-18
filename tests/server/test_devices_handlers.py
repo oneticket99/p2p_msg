@@ -60,6 +60,9 @@ def _make_request(
     req.__getitem__.side_effect = lambda k: {"user_id": user_id}[k]
     req.app = MagicMock()
     req.app.__getitem__.side_effect = lambda k: {"db_pool": MagicMock()}[k]
+    # 한글 주석: cycle 122 — audit helper 는 .get("db_pool") 의 None graceful skip 의존.
+    # 본 fixture 는 audit DB hook 미테스트 의 의도 — pool=None 강제 반환.
+    req.app.get = lambda k, default=None: None if k == "db_pool" else default
     if body is not None:
         req.json = AsyncMock(return_value=body)
     if match_info is not None:

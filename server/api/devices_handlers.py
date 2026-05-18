@@ -27,6 +27,8 @@ from typing import Any
 from aiohttp import web
 
 from server.db.repositories import devices as devices_repo
+from server.db.repositories.user_activity import ActivityAction, log_activity
+from server.middleware.activity import extract_client_ip
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +74,41 @@ def _device_row_to_wire(row: Any) -> dict:
         "created_at": row.created_at.isoformat() if row.created_at else None,
         "last_seen_at": row.last_seen_at.isoformat() if row.last_seen_at else None,
     }
+
+
+async def _audit_device(
+    request: web.Request,
+    *,
+    user_id: int,
+    action: ActivityAction,
+    target_id: int | None,
+    metadata: dict | None = None,
+) -> None:
+    """cycle 122 — DEVICE_REGISTER / DEVICE_REVOKE audit helper.
+
+    pool 부재 graceful skip + 모든 예외 swallow. user_activity_log INSERT.
+    """
+
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return
+    try:
+        await log_activity(
+            pool,
+            user_id=user_id,
+            action=action,
+            target_id=target_id,
+            ip_address=extract_client_ip(request),
+            user_agent=request.headers.get("User-Agent", "")[:255] or None,
+            metadata=metadata,
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning(
+            "device audit 실패 user_id=%d action=%s: %s",
+            user_id,
+            action.value,
+            exc,
+        )
 
 
 async def _read_json(request: web.Request) -> dict:
@@ -143,6 +180,15 @@ async def handle_register_device(request: web.Request) -> web.Response:
         log.exception("device 등록 실패 — user_id=%s device_id=%s", user_id, device_id)
         raise web.HTTPInternalServerError(reason="device 등록 실패") from exc
 
+    # cycle 122 — DEVICE_REGISTER audit
+    await _audit_device(
+        request,
+        user_id=user_id,
+        action=ActivityAction.DEVICE_REGISTER,
+        target_id=new_id,
+        metadata={"device_id": device_id, "label": label or None},
+    )
+
     return web.json_response(
         {"ok": True, "id": new_id, "device_id": device_id},
         status=201,
@@ -186,6 +232,14 @@ async def handle_revoke_device(request: web.Request) -> web.Response:
             {"error": "not_found_or_already_revoked", "device_id": device_id},
             status=404,
         )
+    # cycle 122 — DEVICE_REVOKE audit (device_id 자체 = metadata, row PK None)
+    await _audit_device(
+        request,
+        user_id=user_id,
+        action=ActivityAction.DEVICE_REVOKE,
+        target_id=None,
+        metadata={"device_id": device_id},
+    )
     return web.json_response({"ok": True, "device_id": device_id})
 
 

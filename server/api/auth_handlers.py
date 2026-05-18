@@ -238,6 +238,8 @@ async def handle_reset_consume(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
+    # cycle 122 — PASSWORD_RESET_COMPLETE audit
+    await _audit(request, user_id=user_id, action=ActivityAction.PASSWORD_RESET_COMPLETE)
     return web.json_response({"ok": True, "user_id": user_id})
 
 

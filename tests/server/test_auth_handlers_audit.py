@@ -250,6 +250,22 @@ class TestLogoutEndpoint:
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
 
     @pytest.mark.asyncio
+    async def test_password_reset_complete_audit(self) -> None:
+        # cycle 122 — PASSWORD_RESET_COMPLETE audit smoke
+        from server.api.auth_handlers import _audit
+        from server.db.repositories.user_activity import ActivityAction
+
+        pool, cursor = _mock_pool()
+        req = _FakeRequest(db_pool=pool)
+        await _audit(
+            req,
+            user_id=99,
+            action=ActivityAction.PASSWORD_RESET_COMPLETE,
+        )
+        params = cursor.execute.call_args_list[0].args[1]
+        assert params[1] == "password_reset_complete"
+
+    @pytest.mark.asyncio
     async def test_logout_missing_token_unauthorized(self) -> None:
         from aiohttp import web as _web
 
