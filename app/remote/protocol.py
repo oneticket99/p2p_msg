@@ -1,8 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Phase 3 원격 데스크탑 wire format protocol — 사이클 55.
 
-RemoteFrame (sender → recipient 의 screen capture) + RemoteInput (recipient →
-sender 의 input event forward) + RemoteSession (양방향 binding) 의 3 envelope.
+방향 정의 (사용자 directive 2026-05-21):
+
+- ``controller`` = control 요청자 (PermissionRequest.requester_user_id). 화면
+  view + input 제공 단. controller 의 키보드 / 마우스 = target 의 OS 의 적용 의무.
+- ``target`` = control 대상 (PermissionRequest.target_user_id). 화면 capture
+  + input 수신 + OS 의 키보드 / 마우스 의 controller 의 input event 의 의 적용 단.
+
+3 envelope:
+
+- ``RemoteFrame`` — target → controller 의 screen capture
+- ``RemoteInput`` — controller → target 의 input event forward (target 의 OS 의 키보드 / 마우스 의 제어)
+- ``RemoteSession`` — 양방향 binding
 
 설계 결정
 ---------
@@ -60,7 +70,7 @@ class InputEventType(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class RemoteFrame:
-    """sender → recipient 의 screen capture 1 frame.
+    """target → controller 의 screen capture 1 frame.
 
     Attributes
     ----------
@@ -100,7 +110,7 @@ class RemoteFrame:
 
 @dataclass(frozen=True, slots=True)
 class RemoteInput:
-    """recipient → sender 의 input event forward.
+    """controller → target 의 input event forward (target 의 OS 의 키보드 / 마우스 의 제어).
 
     Attributes
     ----------

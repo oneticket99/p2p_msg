@@ -117,11 +117,12 @@ p2p_msg/
 │   ├── backup/                    # 사이클 48 — Phase 2 encrypted backup/restore
 │   │   ├── __init__.py
 │   │   └── encrypted_backup.py    # PBKDF2 600K + AES-GCM + wire format bytes
-│   ├── remote/                    # 사이클 55~57 — Phase 3 entry 원격 데스크탑 skeleton
+│   ├── remote/                    # 사이클 55~58 — Phase 3 entry 원격 데스크탑 skeleton
 │   │   ├── __init__.py
 │   │   ├── permission.py          # Pattern A (도움-mode) + Pattern B (제어-mode)
 │   │   ├── protocol.py            # RemoteFrame + RemoteInput + RemoteSession
-│   │   └── capture.py             # 사이클 57 — Capture Backend + Mock + Quartz placeholder
+│   │   ├── capture.py             # 사이클 57 — Capture Backend + Mock + Quartz placeholder
+│   │   └── input_forward.py       # 사이클 58 — Input Forward Backend + Mock + CGEvent placeholder
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient

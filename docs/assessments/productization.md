@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 00:30 KST (사이클 57 — Phase 3 screen capture skeleton 22 PASS + CaptureBackend Protocol + Mock + Quartz placeholder + BGRA→RGB + 562 pytest + drift 0건 18 연속)
+> 최근 갱신 시점: 2026-05-21 01:30 KST (사이클 58 — Phase 3 input forward skeleton 17 PASS + memory release 의무 명문 (objc CFRelease + 1개월 volatile + lazy load) + 579 pytest + drift 0건 19 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.55 / 10 | 8.5 → 8.55 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 entry remote 61 (permission 20 + protocol 19 + capture 22) + dogfooding 18 PASS + 562 pytest + v0.2.0-phase2 tag |
+| 기술 완성도 | 8.6 / 10 | 8.55 → 8.6 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 entry remote 78 (permission 20 + protocol 19 + capture 22 + input_forward 17) + dogfooding 18 PASS + 579 pytest + v0.2.0-phase2 tag |
 | 시장 적합성 | 5.4 / 10 | 5.35 → 5.4 ▲ | Toonation 옵션 B + P5/P6 + signature sound + push 알림 + encrypted backup (사용자 history 보호) |
 | 차별화 요소 | 9.55 / 10 | 9.45 → 9.55 ▲ | 친구간 원격 데스크탑 Phase 3 entry skeleton (Pattern A 도움-mode + Pattern B 제어-mode + 3 frame format + 4 input event) + 이메일 OTP + E2EE Signal Protocol + signature sound + push 4 platform + PBKDF2 encrypted backup |
 | 사용자 가치 | 6.95 / 10 | 6.9 → 6.95 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 + PostToolUse hook 의 settings.json 등록 활성 (사이클 47 의 BPE + 의 3회 + pronoun + markdownlint 5종 강제) + Stop hook 3 layer |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
-| 보안 hardening | 8.0 / 10 | 7.9 → 8.0 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2-HMAC-SHA256 600K iter OWASP 2023 + AES-256-GCM + wrong password InvalidTag + tampered detect 24 PASS) + GPLv3 |
-| **종합** | **9.52 / 10** | 9.5 → 9.52 ▲ | **사이클 57 Phase 3 screen capture skeleton — CaptureBackend Protocol + MockCaptureBackend (deterministic 1x1 BGRA) + MacOSQuartzBackend placeholder (NotImplementedError graceful) + select_capture_backend factory (darwin/win32/linux/mock) + captured_to_remote_frame BGRA→RGB swap. 22 PASS 6 TestClass. 562 pytest + Phase 3 entry 누계 79. drift 0건 18 연속** |
+| 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
+| **종합** | **9.55 / 10** | 9.52 → 9.55 ▲ | **사이클 58 Phase 3 input forward skeleton — InputForwardBackend Protocol + MockInputForwardBackend (누적 + raise 시나리오) + MacOSCGEventBackend placeholder + select_input_backend factory + apply_events fail-fast batch + filter_events_by_type. 17 PASS 5 TestClass. 사용자 비판 2건 회수 — feedback_objc_memory_release_mandatory + feedback_chat_accumulation_memory_release_mandatory (1개월 volatile + lazy load 명문). 579 pytest + Phase 3 entry 누계 96. drift 0건 19 연속** |
 
 ---
 

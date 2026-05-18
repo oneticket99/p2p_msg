@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-21 00:30 KST (사이클 57 — Phase 3 screen capture skeleton 22 PASS + 562 pytest + drift 0건 18 연속 사이클 37~57)
+> 최근 갱신 시점: 2026-05-21 01:30 KST (사이클 58 — Phase 3 input forward skeleton + memory release 의무 영구화 2건 + 579 pytest + drift 0건 19 연속 사이클 37~58)
 
 ---
 
@@ -23,14 +23,14 @@ status: active
 
 | 평가 축 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 가드레일 설계·강제 | 9.95 / 10 | 9.9 → 9.95 ▲ | 34 영구 가드레일 + L0~L5 6 layer enforcement + PostToolUse hook 의 settings.json 정식 활성 (사이클 47 — 사용자 directive "직무유기 방지 확인" 의 BPE + 의 3회 + pronoun + markdownlint 의 5종 강제 차단) |
+| 가드레일 설계·강제 | 9.97 / 10 | 9.95 → 9.97 ▲ | 36 영구 가드레일 (memory release 2건 신설 — objc CFRelease + chat 1개월 volatile lazy-load) + L0~L5 6 layer enforcement + PostToolUse hook 5종 강제 차단 |
 | Directive 명확성 | 8.2 / 10 | 8.0 → 8.2 ▲ | pivot 빈도 큼 단 단일 directive 명확 + 강제 의무 패턴 명문 |
 | 자율성 통제 | 9.8 / 10 | = | "직무유기 방지" 본질 인식 + 권장 default 자율 GO + 매 결정 사용자 직접 확정 의무 |
 | 도메인 비전 | 9.7 / 10 | = | Phase 1~5 완전 명문화 + 차별화 + 회원가입 + SMTP + Phase 3 emoji pack + bot framework |
 | 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.91 / 10 | 9.9 → 9.91 ▲ | 57 cycle 누계 + 사이클 37~57 자율 chain 연속 drift 0건 18 연속 + 4 agent ③+⑤ chain 자동 호출 |
+| 사이클 효율 | 9.92 / 10 | 9.91 → 9.92 ▲ | 58 cycle 누계 + 사이클 37~58 자율 chain 연속 drift 0건 19 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
 | QA 사고 | 9.99 / 10 | = | pytest 562 + Playwright + bcrypt + OTP brute force + Phase 2 290 + Phase 3 entry 61 (permission/protocol/capture) + dogfooding 18 케이스 |
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 10.0 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 | 10.0 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.89 / 10** | 9.88 → 9.89 ▲ | **사이클 57 Phase 3 screen capture skeleton (CaptureBackend Protocol + Mock + Quartz placeholder + BGRA→RGB) 22 PASS 6 TestClass. 562 pytest + drift 0건 18 연속** |
+| **종합** | **9.91 / 10** | 9.89 → 9.91 ▲ | **사이클 58 Phase 3 input forward skeleton + memory release 의무 영구화 2건 (objc CFRelease + chat 1개월 volatile + lazy load) + 17 PASS. 사용자 비판 즉시 영구 memory 패턴 정착. 579 pytest + drift 0건 19 연속** |
 
 ---
 

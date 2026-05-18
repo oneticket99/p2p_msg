@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Phase 3 screen capture abstraction — 사이클 57.
 
-원격 데스크탑 의 sender 단 screen capture layer. platform 별 framework
-의존 (macOS Quartz / Win32 BitBlt / X11 XGetImage) 의 인터페이스 격리 의무.
+원격 데스크탑 의 target 단 screen capture layer (사용자 directive 2026-05-21
+의 controller / target 용어 정합 — target = control 대상 의 화면 capture +
+controller 의 input event 의 OS 의 적용 단). platform 별 framework 의존
+(macOS Quartz / Win32 BitBlt / X11 XGetImage) 의 인터페이스 격리 의무.
 
 본 module = abstract backend + Mock + macOS Quartz placeholder. 실 framework
 binding (PyObjC + Quartz Core / ctypes Win32 / Xlib) = 별개 cycle 의 의무.
@@ -25,6 +27,17 @@ binding (PyObjC + Quartz Core / ctypes Win32 / Xlib) = 별개 cycle 의 의무.
 - ABR encoding (raw → png / jpeg / h264) — 별개 cycle
 - cursor pointer overlay (Pattern A 의 도움 시각화)
 - frame rate throttling + dynamic resolution
+
+메모리 release 의무 (PyObjC + Quartz Core — 별개 cycle 실 binding 단계):
+- ``CGDisplayCreateImage`` 반환 = CGImageRef CFRetain count = 1. ``CGImageGetDataProvider``
+  + ``CGDataProviderCopyData`` 의 결과 = CFData = 추가 release 의무.
+  단일 capture cycle 의 끝 시점 = 양쪽 CFRelease 의무.
+- ``CGDisplayCreateImageForRect`` 동일.
+- ``with objc.autorelease_pool():`` 패턴 권장 — frame 의 sequential capture
+  의 loop 안 의 autorelease pool drain 의 의무 (60 fps × 1080p RGB frame
+  의 GB-scale memory 누수 차단).
+- HWND / X11 Display handle 의 process-wide single 의무 + finalizer 의 release.
+- tracemalloc + objgraph 의 회귀 검증 (별개 cycle 의 의무).
 """
 
 from __future__ import annotations
@@ -162,6 +175,15 @@ class MacOSQuartzBackend:
     실 구현 = PyObjC + Quartz Core 의 CGDisplayCreateImage 의 binding.
     본 cycle = framework 부재 시 NotImplementedError raise 의 graceful degrade.
     별개 cycle 의 실 binding 의무.
+
+    메모리 release 의무 (실 binding 단계 의 필수 검토 — 사용자 directive 2026-05-21):
+
+    - ``CGDisplayCreateImage`` + ``CGImageGetDataProvider`` + ``CGDataProviderCopyData``
+      = 각 단계 의 CFRelease 의무. 1 frame leak = 60 fps × 1080p RGB = ~370 KB / frame
+      = 분당 1.3 GB 누수.
+    - ``CGImageRef`` 의 capture 직후 ``CFRelease`` 의무 (또는 ``with objc.autorelease_pool()``).
+    - ``__del__`` 의 finalizer + ``close()`` 의 explicit shutdown 의 의무.
+    - try / finally 패턴 의 raise 시 부분 alloc 의 release 의무.
     """
 
     @classmethod
