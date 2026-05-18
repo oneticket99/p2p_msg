@@ -1,0 +1,5 @@
+# TooTalk opendkim KeyTable — Phase 4 DKIM 키 매핑.
+# 한글 주석: <selector>._domainkey.<domain> <domain>:<selector>:<private_key_path>
+# entrypoint.sh 가 MAILDOMAIN + DKIM_SELECTOR env 로 본 파일 의 토큰 치환.
+# 예시 (자리표시) — 실 키는 deploy/postfix/dkim/ 디렉토리 mount.
+tootalk._domainkey.tootalk.demo tootalk.demo:tootalk:/etc/opendkim/keys/tootalk.private

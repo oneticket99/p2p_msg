@@ -1,0 +1,7 @@
+# TooTalk opendkim TrustedHosts — Phase 4 내부 docker network 신뢰.
+# 한글 주석: 본 list 의 IP/호스트 만 DKIM 서명 후 발송 허용 + 외부 = 무시.
+127.0.0.1
+::1
+localhost
+*.tootalk-internal
+172.16.0.0/12

@@ -1,0 +1,4 @@
+# TooTalk opendkim SigningTable — Phase 4 도메인 ↔ 셀렉터 매핑.
+# 한글 주석: <pattern> <selector>._domainkey.<domain>
+# 모든 발신 메일 = tootalk._domainkey.tootalk.demo 키로 서명.
+*@tootalk.demo tootalk._domainkey.tootalk.demo
