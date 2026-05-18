@@ -39,6 +39,8 @@ from app.bot.anthropic_client import (
 )
 from app.bot.jailbreak_detector import JailbreakSignal, detect, summarize_categories
 from app.bot.llm_proxy import BotMessage, BotRole, LLMProvider, RateLimitGate
+from server.db.repositories.user_activity import ActivityAction, log_activity
+from server.middleware.activity import extract_client_ip
 
 log = logging.getLogger(__name__)
 
@@ -268,6 +270,25 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
         raise web.HTTPInternalServerError(
             reason="LLM provider 호출 실패"
         ) from exc
+
+    # cycle 121 — BOT_CHAT audit + user_activity_log INSERT (graceful skip 시 pool 부재)
+    pool = request.app.get("db_pool")
+    if pool is not None:
+        try:
+            await log_activity(
+                pool,
+                user_id=user_id,
+                action=ActivityAction.BOT_CHAT,
+                ip_address=extract_client_ip(request),
+                user_agent=request.headers.get("User-Agent", "")[:255] or None,
+                metadata={
+                    "provider": provider.__class__.__name__,
+                    "request_messages": len(messages),
+                    "reply_chars": len(reply.content) if reply.content else 0,
+                },
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("bot_chat audit 실패 user_id=%d: %s", user_id, exc)
 
     return web.json_response({"reply": _reply_to_wire(reply)})
 

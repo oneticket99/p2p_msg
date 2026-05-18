@@ -24,6 +24,8 @@ from server.auth import verify as verify_uc
 from server.auth.exceptions import AuthError
 from server.db.repositories.user_activity import (
     ActivityAction,
+    SessionEndReason,
+    close_session,
     create_session,
     log_activity,
 )
@@ -173,6 +175,41 @@ async def handle_login(request: web.Request) -> web.Response:
     return web.json_response({"ok": True, "user_id": user_id, "token": token})
 
 
+async def handle_logout(request: web.Request) -> web.Response:
+    """POST /api/auth/logout — cycle 121.
+
+    session_store 에서 token 제거 + user_sessions row 의 disconnected_at +
+    end_reason=logout 갱신 + log_activity(LOGOUT) audit. auth_middleware 통과
+    필수 (user_id + session_token request 의 등록 보장).
+    """
+
+    user_id = request.get("user_id")
+    token = request.get("session_token")
+    if not isinstance(user_id, int) or user_id <= 0 or not isinstance(token, str):
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+
+    # session_store 제거 (Phase 1 in-memory dict)
+    store = request.app.get("session_store")
+    if isinstance(store, dict):
+        store.pop(token, None)
+
+    # user_sessions row close — graceful skip (pool 부재 시)
+    pool = request.app.get("db_pool")
+    if pool is not None:
+        try:
+            token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+            await close_session(
+                pool,
+                session_token_hash=token_hash,
+                end_reason=SessionEndReason.LOGOUT,
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("logout close_session 실패 user_id=%d: %s", user_id, exc)
+
+    await _audit(request, user_id=user_id, action=ActivityAction.LOGOUT)
+    return web.json_response({"ok": True})
+
+
 async def handle_reset_request(request: web.Request) -> web.Response:
     """POST /api/auth/reset/request — silent success (enumeration 방어)."""
 
@@ -210,6 +247,7 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_post("/api/auth/register", handle_register)
     app.router.add_post("/api/auth/verify", handle_verify)
     app.router.add_post("/api/auth/login", handle_login)
+    app.router.add_post("/api/auth/logout", handle_logout)
     app.router.add_post("/api/auth/reset/request", handle_reset_request)
     app.router.add_post("/api/auth/reset/consume", handle_reset_consume)
     log.info("[api] auth 5 endpoint 등록 완료")
