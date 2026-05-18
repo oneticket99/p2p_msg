@@ -12,3 +12,7 @@ aiosmtplib>=3.0
 # httpx 미설치 시 AnthropicProvider.is_available() / OpenAIProvider.is_available()
 # 모두 False 반환 (graceful) → MockLLMProvider 폴백. 프로덕션 배포 의무.
 httpx>=0.27
+# Phase 4 cycle 103~104 — Firebase Cloud Messaging API v1 SDK
+# app/notifications/fcm_client.py 의 실 binding. 미설치 시 graceful
+# log warning + push skip (PULL 폴백). production 의무.
+firebase-admin>=7.0
