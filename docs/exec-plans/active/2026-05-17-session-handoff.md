@@ -169,6 +169,72 @@ status: active
 
 ---
 
+## 8.55 사이클 119~123 Phase 4 후속 wiring + Phase 5 plan 초안 (2026-05-22 신설)
+
+### 8.55.1 5 cycle chain 누계
+
+| cycle | 작업 | 신규 PASS |
+|---|---|---|
+| 119 | auth_handlers actual DB audit wiring (SIGNUP + OTP_VERIFY + LOGIN + user_sessions 생성) | 10 |
+| 120 | activity_middleware update_session_last_active hook (write storm 차단) | 3 |
+| 121 | bot_chat audit + logout endpoint 신설 (close_session LOGOUT) | 3 |
+| 122 | devices + password_reset_complete audit | 1 |
+| 123 | Phase 5 extension plan 초안 (5 영역) | 0 (doc) |
+
+**누계** = 17 신규 PASS (cycle 117 1247 → cycle 123 1264).
+
+### 8.55.2 pytest + drift
+
+- pytest = **1264 passed + 9 deselected**.
+- 자율 chain drift = **0건 70 연속** 사이클 37~123.
+
+### 8.55.3 DB audit endpoint coverage
+
+8 ActivityAction actual SQL wiring 완성 (23 ENUM 중 8 구현):
+
+- SIGNUP (cycle 119)
+- SIGNUP_OTP_VERIFY (cycle 119)
+- LOGIN (cycle 119)
+- LOGOUT (cycle 121, 신규 endpoint)
+- PASSWORD_RESET_COMPLETE (cycle 122)
+- DEVICE_REGISTER (cycle 122)
+- DEVICE_REVOKE (cycle 122)
+- BOT_CHAT (cycle 121, metadata provider + tokens)
+
+**잔존 15 ENUM** = room_create/join/leave/close + message_send + file_send/receive + bot_escalate + remote_request/grant/revoke + profile_update + email_change + account_delete + password_reset_request → Phase 5 신규 endpoint 도입 시점 또는 별개 cycle.
+
+### 8.55.4 Phase 5 plan 초안
+
+`docs/exec-plans/active/2026-05-23-phase5-extension-setup.md` 9 section:
+
+- §1 개요 + 5 영역
+- §2 Item 1 i18n (PyQt6 QTranslator + 5 locale)
+- §3 Item 2 mobile (Flutter 권장 default)
+- §4 Item 3 emoji pack share (sticker + 공개 디렉토리 + moderation)
+- §5 Item 4 bot 마무리 (Toonation + OBS + 4 platform + 외부 봇)
+- §6 Item 5 원격 제어 본격 (Phase 3 cycle 57~58 skeleton 완성)
+- §7 누적 cycle 예상 40~50
+- §8 의무 (M5 + ③ chain + 6 영역 sweep)
+- §9 참조
+
+본 plan 실 진입 = 사용자 명시 GO directive 의무 (현 = 검토 단계).
+
+### 8.55.5 다음 세션 첫 액션 우선순위
+
+1. **Phase 5 사용자 GO directive 대기** — 5 영역 의 우선순위 사용자 결정.
+2. **별개 cycle** — 잔여 ENUM 의 신규 endpoint 도입 chain (room/message/profile 등).
+3. **manual test 시점 도달** — SMTP 실제 설치 + Let's Encrypt 발급 + production stack 기동 + .env.production secrets 입력.
+4. **별개 cycle** — bot framework 의 streaming SSE 의 production 검증 + Anthropic + OpenAI 실 API key 의 smoke.
+
+### 8.55.6 manual test 의무 (사용자) — Phase 4 production 진입
+
+- `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env.production up -d`
+- `bash deploy/scripts/certbot_init.sh` 실 도메인 인증서 발급
+- `curl -X POST -H "X-Request-ID: smoke-1" https://tootalk.demo/api/auth/login` JSON log line 의 request_id correlation 검증
+- `mysql tootalk -e "SELECT * FROM user_activity_log ORDER BY created_at DESC LIMIT 20;"` audit log 의 actual SQL row 검증
+
+---
+
 ## 8.54 사이클 116~117 + Phase 4 plan 18 cycle 본문 완성 (2026-05-22 신설)
 
 ### 8.54.1 Phase 4 18 cycle (cycle 100~117) 총괄
