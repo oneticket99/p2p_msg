@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 70)</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 71)</title>
 <!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 44 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
      마지막 갱신 라인 = "2026-05-20 17:00 KST — 사이클 44 (X3DH session fan-out + 16 PASS + Phase 2 누계 215)".
@@ -88,7 +88,7 @@
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-21 11:30 KST</strong> — 사이클 70 (Anthropic Messages API client + serialize/parse/transport + 4 종 예외 매핑 + 32 PASS 6 TestClass + 802 pytest + drift 0건 29 연속)<br>
+    최근 갱신 시점: <strong>2026-05-21 12:30 KST</strong> — 사이클 71 (AnthropicProvider ↔ AnthropicClient adapter + lazy from_env + 3 신규 PASS + 804 pytest + drift 0건 30 연속)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -96,7 +96,7 @@
 <nav class="toc">
   <strong>목차</strong>
   <ol>
-    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.76 / 10</a></li>
+    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.77 / 10</a></li>
     <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.33</a></li>
     <li><a href="#sec-3">약점 (Productization Weaknesses)</a></li>
     <li><a href="#sec-4">시장 포지셔닝 옵션 (A/B/C/D)</a></li>
@@ -129,7 +129,7 @@
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 차단 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설)</td></tr>
     <tr><td>세션 간 정합</td><td class="center">9.74 / 10</td><td class="center"><span class="up">9.72 → 9.74 ▲</span></td><td>handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무</td></tr>
     <tr><td>보안 hardening</td><td class="center">8.05 / 10</td><td class="center"><span class="up">8.0 → 8.05 ▲</span></td><td>E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.76 / 10</strong></td><td class="center"><span class="up">9.74 → 9.76 ▲</span></td><td><strong>사이클 70 Anthropic Messages API client — serialize_messages system 분리 + parse_response text block 합본 + AnthropicClient 의 4 field 검증 + HttpTransport Protocol + 4 종 예외 매핑 (auth 401/403 + rate 429 + server 5xx + malformed) + httpx_transport factory (graceful ImportError) + from_env. 32 PASS 6 TestClass. 802 pytest + Phase 3 entry 319 + drift 0건 29 연속</strong></td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.77 / 10</strong></td><td class="center"><span class="up">9.76 → 9.77 ▲</span></td><td><strong>사이클 71 AnthropicProvider ↔ AnthropicClient adapter — llm_proxy.AnthropicProvider 의 NotImplementedError placeholder 회수 + __init__(client) DI + chat 의 client.chat delegate + lazy from_env. 3 신규 PASS (lazy AuthError + 주입 delegate + 재사용). 804 pytest + Phase 3 entry 322 + drift 0건 30 연속. bot framework chain 65~71 의 LLM provider → AnthropicClient → adapter wiring 완성</strong></td></tr>
   </tbody>
 </table>
 

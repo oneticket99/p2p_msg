@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 11:30 KST (사이클 70 — Anthropic Messages API client + serialize/parse/transport + 4 종 예외 매핑 + 32 PASS 6 TestClass + 802 pytest + drift 0건 29 연속)
+> 최근 갱신 시점: 2026-05-21 12:30 KST (사이클 71 — AnthropicProvider ↔ AnthropicClient adapter + lazy from_env + 3 신규 PASS + 804 pytest + drift 0건 30 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
-| **종합** | **9.76 / 10** | 9.74 → 9.76 ▲ | **사이클 70 Anthropic Messages API client — serialize_messages (system 의 top-level 분리 + user/assistant 의 messages 배열) + parse_response (content text block 합본 + role/text 부재 시 MalformedError) + AnthropicClient (api_key/model/max_tokens/base_url 의 4 field 검증 + build_headers + build_body) + HttpTransport Protocol + chat() pipeline 의 4 종 예외 매핑 (auth 401/403 + rate 429 + server 5xx + malformed + 그 외 base) + httpx_transport() factory (httpx 미설치 시 graceful ImportError) + from_env() 환경 변수 ANTHROPIC_API_KEY. 32 PASS 6 TestClass. 802 pytest (770 + 32) + Phase 3 entry 누계 319. drift 0건 29 연속** |
+| **종합** | **9.77 / 10** | 9.76 → 9.77 ▲ | **사이클 71 AnthropicProvider ↔ AnthropicClient adapter — `app/bot/llm_proxy.py` 의 AnthropicProvider 의 NotImplementedError placeholder 제거 + `__init__(client: Optional[AnthropicClient])` 의 dependency injection + chat 의 client.chat delegate + client 부재 시 lazy `from_env()` 의 환경 변수 + httpx_transport default. 기존 1 placeholder 테스트 제거 + 3 신규 (lazy init AuthError + 주입 client delegate + 재사용 호출 카운트). 804 pytest (802 + 3 - 1) + Phase 3 entry 누계 322. drift 0건 30 연속. bot framework chain cycle 65~71 의 horizontal layer 의 전수 통합 — LLM provider abstraction (cycle 65) → Anthropic 의 실 HTTP layer (cycle 70) → adapter wiring (cycle 71) 의 완성** |
 
 ---
 

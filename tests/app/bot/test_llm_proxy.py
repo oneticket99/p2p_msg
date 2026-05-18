@@ -105,10 +105,67 @@ class TestAnthropicProvider:
         assert AnthropicProvider.is_available() is False
 
     @pytest.mark.asyncio
-    async def test_chat_raises_not_implemented(self) -> None:
+    async def test_chat_lazy_init_no_env_raises(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # client 미주입 + 환경 변수 부재 = from_env 의 AuthError propagation
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        from app.bot.anthropic_client import AnthropicAuthError
+
         provider = AnthropicProvider()
-        with pytest.raises(NotImplementedError, match="httpx \\+ Messages API binding"):
+        with pytest.raises(AnthropicAuthError, match="ANTHROPIC_API_KEY"):
             await provider.chat([_user_msg()])
+
+    @pytest.mark.asyncio
+    async def test_chat_delegates_to_injected_client(self) -> None:
+        # mock client 주입 = chat 의 직접 delegate + 200 응답 의 ASSISTANT 반환
+        from app.bot.anthropic_client import AnthropicClient
+        from app.bot.llm_proxy import BotRole
+
+        async def _stub_transport(
+            url: str, headers: dict, body: dict
+        ):
+            return (
+                200,
+                {
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": "응답"}],
+                },
+            )
+
+        client = AnthropicClient(api_key="sk-x", transport=_stub_transport)
+        provider = AnthropicProvider(client=client)
+        reply = await provider.chat([_user_msg()])
+        assert reply.role == BotRole.ASSISTANT
+        assert reply.content == "응답"
+
+    @pytest.mark.asyncio
+    async def test_chat_reuses_client_across_calls(self) -> None:
+        # 동일 client 재사용 + 호출 카운트 검증
+        from app.bot.anthropic_client import AnthropicClient
+
+        call_count = 0
+
+        async def _counting_transport(
+            url: str, headers: dict, body: dict
+        ):
+            nonlocal call_count
+            call_count += 1
+            return (
+                200,
+                {
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": f"reply-{call_count}"}],
+                },
+            )
+
+        client = AnthropicClient(
+            api_key="sk-x", transport=_counting_transport
+        )
+        provider = AnthropicProvider(client=client)
+        await provider.chat([_user_msg()])
+        await provider.chat([_user_msg()])
+        assert call_count == 2
 
 
 class TestSelectLLMProvider:

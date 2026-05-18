@@ -126,12 +126,23 @@ class MockLLMProvider:
 
 
 class AnthropicProvider:
-    """Anthropic Claude API placeholder — 사이클 65 skeleton.
+    """Anthropic Claude Messages API provider.
 
-    실 구현 = httpx + ANTHROPIC_API_KEY + Messages API (claude-3-5-sonnet 등).
-    본 cycle = is_available 의 ANTHROPIC_API_KEY env + httpx import 검증 의 graceful
-    degrade. 별개 cycle 의 실 HTTP binding + streaming 응답 + retry backoff 의무.
+    cycle 70 의 ``app.bot.anthropic_client.AnthropicClient`` 를 LLMProvider
+    Protocol 의 의 adapter 로 wrapping. caller 는 client 를 명시 주입 가능 +
+    부재 시 ``from_env()`` 의 lazy 생성 (chat 호출 시점 의 환경 변수 + httpx
+    transport 의 의 활성).
+
+    Notes
+    -----
+    is_available classmethod = 환경 변수 + httpx import 의 가용성 prefetch.
+    chat = AnthropicClient.chat 의 delegate + 동일 예외 (Auth/RateLimit/Server/
+    Malformed/AnthropicError) 의 그대로 propagation.
     """
+
+    def __init__(self, client: Optional[object] = None) -> None:
+        # client 는 AnthropicClient 또는 None — None 일 시 chat 호출 시 lazy 생성
+        self._client = client
 
     @classmethod
     def is_available(cls) -> bool:
@@ -146,11 +157,26 @@ class AnthropicProvider:
         return True
 
     async def chat(self, messages: List[BotMessage]) -> BotMessage:
-        """실 chat 미구현 — 별개 cycle 의 httpx binding 의무."""
+        """messages → assistant reply via AnthropicClient delegate.
 
-        raise NotImplementedError(
-            "AnthropicProvider.chat — httpx + Messages API binding 별개 cycle 의무"
-        )
+        client 미주입 시 ``from_env()`` 의 lazy 생성 (ANTHROPIC_API_KEY 환경
+        변수 + httpx_transport default). 후속 호출 의 동일 client 재사용.
+
+        Raises
+        ------
+        AnthropicAuthError, AnthropicRateLimitError, AnthropicServerError,
+        AnthropicMalformedError, AnthropicError
+            (``app.bot.anthropic_client`` 의 예외 propagation)
+        ValueError
+            messages 빈 list.
+        """
+
+        if self._client is None:
+            # 순환 import 회피 — chat 호출 시점 의 lazy import
+            from app.bot.anthropic_client import from_env
+
+            self._client = from_env()
+        return await self._client.chat(messages)  # type: ignore[union-attr]
 
 
 def select_llm_provider(name: Optional[str] = None) -> Type[LLMProvider]:
