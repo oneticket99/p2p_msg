@@ -7,3 +7,8 @@ python-dotenv>=1.0
 asyncmy>=0.2.10
 # 이메일 OTP 발송 (사용자 directive 2026-05-17 — postfix 데모 서버 의 SMTP client)
 aiosmtplib>=3.0
+# Phase 3 bot framework LLM provider HTTP transport (사용자 directive 2026-05-22)
+# AnthropicClient + OpenAIClient httpx_transport factory 의 실 binding.
+# httpx 미설치 시 AnthropicProvider.is_available() / OpenAIProvider.is_available()
+# 모두 False 반환 (graceful) → MockLLMProvider 폴백. 프로덕션 배포 의무.
+httpx>=0.27

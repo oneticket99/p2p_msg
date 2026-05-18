@@ -240,8 +240,11 @@ class MyProvider:
 - ~~**cycle 94**~~ — ✅ 완료 — CachedEmbedder `threading.RLock` thread-safety + double-check pattern + 3 concurrent test (reviewer P1-2)
 - ~~**cycle 95**~~ — ✅ 완료 — `jailbreak_detector.info_exfiltration` patterns 2 → 17 확장 (env vars + JWT + SSH/PEM + DB credential + Korean PII + RRN regex + SQL injection + shell command) + 21 신규 test (QA P2)
 - ~~**cycle 96**~~ — ✅ 완료 — `server/main.py` provider 3 layer fallback chain (Anthropic → OpenAI → Mock) + 분기별 log 명문 + 3 신규 integration test (QA P3)
-- **cycle 97~99** — Phase 3 종결 + `v0.3.0-phase3-bot` tag + release-agent + handoff 갱신 (본 cycle = 97 정책 본문 갱신)
-- **cycle 100~117** — Phase 4 진입 — [2026-05-22-phase4-infra-setup.md](../exec-plans/active/2026-05-22-phase4-infra-setup.md)
+- ~~**cycle 97**~~ — ✅ 완료 — 본 정책 §10.1 strike-through + Phase 3 종결 chain 진입 + `server/requirements.txt` `httpx>=0.27` entry 추가 (사용자 directive 2026-05-22 "httpx 설치도 계획에 잡아") + Phase 4 infra plan §1.4 사전 의존성 install 섹션 신설
+- **cycle 98** — 평가 snapshot (productization + vibe-coding + HTML 2 mirror) 4 영역 rewrite
+- **cycle 99** — `v0.3.0-phase3-bot` tag + release-agent + handoff §8.50+ 갱신
+- **cycle 100** — Phase 4 진입 prerequisite — `pip install -r server/requirements.txt` 의 httpx 실 install + `pytest tests/server/test_main_integration.py` 의 2 skip → 0 skip 전환 검증 ([2026-05-22-phase4-infra-setup.md §1.4](../exec-plans/active/2026-05-22-phase4-infra-setup.md))
+- **cycle 101~117** — Phase 4 본문 — [2026-05-22-phase4-infra-setup.md](../exec-plans/active/2026-05-22-phase4-infra-setup.md)
 
 ---
 
