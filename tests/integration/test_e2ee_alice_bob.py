@@ -47,7 +47,7 @@ class TestAliceBobE2EE:
         assert alice.sending_chain.counter == 0
 
         # 3. Bob = responder + Alice public 수신 직후 advance_dh_ratchet
-        # 단 Bob 측 = Alice 의 root_key (shared_secret 의 사후 advance) 와 다름
+        # 단 Bob 단 = Alice 의 root_key (shared_secret 의 사후 advance) 와 다름
         # 본 test = sending_chain 단독 검증 (양측 chain 동기 = 별도 X3DH 의무)
 
         # Alice → 메시지 송신 (chain advance)

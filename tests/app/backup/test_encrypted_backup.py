@@ -137,6 +137,21 @@ class TestDeriveBackupKey:
 
         assert _BACKUP_VERSION == "2"
 
+    def test_v1_bundle_rejected_by_decrypt(self) -> None:
+        """qa cycle 51 차단 사유 ① 회수 — v1 spoof bundle decrypt 차단 의무."""
+
+        entries = _sample_entries()
+        bundle_v2 = encrypt_backup(entries, "secret", created_at_ms=100)
+        # v1 spoof = version 만 v1 으로 교체 + salt / blob 동일
+        v1_spoof = BackupBundle(
+            version="1",
+            created_at_ms=bundle_v2.created_at_ms,
+            salt=bundle_v2.salt,
+            blob=bundle_v2.blob,
+        )
+        with pytest.raises(ValueError, match="unsupported backup version"):
+            decrypt_backup(v1_spoof, "secret")
+
     def test_different_password_different_key(self) -> None:
         salt = secrets.token_bytes(16)
         k1 = derive_backup_key("password-a", salt)

@@ -35,7 +35,7 @@ class TestDecryptOOO:
         """counter = chain.counter — 정상 forward."""
 
         root_key = b"\x42" * 32
-        # 송신 측 chain (Alice) + 수신 측 chain (Bob) 동기 시작
+        # 송신 단 chain (Alice) + 수신 단 chain (Bob) 동기 시작
         send_chain = ChainKey(key=root_key, counter=0)
         state = _make_state_with_chain(root_key, counter=0)
 

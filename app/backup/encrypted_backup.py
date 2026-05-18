@@ -245,8 +245,17 @@ def decrypt_backup(bundle: BackupBundle, password: str) -> List[BackupEntry]:
     -----
     잘못된 password 또는 tampered blob = AES-GCM InvalidTag exception raise.
     caller 의 wrap 의무.
+
+    version enforcement = `bundle.version` 의 ``_BACKUP_VERSION`` 일치 의무.
+    v1 (HKDF 직접 derive) bundle 의 decrypt 차단 — cycle 50 의 backward
+    incompatible bump (PBKDF2 stretching) 의 의도 정합.
     """
 
+    if bundle.version != _BACKUP_VERSION:
+        raise ValueError(
+            f"unsupported backup version — bundle={bundle.version} "
+            f"(기대 {_BACKUP_VERSION}, cycle 50 의 PBKDF2 stretching bump)"
+        )
     key = derive_backup_key(password, bundle.salt)
     raw_json = aes_gcm_decrypt(key, bundle.blob)
     return _json_to_entries(raw_json)

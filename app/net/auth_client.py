@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 auth REST API client — 회원가입 + OTP + 로그인 + 비번 재설정.
 
-aiohttp + qasync 정합 — UI dialog 측 호출 시 GUI freeze 없음.
+aiohttp + qasync 정합 — UI dialog 단 호출 시 GUI freeze 없음.
 """
 
 from __future__ import annotations

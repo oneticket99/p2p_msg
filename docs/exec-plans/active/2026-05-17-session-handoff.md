@@ -526,6 +526,60 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.48 사용자 비판 "서브에이전트 적극 활용" 회수 — workflow ③ serial chain 완성 (사이클 49 → 50 → 51 → 52)
+
+**사용자 비판 회수**:
+
+- 사용자 directive — "서브에이전트 적극적으로 활용해서 작업 하는거 맞아?"
+- 인정 — cycle 47/48/50 = main session 직접 작업 / cycle 49 = reviewer-agent 1회만 호출 / qa-agent + observability-agent 누락
+- 회수 = workflow ③ 직렬 chain 의 의무 spawn — reviewer (cycle 49) → qa (cycle 51) → observability (cycle 52) 완전 chain
+
+**3 agent serial chain 산출**:
+
+| cycle | agent | 판정 | 산출 |
+|---|---|---|---|
+| 49 | reviewer-agent | CONDITIONAL PASS | P0 차단 2 (BPE 13 + pronoun 5 of 5 crypto file) + P1 권장 3 + P2 향상 4 |
+| 51 | qa-agent | CONDITIONAL PASS | P0 차단 3 — decrypt_backup version enforcement gap + BPE 11 잔존 + pronoun 9 잔존 (정정 범위 밖) |
+| 52 | observability-agent | **PASS** | PBKDF2 600K iter = 94.5ms 평균 (OWASP < 1000ms 의 10.5x margin) + pytest 3.03s + import smoke 27.5ms + env var 7/7 baseline 정합 + cipher suite OWASP 2023 정합 |
+
+**cycle 52 정정 의 차단 사유 3종 회수**:
+
+- BPE 12건 정정 — `app/ui/{signup,login}_dialog.py` + `app/net/auth_client.py` + `tests/app/crypto/{test_double_ratchet,test_x3dh,test_decrypt_ooo}.py` + `tests/integration/{test_e2ee_alice_bob,test_aiortc_loopback}.py` (qa report 11 + 추가 1 detect = 12)
+- self-pronoun 9건 정정 — `app/net/signaling_client.py` (3건) + `app/core/app_state.py` (4건) + `tests/app/crypto/test_session.py` (2건) — self-pronoun → `self` + 3rd-pronoun → `peer` 일괄
+- decrypt_backup version enforcement — `app/backup/encrypted_backup.py:241~263` 의 `if bundle.version != _BACKUP_VERSION: raise ValueError(...)` + test_v1_bundle_rejected_by_decrypt 신규 PASS (v1 spoof bundle 의 의도 정합 차단)
+
+**전수 검증 결과**:
+
+- BPE U+CE21 단독 전체 (app/ + tests/ + docs/) = 0건
+- self-pronoun (self / 3rd person 패턴) 전체 = 0건
+- pytest 483 passed (482 + 1 신규) + 9 deselected
+- drift 0건 14 연속 사이클 37~52
+
+**workflow ③ 검증·관측 직렬 chain 완성 판정**:
+
+- reviewer ✅ + qa ✅ + observability ✅ = Phase 2 마무리 게이트 PASS 정식 도달
+- 다음 권장 = release-agent (cycle 53) — 머지 게이트 3종 (reviewer + qa + observability) 통과 검증 후 PR 진입
+- 또는 designer chiptune (사용자 직접 의무) + 별개 cycle
+
+**메타 가드레일 갱신 의무 (사용자 비판 영구화)**:
+
+- memory `feedback_workflow_strict_doc_first.md` + `feedback_workflow_preferences.md` 정합 강화
+- 매 cycle 자동 chain 의무 — code commit 직후 reviewer → qa → observability 의 의무 spawn (단순 hotfix 의 별개 cycle 분리 가능)
+- 1회 비판 = 가드레일 메타 의 즉시 반영 (memory `feedback_repeat_criticism_permanent_record.md` 의 2회 회 의 사전 차단)
+
+**핵심 commit 누적 (사이클 49~52)**:
+
+```
+(cycle 52 정정 commit — 본 §8.48 신설 직후 push 예정)
+f082736 fix(backup,ui): cycle 50 PBKDF2 stretching v2 + SPDX header 정정
+a2c157e fix(crypto): cycle 49 reviewer-agent P0 정정 — BPE 13 + pronoun 5
+4b96658 feat(backup): Phase 2 encrypted backup / restore + 22 PASS 사이클 48
+9e2dd3c feat(notifications): Phase 2 push 알림 skeleton 4 platform + 31 PASS 사이클 47
+05041c0 feat(crypto): Phase 2 Sender Keys 그룹 N×M→N+M reduction + 19 PASS 사이클 46
+```
+
+---
+
 ### 8.47 Phase 2 마무리 reviewer-agent CONDITIONAL PASS → P0 정정 cycle 완료 (사이클 49)
 
 **reviewer-agent cycle 49 산출 — CONDITIONAL PASS**:

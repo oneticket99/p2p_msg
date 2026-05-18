@@ -38,7 +38,7 @@ class SignupDialog(QDialog):
     Parameters
     ----------
     auth_client : AuthClient
-        REST API client (호출자 측 생성 + 주입).
+        REST API client (호출자 단 생성 + 주입).
     parent : QWidget | None
         부모 위젯.
     """

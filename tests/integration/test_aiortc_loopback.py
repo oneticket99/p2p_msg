@@ -72,13 +72,13 @@ class TestDataChannelLoopback:
 
             @channel.on("open")
             def _on_open() -> None:
-                # offerer 측 DataChannel open — 즉시 메시지 송신
+                # offerer 단 DataChannel open — 즉시 메시지 송신
                 channel.send("hello tootalk")
                 open_event.set()
 
             @pc2.on("datachannel")
             def _on_dc(dc: object) -> None:
-                # answerer 측 신규 channel 수신 — message handler 부착
+                # answerer 단 신규 channel 수신 — message handler 부착
                 @dc.on("message")  # type: ignore[attr-defined]
                 def _on_msg(message: object) -> None:
                     if not received.done():

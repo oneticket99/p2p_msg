@@ -56,7 +56,7 @@ class LoginDialog(QDialog):
 
     @property
     def token(self) -> Optional[str]:
-        """로그인 PASS 시 세션 토큰 (accept() 후 caller 측 조회)."""
+        """로그인 PASS 시 세션 토큰 (accept() 후 caller 단 조회)."""
 
         return self._token
 

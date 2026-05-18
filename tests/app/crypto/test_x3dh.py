@@ -57,12 +57,12 @@ class TestX3DHFullFlow:
     def test_alice_bob_with_opk(self) -> None:
         """Alice + Bob 의 X3DH 결과 동일 (peer 대칭) — OPK 포함."""
 
-        # Bob 측 keypair 4종 (IK + SPK + OPK)
+        # Bob 단 keypair 4종 (IK + SPK + OPK)
         bob_ik_priv, bob_ik_pub = generate_x25519_keypair()
         bob_spk_priv, bob_spk_pub = generate_x25519_keypair()
         bob_opk_priv, bob_opk_pub = generate_x25519_keypair()
 
-        # Alice 측 IK
+        # Alice 단 IK
         alice_ik_priv, alice_ik_pub = generate_x25519_keypair()
 
         # Alice initiator

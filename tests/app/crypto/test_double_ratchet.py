@@ -138,11 +138,11 @@ class TestEncryptDecryptMessage:
         send_chain = ChainKey(key=root)
         recv_chain = ChainKey(key=root)
 
-        # 송신 측 2 step advance
+        # 송신 단 2 step advance
         payload1, send_chain = encrypt_message(send_chain, b"msg1")
         payload2, send_chain = encrypt_message(send_chain, b"msg2")
 
-        # 수신 측 msg1 skip → msg2 직접 decrypt = FAIL (chain mismatch)
+        # 수신 단 msg1 skip → msg2 직접 decrypt = FAIL (chain mismatch)
         with pytest.raises(InvalidTag):
             decrypt_message(recv_chain, payload2)
 

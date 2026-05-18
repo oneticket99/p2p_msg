@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 21:30 KST (사이클 50 — reviewer cycle 49 P0 정정 + PBKDF2 stretching + SPDX 정정 + Phase 2 누계 289 케이스 + 482 pytest + 자율 chain drift 0건 13 연속 사이클 37~50)
+> 최근 갱신 시점: 2026-05-20 22:30 KST (사이클 51+52 — qa-agent + observability-agent serial chain PASS + 사용자 비판 "서브에이전트 적극 활용" 회수 + 차단 사유 3종 정정 + Phase 2 누계 290 케이스 + 483 pytest + drift 0건 14 연속 사이클 37~52)
 
 ---
 
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 10.0 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 | 10.0 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.82 / 10** | 9.8 → 9.82 ▲ | **사이클 49 reviewer-agent CONDITIONAL PASS + P0 정정 (BPE 13 + pronoun 5) + 사이클 50 PBKDF2-HMAC-SHA256 600K stretching (v1 → v2) + SPDX header (chat_view + main_window) + 24 PASS. Phase 2 누계 289 케이스 + 482 pytest. drift 0건 13 연속** |
+| **종합** | **9.85 / 10** | 9.82 → 9.85 ▲ | **사이클 51 qa-agent + 52 observability-agent serial chain PASS (사용자 비판 "서브에이전트 적극 활용" 회수). workflow ③ 완성 (reviewer ✅ + qa ✅ + observability ✅) + 차단 사유 3종 정정. Phase 2 누계 290 + 483 pytest. drift 0건 14 연속** |
 
 ---
 

@@ -160,7 +160,7 @@ class SignalingClient(QObject):
         await self._send({"type": "LEAVE", "room": room_id, "peer_id": peer_id})
 
     async def send_offer(self, to: str, sdp: str) -> None:
-        """``OFFER`` 송신 — 본인 peer_id 가 미등록이면 거부."""
+        """``OFFER`` 송신 — self peer_id 가 미등록이면 거부."""
 
         from_ = self._require_self_peer_id()
         await self._send(
@@ -296,12 +296,12 @@ class SignalingClient(QObject):
             log.warning("알 수 없는 메시지 type=%r — 무시", msg_type)
 
     def _require_self_peer_id(self) -> str:
-        """본인 peer_id 가 ``AppState`` 에 등록돼 있지 않으면 예외."""
+        """self peer_id 가 ``AppState`` 에 등록돼 있지 않으면 예외."""
 
         peer_id = self._state.peer_id
         if not peer_id:
             raise RuntimeError(
-                "본인 peer_id 가 등록돼 있지 않습니다 — join() 을 먼저 호출하세요."
+                "self peer_id 가 등록돼 있지 않습니다 — join() 을 먼저 호출하세요."
             )
         return peer_id
 

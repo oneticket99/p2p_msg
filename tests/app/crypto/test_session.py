@@ -66,7 +66,7 @@ class TestInitiator:
         # root key advanced (shared_secret 와 다름)
         assert state.root_key != ss
         assert state.peer_dh_public == peer_pk
-        # 본인 keypair 생성 검증
+        # self keypair 생성 검증
         assert len(state.my_dh_private) == 32
         assert len(state.my_dh_public) == 32
 
@@ -135,7 +135,7 @@ class TestAdvanceDhRatchet:
         assert next_state.receiving_chain.counter == 0
 
     def test_keypair_rotated(self) -> None:
-        # forward secrecy = 본인 keypair 갱신
+        # forward secrecy = self keypair 갱신
         _, peer_pk = generate_x25519_keypair()
         state = initialize_session_responder(shared_secret=b"\x42" * 32)
         old_sk = state.my_dh_private
