@@ -526,6 +526,77 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.46 telegram polling halt 진단 정정 (사이클 46 — 인계 직후 신규 session)
+
+**사이클 45 가설 회수**:
+
+- 사이클 45 가설 = `mcp.notification({method: 'notifications/claude/channel'})` 의 client-side handler 미등록 → **가설 회수**
+- 신규 검증 (사이클 46) = channel server PID 9107 alive 단 `bot.start()` polling **silently halted** 확정
+
+**진단 절차 + 증거**:
+
+- 본 session = fresh start (`claude --plugin-dir <telegram_plugin>` PID 9081, `--resume` 미사용) — 사이클 45 의 권장 옵션 A 정합
+- 채널 server PID chain 9081 → 9103 (bun wrapper) → 9107 (bun server.ts) 정상 spawn
+- 송신 outbound PASS — MCP reply tool message_id 33 + 37 + 39 + Bot API direct PASS
+- 사용자 텔레그램 메시지 "PING-9107" 송신 (msg_id 38) — channel server consume 미수행
+- 외부 getUpdates 직접 호출 결과 = PING-9107 본문 + 충돌 (409 Conflict) 부재 = **server 9107 의 long-poll 정지 상태 확정**
+- pending_update_count = 1 5초 stuck (server consumer 부재)
+- server.ts L988-992 의 코멘트 = "a single ETIMEDOUT/ECONNRESET/DNS failure rejected bot.start(), catch returned, polling stopped permanently while the process stayed alive (MCP stdin keeps it running). Outbound tools kept working but the bot was deaf to inbound messages until a full restart." → **본 증상 직접 정합**
+- 단 v0.0.6 server.ts L993-1032 = retry loop with backoff — 본 패치 적용본 (정합)
+- 정확 원인 = startup 시점 409 conflict 8회 누계 후 `if (is409 && attempt >= 8) return` (L1017-1022) 의 영구 정지 trigger 의심 (직전 session lingering process + 본 session race)
+
+**본 session 영향**:
+
+- outbound (reply / react / edit_message / download_attachment) = 정상
+- inbound `<channel source="telegram">` tag = 본 session 도달 0건 (사용자 CLI 직접 입력 의무)
+- M7 텔레그램 보고 = outbound 직접 경로만 사용 (caveman ultra 5줄 이하 본문 유지)
+
+**회복 의무 (다음 session entry)**:
+
+```bash
+# (A) 권장 — claude CLI 재기동 + telegram plugin 자동 spawn (current process tree 전체 종료 + fresh)
+exit                                                                                 # 현 session 종료
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
+./tools/claude-telegram.sh                                                           # fresh new conversation (handoff §8.45 의 권장 옵션 A 정합)
+
+# (B) 본 session 의 plugin 만 fresh start (위험 — wrapper exit 시 MCP plugin disconnect)
+kill 9107 9103                                                                       # bun server + wrapper
+# MCP plugin 자동 respawn 미보장 — outbound tool 도 disconnect 가능
+```
+
+**회복 검증 의무 (다음 session)**:
+
+1. `ps aux | grep "bun.*server.ts"` 의 새 PID 확인 (현 9107 != 새 PID)
+2. server stderr log 의 `telegram channel: polling as @tootalkDev_bot` line 등장 확인
+3. 사용자 텔레그램 메시지 1건 송신 + 본 session 의 `<channel source="telegram">` inbound tag 즉시 도달 확인
+4. `curl getWebhookInfo` 의 pending_update_count 의 0 회복 + 사용자 송신 직후 1 → 0 의 즉시 consume 확인
+5. reply tool 의 송신 (양방향 완전 검증)
+
+**plugin 0.0.6 bug report 의무**:
+
+- 본 증상 = startup race 의 polling 영구 정지 (server.ts L1017-1022 의 8x 409 의 retry 포기 + 본 process MCP stdin 유지 의 영구 deaf 패턴)
+- 권장 fix = 8x 409 후 `process.exit(1)` 로 wrapper + claude CLI 의 disconnect 명시 (영구 deaf 회피)
+- GitHub issue trigger candidate — claude-plugins-official/external_plugins/telegram
+
+**핵심 commit 누적** (사이클 46):
+
+```
+68f58ce docs(handoff): §8.45 사이클 45 telegram routing 차단 진단 추가 (이전 cycle)
+(본 cycle entry — handoff §8.46 polling halt 진단 정정)
+```
+
+**다음 session 진입 — 단순 1 명령** (사이클 45 의 옵션 A 재확인):
+
+```bash
+exit
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
+./tools/claude-telegram.sh
+```
+
+→ `exec claude --plugin-dir <telegram_plugin_path>` = telegram plugin 강제 load + channel server **새 PID 의 fresh spawn** + 즉시 polling start + 양방향 routing 활성. 사이클 45 의 `--resume` 의 `<channel>` tag 차단 회귀 회피.
+
+---
+
 ### 8.45 Phase 2 multi-device chain 3 cycle + X3DH fan-out + 평가 staleness 회수 + telegram bot 재연결 미완료 (사이클 42~44 + post-44 telegram task)
 
 **진행 완료**:
@@ -563,7 +634,7 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - 새 token = `8853758309:AAHLCc5v9r9yVs2D5__VTc4waFHqZRBL2JQ` (Bot API getMe + sendMessage 검증 PASS)
 - `.env.telegram` 갱신 완료 (송신 의 HTTP API 직접 경로 정상)
 - `~/.claude/channels/telegram/.env` 의 channel server token 갱신 완료
-- `~/.claude/channels/telegram/approved/201073550` 신설 완료 (chat_id = 사용자 본인 user ID = `@oneticket99`)
+- `~/.claude/channels/telegram/approved/201073550` 신설 완료 (chat_id = 사용자 의 user ID = `@oneticket99`)
 - access.json — dmPolicy=allowlist + allowFrom=[201073550] 유지
 - **차단** — channel server (구 PID 55077 bun server.ts) kill 후 자동 respawn 미동작 + MCP plugin_telegram disconnected (reply / react / edit_message / download_attachment 4 tool unavailable)
 - Telegram API 의 inbound 5 메시지 queue 잔존 (pending_update_count=5 — getUpdates 직접 확인 결과: "하이" / "송수신 확인해" / "/start" / "hi" / "test")
