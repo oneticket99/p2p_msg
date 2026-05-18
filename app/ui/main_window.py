@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 메인 윈도우 — QMainWindow 상속.
 
 레이아웃:

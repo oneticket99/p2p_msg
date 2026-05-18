@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """ChatView — 메시지 리스트 스크롤 영역.
 
 QScrollArea 안에 QVBoxLayout 을 배치하고 신규 메시지가 도착할 때마다

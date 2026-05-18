@@ -114,7 +114,7 @@ class TestBackupBundleValidation:
 
 
 class TestDeriveBackupKey:
-    """``derive_backup_key`` HKDF 검증."""
+    """``derive_backup_key`` PBKDF2-HMAC-SHA256 stretching 검증 (사이클 50)."""
 
     def test_deterministic(self) -> None:
         salt = secrets.token_bytes(16)
@@ -122,6 +122,20 @@ class TestDeriveBackupKey:
         k2 = derive_backup_key("password", salt)
         assert k1 == k2
         assert len(k1) == 32
+
+    def test_pbkdf2_iteration_constant(self) -> None:
+        """OWASP 2023 권장 의 600 000 iteration 의 정합 검증."""
+
+        from app.backup.encrypted_backup import _PBKDF2_ITERATIONS
+
+        assert _PBKDF2_ITERATIONS == 600_000
+
+    def test_backup_version_is_v2(self) -> None:
+        """encrypt_backup 의 BackupBundle 의 version field = v2 (PBKDF2 stretching)."""
+
+        from app.backup.encrypted_backup import _BACKUP_VERSION
+
+        assert _BACKUP_VERSION == "2"
 
     def test_different_password_different_key(self) -> None:
         salt = secrets.token_bytes(16)
