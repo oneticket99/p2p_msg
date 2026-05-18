@@ -37,6 +37,7 @@ from .protocol import (
     is_valid_client_type,
     wire_to_internal,
 )
+from .db.repositories.user_activity import ActivityAction, log_activity
 from .room import Peer, RoomRegistry
 from .signaling_persistence import persist_peer_join, persist_peer_leave
 
@@ -183,6 +184,21 @@ async def _handle_join(
             db_pool, room_id=new_peer.db_room_id, user_id=new_peer.user_id
         )
 
+    # cycle 127 — ROOM_JOIN audit (pool 가용 + user_id 가용 시)
+    if db_pool is not None and new_peer.user_id is not None:
+        try:
+            await log_activity(
+                db_pool,
+                user_id=new_peer.user_id,
+                action=ActivityAction.ROOM_JOIN,
+                target_id=new_peer.db_room_id,
+                metadata={"room_id": room_id, "peer_id": peer_id},
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "ROOM_JOIN audit 실패 user_id=%d: %s", new_peer.user_id, exc
+            )
+
     return new_peer
 
 
@@ -214,6 +230,21 @@ async def _handle_leave(
         await persist_peer_leave(
             db_pool, room_id=peer.db_room_id, user_id=peer.user_id
         )
+
+    # cycle 127 — ROOM_LEAVE audit (pool 가용 + user_id 가용 시)
+    if db_pool is not None and peer.user_id is not None:
+        try:
+            await log_activity(
+                db_pool,
+                user_id=peer.user_id,
+                action=ActivityAction.ROOM_LEAVE,
+                target_id=peer.db_room_id,
+                metadata={"room_id": room_id, "peer_id": peer_id},
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "ROOM_LEAVE audit 실패 user_id=%d: %s", peer.user_id, exc
+            )
 
 
 async def _handle_relay(
