@@ -169,7 +169,7 @@ p2p_msg/
 │   │   ├── auth_handlers.py       # /api/auth/{register,verify,login,reset/*}
 │   │   ├── devices_handlers.py    # 사이클 43 — POST/GET/DELETE /api/devices (multi-device)
 │   │   ├── messages_handlers.py   # 사이클 60 — GET /api/messages (lazy load)
-│   │   └── bot_handlers.py        # 사이클 74 — POST /api/bot/chat LLM proxy (server-side ANTHROPIC_API_KEY 격리)
+│   │   └── bot_handlers.py        # 사이클 74 + 78 + 82 — POST /api/bot/chat LLM proxy + user_id type hardening + jailbreak detector 통합
 │   ├── auth/                      # 사이클 20 — 5 use case + middleware
 │   │   ├── __init__.py
 │   │   ├── exceptions.py          # 7 도메인 예외 + HTTP status 매핑

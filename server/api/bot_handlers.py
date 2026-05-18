@@ -37,6 +37,7 @@ from app.bot.anthropic_client import (
     AnthropicRateLimitError,
     AnthropicServerError,
 )
+from app.bot.jailbreak_detector import JailbreakSignal, detect, summarize_categories
 from app.bot.llm_proxy import BotMessage, BotRole, LLMProvider, RateLimitGate
 
 log = logging.getLogger(__name__)
@@ -49,6 +50,45 @@ APP_KEY_RATE_GATE: web.AppKey[RateLimitGate] = web.AppKey("bot_rate_gate", RateL
 _MAX_MESSAGES_PER_REQUEST = 32
 # 단일 메시지 content 의 한도 (BotMessage 자체 16KB cap 의 정합)
 _MAX_CONTENT_BYTES = 16 * 1024
+
+
+def _scan_jailbreak(messages: List[BotMessage]) -> None:
+    """user content 의 jailbreak heuristic detection — BLOCKED 시 400 raise.
+
+    SUSPICIOUS 신호 = log warning + 처리 진행 (false positive 회피).
+    BLOCKED 신호 = HTTP 400 의 즉시 raise (LLM provider 호출 차단).
+
+    cycle 81 의 `app.bot.jailbreak_detector.detect` 의 user role 메시지 의
+    content 의 안 의 instruction override 시도 detection.
+    """
+
+    for idx, msg in enumerate(messages):
+        if msg.role != BotRole.USER:
+            continue
+        result = detect(msg.content)
+        if result.signal == JailbreakSignal.NONE:
+            continue
+        cats = summarize_categories(result)
+        if result.signal == JailbreakSignal.BLOCKED:
+            log.warning(
+                "jailbreak BLOCKED messages[%d] score=%d categories=%s",
+                idx,
+                result.score,
+                cats,
+            )
+            raise web.HTTPBadRequest(
+                reason=(
+                    f"prompt injection 차단 — messages[{idx}] "
+                    f"categories={cats}"
+                )
+            )
+        # SUSPICIOUS — log + 진행 (false positive 회피)
+        log.info(
+            "jailbreak SUSPICIOUS messages[%d] score=%d categories=%s",
+            idx,
+            result.score,
+            cats,
+        )
 
 
 def _parse_role(raw: str) -> BotRole:
@@ -191,6 +231,9 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
         raise web.HTTPBadRequest(reason="body object 의무")
 
     messages = _parse_messages(body.get("messages"))
+
+    # cycle 82 — jailbreak heuristic detection (user content scan)
+    _scan_jailbreak(messages)
 
     # provider lookup — app context 의 의 등록 의무
     provider: Optional[LLMProvider] = request.app.get(APP_KEY_PROVIDER)
