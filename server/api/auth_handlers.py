@@ -11,8 +11,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Optional
 
 from aiohttp import web
 
@@ -21,6 +22,12 @@ from server.auth import register as register_uc
 from server.auth import reset_password as reset_uc
 from server.auth import verify as verify_uc
 from server.auth.exceptions import AuthError
+from server.db.repositories.user_activity import (
+    ActivityAction,
+    create_session,
+    log_activity,
+)
+from server.middleware.activity import extract_client_ip
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +39,61 @@ def _json_error(exc: AuthError) -> web.Response:
         {"error": exc.code, "message": str(exc)},
         status=exc.http_status,
     )
+
+
+async def _audit(
+    request: web.Request,
+    *,
+    user_id: int,
+    action: ActivityAction,
+    target_id: Optional[int] = None,
+    metadata: Optional[dict] = None,
+) -> None:
+    """log_activity wrapper — pool 부재 시 graceful skip (dev DB_ENABLED=0 정합).
+
+    cycle 119 — DB audit migration 0003 의 actual call site wiring. 모든 auth
+    endpoint 의 success 직후 호출 의무. 실패 = log warning + endpoint 응답 무영향.
+    """
+
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return
+    try:
+        await log_activity(
+            pool,
+            user_id=user_id,
+            action=action,
+            target_id=target_id,
+            ip_address=extract_client_ip(request),
+            user_agent=request.headers.get("User-Agent", "")[:255] or None,
+            metadata=metadata,
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("audit log 실패 (user_id=%d action=%s): %s", user_id, action.value, exc)
+
+
+async def _create_session_row(
+    request: web.Request,
+    *,
+    user_id: int,
+    token: str,
+) -> None:
+    """user_sessions row 생성 — pool 부재 시 graceful skip."""
+
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return
+    try:
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        await create_session(
+            pool,
+            user_id=user_id,
+            session_token_hash=token_hash,
+            ip_address=extract_client_ip(request) or "0.0.0.0",
+            user_agent=request.headers.get("User-Agent", "")[:255] or None,
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("session 생성 실패 (user_id=%d): %s", user_id, exc)
 
 
 async def _read_json(request: web.Request) -> dict[str, Any]:
@@ -62,6 +124,7 @@ async def handle_register(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
+    await _audit(request, user_id=user_id, action=ActivityAction.SIGNUP)
     return web.json_response(
         {"ok": True, "user_id": user_id, "next": "verify_otp"},
         status=201,
@@ -82,6 +145,7 @@ async def handle_verify(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
+    await _audit(request, user_id=user_id, action=ActivityAction.SIGNUP_OTP_VERIFY)
     return web.json_response({"ok": True, "user_id": user_id})
 
 
@@ -101,6 +165,10 @@ async def handle_login(request: web.Request) -> web.Response:
 
     # 세션 store 등록 (Phase 1 = in-memory dict)
     request.app["session_store"][token] = user_id
+
+    # cycle 119 — user_sessions row 생성 + LOGIN audit
+    await _create_session_row(request, user_id=user_id, token=token)
+    await _audit(request, user_id=user_id, action=ActivityAction.LOGIN)
 
     return web.json_response({"ok": True, "user_id": user_id, "token": token})
 
