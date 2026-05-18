@@ -24,7 +24,7 @@ import logging
 import os
 import signal
 import sys
-from typing import Final
+from typing import Final, Optional
 
 from aiohttp import web
 from dotenv import load_dotenv
@@ -41,6 +41,7 @@ from .api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE, register_bot_
 from .api.devices_handlers import register_devices_routes
 from .api.messages_handlers import register_messages_routes
 from .auth.middleware import auth_middleware
+from .config import Config
 from .db.connection import close_pool, create_pool
 from .room import RoomRegistry
 from .signaling import build_routes
@@ -106,7 +107,7 @@ def _read_int_env(key: str, default: int) -> int:
         return default
 
 
-async def build_app() -> web.Application:
+async def build_app(config: Optional[Config] = None) -> web.Application:
     """aiohttp Application 객체를 생성하고 라우트/registry + DB pool 을 바인딩.
 
     Phase 1 확장 (사이클 22):
@@ -114,11 +115,21 @@ async def build_app() -> web.Application:
     - auth middleware 등록 + 5 REST endpoint 라우트
     - in-memory session_store dict (Phase 1, Phase 2 redis 전환)
 
+    Phase 4 cycle 110 (Config 통합):
+    - ``config`` 인자 주입 시 본 Config 사용 (test mock 또는 caller 명시 주입).
+    - None 시 ``Config.from_env()`` 의 .env chain load 의 single entry point.
+    - BOT / DB 의 env 직접 access 의 폐기 — cfg.bot.enabled + cfg.bot.rate_per_minute
+      의 frozen dataclass 경유.
+
     Returns:
         준비 완료된 ``web.Application``.
     """
+    # cycle 110 — Config 통합 single entry. None 시 lazy load.
+    cfg = config if config is not None else Config.from_env()
     # 한글 주석: middleware 는 신규 인스턴스 인자 의
     app = web.Application(middlewares=[auth_middleware])
+    # 한글 주석: 후속 endpoint 의 의존성 주입 — app["config"] 등록
+    app["config"] = cfg
 
     # 시그널링 룸 registry (기존)
     registry = RoomRegistry()
@@ -138,7 +149,8 @@ async def build_app() -> web.Application:
 
     # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
     # cycle 96 (QA P3) — Anthropic → OpenAI → Mock 의 3 layer fallback chain
-    if os.environ.get(ENV_BOT_ENABLED, "0").strip() == "1":
+    # cycle 110 — Config.bot 경유 (os.environ 직접 access 회수)
+    if cfg.bot.enabled:
         bot_logger = logging.getLogger(__name__)
         if AnthropicProvider.is_available():
             app[APP_KEY_PROVIDER] = AnthropicProvider()
@@ -158,13 +170,11 @@ async def build_app() -> web.Application:
                 "ANTHROPIC_API_KEY + OPENAI_API_KEY 모두 부재 (개발 전용, "
                 "프로덕션 배포 시 환경 변수 설정 필수)"
             )
-        rate_cap = _read_int_env(
-            ENV_BOT_RATE_PER_MINUTE, DEFAULT_BOT_RATE_PER_MINUTE
-        )
-        app[APP_KEY_RATE_GATE] = RateLimitGate(rate_per_minute=rate_cap)
+        app[APP_KEY_RATE_GATE] = RateLimitGate(rate_per_minute=cfg.bot.rate_per_minute)
         register_bot_routes(app)
         logging.getLogger(__name__).info(
-            "Bot endpoint POST /api/bot/chat 활성 — rate=%d/min", rate_cap
+            "Bot endpoint POST /api/bot/chat 활성 — rate=%d/min",
+            cfg.bot.rate_per_minute,
         )
     else:
         logging.getLogger(__name__).info(

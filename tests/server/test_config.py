@@ -161,18 +161,27 @@ class TestConfigFromEnv:
     def test_load_env_files_picks_specific_env(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        # 한글 주석: .env 의 ENV=production + .env.production 의 DB_HOST 의 chain
-        (tmp_path / ".env").write_text("ENV=production\nDB_HOST=base-host\n")
-        (tmp_path / ".env.production").write_text("DB_HOST=prod-host\n")
-        monkeypatch.delenv("ENV", raising=False)
-        monkeypatch.delenv("DB_HOST", raising=False)
-        env_name = load_env_files(tmp_path)
-        assert env_name == "production"
-        # 한글 주석: override=False 의무 — base 의 DB_HOST=base-host 가 유지
-        # (specific load 시점 의 이미 설정된 env 의 무 변경)
+        # 한글 주석: .env 의 ENV=production + .env.production 의 DB_HOST chain
+        # load_dotenv 는 monkeypatch 우회 의 직접 os.environ 변경 — test 후
+        # 명시적 cleanup 의무 (production validate 의 cross-test 오염 차단).
         import os
 
-        assert os.environ.get("DB_HOST") == "base-host"
+        saved = {k: os.environ.get(k) for k in ("ENV", "DB_HOST")}
+        try:
+            (tmp_path / ".env").write_text("ENV=production\nDB_HOST=base-host\n")
+            (tmp_path / ".env.production").write_text("DB_HOST=prod-host\n")
+            monkeypatch.delenv("ENV", raising=False)
+            monkeypatch.delenv("DB_HOST", raising=False)
+            env_name = load_env_files(tmp_path)
+            assert env_name == "production"
+            # override=False 의무 — base 의 DB_HOST=base-host 유지
+            assert os.environ.get("DB_HOST") == "base-host"
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
 
 
 class TestConfigValidate:
