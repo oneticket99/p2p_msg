@@ -59,11 +59,45 @@ if grep -nE "(^|[^가-힣])${CHUK}([^가-힣]|$)" "$FILE" 2>/dev/null | head -3 
     FAIL=1; MSG+=$'\n[BPE] U+CE21 단독: '"$(cat "$ERR")"
   fi
 fi
+if grep -nE "의 의 의 의" "$FILE" 2>/dev/null | head -3 > "$ERR"; then
+  if [[ -s "$ERR" ]]; then
+    FAIL=1; MSG+=$'\n[BPE] "의" 4회+ 연속 (escalation): '"$(cat "$ERR")"
+  fi
+fi
 if grep -nE "의 의 의" "$FILE" 2>/dev/null | head -3 > "$ERR"; then
   if [[ -s "$ERR" ]]; then
     FAIL=1; MSG+=$'\n[BPE] "의" 3회 반복: '"$(cat "$ERR")"
   fi
 fi
+
+# 2b. density check — 단일 line 의 "의" count > 10 = HIGH WARN block
+case "$FILE" in
+  *.md|*.py|*.sh|*.html|*.css|*.sql|*.yml|*.yaml|*.toml|*.txt)
+    python3 -c "
+import sys
+threshold = 10
+hits = []
+try:
+    with open('$FILE', 'r', encoding='utf-8') as f:
+        for i, line in enumerate(f, 1):
+            stripped = line.strip()
+            if len(stripped) < 60:
+                continue
+            count = stripped.count(' 의 ')
+            if count > threshold:
+                snippet = stripped[:120].replace('\n', ' ')
+                hits.append(f'L{i} (의 count={count}): {snippet}')
+            if len(hits) >= 3:
+                break
+except Exception:
+    pass
+sys.stdout.write('\n'.join(hits))
+" > "$ERR" 2>/dev/null
+    if [[ -s "$ERR" ]]; then
+      FAIL=1; MSG+=$'\n[BPE-DENSITY] 단일 줄 "의" 의 11회+ 누적 의미 부재:\n'"$(cat "$ERR")"
+    fi
+    ;;
+esac
 
 # 3. pronoun
 if grep -nE "(본인|타인)" "$FILE" 2>/dev/null | head -3 > "$ERR"; then
