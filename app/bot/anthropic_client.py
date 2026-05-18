@@ -1,0 +1,297 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Phase 3 bot Anthropic Messages API client — 사이클 70.
+
+memory `project_bot_framework.md` (A) 투네이션 고객센터 봇 의 실 LLM provider
+binding. cycle 65 `llm_proxy.AnthropicProvider` placeholder 다음 의 serialization
++ HTTP transport + error mapping layer.
+
+본 module 범위
+-------------
+- BotMessage chain → Anthropic Messages API payload 직렬화 (system 의 top-level
+  추출 + user / assistant 의 messages 배열 변환)
+- Messages API 응답 → BotMessage 파싱 (content array 의 text block 합본)
+- HTTP transport Protocol 주입 (httpx 미설치 환경 의 test mock 호환)
+- 상태코드 → 4 종 예외 매핑 (auth / rate / server / malformed)
+
+본 cycle 의 범위 외 (별개 cycle):
+- httpx 의 실 설치 + 의존성 등록 (현 venv 미설치)
+- streaming 응답 (SSE)
+- retry backoff (429 retry-after 헤더 + exponential)
+- 토큰 카운트 + 비용 추적
+- tool use / function calling
+"""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from typing import Awaitable, Callable, Final, List, Optional, Tuple
+
+from app.bot.llm_proxy import BotMessage, BotRole
+
+# Anthropic Messages API endpoint + 버전 헤더
+_API_BASE: Final[str] = "https://api.anthropic.com"
+_API_PATH: Final[str] = "/v1/messages"
+_API_VERSION: Final[str] = "2023-06-01"
+# default model — 클라이언트 caller 의 override 가능
+_DEFAULT_MODEL: Final[str] = "claude-3-5-sonnet-latest"
+# 응답 토큰 한도 default — caller 가 늘릴 수 있음
+_DEFAULT_MAX_TOKENS: Final[int] = 1024
+# httpx timeout default — 초 단위
+_DEFAULT_TIMEOUT_SECONDS: Final[float] = 30.0
+
+
+class AnthropicError(Exception):
+    """Anthropic API 호출 실패 공통 base — 구체 예외는 subclass."""
+
+
+class AnthropicAuthError(AnthropicError):
+    """API key 부재 또는 401 / 403 응답."""
+
+
+class AnthropicRateLimitError(AnthropicError):
+    """429 rate limit — retry-after 헤더 처리는 별개 cycle."""
+
+
+class AnthropicServerError(AnthropicError):
+    """5xx 서버 장애 — Anthropic 서비스 응답 실패."""
+
+
+class AnthropicMalformedError(AnthropicError):
+    """응답 schema 위반 — content / role / text 필드 부재."""
+
+
+def serialize_messages(
+    messages: List[BotMessage],
+) -> Tuple[str, List[dict]]:
+    """BotMessage chain → (system_str, messages_payload).
+
+    Anthropic Messages API 는 system role 을 top-level 의 별개 field 로 분리한다.
+    user 와 assistant 만 messages 배열 entry 가 된다.
+
+    Parameters
+    ----------
+    messages : list[BotMessage]
+        system / user / assistant 의 round-trip chain.
+
+    Returns
+    -------
+    tuple[str, list[dict]]
+        (system_str, payload). system_str 은 여러 SYSTEM 메시지가 있을 때 "\\n\\n"
+        결합 결과 + 부재 시 빈 문자열.
+    """
+
+    system_parts: List[str] = []
+    payload: List[dict] = []
+    for msg in messages:
+        if msg.role == BotRole.SYSTEM:
+            system_parts.append(msg.content)
+            continue
+        role_str = "user" if msg.role == BotRole.USER else "assistant"
+        payload.append({"role": role_str, "content": msg.content})
+    return ("\n\n".join(system_parts), payload)
+
+
+def parse_response(body: dict) -> BotMessage:
+    """Messages API 응답 dict → BotMessage.
+
+    Anthropic 응답 schema (요약)::
+
+        {
+          "id": "msg_...",
+          "role": "assistant",
+          "content": [{"type": "text", "text": "..."}],
+          "stop_reason": "end_turn",
+          ...
+        }
+
+    Raises
+    ------
+    AnthropicMalformedError
+        content array 부재 + role != assistant + text 필드 부재.
+    """
+
+    content = body.get("content")
+    if not content or not isinstance(content, list):
+        raise AnthropicMalformedError(f"content array 부재 — body={body}")
+    text_parts: List[str] = []
+    for block in content:
+        if not isinstance(block, dict):
+            raise AnthropicMalformedError(f"content block dict 아님 — {block}")
+        if block.get("type") != "text":
+            continue
+        text = block.get("text")
+        if not isinstance(text, str):
+            raise AnthropicMalformedError(f"text 필드 부재 — block={block}")
+        text_parts.append(text)
+    if not text_parts:
+        raise AnthropicMalformedError("text 추출 결과 빈 — 응답 본문 의심")
+    role = body.get("role")
+    if role != "assistant":
+        raise AnthropicMalformedError(f"role=assistant 부재 — role={role}")
+    return BotMessage(
+        role=BotRole.ASSISTANT,
+        content="\n".join(text_parts),
+        timestamp_ms=0,
+    )
+
+
+# HTTP transport — caller 가 주입 가능
+# (url, headers, json_body) → (status_code, response_body_dict)
+HttpTransport = Callable[[str, dict, dict], Awaitable[Tuple[int, dict]]]
+
+
+async def _placeholder_transport(
+    url: str, headers: dict, body: dict
+) -> Tuple[int, dict]:
+    """미주입 default — httpx_transport() 또는 mock transport 의무."""
+
+    raise NotImplementedError(
+        "AnthropicClient transport 미주입 — httpx_transport() 또는 mock 주입 필요"
+    )
+
+
+def httpx_transport(timeout: float = _DEFAULT_TIMEOUT_SECONDS) -> HttpTransport:
+    """httpx.AsyncClient 기반 transport factory.
+
+    Notes
+    -----
+    본 cycle 의 venv 는 httpx 미설치. caller 는 별개 cycle 의 httpx 설치 + 의존성
+    파일 갱신 의무. 호출 시 ImportError → AnthropicError 변환.
+    """
+
+    async def _send(url: str, headers: dict, body: dict) -> Tuple[int, dict]:
+        try:
+            import httpx  # type: ignore[import]
+        except ImportError as exc:
+            raise AnthropicError(
+                "httpx 미설치 — pip install httpx 필요"
+            ) from exc
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.post(url, headers=headers, json=body)
+            return (resp.status_code, resp.json())
+
+    return _send
+
+
+@dataclass(slots=True)
+class AnthropicClient:
+    """Anthropic Messages API client.
+
+    Attributes
+    ----------
+    api_key : str
+        ANTHROPIC_API_KEY — 빈 차단.
+    model : str
+        모델 식별자 (default ``claude-3-5-sonnet-latest``).
+    max_tokens : int
+        응답 토큰 한도 (default 1024).
+    base_url : str
+        API base URL (테스트 의 override 가능).
+    transport : HttpTransport
+        HTTP 전송 함수 — default placeholder + caller 의 주입 의무.
+    """
+
+    api_key: str
+    model: str = _DEFAULT_MODEL
+    max_tokens: int = _DEFAULT_MAX_TOKENS
+    base_url: str = _API_BASE
+    transport: HttpTransport = field(default=_placeholder_transport)
+
+    def __post_init__(self) -> None:
+        if not self.api_key:
+            raise AnthropicAuthError(
+                "api_key 빈 문자열 불가 — ANTHROPIC_API_KEY 주입 의무"
+            )
+        if not self.model:
+            raise ValueError("model 빈 문자열 불가")
+        if self.max_tokens <= 0:
+            raise ValueError(f"max_tokens 양수 의무 — {self.max_tokens}")
+        if not self.base_url:
+            raise ValueError("base_url 빈 문자열 불가")
+
+    def build_headers(self) -> dict:
+        """API 요청 헤더 — x-api-key + anthropic-version + content-type."""
+
+        return {
+            "x-api-key": self.api_key,
+            "anthropic-version": _API_VERSION,
+            "content-type": "application/json",
+        }
+
+    def build_body(self, messages: List[BotMessage]) -> dict:
+        """API 요청 body — model + max_tokens + system + messages."""
+
+        system_str, payload = serialize_messages(messages)
+        body: dict = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "messages": payload,
+        }
+        if system_str:
+            body["system"] = system_str
+        return body
+
+    async def chat(self, messages: List[BotMessage]) -> BotMessage:
+        """messages chain → assistant reply.
+
+        Raises
+        ------
+        ValueError
+            messages 빈 list.
+        AnthropicAuthError
+            401 / 403.
+        AnthropicRateLimitError
+            429.
+        AnthropicServerError
+            5xx.
+        AnthropicMalformedError
+            응답 schema 위반.
+        AnthropicError
+            그 외 4xx 또는 transport ImportError.
+        """
+
+        if not messages:
+            raise ValueError("messages 빈 list 불가")
+        url = f"{self.base_url}{_API_PATH}"
+        status, body = await self.transport(
+            url, self.build_headers(), self.build_body(messages)
+        )
+        if status == 200:
+            return parse_response(body)
+        if status in (401, 403):
+            raise AnthropicAuthError(
+                f"인증 실패 status={status} body={body}"
+            )
+        if status == 429:
+            raise AnthropicRateLimitError(
+                f"rate limit status=429 body={body}"
+            )
+        if 500 <= status < 600:
+            raise AnthropicServerError(
+                f"서버 장애 status={status} body={body}"
+            )
+        raise AnthropicError(f"unexpected status={status} body={body}")
+
+
+def from_env(transport: Optional[HttpTransport] = None) -> AnthropicClient:
+    """환경 변수 ANTHROPIC_API_KEY → AnthropicClient.
+
+    Parameters
+    ----------
+    transport : HttpTransport | None
+        None = httpx_transport() default. caller 가 mock 주입 가능.
+
+    Raises
+    ------
+    AnthropicAuthError
+        ANTHROPIC_API_KEY 환경 변수 부재.
+    """
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise AnthropicAuthError("ANTHROPIC_API_KEY 환경 변수 부재")
+    return AnthropicClient(
+        api_key=api_key,
+        transport=transport or httpx_transport(),
+    )
