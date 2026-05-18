@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 21:00 KST (사이클 80 — docs/policies/bot-framework.md 정책 본문 신설 + 5 정책 active + 892 pytest + drift 0건 39 연속)
+> 최근 갱신 시점: 2026-05-21 22:00 KST (사이클 81 — jailbreak detector heuristic + 6 category × Korean/English regex + 33 신규 PASS + 925 pytest + drift 0건 40 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
-| 보안 hardening | 8.3 / 10 | 8.2 → 8.3 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 클라이언트 주입 차단 + per-user rate limit + bool/float user_id auth bypass 차단) |
-| **종합** | **9.88 / 10** | 9.87 → 9.88 ▲ | **사이클 80 docs/policies/bot-framework.md 정책 본문 신설 — Phase 3 bot framework chain (cycle 65~79) 의 누계 통합 정책 정본. 보안 layer 5종 (ANTHROPIC_API_KEY 격리 + system role 차단 + RateLimitGate + user_id type confusion 차단 + DoS cap) + 라이선스 정합 (GPLv3 + SPDX) + user_id prefix 영역 4종 (일반 < 1_000_000 + 고객센터 ≥ 1_000_000 + 방송 도우미 ≥ 2_000_000 + 외부 ≥ 3_000_000) + retry/backoff 정책 + RAG dual baseline + provider plug-in + abuse 차단 7 layer + 별개 cycle 후보 7종. AGENTS.md 의 정책 doc 3 → 5 row 갱신 (observability + bot-framework). 892 pytest + Phase 3 entry 410 + drift 0건 39 연속** |
+| 보안 hardening | 8.5 / 10 | 8.3 → 8.5 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + bool/float user_id 차단) + jailbreak detector heuristic (6 category × Korean/English — instruction override + role hijack + system leak + delimiter injection + privilege escalation + info exfiltration) |
+| **종합** | **9.89 / 10** | 9.88 → 9.89 ▲ | **사이클 81 jailbreak detector heuristic — `app/bot/jailbreak_detector.py` 신설. JailbreakSignal Enum (NONE/SUSPICIOUS/BLOCKED) + JailbreakMatch frozen dataclass + JailbreakResult + detect(text) + is_blocked + summarize_categories. 21 pre-compiled regex patterns × 6 category (instruction_override + role_hijack + system_leak + delimiter_injection + privilege_escalation + info_exfiltration) × Korean/English. severity 누적 (1=약→SUSPICIOUS + 2=강→BLOCKED + 합산 ≥ 2 → BLOCKED). snippet 80자 cap (log hygiene). 33 신규 PASS 9 TestClass. 925 pytest + Phase 3 entry 443 + drift 0건 40 연속** |
 
 ---
 

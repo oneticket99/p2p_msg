@@ -129,7 +129,8 @@ p2p_msg/
 │   │   ├── customer_service_bot.py  # 사이클 66 + 69 — default 투네이션 고객센터 봇 + system prompt + history cap + RAGStore 통합
 │   │   ├── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
 │   │   ├── rag_context.py         # 사이클 68 + 75 + 79 — FAQ + KeywordRAGStore + Embedder + MockEmbedder + CachedEmbedder LRU + cosine_similarity + EmbeddingRAGStore
-│   │   └── anthropic_client.py    # 사이클 70 + 72 + 73 + 77 — Messages API + retry/backoff + retry-after + jitter + ConnectionError/OSError/TimeoutError network retry
+│   │   ├── anthropic_client.py    # 사이클 70 + 72 + 73 + 77 — Messages API + retry/backoff + retry-after + jitter + network retry
+│   │   └── jailbreak_detector.py  # 사이클 81 — prompt injection / jailbreak heuristic (6 category + Korean/English + NONE/SUSPICIOUS/BLOCKED)
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
