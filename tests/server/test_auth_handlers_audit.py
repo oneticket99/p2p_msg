@@ -266,6 +266,68 @@ class TestLogoutEndpoint:
         assert params[1] == "password_reset_complete"
 
     @pytest.mark.asyncio
+    async def test_profile_update_audit(self) -> None:
+        # cycle 128 — PUT /api/auth/profile skeleton
+        from server.api.auth_handlers import handle_profile_update
+
+        pool, cursor = _mock_pool()
+        req = _FakeRequest(db_pool=pool)
+
+        def get_attr(key: str, default: Any = None) -> Any:
+            return {"user_id": 7}.get(key, default)
+
+        req.get = get_attr  # type: ignore[attr-defined]
+
+        async def _json() -> Any:
+            return {"display_name": "newname"}
+
+        req.json = _json  # type: ignore[attr-defined]
+        response = await handle_profile_update(req)  # type: ignore[arg-type]
+        sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
+        assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
+        # action 검증
+        params = cursor.execute.call_args_list[0].args[1]
+        assert params[1] == "profile_update"
+
+    @pytest.mark.asyncio
+    async def test_email_change_request_audit(self) -> None:
+        from server.api.auth_handlers import handle_email_change_request
+
+        pool, cursor = _mock_pool()
+        req = _FakeRequest(db_pool=pool)
+
+        def get_attr(key: str, default: Any = None) -> Any:
+            return {"user_id": 7}.get(key, default)
+
+        req.get = get_attr  # type: ignore[attr-defined]
+
+        async def _json() -> Any:
+            return {"new_email": "new@example.com"}
+
+        req.json = _json  # type: ignore[attr-defined]
+        await handle_email_change_request(req)  # type: ignore[arg-type]
+        params = cursor.execute.call_args_list[0].args[1]
+        assert params[1] == "email_change"
+
+    @pytest.mark.asyncio
+    async def test_account_delete_audit(self) -> None:
+        from server.api.auth_handlers import handle_account_delete
+
+        pool, cursor = _mock_pool()
+        req = _FakeRequest(db_pool=pool)
+        req._app["session_store"] = {"tok-abc": 7}
+
+        def get_attr(key: str, default: Any = None) -> Any:
+            return {"user_id": 7, "session_token": "tok-abc"}.get(key, default)
+
+        req.get = get_attr  # type: ignore[attr-defined]
+        await handle_account_delete(req)  # type: ignore[arg-type]
+        # session_store 제거 검증
+        assert "tok-abc" not in req._app["session_store"]
+        params = cursor.execute.call_args_list[0].args[1]
+        assert params[1] == "account_delete"
+
+    @pytest.mark.asyncio
     async def test_logout_missing_token_unauthorized(self) -> None:
         from aiohttp import web as _web
 

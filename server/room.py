@@ -144,6 +144,13 @@ class RoomRegistry:
         self._rooms: dict[str, Room] = {}
         self._mutex: asyncio.Lock = asyncio.Lock()
 
+    def room_size(self, room_id: str) -> int:
+        """방 안의 peer 수 — 부재 시 0. 사이클 128 audit hook 의 정합용."""
+        room = self._rooms.get(room_id)
+        if room is None:
+            return 0
+        return len(room._peers)
+
     async def join(self, room_id: str, peer: Peer) -> Room:
         """peer 를 방에 합류시키고 PEERS 응답 + PEER_JOINED 브로드캐스트.
 
@@ -165,7 +172,7 @@ class RoomRegistry:
             len(existing),
         )
 
-        # JOIN 한 본인에게 기존 peer 목록 회신
+        # JOIN 한 self peer 에게 기존 peer 목록 회신
         peers_msg: dict[str, Any] = {
             "type": MSG_PEERS,
             "room": room_id,
@@ -238,7 +245,7 @@ class RoomRegistry:
             return False, "PEER_NOT_FOUND"
 
         # 메시지 안에 ``from`` 식별자가 누락된 경우 서버가 보강한다 —
-        # 클라이언트 위변조 방어 (전송자는 항상 합류한 본인이어야 함)
+        # 클라이언트 위변조 방어 (전송자는 항상 합류한 self peer 여야 함)
         sanitized = dict(payload)
         sanitized["from_"] = from_peer_id
         sanitized["to"] = to_peer_id

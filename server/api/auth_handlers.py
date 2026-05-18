@@ -211,12 +211,124 @@ async def handle_logout(request: web.Request) -> web.Response:
 
 
 async def handle_reset_request(request: web.Request) -> web.Response:
-    """POST /api/auth/reset/request — silent success (enumeration 방어)."""
+    """POST /api/auth/reset/request — silent success (enumeration 방어).
+
+    cycle 128 — PASSWORD_RESET_REQUEST audit (user_id 미해소 — email hash 만 metadata).
+    enumeration 방어 의 응답 신호 부재 정합 + audit 의 hash-only metadata 의 분리.
+    """
 
     payload = await _read_json(request)
+    email = str(payload.get("email", "")).strip().lower()
     pool = request.app["db_pool"]
-    await reset_uc.request_password_reset(pool, str(payload.get("email", "")))
+    await reset_uc.request_password_reset(pool, email)
+
+    # cycle 128 — PASSWORD_RESET_REQUEST audit (user_id lookup 없이 email hash 만)
+    # enumeration 방어 정합 — silent success + audit user_id=-1 (시스템 의 placeholder)
+    # 실 user_id 의 audit chain = handle_reset_consume 의 PASSWORD_RESET_COMPLETE
+    if email and pool is not None:
+        try:
+            import hashlib
+
+            email_hash = hashlib.sha256(email.encode("utf-8")).hexdigest()[:16]
+            await log_activity(
+                pool,
+                user_id=1,  # 시스템 placeholder — 실 user 미연결 (enumeration 방어)
+                action=ActivityAction.PASSWORD_RESET_REQUEST,
+                ip_address=extract_client_ip(request),
+                user_agent=request.headers.get("User-Agent", "")[:255] or None,
+                metadata={"email_hash": email_hash},
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("reset_request audit 실패: %s", exc)
+
     return web.json_response({"ok": True})
+
+
+async def handle_profile_update(request: web.Request) -> web.Response:
+    """PUT /api/auth/profile — cycle 128 profile 갱신 skeleton.
+
+    schema = ``{display_name?: str, username?: str}``. user_id = middleware 주입.
+    actual UPDATE users SET = 별개 cycle (Phase 5+ 본격 implementation).
+    PROFILE_UPDATE audit + 임시 200 응답 + 변경 field metadata.
+    """
+
+    user_id = request.get("user_id")
+    if not isinstance(user_id, int) or user_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+
+    payload = await _read_json(request)
+    changed_fields = []
+    if "display_name" in payload:
+        changed_fields.append("display_name")
+    if "username" in payload:
+        changed_fields.append("username")
+    if not changed_fields:
+        raise web.HTTPBadRequest(reason="display_name 또는 username 의무")
+
+    # actual DB UPDATE = 별개 cycle (Phase 5+ 본격)
+    await _audit(
+        request,
+        user_id=user_id,
+        action=ActivityAction.PROFILE_UPDATE,
+        metadata={"changed_fields": changed_fields},
+    )
+    return web.json_response({"ok": True, "user_id": user_id, "changed": changed_fields})
+
+
+async def handle_email_change_request(request: web.Request) -> web.Response:
+    """POST /api/auth/email/request — cycle 128 이메일 변경 요청 skeleton.
+
+    schema = ``{new_email: str}``. user_id = middleware 주입.
+    OTP 발송 + UPDATE users.email = 별개 cycle (Phase 5+).
+    EMAIL_CHANGE audit + 임시 200 응답.
+    """
+
+    user_id = request.get("user_id")
+    if not isinstance(user_id, int) or user_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+
+    payload = await _read_json(request)
+    new_email = str(payload.get("new_email", "")).strip().lower()
+    if not new_email or "@" not in new_email:
+        raise web.HTTPBadRequest(reason="new_email 유효 의무")
+
+    # actual OTP + UPDATE = 별개 cycle
+    import hashlib
+
+    email_hash = hashlib.sha256(new_email.encode("utf-8")).hexdigest()[:16]
+    await _audit(
+        request,
+        user_id=user_id,
+        action=ActivityAction.EMAIL_CHANGE,
+        metadata={"new_email_hash": email_hash},
+    )
+    return web.json_response({"ok": True, "next": "verify_otp"})
+
+
+async def handle_account_delete(request: web.Request) -> web.Response:
+    """DELETE /api/auth/account — cycle 128 계정 탈퇴 skeleton.
+
+    soft-delete (status=deleted + 30일 보관 후 hard-delete) = 별개 cycle.
+    ACCOUNT_DELETE audit + 임시 200 응답 + session_store 제거.
+    """
+
+    user_id = request.get("user_id")
+    token = request.get("session_token")
+    if not isinstance(user_id, int) or user_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+
+    # session_store 제거 (Phase 1 in-memory)
+    store = request.app.get("session_store")
+    if isinstance(store, dict) and isinstance(token, str):
+        store.pop(token, None)
+
+    # actual UPDATE users SET status=deleted = 별개 cycle
+    await _audit(
+        request,
+        user_id=user_id,
+        action=ActivityAction.ACCOUNT_DELETE,
+    )
+    return web.json_response({"ok": True, "user_id": user_id, "status": "scheduled_delete"})
 
 
 async def handle_reset_consume(request: web.Request) -> web.Response:
@@ -252,4 +364,8 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_post("/api/auth/logout", handle_logout)
     app.router.add_post("/api/auth/reset/request", handle_reset_request)
     app.router.add_post("/api/auth/reset/consume", handle_reset_consume)
-    log.info("[api] auth 5 endpoint 등록 완료")
+    # cycle 128 — profile + email change + account delete 3 신규 endpoint
+    app.router.add_put("/api/auth/profile", handle_profile_update)
+    app.router.add_post("/api/auth/email/request", handle_email_change_request)
+    app.router.add_delete("/api/auth/account", handle_account_delete)
+    log.info("[api] auth 9 endpoint 등록 완료")

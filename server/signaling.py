@@ -184,6 +184,25 @@ async def _handle_join(
             db_pool, room_id=new_peer.db_room_id, user_id=new_peer.user_id
         )
 
+    # cycle 128 — ROOM_CREATE audit (첫 peer 합류 = 방 생성 의미)
+    if (
+        db_pool is not None
+        and new_peer.user_id is not None
+        and registry.room_size(room_id) == 1
+    ):
+        try:
+            await log_activity(
+                db_pool,
+                user_id=new_peer.user_id,
+                action=ActivityAction.ROOM_CREATE,
+                target_id=new_peer.db_room_id,
+                metadata={"room_id": room_id, "peer_id": peer_id},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "ROOM_CREATE audit 실패 user_id=%d: %s", new_peer.user_id, exc
+            )
+
     # cycle 127 — ROOM_JOIN audit (pool 가용 + user_id 가용 시)
     if db_pool is not None and new_peer.user_id is not None:
         try:
@@ -195,7 +214,7 @@ async def _handle_join(
                 metadata={"room_id": room_id, "peer_id": peer_id},
             )
         except Exception as exc:  # noqa: BLE001
-            log.warning(
+            logger.warning(
                 "ROOM_JOIN audit 실패 user_id=%d: %s", new_peer.user_id, exc
             )
 
@@ -242,8 +261,27 @@ async def _handle_leave(
                 metadata={"room_id": room_id, "peer_id": peer_id},
             )
         except Exception as exc:  # noqa: BLE001
-            log.warning(
+            logger.warning(
                 "ROOM_LEAVE audit 실패 user_id=%d: %s", peer.user_id, exc
+            )
+
+    # cycle 128 — ROOM_CLOSE audit (마지막 peer 이탈 = 방 종료 의미)
+    if (
+        db_pool is not None
+        and peer.user_id is not None
+        and registry.room_size(room_id) == 0
+    ):
+        try:
+            await log_activity(
+                db_pool,
+                user_id=peer.user_id,
+                action=ActivityAction.ROOM_CLOSE,
+                target_id=peer.db_room_id,
+                metadata={"room_id": room_id, "peer_id": peer_id},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "ROOM_CLOSE audit 실패 user_id=%d: %s", peer.user_id, exc
             )
 
 

@@ -94,6 +94,31 @@ class TestHandleJoinAudit:
         sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
 
+    @pytest.mark.asyncio
+    async def test_first_peer_triggers_room_create(self) -> None:
+        # 한글 주석: 사이클 128 — 빈 registry 의 첫 peer join → ROOM_CREATE + ROOM_JOIN 의 2 SQL
+        registry = RoomRegistry()
+        pool, cursor = _mock_pool()
+        ws = _make_ws_request(db_pool=pool)
+
+        existing_peer = Peer(peer_id="p1", ws=ws)
+        existing_peer.user_id = 42
+        existing_peer.db_room_id = 99
+
+        payload = {"room": "room-1", "peer_id": "p1", "user_id": 42}
+        peer = await _handle_join(ws, existing_peer, payload, registry)
+        assert peer is not None
+        assert registry.room_size("room-1") == 1
+
+        # 한글 주석: action 인자 의 추출 — execute(sql, params) params[1] = action
+        action_params: list[str] = []
+        for call in cursor.execute.call_args_list:
+            if "INSERT INTO user_activity_log" in call.args[0]:
+                params = call.args[1]
+                action_params.append(params[1])
+        assert "room_create" in action_params
+        assert "room_join" in action_params
+
 
 class TestHandleLeaveAudit:
     @pytest.mark.asyncio
@@ -131,3 +156,29 @@ class TestHandleLeaveAudit:
         payload = {"room": "room-1", "peer_id": "p1"}
         # 한글 주석: pool 부재 — raise 부재 + audit 미호출
         await _handle_leave(ws, peer, payload, registry)
+
+    @pytest.mark.asyncio
+    async def test_last_peer_triggers_room_close(self) -> None:
+        # 한글 주석: 사이클 128 — 1 peer join + leave → registry.room_size = 0 → ROOM_CLOSE + ROOM_LEAVE
+        registry = RoomRegistry()
+        pool, cursor = _mock_pool()
+        ws = _make_ws_request(db_pool=pool)
+
+        peer = Peer(peer_id="p1", ws=ws)
+        peer.user_id = 42
+        peer.db_room_id = 99
+        await registry.join("room-1", peer)
+        # registry.join 직후 peer.room_id 갱신 정합 확인
+        assert peer.room_id == "room-1"
+
+        payload = {"room": "room-1", "peer_id": "p1"}
+        await _handle_leave(ws, peer, payload, registry)
+        assert registry.room_size("room-1") == 0
+
+        action_params: list[str] = []
+        for call in cursor.execute.call_args_list:
+            if "INSERT INTO user_activity_log" in call.args[0]:
+                params = call.args[1]
+                action_params.append(params[1])
+        assert "room_close" in action_params
+        assert "room_leave" in action_params
