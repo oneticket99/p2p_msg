@@ -169,6 +169,70 @@ status: active
 
 ---
 
+## 8.52 사이클 100~109 Phase 4 진입 10 cycle 누계 chain (2026-05-22 신설)
+
+### 8.52.1 Phase 4 Item 1+2 base 22 신규 파일
+
+본 세션 누계 — Phase 4 production 진입 의 infrastructure base. cycle 100 verify gate + cycle 101~107 Item 1 docker stack + cycle 109 Item 2 Config 통합.
+
+| cycle | 작업 | 신규 파일 / PASS |
+|---|---|---|
+| 100 | httpx pip install + verify gate 2 skip → 0 skip | (no file) |
+| 101 | docker-compose 6 컴포넌트 + local + production override + mariadb my.cnf + web Dockerfile | 8 파일 |
+| 102 | postfix + opendkim + Dockerfile + main.cf + master.cf + entrypoint.sh + DNS_RECORDS.md | 8 파일 |
+| 103~104 | firebase-admin SDK + FCMClient lazy graceful + 9 신규 PASS | 2 파일 + 9 PASS |
+| 105 | nginx.conf + conf.d/tootalk.conf (8 location + 5 rate limit zone) | 2 파일 |
+| 106 | .env.example 11 카테고리 65 라인 rewrite + BPE 4건 정정 | 1 rewrite |
+| 107 | docker compose config --quiet syntax verify | (verify) |
+| 109 | server/config.py 7 영역 frozen dataclass + 20 신규 PASS | 2 파일 + 20 PASS |
+
+**누계** = 22 신규 파일 + 29 신규 PASS (cycle 99 pytest 1101 → cycle 109 pytest 1132).
+
+### 8.52.2 pytest + drift + 가드레일
+
+- pytest = **1132 passed + 9 deselected** (cycle 100 httpx install 의 2 skip → 0 skip 전환).
+- 자율 chain drift = **0건 59 연속** 사이클 37~109.
+- 영구 가드레일 = **39** (변경 무).
+
+### 8.52.3 핵심 산출물
+
+**Docker infra**:
+- `deploy/docker-compose.yml` + local + production override
+- `deploy/mariadb/my.cnf` (KST + utf8mb4 + slow query + binary log)
+- `deploy/web/Dockerfile` (python:3.13-slim + non-root uid 1000)
+- `deploy/postfix/` Dockerfile + main.cf + opendkim.conf + entrypoint.sh + DNS_RECORDS.md
+- `deploy/nginx/` nginx.conf + conf.d/tootalk.conf (TLS 1.2/1.3 + 5 rate limit zone + 8 location)
+- `deploy/secrets/.gitkeep` + `deploy/postfix/dkim/.gitkeep`
+
+**의존성**:
+- `server/requirements.txt` httpx>=0.27 + firebase-admin>=7.0
+
+**클라이언트**:
+- `app/notifications/fcm_client.py` graceful FCM client + 9 PASS
+
+**Config**:
+- `server/config.py` 7 영역 frozen dataclass + load_env_files chain + production validate + 20 PASS
+
+**환경**:
+- `.env.example` 11 카테고리 65 라인 정본 (BPE 4건 정정)
+
+### 8.52.4 다음 세션 첫 액션 우선순위
+
+1. **cycle 110** — `server/main.py` 의 Config 통합 refactor (os.environ 분산 access → `Config.from_env` single entry).
+2. **cycle 111** — aiohttp middleware `last_active_at` 갱신 + 1분 throttle (DB audit migration 0003 의 actual code wiring).
+3. **cycle 112~115** — Phase 4 Item 3 nginx 본문 — conf.d 의 별개 server block + WebSocket upgrade detail + X-Forwarded-For parse 코드 통합 + 5 rate limit zone tuning + Caddy 대안 검토 + certbot 통합.
+4. **cycle 116~117** — Phase 4 Item 4 logging — KST formatter + JSON structured + sensitive redact + request_id 전파 + aiohttp middleware + 7 logger 분류.
+5. **별개 cycle** — `server/api/auth_handlers.py` 회원가입 INSERT 시 signup_ip + signup_user_agent + user_sessions login row insert + user_activity_log 22 action audit (DB audit migration 0003 의 actual code wiring).
+
+### 8.52.5 manual test 의무 (사용자)
+
+- `pip install -r server/requirements.txt` 의 firebase-admin install + `python -c "from app.notifications.fcm_client import FCMClient; print(FCMClient.is_available())"` 의 True 검증.
+- `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml up mariadb postfix` 의 local stack 기동 + healthy 확인.
+- `docker compose exec mariadb mariadb -u tootalk -p tootalk -e "DESCRIBE users; SHOW TABLES LIKE 'user_%';"` 의 schema verify (0001~0003 migration 적용 확인).
+- `.env.production` 의 ANTHROPIC_API_KEY + OPENAI_API_KEY + FCM_PROJECT_ID + DB_PASSWORD + ACME_EMAIL + TLS_PRIMARY_DOMAIN 실 값 입력 + `python -c "from server.config import Config; cfg = Config.from_env(); print(cfg.env, cfg.bot.enabled)"` 검증.
+
+---
+
 ## 8.51 사이클 88~99 Phase 3 종결 + v0.3.0-phase3-bot tag (2026-05-22 신설)
 
 ### 8.51.1 reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료
