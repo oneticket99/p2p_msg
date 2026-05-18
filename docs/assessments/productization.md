@@ -141,6 +141,38 @@ status: active
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
 
+### 2.36 Phase 4 production infra base 완성 (신규 사이클 117 — 18 cycle 누계)
+
+cycle 100~117 의 18 cycle production infra prerequisite 완성. Item 1 docker + Item 2 .env + Item 3 nginx + Item 4 logging 4 영역 + 34 신규 파일 + 144 신규 PASS (cycle 99 1101 → cycle 117 1247).
+
+- **Item 1 docker stack** (cycle 101~108): docker-compose 6 컴포넌트 (mariadb + postfix + web + ws + nginx + certbot profile) + mariadb my.cnf (utf8mb4 + KST + slow query) + postfix Dockerfile + opendkim 통합 + SPF/DKIM RSA 2048/DMARC DNS record 정본 + web Dockerfile (python:3.13-slim + non-root uid 1000) + FCM SDK lazy graceful (9 PASS) + httpx/firebase-admin 등록.
+- **Item 2 .env 통합** (cycle 109~111): server/config.py 7 영역 frozen dataclass (DBConfig + SMTPConfig + SignalingConfig + BotConfig + FCMConfig + TLSConfig + Config) + load_env_files chain (.env → .env.ENV override) + production validate ConfigError + activity middleware (ActivityTracker 1분 throttle, write storm 차단) + .env.example 11 카테고리 65 라인.
+- **Item 3 nginx + DB audit** (cycle 112~115): nginx config (worker auto + 5 rate limit zone + real_ip Docker bridge) + tootalk.conf (TLS 1.2/1.3 + 6 cipher + OCSP stapling + 5 보안 header + 8 location + WebSocket upgrade chain) + certbot init/renew script (cron 03:00 KST) + Caddy 대안 평가 doc + X-Request-ID propagation contextvar (async task 격리) + user_activity repository (23 ActivityAction ENUM + 5 SessionEndReason ENUM + 4 repository 함수 + 5 parameterized SQL injection 차단).
+- **Item 4 logging** (cycle 116~117): KSTFormatter (text `[YYYY-mm-dd HH:MM:SS.mmm KST] LEVEL logger [request_id]: message`) + KSTJSONFormatter (단일 line JSON `{ts iso8601 +09:00, level, name, message, request_id, extra, exc_info}`) + RedactingFilter (9 redact pattern — Anthropic sk + Bearer + JWT + password + api_key + RRN + card + 이메일 partial + DB conn string) + configure_logging idempotent + handler filter attach (child logger propagate 정합) + aiohttp.access WARNING cap.
+
+5 검증 PASS — AST + import + pytest 1247 + doc-lint 0 + BPE 0 + pronoun 0 + 3회 반복 0. 자율 chain drift 0건 65 연속 사이클 37~117. production 진입 prerequisite 11 항목 모두 완성. v0.4.0-phase4-infra tag push 완료.
+
+### 2.35 Phase 3 bot framework production-ready (신규 사이클 99 — 35 cycle 누계)
+
+cycle 65~99 의 35 cycle 누계 Phase 3 bot framework production-ready 도달. app/bot/ 10 module 신설 + reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료 + v0.3.0-phase3-bot tag push.
+
+- 10 module: `llm_proxy.py` (BotRole + LLMProvider Protocol + Mock/Anthropic/OpenAI Provider + RateLimitGate per-user + asyncio.Lock lazy init) + `customer_service_bot.py` (default 투네이션 고객센터 봇 + RAG 통합 + jailbreak opt-in) + `streaming_helper.py` (방송 도우미 별개 API + 5 platform callback) + `rag_context.py` (KeywordRAGStore + EmbeddingRAGStore + CachedEmbedder threading.RLock thread-safe) + `anthropic_client.py` (Messages API + retry/backoff + retry-after honor + jitter) + `openai_client.py` (Chat Completions API + symmetric retry chain) + `jailbreak_detector.py` (17 패턴 6 category × Korean/English + info_exfiltration env vars/JWT/SSH/PEM/DB credential/Korean PII/RRN/SQL injection/shell command) + `usage_tracker.py` (deque maxlen ring buffer + per-user/provider/period 집계) + `escalation_queue.py` (TicketStatus + lifecycle + evict_old retention) + `streaming.py` (SSE parser Anthropic + OpenAI delta).
+- 보안 hardening: ANTHROPIC_API_KEY + OPENAI_API_KEY 서버 영역 격리 + system role 클라이언트 주입 차단 + per-user RateLimitGate + jailbreak 17 패턴 detection + provider lazy init asyncio.Lock + CachedEmbedder threading.RLock double-check pattern + memory growth 회수 (UsageTracker deque maxlen + EscalationQueue evict_old + RateLimitGate prune_stale) + 3 layer fallback chain (Anthropic → OpenAI → Mock).
+
+reviewer 보고 8 회수 항목 — P0 cycle 76 (register_bot_routes 미연결) + P1-1 cycle 91~93 (unbounded memory growth) + P1-2 cycle 94 (CachedEmbedder threading.RLock) + P2-1 cycle 88 (SPDX header) + P2-2 cycle 89~90 (provider lazy init Lock) + P3 cycle 88 (정책 §10 갱신) + QA P2 cycle 95 (jailbreak info_exfiltration 2 → 17 패턴) + QA P3 cycle 96 (provider 3 layer fallback chain).
+
+### 2.34 DB audit migration 0003 + 마케팅 통계 (신규 사이클 97 — 사용자 directive 2026-05-22)
+
+사용자 directive 2026-05-22 — "회원 가입 시 db 업데이트 인서트 할때 datetime 반드시 남기도록 + 접속자 IP + 접속 시간 + 활동 시간 추적 (마케팅 통계 활용)". `server/db/migrations/0003_user_activity.sql` 신설 + 영구 가드레일 39번째 (`feedback_db_audit_timestamp_ip_activity.md`).
+
+- users ALTER — `signup_ip VARCHAR(45)` (nginx X-Forwarded-For parse) + `signup_user_agent` (클라이언트 분포 통계) + `last_login_ip` (의심 활동 감지) + `last_activity_at` (DAU/MAU 정의 base, middleware 1분 throttle 갱신).
+- `user_sessions` 신설 — id + user_id FK + session_token_hash SHA-256 + ip_address + user_agent + connected_at + last_active_at + disconnected_at + duration_seconds (TIMESTAMPDIFF SECOND) + end_reason 5 ENUM (logout + idle_timeout + token_revoke + force_disconnect + server_restart).
+- `user_activity_log` 신설 — 23 action ENUM (signup + signup_otp_verify + login + logout + password_reset_request/complete + room_create/join/leave/close + message_send + file_send/receive + device_register/revoke + bot_chat + bot_escalate + remote_request/grant/revoke + profile_update + email_change + account_delete) + target_id + ip_address + user_agent + metadata JSON + created_at + 4 index.
+- email_verification + password_reset ALTER — requester_ip (부정 가입 / brute force 차단 base).
+- 보안 의무: IP 90일 retention 의무 + hash/truncate + session_token SHA-256 저장 + metadata PII 제외.
+
+cycle 119 = auth_handlers 의 actual wiring — handle_register/verify/login success 직후 `_audit` + `_create_session_row` helper 호출 + pool 부재 graceful skip + SHA-256 token_hash 산출 + 모든 예외 swallow.
+
 ### 2.33 X3DH session fan-out — Signal Protocol N-device 종단 흐름 (신규 사이클 44)
 
 사이클 42~43 의 multi-device chain (client skeleton + server endpoint) 의 logical next layer = sender → N recipient device loop encrypt.
