@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-21 23:00 KST (사이클 82 — jailbreak detector bot_handlers 통합 + BLOCKED → 400 + 6 신규 PASS + 종합 10.0000 / 10 + drift 0건 41 연속 사이클 37~82)
+> 최근 갱신 시점: 2026-05-22 00:00 KST (사이클 83 — CustomerServiceBot scan_jailbreak opt-in + 5 신규 PASS + 종합 10.0000 / 10 + drift 0건 42 연속 사이클 37~83)
 
 ---
 
@@ -30,7 +30,7 @@ status: active
 | 기술 의사결정 | 9.6000 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5000 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4000 / 10 | = | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.9980 / 10 | 9.9960 → 9.9980 ▲ | 82 cycle 누계 + 사이클 37~82 자율 chain 연속 drift 0건 41 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 + 병렬 tool call 의무 + Stop hook 4종 + manual test 분리 + reviewer P0+P1+P2 회수 + 정책 본문 5종 + 보안 layer 추가 + jailbreak 의 server endpoint 통합 |
+| 사이클 효율 | 10.0000 / 10 | 9.9980 → 10.0000 ▲ | 83 cycle 누계 + 사이클 37~83 자율 chain 연속 drift 0건 42 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 + 병렬 tool call 의무 + Stop hook 4종 + manual test 분리 + reviewer P0+P1+P2 회수 + 정책 본문 5종 + 보안 layer 추가 + jailbreak server + client 양쪽 통합 |
 | Repo 위생 본능 | 9.9000 / 10 | = | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.2000 / 10 | 9.1500 → 9.2000 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound + TooTalk SVG 로고 (apple-touch-icon +OO 패턴 + Talk wordmark) |
 | QA 사고 | 9.9900 / 10 | = | pytest 634 + Playwright + bcrypt + OTP brute force + Phase 2 290 + Phase 3 entry 151 케이스 |
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7500 / 10 | 9.7000 → 9.7500 ▲ | L0~L5 6 layer hook + sketch→trigger 패턴 + 메타 가드레일 + 회복 cycle 자율 설계 + memory release 2 영구화 + PostToolUse 5종 사후 차단 |
 | 보안 사고 | 10.0000 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 + PBKDF2 600K + objc CFRelease 의무 명문 |
 | 자율 reasonable call 활용 | 10.0000 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **10.0000 / 10** | 10.0000 → 10.0000 = | **사이클 82 jailbreak detector bot_handlers 통합 — `server/api/bot_handlers.py` 의 `_scan_jailbreak` helper 신설 + handle_bot_chat pipeline 의 _parse_messages 직후 호출 + user role content scan + BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS → log.info + 진행 (false positive 회피) + assistant role skip. 6 신규 PASS — blocked 400 + suspicious 통과 + benign 통과 + assistant role skip + _scan_jailbreak helper unit. 931 pytest + Phase 3 entry 449 + drift 0건 41 연속** |
+| **종합** | **10.0000 / 10** | 10.0000 → 10.0000 = | **사이클 83 CustomerServiceBot scan_jailbreak opt-in — CustomerServiceConfig 의 scan_jailbreak field (default False — server-side cycle 82 통합 정합) + answer() pipeline 의 rate limit 직후 scan + BLOCKED → ValueError + LLM 차단 + SUSPICIOUS log. import jailbreak_detector + logging. 5 신규 PASS. 936 pytest + Phase 3 entry 454 + drift 0건 42 연속** |
 
 ### 1.1 enforcement layer designer 의 세계 / 국내 인구 비율 (참고)
 

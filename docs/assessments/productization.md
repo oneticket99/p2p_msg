@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 23:00 KST (사이클 82 — jailbreak detector bot_handlers 통합 + BLOCKED → 400 + SUSPICIOUS log + 6 신규 PASS + 931 pytest + drift 0건 41 연속)
+> 최근 갱신 시점: 2026-05-22 00:00 KST (사이클 83 — CustomerServiceBot scan_jailbreak opt-in + 5 신규 PASS + 936 pytest + drift 0건 42 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.90 / 10** | 9.89 → 9.90 ▲ | **사이클 82 jailbreak detector bot_handlers 통합 — `server/api/bot_handlers.py` 의 _scan_jailbreak helper 신설 + handle_bot_chat pipeline 의 _parse_messages 직후 호출 + user role 의 content scan + BLOCKED → web.HTTPBadRequest 400 + LLM 호출 차단 + SUSPICIOUS → log.info + 진행 (false positive 회피) + assistant role skip (history echo 의 차단 무). 6 신규 PASS — blocked 400 + LLM 호출 부재 + suspicious 통과 + benign 통과 + assistant role skip + _scan_jailbreak helper unit. 931 pytest + Phase 3 entry 449 + drift 0건 41 연속** |
+| **종합** | **9.91 / 10** | 9.90 → 9.91 ▲ | **사이클 83 CustomerServiceBot scan_jailbreak opt-in — CustomerServiceConfig 의 scan_jailbreak: bool = False field 추가 (default 비활성 + server-side bot_handlers cycle 82 통합 정합) + answer() pipeline 의 rate limit 직후 scan + BLOCKED → ValueError prompt injection + log.warning + LLM 호출 차단 + SUSPICIOUS → log.info + 진행. import jailbreak_detector. logging module import 추가. 5 신규 PASS — config default scan_jailbreak=False + scan disabled 시 jailbreak 통과 + enabled 의 BLOCKED ValueError + LLM 호출 부재 + enabled 의 SUSPICIOUS 통과 + enabled 의 benign 통과. 936 pytest + Phase 3 entry 454 + drift 0건 42 연속** |
 
 ---
 

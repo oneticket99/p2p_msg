@@ -25,10 +25,18 @@ memory `project_bot_framework.md` (A) 투네이션 고객센터 봇 default 배�
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Final, List, Optional
 
+log = logging.getLogger(__name__)
+
+from app.bot.jailbreak_detector import (
+    JailbreakSignal,
+    detect as detect_jailbreak,
+    summarize_categories,
+)
 from app.bot.llm_proxy import (
     BotMessage,
     BotRole,
@@ -100,6 +108,10 @@ class CustomerServiceConfig:
         분당 호출 cap (default 20).
     rag_top_k : int
         RAG retrieval 상한 — answer pipeline 의 rag_store 첨부 시 사용 (default 3).
+    scan_jailbreak : bool
+        answer() 호출 시 user_message 의 jailbreak heuristic scan 의 활성 여부
+        (default False — server-side bot_handlers 의 cycle 82 통합 의 정합 + 클라이언트
+        직접 사용 시 의 opt-in). BLOCKED → ValueError + LLM 호출 차단.
     """
 
     bot_user_id: int
@@ -108,6 +120,7 @@ class CustomerServiceConfig:
     max_history_turns: int = _DEFAULT_MAX_HISTORY_TURNS
     rate_limit_per_minute: int = _DEFAULT_RATE_PER_MINUTE
     rag_top_k: int = _DEFAULT_RAG_TOP_K
+    scan_jailbreak: bool = False
 
     def __post_init__(self) -> None:
         if self.bot_user_id < _BOT_USER_ID_PREFIX:
@@ -218,7 +231,7 @@ class CustomerServiceBot:
         Raises
         ------
         ValueError
-            rate limit 초과 또는 input 의 invalid.
+            rate limit 초과 + input invalid + jailbreak BLOCKED 시 (cycle 83).
         """
 
         if user_id <= 0:
@@ -230,6 +243,28 @@ class CustomerServiceBot:
                 f"rate limit 초과 — user_id={user_id} "
                 f"(분당 {self._config.rate_limit_per_minute}건 한도)"
             )
+
+        # cycle 83 — jailbreak heuristic scan (config.scan_jailbreak 활성 시)
+        if self._config.scan_jailbreak:
+            jb = detect_jailbreak(user_message)
+            if jb.signal == JailbreakSignal.BLOCKED:
+                cats = summarize_categories(jb)
+                log.warning(
+                    "jailbreak BLOCKED user_id=%d score=%d categories=%s",
+                    user_id,
+                    jb.score,
+                    cats,
+                )
+                raise ValueError(
+                    f"prompt injection 차단 — user_id={user_id} categories={cats}"
+                )
+            if jb.signal == JailbreakSignal.SUSPICIOUS:
+                log.info(
+                    "jailbreak SUSPICIOUS user_id=%d score=%d categories=%s",
+                    user_id,
+                    jb.score,
+                    summarize_categories(jb),
+                )
 
         # message chain 구성: system + history (trim) + 신규 user message
         now_ms = int(time.time() * 1000)
