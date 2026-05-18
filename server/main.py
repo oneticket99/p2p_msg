@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """시그널링 서버 entry point.
 
 실행 방법::

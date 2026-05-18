@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 04:00 KST (사이클 87 — bot streaming SSE parser + StreamEvent 7종 + Anthropic/OpenAI delta extract + 34 신규 PASS + 1058 pytest + drift 0건 46 연속)
+> 최근 갱신 시점: 2026-05-22 05:00 KST (사이클 88 — server/main.py SPDX header + bot-framework.md §10 implemented strike + chat BPE hook 신설 + drift 0건 47 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.95 / 10** | 9.94 → 9.95 ▲ | **사이클 87 bot streaming SSE parser — `app/bot/streaming.py` 신설. StreamEvent Enum 7종 (MESSAGE_START + CONTENT_BLOCK_START + CONTENT_BLOCK_DELTA + CONTENT_BLOCK_STOP + MESSAGE_DELTA + MESSAGE_STOP + UNKNOWN) + StreamChunk frozen dataclass (event + data + delta_text + done) + parse_sse_line (SSE format event/data/JSON/[DONE] 의 line parser) + extract_anthropic_delta (delta.text_delta) + extract_openai_delta (choices[0].delta.content) + accumulate_chunks (text 합본) + is_terminal (done 또는 MESSAGE_STOP). Anthropic + OpenAI 의 통일 추상. 34 신규 PASS 7 TestClass — ParseSseLineSkip 6 + Event 3 + Done 2 + Anthropic 3 + OpenAI 3 + ExtractAnthropic 5 + ExtractOpenAI 5 + Accumulate 4 + IsTerminal 3. 1058 pytest + Phase 3 entry 576 + drift 0건 46 연속** |
+| **종합** | **9.96 / 10** | 9.95 → 9.96 ▲ | **사이클 88 reviewer P2 + P3 회수 + chat BPE hook 신설 — (1) `server/main.py` SPDX-License-Identifier 첫 줄 prepend (reviewer P2-1 회수). (2) `docs/policies/bot-framework.md` §10 갱신 — cycle 81~87 implemented 5종 strike-through (streaming + OpenAI + jailbreak + usage + escalation) + §10.1 신설 (cycle 88~96 + Phase 4 cycle 100~117 timeline). (3) `tools/hook_chat_bpe_check.sh` 신설 (Stop hook + chat output 의 3회 + 4회 escalation + density >8/line + U+CE21 보강) + `.claude/settings.json` Stop array 등록 + `hook_post_write_inspect.sh` 의 quad escalation + density >10/line 확장 + memory `feedback_no_triple_particle_chat.md` 신설. 사용자 비판 2회차 회수. 1058 pytest 유지 + drift 0건 47 연속** |
 
 ---
 

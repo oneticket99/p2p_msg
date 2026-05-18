@@ -162,7 +162,7 @@ p2p_msg/
 ├── server/
 │   ├── __init__.py
 │   ├── README.md
-│   ├── main.py                    # 사이클 22 + 76 — DB pool + auth middleware + session_store + bot LLM proxy 통합 (BOT_ENABLED=1)
+│   ├── main.py                    # 사이클 22 + 76 + 88 — DB pool + auth middleware + session_store + bot LLM proxy 통합 + SPDX header
 │   ├── protocol.py
 │   ├── requirements.txt
 │   ├── room.py                    # 사이클 25 — Peer.user_id + db_room_id field 추가

@@ -224,13 +224,24 @@ class MyProvider:
 
 ## 10. 별개 cycle 후보 (Phase 3 마무리 + Phase 4)
 
-- **streaming response (SSE)** — chunked transfer + sse-starlette equivalent
-- **OpenAI provider** — OPENAI_API_KEY + Messages API equivalent
-- **prompt injection / jailbreak detector** — heuristic + LLM-as-judge
-- **bot conversation 영속화** — `messages` table 의 `bot_id` column + 별개 migration
-- **사용 통계 + 비용 추적** — Anthropic usage metric + DB 영속
-- **다국어 지원** — 영어 / 중국어 / 일본어 의 system prompt
-- **escalation 사람 상담** — queue + assign + handover
+- ~~**streaming response (SSE)**~~ — ✅ **cycle 87 완료** — `app/bot/streaming.py` (StreamEvent + StreamChunk + parse_sse_line + Anthropic/OpenAI delta extract + accumulate)
+- ~~**OpenAI provider**~~ — ✅ **cycle 84 완료** — `app/bot/openai_client.py` + OpenAIProvider adapter (Chat Completions API + Bearer auth + choices[0].message parse)
+- ~~**prompt injection / jailbreak detector**~~ — ✅ **cycle 81~83 완료** — `app/bot/jailbreak_detector.py` (6 category × Korean/English regex) + server endpoint 통합 (cycle 82) + CustomerServiceBot scan_jailbreak opt-in (cycle 83). LLM-as-judge = 별개 cycle 의무.
+- **bot conversation 영속화** — `messages` table `bot_id` column + 별개 migration (Phase 4 진입 의무)
+- ~~**사용 통계 + 비용 추적**~~ — ✅ **cycle 85 완료** — `app/bot/usage_tracker.py` (UsageRecord + per-user/provider/period 집계 + extract_anthropic_usage + extract_openai_usage). DB 영속 + Prometheus export = 별개 cycle 의무.
+- **다국어 지원** — 영어 / 중국어 / 일본어 system prompt (Phase 5+ mobile + 다국가 진출 시 의무)
+- ~~**escalation 사람 상담**~~ — ✅ **cycle 86 완료** — `app/bot/escalation_queue.py` (TicketStatus + EscalationReason + lifecycle + FIFO). DB 영속 + agent assignment policy + SLA timer = 별개 cycle 의무.
+
+### 10.1 본 cycle 의 추가 후보 (cycle 88+)
+
+- **cycle 88** — `server/main.py` SPDX header (P2-1) + 정책 §10 갱신 (본 cycle)
+- **cycle 89~90** — AnthropicProvider / OpenAIProvider lazy init asyncio.Lock (reviewer P2-2)
+- **cycle 91~93** — UsageTracker + EscalationQueue + RateLimitGate unbounded memory 회수 (reviewer P1-1)
+- **cycle 94** — CachedEmbedder asyncio.Lock (reviewer P1-2)
+- **cycle 95** — jailbreak detector info_exfiltration 패턴 확장 (QA P2)
+- **cycle 96** — `server/main.py` MockLLMProvider 폴백 log 정정 (QA P3)
+- **cycle 97~99** — Phase 3 종결 + `v0.3.0-phase3-bot` tag + release-agent
+- **cycle 100~117** — Phase 4 진입 — [2026-05-22-phase4-infra-setup.md](../exec-plans/active/2026-05-22-phase4-infra-setup.md)
 
 ---
 
