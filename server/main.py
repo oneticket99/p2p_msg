@@ -43,6 +43,7 @@ from .api.messages_handlers import register_messages_routes
 from .auth.middleware import auth_middleware
 from .config import Config
 from .db.connection import close_pool, create_pool
+from .middleware import APP_KEY_ACTIVITY, ActivityTracker, activity_middleware
 from .room import RoomRegistry
 from .signaling import build_routes
 
@@ -126,10 +127,13 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     """
     # cycle 110 — Config 통합 single entry. None 시 lazy load.
     cfg = config if config is not None else Config.from_env()
-    # 한글 주석: middleware 는 신규 인스턴스 인자 의
-    app = web.Application(middlewares=[auth_middleware])
+    # 한글 주석: middleware chain — auth → activity (auth 직후 user_id 의 throttle)
+    app = web.Application(middlewares=[auth_middleware, activity_middleware])
     # 한글 주석: 후속 endpoint 의 의존성 주입 — app["config"] 등록
     app["config"] = cfg
+    # cycle 111 — DB audit migration 0003 의 actual code wiring base.
+    # ActivityTracker = 1분 throttle in-memory (single-worker 정합).
+    app[APP_KEY_ACTIVITY] = ActivityTracker(throttle_seconds=60)
 
     # 시그널링 룸 registry (기존)
     registry = RoomRegistry()
