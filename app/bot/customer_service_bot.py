@@ -35,6 +35,7 @@ from app.bot.llm_proxy import (
     LLMProvider,
     RateLimitGate,
 )
+from app.bot.rag_context import RAGStore, compose_rag_context
 
 # default history cap — 사용자 + assistant 의 round-trip 5 회 (10 message)
 _DEFAULT_MAX_HISTORY_TURNS: Final[int] = 5
@@ -42,6 +43,8 @@ _DEFAULT_MAX_HISTORY_TURNS: Final[int] = 5
 _DEFAULT_RATE_PER_MINUTE: Final[int] = 20
 # bot user_id 의 prefix — 사용자 user_id 와 분리 의무 (memory project_bot_framework §3)
 _BOT_USER_ID_PREFIX: Final[int] = 1_000_000
+# default RAG top-k — answer pipeline 의 retrieval 상한
+_DEFAULT_RAG_TOP_K: Final[int] = 3
 
 
 def default_system_prompt() -> str:
@@ -95,6 +98,8 @@ class CustomerServiceConfig:
         대화 history 의 사용자 + assistant round-trip 한도 (default 5).
     rate_limit_per_minute : int
         분당 호출 cap (default 20).
+    rag_top_k : int
+        RAG retrieval 상한 — answer pipeline 의 rag_store 첨부 시 사용 (default 3).
     """
 
     bot_user_id: int
@@ -102,6 +107,7 @@ class CustomerServiceConfig:
     system_prompt: str = field(default_factory=default_system_prompt)
     max_history_turns: int = _DEFAULT_MAX_HISTORY_TURNS
     rate_limit_per_minute: int = _DEFAULT_RATE_PER_MINUTE
+    rag_top_k: int = _DEFAULT_RAG_TOP_K
 
     def __post_init__(self) -> None:
         if self.bot_user_id < _BOT_USER_ID_PREFIX:
@@ -120,6 +126,8 @@ class CustomerServiceConfig:
             raise ValueError(
                 f"rate_limit_per_minute 양수 의무 — {self.rate_limit_per_minute}"
             )
+        if self.rag_top_k <= 0:
+            raise ValueError(f"rag_top_k 양수 의무 — {self.rag_top_k}")
 
 
 def default_customer_service_config() -> CustomerServiceConfig:
@@ -160,6 +168,8 @@ class CustomerServiceBot:
         LLM provider 인스턴스 (Mock / Anthropic 등).
     gate : RateLimitGate | None
         rate limit gate. None = config 의 rate_limit_per_minute 으로 신규 생성.
+    rag_store : RAGStore | None
+        FAQ retrieval backend. None = RAG context 부재 (legacy 호환).
     """
 
     def __init__(
@@ -168,12 +178,14 @@ class CustomerServiceBot:
         provider: LLMProvider,
         *,
         gate: Optional[RateLimitGate] = None,
+        rag_store: Optional[RAGStore] = None,
     ) -> None:
         self._config = config
         self._provider = provider
         self._gate = gate or RateLimitGate(
             rate_per_minute=config.rate_limit_per_minute
         )
+        self._rag_store = rag_store
 
     @property
     def config(self) -> CustomerServiceConfig:
@@ -221,9 +233,19 @@ class CustomerServiceBot:
 
         # message chain 구성: system + history (trim) + 신규 user message
         now_ms = int(time.time() * 1000)
+        system_content = self._config.system_prompt
+        # RAG context 첨부 — rag_store 주입 시 user_message → top-k FAQ snippet 추가
+        if self._rag_store is not None:
+            rag_block = compose_rag_context(
+                user_message,
+                self._rag_store,
+                top_k=self._config.rag_top_k,
+            )
+            if rag_block:
+                system_content = f"{system_content}\n\n{rag_block}"
         system_msg = BotMessage(
             role=BotRole.SYSTEM,
-            content=self._config.system_prompt,
+            content=system_content,
             timestamp_ms=now_ms,
         )
         user_msg = BotMessage(

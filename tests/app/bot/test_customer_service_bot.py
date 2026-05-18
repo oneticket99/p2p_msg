@@ -19,6 +19,11 @@ from app.bot.customer_service_bot import (
     truncate_history,
 )
 from app.bot.llm_proxy import BotMessage, BotRole, MockLLMProvider, RateLimitGate
+from app.bot.rag_context import (
+    FAQEntry,
+    KeywordRAGStore,
+    build_default_toonation_faq,
+)
 
 
 def _user(content: str, ts: int = 1_000) -> BotMessage:
@@ -249,3 +254,136 @@ class TestCustomerServiceBot:
         await bot.answer(user_id=42, user_message="q1")
         with pytest.raises(ValueError, match="rate limit 초과"):
             await bot.answer(user_id=42, user_message="q2")
+
+
+class TestRagStoreIntegration:
+    """rag_store 주입 시 system prompt 의 RAG block augmentation 검증."""
+
+    def test_config_default_rag_top_k(self) -> None:
+        config = default_customer_service_config()
+        assert config.rag_top_k == 3
+
+    def test_config_invalid_rag_top_k(self) -> None:
+        with pytest.raises(ValueError, match="rag_top_k"):
+            CustomerServiceConfig(
+                bot_user_id=1_000_001,
+                display_name="X",
+                system_prompt="p",
+                rag_top_k=0,
+            )
+
+    @pytest.mark.asyncio
+    async def test_answer_without_rag_store(self) -> None:
+        # rag_store 부재 = system prompt 의 augmentation 미발생
+        config = default_customer_service_config()
+        captured: List[List[BotMessage]] = []
+
+        class SpyProvider:
+            @classmethod
+            def is_available(cls) -> bool:
+                return True
+
+            async def chat(self, messages: List[BotMessage]) -> BotMessage:
+                captured.append(messages)
+                return _assistant("reply")
+
+        bot = CustomerServiceBot(config, provider=SpyProvider())
+        await bot.answer(user_id=42, user_message="후원 결제 수단")
+        chain = captured[0]
+        assert chain[0].role == BotRole.SYSTEM
+        assert "참고 FAQ" not in chain[0].content
+
+    @pytest.mark.asyncio
+    async def test_answer_with_rag_store_injects_block(self) -> None:
+        config = default_customer_service_config()
+        captured: List[List[BotMessage]] = []
+
+        class SpyProvider:
+            @classmethod
+            def is_available(cls) -> bool:
+                return True
+
+            async def chat(self, messages: List[BotMessage]) -> BotMessage:
+                captured.append(messages)
+                return _assistant("reply")
+
+        store = KeywordRAGStore(build_default_toonation_faq())
+        bot = CustomerServiceBot(
+            config, provider=SpyProvider(), rag_store=store
+        )
+        await bot.answer(user_id=42, user_message="후원 결제 수단 종류")
+        chain = captured[0]
+        assert "참고 FAQ" in chain[0].content
+        assert "Q:" in chain[0].content
+        assert "A:" in chain[0].content
+
+    @pytest.mark.asyncio
+    async def test_answer_with_empty_rag_result_no_block(self) -> None:
+        config = default_customer_service_config()
+        captured: List[List[BotMessage]] = []
+
+        class SpyProvider:
+            @classmethod
+            def is_available(cls) -> bool:
+                return True
+
+            async def chat(self, messages: List[BotMessage]) -> BotMessage:
+                captured.append(messages)
+                return _assistant("reply")
+
+        # 빈 store → empty rag_block → augmentation 미발생
+        store = KeywordRAGStore([])
+        bot = CustomerServiceBot(
+            config, provider=SpyProvider(), rag_store=store
+        )
+        await bot.answer(user_id=42, user_message="random query xyz")
+        chain = captured[0]
+        assert "참고 FAQ" not in chain[0].content
+
+    @pytest.mark.asyncio
+    async def test_answer_with_rag_top_k_cap(self) -> None:
+        # rag_top_k=1 의 단일 entry 만 첨부 검증
+        config = CustomerServiceConfig(
+            bot_user_id=1_000_001,
+            display_name="X",
+            system_prompt="base",
+            rag_top_k=1,
+        )
+        captured: List[List[BotMessage]] = []
+
+        class SpyProvider:
+            @classmethod
+            def is_available(cls) -> bool:
+                return True
+
+            async def chat(self, messages: List[BotMessage]) -> BotMessage:
+                captured.append(messages)
+                return _assistant("reply")
+
+        # 동일 score 의 2 entry 만 들어 있는 store
+        entries = [
+            FAQEntry(
+                id="x-1",
+                topic="t",
+                question="후원 결제",
+                answer="답변 A 입니다 — 첫째.",
+                tags=("후원", "결제"),
+            ),
+            FAQEntry(
+                id="x-2",
+                topic="t",
+                question="후원 결제",
+                answer="답변 B 입니다 — 둘째.",
+                tags=("후원", "결제"),
+            ),
+        ]
+        store = KeywordRAGStore(entries)
+        bot = CustomerServiceBot(
+            config, provider=SpyProvider(), rag_store=store
+        )
+        await bot.answer(user_id=42, user_message="후원 결제 수단")
+        chain = captured[0]
+        sys_content = chain[0].content
+        # 첫째 만 첨부 + 둘째 = 미첨부
+        assert "첫째" in sys_content
+        assert "둘째" not in sys_content

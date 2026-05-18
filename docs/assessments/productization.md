@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 09:30 KST (사이클 68 — RAG context layer + FAQEntry + KeywordRAGStore + 10 default FAQ + 27 PASS + 764 pytest + drift 0건 27 연속)
+> 최근 갱신 시점: 2026-05-21 10:30 KST (사이클 69 — CustomerServiceBot ↔ RAGStore 통합 + system prompt augmentation + 6 신규 PASS + 770 pytest + drift 0건 28 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -23,14 +23,14 @@ status: active
 |---|---|---|---|
 | 기술 완성도 | 8.65 / 10 | 8.6 → 8.65 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 entry remote 78 + chat_history_policy 37 PASS (volatile + lazy load 정책 layer) + dogfooding 18 PASS + 616 pytest + v0.2.0-phase2 tag |
 | 시장 적합성 | 5.4 / 10 | 5.35 → 5.4 ▲ | Toonation 옵션 B + P5/P6 + signature sound + push 알림 + encrypted backup (사용자 history 보호) |
-| 차별화 요소 | 9.65 / 10 | 9.55 → 9.65 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load 정책 + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework 사양 명문 (default 고객센터 LLM 봇 + 방송 도우미 외부 API 의 의무 — 사용자 directive 2026-05-21) |
+| 차별화 요소 | 9.7 / 10 | 9.65 → 9.7 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load 정책 + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework default 고객센터 ↔ RAGStore 통합 (system prompt 첨부 — 사이클 69) + 방송 도우미 별개 API |
 | 사용자 가치 | 6.95 / 10 | 6.9 → 6.95 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
-| **종합** | **9.72 / 10** | 9.7 → 9.72 ▲ | **사이클 68 RAG context layer — FAQEntry frozen dataclass + RAGStore Protocol + KeywordRAGStore (substring + token overlap + DESC score ranking + ASC idx tie stability) + EmbeddingRAGStore placeholder (sentence-transformers + cosine 별개 cycle) + build_default_toonation_faq (5 영역 × 2 = 10 entry) + compose_rag_context markdown 산출 + 27 PASS 5 TestClass. 764 pytest + Phase 3 entry 누계 281. drift 0건 27 연속** |
+| **종합** | **9.74 / 10** | 9.72 → 9.74 ▲ | **사이클 69 CustomerServiceBot ↔ RAGStore 통합 — config.rag_top_k field + answer pipeline 의 RAGStore 주입 + compose_rag_context 의 system prompt augmentation + 빈 결과 시 augmentation skip + 6 신규 PASS (TestRagStoreIntegration). 770 pytest (764 + 6) + Phase 3 entry 누계 287. drift 0건 28 연속** |
 
 ---
 
