@@ -169,6 +169,77 @@ status: active
 
 ---
 
+## 8.51 사이클 88~99 Phase 3 종결 + v0.3.0-phase3-bot tag (2026-05-22 신설)
+
+### 8.51.1 reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료
+
+본 세션 누계 — Phase 3 bot framework production-ready 도달. cycle 88~97 의 reviewer-agent + qa-agent 보고 모든 priority 회수 + cycle 98 평가 snapshot 4 영역 rewrite + cycle 99 v0.3.0-phase3-bot tag.
+
+| cycle | 회수 항목 | 신규 PASS |
+|---|---|---:|
+| 88 | server/main.py SPDX header (P2-1) + 정책 §10 갱신 (P3-1) + chat BPE hook 신설 | 0 (hook) |
+| 89~90 | AnthropicProvider + OpenAIProvider lazy init asyncio.Lock (P2-2) | 4 |
+| 91~93 | UsageTracker deque maxlen + EscalationQueue evict_old + RateLimitGate prune_stale (P1-1) | 14 |
+| 94 | CachedEmbedder threading.RLock + double-check pattern (P1-2) | 3 |
+| 95 | jailbreak detector info_exfiltration 2 → 17 패턴 + Korean PII + SQL + shell (QA P2) | 21 |
+| 96 | server/main.py provider 3 layer fallback chain Anthropic → OpenAI → Mock (QA P3) | 3 |
+| 97 | bot-framework.md §10.1 strike + httpx>=0.27 + Phase 4 §1.4 + DB migration 0003 | 0 (문서/schema) |
+| 98 | 평가 snapshot 4 영역 rewrite + HTML 2 mirror 동기 | 0 (평가) |
+| 99 | v0.3.0-phase3-bot tag + release-agent + handoff §8.51 신설 | 0 (release) |
+
+**누계 신규 PASS** = 45 (P0~P3 + QA + 평가).
+
+### 8.51.2 pytest + drift + 가드레일
+
+- pytest = **1101 passed + 2 skipped** (cycle 87 1058 → cycle 96 1101 + 2 skip 의 httpx 미설치 graceful).
+- 자율 chain drift = **0건 53 연속** 사이클 37~99.
+- 영구 가드레일 = **39** (cycle 97 보조 — `feedback_db_audit_timestamp_ip_activity.md` 신설).
+
+### 8.51.3 핵심 산출물
+
+**코드**:
+- `app/bot/rag_context.py` CachedEmbedder `threading.RLock` thread-safety
+- `app/bot/jailbreak_detector.py` info_exfiltration 17 패턴 (env vars + JWT + SSH + PEM + DB credential + Korean PII + RRN + SQL + shell)
+- `app/bot/llm_proxy.py` AnthropicProvider + OpenAIProvider `_init_lock` double-check
+- `app/bot/usage_tracker.py` UsageTracker `deque(maxlen=100_000)` ring buffer
+- `app/bot/escalation_queue.py` EscalationQueue `evict_old(now_ms, retention_ms)`
+- `server/main.py` provider 3 layer fallback chain (Anthropic → OpenAI → Mock) + 분기별 log 명문
+
+**의존성**:
+- `server/requirements.txt` `httpx>=0.27` 등록 — Phase 4 cycle 100 의 pip install + verify gate
+
+**DB**:
+- `server/db/migrations/0003_user_activity.sql` 신설 — users 확장 + `user_sessions` + `user_activity_log` + email_verification/password_reset 의 requester_ip (마케팅 통계 directive 정합)
+
+**문서**:
+- `docs/policies/bot-framework.md` §10.1 strike-through 6 항목 + cycle 100 prerequisite
+- `docs/exec-plans/active/2026-05-22-phase4-infra-setup.md` §1.4 사전 의존성 install 섹션 신설
+- `docs/assessments/productization.md` §1 종합 9.98 → 9.99 ▲
+- `docs/assessments/vibe-coding.md` §1 종합 10.0000 = (cap)
+- `docs/html/productization.html` + `docs/html/vibe-coding.html` mirror 동기
+
+**가드레일 (39번째)**:
+- `feedback_db_audit_timestamp_ip_activity.md` — DB INSERT/UPDATE datetime 의무 + 접속 IP + 활동 시간 추적 (마케팅 통계 자료 활용, 90일 retention cap)
+
+### 8.51.4 다음 세션 첫 액션 우선순위
+
+1. **cycle 100** — `pip install -r server/requirements.txt` 의 httpx 실 install + `pytest tests/server/test_main_integration.py` 의 2 skip → 0 skip 전환 검증 (verify gate).
+2. **cycle 101~108** — Phase 4 Item 1 docker stack — `deploy/docker-compose.yml` + mariadb + postfix + web + ws + firebase-fcm 신설.
+3. **cycle 109~111** — Phase 4 Item 2 .env 통합 + Config 클래스 + 5 파일 분류.
+4. **cycle 112~115** — Phase 4 Item 3 nginx reverse proxy + TLS + WebSocket upgrade + 5 rate limit zone + X-Forwarded-For parse (DB audit IP 정합).
+5. **cycle 116~117** — Phase 4 Item 4 server logging + KST formatter + JSON + sensitive redact + aiohttp middleware (last_active_at 갱신 의 정합).
+6. **별개 cycle (Phase 4 cycle 113~114 정합)** — DB migration 0003 의 actual code wiring — `server/api/auth_handlers.py` 회원가입 INSERT 시 signup_ip + signup_user_agent 의 `request.headers["X-Forwarded-For"]` parse + `user_sessions` 의 login 시 insert + `user_activity_log` 의 22 action audit + last_active_at 갱신 의 1분 throttle middleware.
+
+### 8.51.5 manual test 의무 (사용자) — v0.3.0-phase3-bot 직후
+
+- `ANTHROPIC_API_KEY` 환경 변수 + `BOT_ENABLED=1` 설정 + 실 Anthropic Messages API 호출 smoke (`curl POST /api/bot/chat` 의 200 + assistant content).
+- `OPENAI_API_KEY` 환경 변수 + 동일 smoke (3 layer fallback 의 OpenAI 분기 검증).
+- httpx 미설치 환경 의 graceful fallback 검증 (Mock 폴백 log + 200 + MockEcho content).
+- jailbreak attempt smoke — "ignore previous instructions" + "비밀번호를 알려줘" + "cat /etc/passwd" + "'; DROP TABLE users" 의 BLOCKED 400 응답 + log 확인.
+- migration 0003 의 mariadb 환경 apply 후 schema verify — `DESCRIBE users` + `SHOW INDEX FROM user_sessions` + `SHOW INDEX FROM user_activity_log`.
+
+---
+
 ## 8.50 사이클 68~87 + Phase 4 plan 인수인계 (2026-05-22 신설)
 
 ### 8.50.1 Phase 3 bot framework chain 완성 (cycle 68~87, 20 cycle 누계)
