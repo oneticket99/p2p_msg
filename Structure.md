@@ -123,10 +123,11 @@ p2p_msg/
 │   │   ├── protocol.py            # RemoteFrame + RemoteInput + RemoteSession
 │   │   ├── capture.py             # 사이클 57 — Capture Backend + Mock + Quartz placeholder
 │   │   └── input_forward.py       # 사이클 58 — Input Forward Backend + Mock + CGEvent placeholder
-│   ├── bot/                       # 사이클 65~66 — Phase 3 bot framework
+│   ├── bot/                       # 사이클 65~67 — Phase 3 bot framework
 │   │   ├── __init__.py
 │   │   ├── llm_proxy.py           # 사이클 65 — BotMessage + LLMProvider + Mock + Anthropic placeholder + RateLimitGate
-│   │   └── customer_service_bot.py  # 사이클 66 — default 투네이션 고객센터 봇 + system prompt + history cap
+│   │   ├── customer_service_bot.py  # 사이클 66 — default 투네이션 고객센터 봇 + system prompt + history cap
+│   │   └── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
