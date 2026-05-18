@@ -8,12 +8,12 @@ State 구성:
 - ``root_key`` (32 byte) — DH ratchet 의 master key
 - ``sending_chain`` (ChainKey) — 송신 chain
 - ``receiving_chain`` (ChainKey) — 수신 chain
-- ``my_dh_keypair`` (sk, pk) — 본인 X25519
-- ``peer_dh_public`` — 상대 X25519 public
+- ``my_dh_keypair`` (sk, pk) — self X25519
+- ``peer_dh_public`` — peer X25519 public
 
 초기화:
-- ``initialize_session_initiator`` — Alice (먼저 메시지 송신) 측
-- ``initialize_session_responder`` — Bob (수신 후 응답) 측
+- ``initialize_session_initiator`` — Alice (먼저 메시지 송신) 단
+- ``initialize_session_responder`` — Bob (수신 후 응답) 단
 """
 
 from __future__ import annotations
@@ -106,11 +106,11 @@ class SessionState:
     receiving_chain : ChainKey | None
         수신 chain. None = 아직 수신 안 함.
     my_dh_private : bytes
-        본인 X25519 private (32 byte).
+        self X25519 private (32 byte).
     my_dh_public : bytes
-        본인 X25519 public (32 byte).
+        self X25519 public (32 byte).
     peer_dh_public : bytes | None
-        상대 X25519 public. None = 아직 수신 안 함.
+        peer X25519 public. None = 아직 수신 안 함.
     """
 
     root_key: bytes
@@ -159,7 +159,7 @@ def initialize_session_initiator(
     shared_secret: bytes,
     peer_dh_public: bytes,
 ) -> SessionState:
-    """Alice 측 session 초기화 — 첫 메시지 송신 직전.
+    """Alice 단 session 초기화 — 첫 메시지 송신 직전.
 
     Parameters
     ----------
@@ -199,7 +199,7 @@ def initialize_session_responder(
     *,
     shared_secret: bytes,
 ) -> SessionState:
-    """Bob 측 session 초기화 — Alice 첫 메시지 수신 직전.
+    """Bob 단 session 초기화 — Alice 첫 메시지 수신 직전.
 
     Notes
     -----
@@ -227,7 +227,7 @@ def advance_dh_ratchet(state: SessionState, new_peer_dh_public: bytes) -> Sessio
 
     Signal Protocol DH ratchet:
     1. DH(my_sk, new_peer_pk) → receiving_chain (root_key 갱신)
-    2. 본인 keypair 재생성 (forward secrecy)
+    2. self keypair 재생성 (forward secrecy)
     3. DH(new_sk, new_peer_pk) → sending_chain (root_key 추가 갱신)
 
     Parameters
@@ -250,7 +250,7 @@ def advance_dh_ratchet(state: SessionState, new_peer_dh_public: bytes) -> Sessio
     dh_recv = x25519_shared_secret(state.my_dh_private, new_peer_dh_public)
     root_after_recv, recv_chain_key = _derive_root_and_chain(dh_recv, state.root_key)
 
-    # Step 2: 본인 keypair 재생성 — forward secrecy
+    # Step 2: self keypair 재생성 — forward secrecy
     new_sk, new_pk = generate_x25519_keypair()
 
     # Step 3: 송신 chain — DH(새 sk, 새 peer pk)
@@ -357,7 +357,7 @@ def decrypt_with_session_ooo(
     sender_dh_public : bytes
         peer 의 X25519 public — store key prefix.
     counter : int
-        메시지 의 counter (송신 측 chain counter 시점).
+        메시지 의 counter (송신 단 chain counter 시점).
 
     Raises
     ------

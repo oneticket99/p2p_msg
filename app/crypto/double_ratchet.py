@@ -125,7 +125,7 @@ def decrypt_message(
     *,
     associated_data: bytes | None = None,
 ) -> Tuple[bytes, ChainKey]:
-    """수신 측 Double Ratchet step — chain → message key + AES-GCM 복호화.
+    """수신 단 Double Ratchet step — chain → message key + AES-GCM 복호화.
 
     Notes
     -----

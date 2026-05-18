@@ -526,6 +526,80 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.47 Phase 2 마무리 reviewer-agent CONDITIONAL PASS → P0 정정 cycle 완료 (사이클 49)
+
+**reviewer-agent cycle 49 산출 — CONDITIONAL PASS**:
+
+- 14 검증 항목 — PASS 11 + N/A 1 + CONDITIONAL 1 + FAIL 2
+- P0 차단 2건 (Phase 2 마무리 게이트 의무):
+  - 금지패턴-BPE — U+CE21 단독 13건 (5 file — e2ee.py + double_ratchet.py + session.py + skipped_keys.py + x3dh.py)
+  - 금지패턴-PRONOUN — 본"인" 5건 (session.py)
+- P1 권장 3건 — UI → net direct import 4건 + PBKDF2 stretching 부재 + PostToolUse hook 사후 정정 cycle 다발
+- P2 향상 4건 — SPDX header (chat_view + main_window) + session.py docstring 가독성 + backup.py 별개 cycle 명문 + Specification Phase 2 task # 매핑
+
+**P0 정정 cycle 49 완료**:
+
+- 5 file 의 13 BPE 정정 — U+CE21 의존명사 → `단` 패턴 일괄 (Alice / Bob / 수신 / 송신 / caller / recipient 단)
+- session.py 5 self-pronoun 정정 — `\_\_X25519` → `self X25519` (3건 docstring) + `\_\_keypair` → `self keypair` (2건 step)
+- 검증 PASS — `grep` 의 U+CE21 단독 = 0건 + self-pronoun 단독 = 0건 + pytest 480 회귀 PASS
+- PostToolUse hook 차단 패턴 8 cycle 동안 강제 발화 — 사이클 47 (BPE 1건) + 48 (의 3회 1건) + 49 (BPE 13건 + pronoun 5건) detect 후 즉시 정정 chain
+
+**Phase 2 마무리 게이트 PASS 판정**:
+
+- reviewer-agent CONDITIONAL PASS 의 P0 차단 2종 = 정정 완료
+- P1 + P2 = handoff backlog 등재 (hotfix 또는 별개 cycle)
+- Phase 2 핵심 Signal Protocol chain (사이클 27~48) = 287 케이스 + 480 pytest 의 안정 완성
+- 다음 = reviewer-agent 재호출 사이클 50 (P0 정정 검증 후 PASS 정식 GO 의무) 또는 사용자 directive 의 별개 task 진입
+
+**Phase 2 누계 모듈 16종** (사이클 27~48 + 49 정정):
+
+| 모듈 | 사이클 | PASS |
+|---|---|---|
+| `app/crypto/e2ee.py` | 27 | 24 |
+| `app/crypto/double_ratchet.py` | 28 | 16 |
+| `app/crypto/session.py` | 29~32 | 20 |
+| integration | 32 | 4 |
+| `app/crypto/skipped_keys.py` | 33 | 14 |
+| decrypt_ooo | 34 | 6 |
+| `app/crypto/x3dh.py` | 37 | 11 |
+| `app/ui/sound_player.py` + assets/sounds/signature.wav | 38 | 19 |
+| `app/ui/chat_view.py` SoundPlayer | 39 | 9 |
+| `app/ui/settings_dialog.py` | 40 | 28 |
+| `app/ui/main_window.py` wire | 41 | (회귀 통과) |
+| `app/crypto/device_registry.py` | 42 | 26 |
+| `server/api/devices_handlers.py` 외 3건 | 43 | 22 |
+| `app/crypto/fan_out.py` | 44 | 16 |
+| `app/crypto/sender_keys.py` | 46 | 19 |
+| `app/notifications/push.py` | 47 | 31 |
+| `app/backup/encrypted_backup.py` | 48 | 22 |
+| **총 누계** | **사이클 27~48** | **287** |
+
+**P1 backlog 등재 (hotfix)**:
+
+1. UI → net 의 직접 import 4건 — `app/ui/login_dialog.py:21` + `password_reset_dialog.py:22` + `main_window.py:50` + `signup_dialog.py:30` 의 `from app.net.auth_client import AuthClient` → Service / ViewModel layer 신설 의 별개 cycle
+2. PBKDF2 stretching 부재 — `app/backup/encrypted_backup.py:123` 의 HKDF-SHA256 직접 derive → 출시 직전 brute-force 방어 의무 (별개 cycle)
+3. PostToolUse hook 의 사후 정정 패턴 검증 — 사이클 27~37 stale 회수 후 사이클 38~ 시점 의 사전 차단 의 의무 효과 검증 (영구 0건 trend monitor)
+
+**P2 backlog 등재**:
+
+1. SPDX header 추가 — `app/ui/chat_view.py` + `app/ui/main_window.py` 의 사이클 39 / 41 편집 시점 의 부재 (M1 의 부수 의무)
+2. session.py docstring 의 self / peer 의 용어 통일 (사이클 49 정정 결과 의 일관성 향상)
+3. backup.py 의 별개 cycle 위임 명문 — PBKDF2 + per-entry encrypt + cloud upload + restore conflict 4종 의 SCOPE 라인 의 추가 의무
+4. Specification.md Phase 2 row 의 task # 매핑 정합 — 사이클 27~48 의 16 module 의 16 task # 의 명문 의무
+
+**핵심 commit 누적 (사이클 46~49)**:
+
+```
+(cycle 49 P0 정정 commit — 본 §8.47 신설 직후 push 예정)
+4b96658 feat(backup): Phase 2 encrypted backup / restore + 22 PASS 사이클 48
+9e2dd3c feat(notifications): Phase 2 push 알림 skeleton 4 platform + 31 PASS 사이클 47
+05041c0 feat(crypto): Phase 2 Sender Keys 그룹 N×M→N+M reduction + 19 PASS 사이클 46
+772a299 docs(handoff): §8.46 사이클 46 telegram polling halt 진단 정정
+68f58ce docs(handoff): §8.45 사이클 45 telegram routing 차단 진단 추가
+```
+
+---
+
 ### 8.46 telegram polling halt 진단 정정 (사이클 46 — 인계 직후 신규 session)
 
 **사이클 45 가설 회수**:

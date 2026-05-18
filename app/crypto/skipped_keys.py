@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Signal Protocol skipped message keys 저장소 — out-of-order delivery 처리.
 
-본 module = Double Ratchet 수신 측 의 message reordering 대응:
+본 module = Double Ratchet 수신 단 의 message reordering 대응:
 - counter 5 수신 직후 counter 3 도착 시 = chain advance 시 skip 된 key 보관 → 차후 사용
 - LRU expire (MAX_SKIP=1000) — 메모리 폭주 차단 (productization §8.1 보안 해결책 정합)
 - TTL = 1시간 (chain key 의 forward secrecy 균형)

@@ -52,7 +52,7 @@ class EncryptedPayload:
     ciphertext: bytes
 
     def to_bytes(self) -> bytes:
-        """wire format: ``nonce || ciphertext`` (caller 측 분리)."""
+        """wire format: ``nonce || ciphertext`` (caller 분리 의무)."""
 
         return self.nonce + self.ciphertext
 

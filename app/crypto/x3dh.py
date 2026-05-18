@@ -15,8 +15,8 @@ shared_secret = HKDF(DH1 || DH2 || DH3 || DH4) → 32 byte AES-256 root key.
 
 API:
 - ``PreKeyBundle`` — Bob 의 공개 키 bundle (IK_b + SPK_b + OPK_b optional)
-- ``x3dh_initiator`` — Alice 측 + Bob bundle → (EK_a public, shared_secret)
-- ``x3dh_responder`` — Bob 측 + Alice public + EK_a → shared_secret
+- ``x3dh_initiator`` — Alice 단 + Bob bundle → (EK_a public, shared_secret)
+- ``x3dh_responder`` — Bob 단 + Alice public + EK_a → shared_secret
 """
 
 from __future__ import annotations
@@ -82,7 +82,7 @@ def x3dh_initiator(
     my_identity_private: bytes,
     bob_bundle: PreKeyBundle,
 ) -> Tuple[bytes, bytes, bytes]:
-    """Alice 측 X3DH — Bob bundle 의 4 DH 결합 + shared secret 생성.
+    """Alice 단 X3DH — Bob bundle 의 4 DH 결합 + shared secret 생성.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def x3dh_initiator(
     -------
     tuple[bytes, bytes, bytes]
         (ephemeral_public, ephemeral_private, shared_secret).
-        ephemeral_* = Alice 측 의 EK (메시지 헤더 의 첨부 의무).
+        ephemeral_* = Alice 단 의 EK (메시지 헤더 의 첨부 의무).
         shared_secret = ``initialize_session_initiator`` 의 input.
 
     Raises
@@ -132,7 +132,7 @@ def x3dh_responder(
     alice_identity_public: bytes,
     alice_ephemeral_public: bytes,
 ) -> bytes:
-    """Bob 측 X3DH — Alice 첫 메시지 헤더 의 EK + IK 수신 직후.
+    """Bob 단 X3DH — Alice 첫 메시지 헤더 의 EK + IK 수신 직후.
 
     Parameters
     ----------
