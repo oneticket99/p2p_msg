@@ -169,6 +169,106 @@ status: active
 
 ---
 
+## 8.50 사이클 68~87 + Phase 4 plan 인수인계 (2026-05-22 신설)
+
+### 8.50.1 Phase 3 bot framework chain 완성 (cycle 68~87, 20 cycle 누계)
+
+본 세션 누계 — Phase 3 bot framework 의 horizontal 통합 완성. `app/bot/` 10 module 신설 + `server/api/bot_handlers.py` 의 server proxy + `server/main.py` 의 BOT_ENABLED gating + `docs/policies/bot-framework.md` 정책 본문.
+
+| cycle | 작업 | 신규 PASS |
+|---|---|---:|
+| 68 | `app/bot/rag_context.py` 신설 (KeywordRAGStore + FAQ 10 entry) | 27 |
+| 69 | CustomerServiceBot ↔ RAGStore 통합 | 6 |
+| 70 | `app/bot/anthropic_client.py` (Messages API + 4 종 예외) | 32 |
+| 71 | AnthropicProvider adapter + lazy from_env | 3 |
+| 72 | retry/backoff 지수 (max_retries + jitter + sleep_fn DI) | 9 |
+| 73 | retry-after honor + jitter + transport 3-tuple refactor | 9 |
+| 74 | `server/api/bot_handlers.py` POST /api/bot/chat | 29 |
+| 75 | EmbeddingRAGStore (Embedder + MockEmbedder + cosine) | 15 |
+| 76 | `server/main.py` register_bot_routes 통합 (reviewer P0 회수) | 6 |
+| 77 | network error retry (ConnectionError/OSError/TimeoutError) | 6 |
+| 78 | bot_handlers user_id type confusion hardening | 4 |
+| 79 | CachedEmbedder LRU decorator | 10 |
+| 80 | `docs/policies/bot-framework.md` 정책 본문 신설 | 0 |
+| 81 | `app/bot/jailbreak_detector.py` 6 category × Korean/English | 33 |
+| 82 | jailbreak detector ↔ bot_handlers 통합 (BLOCKED → 400) | 6 |
+| 83 | CustomerServiceBot scan_jailbreak opt-in | 5 |
+| 84 | `app/bot/openai_client.py` (Chat Completions API + OpenAIProvider) | 29 |
+| 85 | `app/bot/usage_tracker.py` (UsageRecord + per-user/provider/period) | 31 |
+| 86 | `app/bot/escalation_queue.py` (TicketStatus + EscalationReason + lifecycle) | 28 |
+| 87 | `app/bot/streaming.py` (SSE parser — Anthropic + OpenAI delta) | 34 |
+| **누계** | **20 cycle bot framework chain 완성** | **321 신규** |
+
+### 8.50.2 pytest 누계 + 평가 snapshot
+
+- 본 세션 시작 = 737 pytest (cycle 67 직후)
+- 본 세션 종료 = **1058 pytest** (cycle 87 직후, +321 신규)
+- productization snapshot — 9.7 / 10 → **9.95 / 10** ▲
+- vibe-coding snapshot — 9.9533 / 10 → **10.0000 / 10** (max 도달)
+- 보안 hardening — 8.0 → 8.65 ▲ (jailbreak detector + bot proxy 격리)
+- Phase 3 entry 누계 — **576** (이전 281 + bot framework 295)
+- 자율 chain drift 0건 **46 연속** 사이클 (37~87)
+
+### 8.50.3 reviewer-agent + qa-agent 종합 검증 결과
+
+- **reviewer-agent** (cycle 87 직후) — PASS 9.55 / 10 + P0 0건 + P1 3건 + P2 2건 + P3 3건
+- **qa-agent** (직후) — PASS 10/10 회귀 항목 + performance 1000배 sanity 여유 + 추가 P2 1건 + P3 2건 detect
+
+누계 권장 — P1 3건 + P2 3건 + P3 5건 (다음 cycle 88~96 회수 예정, task #45~#50).
+
+### 8.50.4 `app/bot/` 10 module 완성 inventory
+
+| # | 파일 | cycle |
+|---|---|---|
+| 1 | `llm_proxy.py` | 65 + 71 + 84 |
+| 2 | `customer_service_bot.py` | 66 + 69 + 83 |
+| 3 | `streaming_helper.py` | 67 |
+| 4 | `rag_context.py` | 68 + 75 + 79 |
+| 5 | `anthropic_client.py` | 70 + 72 + 73 + 77 |
+| 6 | `openai_client.py` | 84 |
+| 7 | `jailbreak_detector.py` | 81 |
+| 8 | `usage_tracker.py` | 85 |
+| 9 | `escalation_queue.py` | 86 |
+| 10 | `streaming.py` | 87 |
+
+### 8.50.5 Phase 4 진입 plan — 4 item 의 18 cycle (cycle 100~117)
+
+본 세션 종료 직전 사용자 directive 2026-05-22 의 의 Phase 4 초기 infra 구축 4 item:
+
+| Item | 작업 | cycle 범위 | 예상 신규 PASS |
+|---|---|---|---:|
+| 1 | 원격 서버 docker 환경 (mariadb + smtp + web + ws + nginx + FCM) | 100~104 | ~40 |
+| 2 | .env 통합 + local/staging/production switching | 105~107 | ~25 |
+| 3 | nginx reverse proxy (TLS + WebSocket + rate limit + routing) | 108~111 | ~20 |
+| 4 | Python server logging (KST + JSON + request_id + sensitive redact) | 112~117 | ~50 |
+| **누계** | | **18 cycle** | **~135 신규** |
+
+상세 본문 = [`docs/exec-plans/active/2026-05-22-phase4-infra-setup.md`](2026-05-22-phase4-infra-setup.md) (cycle 87 직후 신설).
+
+### 8.50.6 다음 세션 첫 액션 우선순위
+
+1. **cycle 88 회수** — `server/main.py` SPDX header + `docs/policies/bot-framework.md` §10 implemented strike (task #45)
+2. **cycle 89~90** — AnthropicProvider/OpenAIProvider lazy init asyncio.Lock (task #46)
+3. **cycle 91~93** — UsageTracker + EscalationQueue + RateLimitGate unbounded memory 회수 (task #47)
+4. **cycle 94** — CachedEmbedder asyncio.Lock (task #48)
+5. **cycle 95** — jailbreak detector info_exfiltration 패턴 확장 (task #49)
+6. **cycle 96** — server/main.py MockLLM 폴백 log misleading 정정 (task #50)
+7. **cycle 97~99** — Phase 3 종결 + v0.3.0-phase3-bot tag + release-agent
+8. **cycle 100+** — Phase 4 진입 ([`2026-05-22-phase4-infra-setup.md`](2026-05-22-phase4-infra-setup.md) 의 Item 1~4)
+
+### 8.50.7 manual test 의무 (사용자) — Phase 3 종결 + Phase 4 진입 시점
+
+- [ ] **httpx 의 venv 의 실 설치** + `pip install -r app/requirements.txt` 갱신 — bot framework client-side 실 LLM 호출 의 prerequisite
+- [ ] **ANTHROPIC_API_KEY** + **OPENAI_API_KEY** 의 console 발급 + `.env.production` 의 주입 — bot proxy 실 호출 의 prerequisite
+- [ ] **데모 서버 SSH 접근** + docker stack 배포 (Phase 4 Item 1 의 cycle 100~104 commit 직후)
+- [ ] **FCM credentials JSON** 의 Google Cloud Console 발급 + 데모 서버 mount
+- [ ] **도메인 결정** — `demo.toonation.io` 또는 `114.207.112.73` 의 의 nginx server_name (Item 3 의 prerequisite)
+- [ ] **TLS cert** — Let's Encrypt 자동 갱신 또는 Caddy 자동 cert 발급
+
+상세 = [`MANUAL_TESTS.md`](MANUAL_TESTS.md) §2 (사이클 87 까지 의 8 카테고리 누계).
+
+---
+
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
 ### 8.1 누계 commit (본 세션 직전 인계 시점 = `f500104`, 본 사이클 3 시점 = `57fd732`)
