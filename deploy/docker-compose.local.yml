@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# TooTalk docker-compose local override — 개발자 환경 의 mariadb + postfix 만 기동.
+# 사용: `docker compose -f docker-compose.yml -f docker-compose.local.yml up mariadb postfix`
+# 한글 주석: web + ws 는 host .venv 에서 직접 실행 (live reload + IDE breakpoint 의무).
+
+services:
+  mariadb:
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: localdev
+      MARIADB_PASSWORD: localdev
+
+  postfix:
+    ports:
+      - "127.0.0.1:1025:25"
+      - "127.0.0.1:1587:587"
+    environment:
+      MAILDOMAIN: tootalk.local
+      DKIM_SELECTOR: tootalk
+
+  # web + ws + nginx — host 직접 실행 의 disable
+  web:
+    profiles: ["disabled"]
+  ws:
+    profiles: ["disabled"]
+  nginx:
+    profiles: ["disabled"]
