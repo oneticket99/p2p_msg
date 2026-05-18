@@ -341,3 +341,31 @@ class RateLimitGate:
         bucket = self._buckets.get(user_id, [])
         active = sum(1 for t in bucket if t >= cutoff)
         return max(0, self.rate_per_minute - active)
+
+    def prune_stale(self, *, now_seconds: Optional[float] = None) -> int:
+        """cycle 91 — stale user_id key evict (memory growth 차단).
+
+        모든 timestamp 가 cutoff 이전 인 bucket (1분 이상 미사용 user) 의
+        key 자체 삭제. reviewer P1-1 회수 — caller 가 주기 호출 의무.
+
+        Returns
+        -------
+        int
+            evict 된 user_id key 수.
+        """
+
+        now = now_seconds if now_seconds is not None else time.time()
+        cutoff = now - _SECONDS_PER_MINUTE
+        stale_keys = [
+            uid
+            for uid, bucket in self._buckets.items()
+            if not bucket or all(t < cutoff for t in bucket)
+        ]
+        for uid in stale_keys:
+            del self._buckets[uid]
+        return len(stale_keys)
+
+    def active_users(self) -> int:
+        """현 시점 의 bucket key 수 (debugging + monitoring)."""
+
+        return len(self._buckets)

@@ -108,11 +108,45 @@ class EscalationQueue:
     -----
     thread-safety 미보장 — async single event loop 의 가정. DB 영속화 부재 +
     server restart 시 의 손실. ticket_id 자동 증가 (1 부터 시작).
+
+    cycle 91 — RESOLVED / CLOSED 의 ticket 의 N일 경과 시 evict 의 unbounded
+    memory growth 차단 (reviewer P1-1). caller 가 주기 `evict_old` 호출.
     """
 
     def __init__(self) -> None:
         self._tickets: Dict[int, EscalationTicket] = {}
         self._next_id: int = 1
+
+    def evict_old(self, now_ms: int, retention_ms: int) -> int:
+        """RESOLVED / CLOSED 상태 + resolved_at_ms + retention_ms 경과 ticket evict.
+
+        Parameters
+        ----------
+        now_ms : int
+            현 시점 UNIX epoch ms.
+        retention_ms : int
+            보존 기간 (예: 30일 = 30 * 86_400_000).
+
+        Returns
+        -------
+        int
+            evict 된 ticket 수.
+        """
+
+        if retention_ms <= 0:
+            raise ValueError(f"retention_ms 양수 의무 — {retention_ms}")
+        cutoff = now_ms - retention_ms
+        terminal = {TicketStatus.RESOLVED, TicketStatus.CLOSED}
+        targets = [
+            tid
+            for tid, t in self._tickets.items()
+            if t.status in terminal
+            and t.resolved_at_ms is not None
+            and t.resolved_at_ms < cutoff
+        ]
+        for tid in targets:
+            del self._tickets[tid]
+        return len(targets)
 
     def next_ticket_id(self) -> int:
         """다음 ticket_id 의 monotonic 증가 + 반환."""

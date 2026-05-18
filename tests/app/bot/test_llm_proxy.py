@@ -381,3 +381,40 @@ class TestRateLimitGate:
         gate.allow(1, now_seconds=101.0)
         # 60 초 후 = 모두 prune
         assert gate.remaining(1, now_seconds=162.0) == 3
+
+
+class TestRateLimitGateStalePrune:
+    """cycle 91 — RateLimitGate stale user_id key prune 검증 (P1-1 회수)."""
+
+    def test_prune_stale_removes_old_keys(self) -> None:
+        gate = RateLimitGate(rate_per_minute=10)
+        gate.allow(1, now_seconds=100.0)
+        gate.allow(2, now_seconds=100.0)
+        gate.allow(3, now_seconds=200.0)
+        # 250초 시점 — user 1,2 (100초) 의 60초 cutoff (190초) 이전 → stale
+        evicted = gate.prune_stale(now_seconds=250.0)
+        assert evicted == 2
+        assert gate.active_users() == 1
+
+    def test_prune_empty_bucket_removed(self) -> None:
+        # bucket 이 빈 dict entry 도 prune 의무
+        gate = RateLimitGate(rate_per_minute=10)
+        gate._buckets[42] = []  # type: ignore[attr-defined]
+        evicted = gate.prune_stale(now_seconds=100.0)
+        assert evicted == 1
+        assert gate.active_users() == 0
+
+    def test_active_users_count(self) -> None:
+        gate = RateLimitGate(rate_per_minute=10)
+        gate.allow(1, now_seconds=100.0)
+        gate.allow(2, now_seconds=100.0)
+        assert gate.active_users() == 2
+
+    def test_no_stale_no_evict(self) -> None:
+        gate = RateLimitGate(rate_per_minute=10)
+        gate.allow(1, now_seconds=100.0)
+        gate.allow(2, now_seconds=120.0)
+        # 130초 — 모두 cutoff (70초) 이후 active
+        evicted = gate.prune_stale(now_seconds=130.0)
+        assert evicted == 0
+        assert gate.active_users() == 2

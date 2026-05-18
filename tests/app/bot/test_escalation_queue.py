@@ -379,3 +379,81 @@ class TestClearAndId:
         assert q.next_ticket_id() == 1
         assert q.next_ticket_id() == 2
         assert q.next_ticket_id() == 3
+
+
+class TestEvictOld:
+    """cycle 91 — RESOLVED / CLOSED ticket 의 N일 경과 evict 검증 (P1-1 회수)."""
+
+    def test_retention_zero_rejected(self) -> None:
+        q = EscalationQueue()
+        with pytest.raises(ValueError, match="retention_ms"):
+            q.evict_old(now_ms=1_700_000_000_000, retention_ms=0)
+
+    def test_evict_old_resolved(self) -> None:
+        q = EscalationQueue()
+        t = q.enqueue(
+            user_id=1,
+            reason=EscalationReason.USER_REQUEST,
+            message="x",
+            created_at_ms=100,
+        )
+        q.assign(t.ticket_id, agent_id=100)
+        q.resolve(t.ticket_id, resolved_at_ms=200)
+        # now=1_000_000 + retention=500_000 → cutoff=500_000 → resolved_at=200 < cutoff → evict
+        n = q.evict_old(now_ms=1_000_000, retention_ms=500_000)
+        assert n == 1
+        assert q.size() == 0
+
+    def test_evict_old_closed(self) -> None:
+        q = EscalationQueue()
+        t = q.enqueue(
+            user_id=1,
+            reason=EscalationReason.USER_REQUEST,
+            message="x",
+            created_at_ms=100,
+        )
+        q.close(t.ticket_id, closed_at_ms=200)
+        n = q.evict_old(now_ms=1_000_000, retention_ms=500_000)
+        assert n == 1
+        assert q.size() == 0
+
+    def test_pending_not_evicted(self) -> None:
+        q = EscalationQueue()
+        q.enqueue(
+            user_id=1,
+            reason=EscalationReason.USER_REQUEST,
+            message="x",
+            created_at_ms=100,
+        )
+        # PENDING = evict 부재 (resolved_at_ms None)
+        n = q.evict_old(now_ms=1_000_000, retention_ms=500_000)
+        assert n == 0
+        assert q.size() == 1
+
+    def test_assigned_not_evicted(self) -> None:
+        q = EscalationQueue()
+        t = q.enqueue(
+            user_id=1,
+            reason=EscalationReason.USER_REQUEST,
+            message="x",
+            created_at_ms=100,
+        )
+        q.assign(t.ticket_id, agent_id=100)
+        n = q.evict_old(now_ms=1_000_000, retention_ms=500_000)
+        assert n == 0  # ASSIGNED 의 resolved_at_ms 부재 → evict 부재
+        assert q.size() == 1
+
+    def test_within_retention_not_evicted(self) -> None:
+        q = EscalationQueue()
+        t = q.enqueue(
+            user_id=1,
+            reason=EscalationReason.USER_REQUEST,
+            message="x",
+            created_at_ms=100,
+        )
+        q.assign(t.ticket_id, agent_id=100)
+        q.resolve(t.ticket_id, resolved_at_ms=900_000)
+        # cutoff=500_000 → resolved_at=900_000 ≥ cutoff → 유지
+        n = q.evict_old(now_ms=1_000_000, retention_ms=500_000)
+        assert n == 0
+        assert q.size() == 1

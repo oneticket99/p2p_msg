@@ -24,8 +24,12 @@ memory `project_bot_framework.md` (사용자 directive) + bot-framework.md §10 
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
-from typing import Dict, Final, List, Optional, Tuple
+from typing import Deque, Dict, Final, List, Optional, Tuple
+
+# cycle 91 — record buffer maxlen default (memory growth 차단)
+_DEFAULT_MAX_RECORDS: Final[int] = 100_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,10 +113,23 @@ class UsageTracker:
     thread-safety 미보장 — async single event loop 의 가정. DB 영속화 부재 —
     server restart 시 의 손실 (별개 cycle 의 messages table 의 bot_id column 의
     의 영속 layer).
+
+    cycle 91 — `collections.deque(maxlen)` 의 ring buffer. oldest record FIFO
+    evict 의 unbounded memory growth 차단 (reviewer P1-1).
+
+    Parameters
+    ----------
+    max_records : int
+        record buffer 한도 (default 100_000). 0 = 무제한 (테스트 의무).
     """
 
-    def __init__(self) -> None:
-        self._records: List[UsageRecord] = []
+    def __init__(self, max_records: int = _DEFAULT_MAX_RECORDS) -> None:
+        if max_records < 0:
+            raise ValueError(f"max_records 음수 차단 — {max_records}")
+        self._max_records: int = max_records
+        # maxlen=0 = 무제한 (deque 의 maxlen=None 정합)
+        maxlen: Optional[int] = max_records if max_records > 0 else None
+        self._records: Deque[UsageRecord] = deque(maxlen=maxlen)
 
     def record(self, entry: UsageRecord) -> None:
         """단일 호출 의 entry 추가."""
@@ -128,6 +145,12 @@ class UsageTracker:
         """전수 reset."""
 
         self._records.clear()
+
+    @property
+    def max_records(self) -> int:
+        """ring buffer 한도 (read-only). 0 = 무제한."""
+
+        return self._max_records
 
     def all_records(self) -> List[UsageRecord]:
         """누적 record 의 copy 반환 (caller 의 mutation 차단)."""

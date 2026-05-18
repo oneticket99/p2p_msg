@@ -230,3 +230,33 @@ class TestExtractOpenAIUsage:
         # True / False 의 isinstance(int)=True edge case 차단
         body = {"usage": {"prompt_tokens": True, "completion_tokens": 10}}
         assert extract_openai_usage(body) == (0, 10)
+
+
+class TestUsageTrackerMaxRecords:
+    """cycle 91 — UsageTracker ring buffer maxlen 검증 (P1-1 회수)."""
+
+    def test_default_max_100k(self) -> None:
+        t = UsageTracker()
+        assert t.max_records == 100_000
+
+    def test_negative_max_rejected(self) -> None:
+        with pytest.raises(ValueError, match="max_records"):
+            UsageTracker(max_records=-1)
+
+    def test_maxlen_evicts_oldest(self) -> None:
+        # max_records=3 + 5 record → oldest 2 evict
+        t = UsageTracker(max_records=3)
+        for i in range(5):
+            t.record(_record(timestamp_ms=1_700_000_000_000 + i))
+        assert t.size() == 3
+        records = t.all_records()
+        # 최신 3 record (timestamp 2, 3, 4) 유지
+        assert records[0].timestamp_ms == 1_700_000_000_002
+        assert records[-1].timestamp_ms == 1_700_000_000_004
+
+    def test_zero_max_unlimited(self) -> None:
+        # max_records=0 = 무제한 (테스트 fixture)
+        t = UsageTracker(max_records=0)
+        for i in range(150_001):
+            t.record(_record(timestamp_ms=1_700_000_000_000 + i))
+        assert t.size() == 150_001

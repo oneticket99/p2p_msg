@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 06:00 KST (사이클 89 — AnthropicProvider/OpenAIProvider lazy init asyncio.Lock + reviewer P2-2 회수 + 4 신규 PASS + 1062 pytest + drift 0건 48 연속)
+> 최근 갱신 시점: 2026-05-22 07:00 KST (사이클 91 — unbounded memory growth 회수 batch — UsageTracker deque maxlen + EscalationQueue evict_old + RateLimitGate prune_stale + reviewer P1-1 회수 + 14 신규 PASS + 1076 pytest + drift 0건 49 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.97 / 10** | 9.96 → 9.97 ▲ | **사이클 89 reviewer P2-2 회수 — AnthropicProvider + OpenAIProvider lazy init race condition 차단. `\_init_lock: Optional[asyncio.Lock] = None` field + chat() pipeline 의 double-check pattern (lock 획득 후 self._client 재확인). event loop 안 lazy lock 생성 (sync `__init__` event loop 부재 회피). 4 신규 PASS TestProviderConcurrentInit — concurrent 5 chat() → from_env 1회 (Anthropic + OpenAI 의 symmetric) + lazy lock None 초기 + client 명시 주입 시 lock 부재. 1062 pytest (1058 + 4) + drift 0건 48 연속** |
+| **종합** | **9.98 / 10** | 9.97 → 9.98 ▲ | **사이클 91 unbounded memory growth 회수 batch (reviewer P1-1) — (a) UsageTracker `collections.deque(maxlen)` ring buffer 의 oldest FIFO evict + default 100_000 + 0 = 무제한 (테스트 fixture) + max_records property. (b) EscalationQueue evict_old(now_ms, retention_ms) — RESOLVED/CLOSED 의 resolved_at_ms < cutoff evict + retention 음수 차단 + PENDING/ASSIGNED 의 resolved_at_ms 부재 skip. (c) RateLimitGate prune_stale(now_seconds) — 모든 timestamp cutoff 이전 인 user_id key 자체 삭제 + active_users() monitoring helper. 14 신규 PASS — TestUsageTrackerMaxRecords 4 + TestEvictOld 6 + TestRateLimitGateStalePrune 4. 1076 pytest (1062 + 14) + drift 0건 49 연속** |
 
 ---
 
