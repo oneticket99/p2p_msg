@@ -114,6 +114,20 @@ services:
     expose:
       - "8765"
 
+  # ─── certbot (Let's Encrypt 인증서 발급/갱신, cycle 112) ──────────────────
+  # 한글 주석: profile "certbot" 의 명시 활성 시 만 기동 (`--profile certbot up`).
+  # 본 service = one-shot 의 init/renew script trigger 대응. cron 등록 권장.
+  certbot:
+    image: certbot/certbot:latest
+    container_name: tootalk-certbot
+    profiles: ["certbot"]
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --quiet --no-eff-email
+    networks:
+      - tootalk-edge
+
   # ─── nginx (TLS + reverse proxy + rate limit, Item 3 본문) ────────────────
   nginx:
     image: nginx:1.27-alpine
@@ -131,6 +145,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - nginx_cache:/var/cache/nginx
       - letsencrypt:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
     networks:
       - tootalk-edge
     ports:
@@ -156,6 +171,8 @@ volumes:
   nginx_cache:
     driver: local
   letsencrypt:
+    driver: local
+  certbot_webroot:
     driver: local
 
 # ─── secrets (Docker secret mount, .env 외부 격리) ─────────────────────────
