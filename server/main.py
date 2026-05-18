@@ -39,6 +39,7 @@ from app.bot.llm_proxy import (
 from .api.auth_handlers import register_auth_routes
 from .api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE, register_bot_routes
 from .api.devices_handlers import register_devices_routes
+from .api.health_handlers import register_health_routes
 from .api.messages_handlers import register_messages_routes
 from .auth.middleware import auth_middleware
 from .config import Config
@@ -151,6 +152,9 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
 
     # messages REST endpoint 등록 (Phase 3 사이클 60 ChatView lazy load)
     register_messages_routes(app)
+
+    # health + readiness endpoint 등록 (cycle 124 — Docker HEALTHCHECK + nginx + k8s probe)
+    register_health_routes(app)
 
     # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
     # cycle 96 (QA P3) — Anthropic → OpenAI → Mock 의 3 layer fallback chain

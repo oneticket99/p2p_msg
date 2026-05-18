@@ -16,6 +16,8 @@ _BEARER_PREFIX = "Bearer "
 # 본 set 에 등록된 path 는 인증 skip (공개 endpoint)
 _PUBLIC_PATHS = frozenset({
     "/health",
+    "/healthz",
+    "/readyz",
     "/api/auth/register",
     "/api/auth/verify",
     "/api/auth/login",
