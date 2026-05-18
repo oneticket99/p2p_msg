@@ -61,7 +61,7 @@
 | 변경 이력 (M2 — 최신 30행) | [README.md](README.md) | 모든 파일 작업 완료 직후 |
 | 확장 가이드 (신규 에이전트·문서·모델) | [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) | 시스템 확장 전 |
 | 에이전트 개별 사양 | [.claude/agents/](.claude/agents/) `<name>.md` | 해당 에이전트 호출 직전 |
-| 정책 (doc-gardening · adoption · harness) | `docs/policies/` (3 문서 active) | 운영 정책 변경 시 |
+| 정책 (doc-gardening · adoption · harness · observability · bot-framework) | `docs/policies/` (5 문서 active) | 운영 정책 변경 시 |
 | 라이선스 본문 | [LICENSE](LICENSE) (GPLv3 GNU 표준 674 lines, 사용자 directive 2026-05-17) | 외부 distribution + SPDX header 적용 직전 |
 | 인프라 절차 | [docs/references/ci-self-hosted-setup.md](docs/references/ci-self-hosted-setup.md) · [docs/references/smtp-setup.md](docs/references/smtp-setup.md) | runner 등록 + SMTP 설치 시점 |
 | 평가 snapshot | [docs/assessments/productization.md](docs/assessments/productization.md) · [vibe-coding.md](docs/assessments/vibe-coding.md) | 매 task 종료 시 전체 rewrite (사이클 8) |

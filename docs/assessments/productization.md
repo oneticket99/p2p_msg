@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 20:00 KST (사이클 79 — CachedEmbedder LRU decorator + OrderedDict + hit/miss counter + 10 신규 PASS + 892 pytest + drift 0건 38 연속)
+> 최근 갱신 시점: 2026-05-21 21:00 KST (사이클 80 — docs/policies/bot-framework.md 정책 본문 신설 + 5 정책 active + 892 pytest + drift 0건 39 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.3 / 10 | 8.2 → 8.3 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 클라이언트 주입 차단 + per-user rate limit + bool/float user_id auth bypass 차단) |
-| **종합** | **9.87 / 10** | 9.86 → 9.87 ▲ | **사이클 79 CachedEmbedder LRU decorator — `app/bot/rag_context.py` 의 CachedEmbedder 신설 (Embedder Protocol wrapper + OrderedDict 기반 LRU cache + max_cache 양수 의무 + hit/miss counter instrumentation + LRU move_to_end on hit + popitem evict + dim delegate + reset_stats + clear). 10 신규 PASS — max_cache zero/negative reject + first miss/second hit + different text separate miss + LRU eviction at capacity + LRU move_to_end + dim delegate + reset_stats + clear + EmbeddingRAGStore 통합. 892 pytest (882 + 10) + Phase 3 entry 410 + drift 0건 38 연속** |
+| **종합** | **9.88 / 10** | 9.87 → 9.88 ▲ | **사이클 80 docs/policies/bot-framework.md 정책 본문 신설 — Phase 3 bot framework chain (cycle 65~79) 의 누계 통합 정책 정본. 보안 layer 5종 (ANTHROPIC_API_KEY 격리 + system role 차단 + RateLimitGate + user_id type confusion 차단 + DoS cap) + 라이선스 정합 (GPLv3 + SPDX) + user_id prefix 영역 4종 (일반 < 1_000_000 + 고객센터 ≥ 1_000_000 + 방송 도우미 ≥ 2_000_000 + 외부 ≥ 3_000_000) + retry/backoff 정책 + RAG dual baseline + provider plug-in + abuse 차단 7 layer + 별개 cycle 후보 7종. AGENTS.md 의 정책 doc 3 → 5 row 갱신 (observability + bot-framework). 892 pytest + Phase 3 entry 410 + drift 0건 39 연속** |
 
 ---
 
