@@ -142,17 +142,147 @@ class TestKeywordRAGStore:
 
 
 class TestEmbeddingRAGStore:
-    """``EmbeddingRAGStore`` placeholder 검증."""
+    """``EmbeddingRAGStore`` Embedder backend + cosine sim ranking 검증 (cycle 75)."""
+
+    def _store(self, entries=None):
+        from app.bot.rag_context import MockEmbedder
+
+        embedder = MockEmbedder(dim_value=32)
+        return EmbeddingRAGStore(embedder=embedder, entries=entries)
 
     def test_add_size(self) -> None:
-        store = EmbeddingRAGStore()
+        store = self._store()
         store.add(_entry())
         assert store.size() == 1
 
-    def test_search_not_implemented(self) -> None:
-        store = EmbeddingRAGStore([_entry()])
-        with pytest.raises(NotImplementedError, match="sentence-transformers"):
-            store.search("query")
+    def test_duplicate_id_rejected(self) -> None:
+        store = self._store([_entry()])
+        with pytest.raises(ValueError, match="중복"):
+            store.add(_entry())
+
+    def test_search_top_k_zero_rejected(self) -> None:
+        store = self._store([_entry()])
+        with pytest.raises(ValueError, match="top_k"):
+            store.search("query", top_k=0)
+
+    def test_search_empty_query(self) -> None:
+        store = self._store([_entry()])
+        assert store.search("") == []
+
+    def test_search_empty_store(self) -> None:
+        store = self._store()
+        assert store.search("query") == []
+
+    def test_search_ranks_by_similarity(self) -> None:
+        from app.bot.rag_context import FAQEntry
+
+        store = self._store(
+            [
+                FAQEntry(
+                    id="a",
+                    topic="t",
+                    question="후원 결제 수단",
+                    answer="ans-a",
+                    tags=("후원", "결제"),
+                ),
+                FAQEntry(
+                    id="b",
+                    topic="t",
+                    question="환불 정책 일자",
+                    answer="ans-b",
+                    tags=("환불",),
+                ),
+            ]
+        )
+        result = store.search("후원 결제", top_k=2)
+        assert result
+        # 후원 결제 query → 후원 결제 entry 가 첫 매치
+        assert result[0].id == "a"
+
+    def test_search_top_k_cap(self) -> None:
+        from app.bot.rag_context import FAQEntry
+
+        entries = [
+            FAQEntry(
+                id=f"x-{i}",
+                topic="t",
+                question=f"후원 결제 {i}",
+                answer=f"a-{i}",
+                tags=("후원",),
+            )
+            for i in range(5)
+        ]
+        store = self._store(entries)
+        result = store.search("후원", top_k=2)
+        assert len(result) <= 2
+
+
+class TestMockEmbedder:
+    """``MockEmbedder`` deterministic hash 기반 embedder 검증."""
+
+    def test_dim_value_validation(self) -> None:
+        from app.bot.rag_context import MockEmbedder
+
+        with pytest.raises(ValueError, match="dim_value"):
+            MockEmbedder(dim_value=0)
+
+    def test_dim_returns_value(self) -> None:
+        from app.bot.rag_context import MockEmbedder
+
+        assert MockEmbedder(dim_value=8).dim() == 8
+
+    def test_empty_text_zero_vector(self) -> None:
+        from app.bot.rag_context import MockEmbedder
+
+        vec = MockEmbedder(dim_value=4).embed("")
+        assert vec == [0.0, 0.0, 0.0, 0.0]
+
+    def test_non_empty_text_normalized(self) -> None:
+        from app.bot.rag_context import MockEmbedder
+
+        vec = MockEmbedder(dim_value=8).embed("후원 결제 수단")
+        # L2 norm ≈ 1.0
+        import math
+
+        norm = math.sqrt(sum(v * v for v in vec))
+        assert abs(norm - 1.0) < 1e-9
+
+    def test_deterministic(self) -> None:
+        from app.bot.rag_context import MockEmbedder
+
+        e = MockEmbedder(dim_value=16)
+        assert e.embed("query text") == e.embed("query text")
+
+
+class TestCosineSimilarity:
+    """``cosine_similarity`` 벡터 유사도 검증."""
+
+    def test_dim_mismatch_rejected(self) -> None:
+        from app.bot.rag_context import cosine_similarity
+
+        with pytest.raises(ValueError, match="차원"):
+            cosine_similarity([1.0, 0.0], [1.0, 0.0, 0.0])
+
+    def test_empty_vector_rejected(self) -> None:
+        from app.bot.rag_context import cosine_similarity
+
+        with pytest.raises(ValueError, match="빈"):
+            cosine_similarity([], [])
+
+    def test_identical_vectors_one(self) -> None:
+        from app.bot.rag_context import cosine_similarity
+
+        assert abs(cosine_similarity([1.0, 0.0], [1.0, 0.0]) - 1.0) < 1e-9
+
+    def test_orthogonal_vectors_zero(self) -> None:
+        from app.bot.rag_context import cosine_similarity
+
+        assert abs(cosine_similarity([1.0, 0.0], [0.0, 1.0])) < 1e-9
+
+    def test_zero_norm_returns_zero(self) -> None:
+        from app.bot.rag_context import cosine_similarity
+
+        assert cosine_similarity([0.0, 0.0], [1.0, 1.0]) == 0.0
 
 
 class TestBuildDefaultToonationFAQ:

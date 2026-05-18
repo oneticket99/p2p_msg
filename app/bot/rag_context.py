@@ -23,6 +23,7 @@ system prompt 의 외 의 추가 context injection.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Final, List, Optional, Protocol, Sequence, Tuple
 
@@ -167,20 +168,132 @@ class KeywordRAGStore:
         return [e for _, _, e in filtered[:top_k]]
 
 
-class EmbeddingRAGStore:
-    """sentence-transformers + cosine sim placeholder — 사이클 68 skeleton.
+class Embedder(Protocol):
+    """텍스트 → 벡터 backend abstraction.
 
-    실 구현 = sentence-transformers 의 model load + embed batch + numpy /
-    scipy cosine similarity + FAISS index 의 별개 cycle 의무.
+    실 구현 후보 — sentence-transformers + OpenAI text-embedding-3 + Anthropic
+    Voyage. 본 layer 의 caller 의 DI 의 sync 호출 + List[float] 반환 의 통일.
+
+    Notes
+    -----
+    동기 호출 의무 — async 의 별개 cycle. 차원 (dim) 의 일관성 의무 — store 의
+    entries 간 동일 차원.
+    """
+
+    def embed(self, text: str) -> List[float]:
+        """단일 텍스트 → 벡터."""
+        ...
+
+    def dim(self) -> int:
+        """벡터 차원."""
+        ...
+
+
+class MockEmbedder:
+    """deterministic hash-based embedder — 테스트 + 의 baseline.
+
+    실 모델 의존성 부재 의 환경 의 cosine sim layer 단독 검증 용. tokenize 의
+    소문자화 + stopword 제거 + 각 token 의 hash → dim slot 의 누적 + L2
+    normalize.
+
+    Parameters
+    ----------
+    dim_value : int
+        벡터 차원 (default 16). 양수 의무.
+    """
+
+    def __init__(self, dim_value: int = 16) -> None:
+        if dim_value <= 0:
+            raise ValueError(f"dim_value 양수 의무 — {dim_value}")
+        self._dim = dim_value
+
+    def embed(self, text: str) -> List[float]:
+        vec = [0.0] * self._dim
+        if not text:
+            return vec
+        tokens = _tokenize(text)
+        for tok in tokens:
+            slot = hash(tok) % self._dim
+            vec[slot] += 1.0
+        # L2 normalize
+        norm = math.sqrt(sum(v * v for v in vec))
+        if norm == 0:
+            return vec
+        return [v / norm for v in vec]
+
+    def dim(self) -> int:
+        return self._dim
+
+
+def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
+    """벡터 a + b 의 cosine similarity.
+
+    Returns
+    -------
+    float
+        [-1.0, 1.0] range. 차원 mismatch / 빈 벡터 → ValueError.
+    """
+
+    if len(a) != len(b):
+        raise ValueError(
+            f"차원 mismatch — len(a)={len(a)} len(b)={len(b)}"
+        )
+    if not a:
+        raise ValueError("빈 벡터 불가")
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+class EmbeddingRAGStore:
+    """Embedder backend 기반 RAG store — cosine sim ranking.
+
+    Parameters
+    ----------
+    embedder : Embedder
+        텍스트 → 벡터 backend (MockEmbedder + sentence-transformers + OpenAI 등).
+    entries : Sequence[FAQEntry] | None
+        초기 entry list. 모든 entry 의 question 의 embed 가 add 시 의 사전 계산.
+
+    Notes
+    -----
+    실 vector store (FAISS / Chroma / pgvector) 의 별개 cycle. 본 cycle = 의 in-memory
+    cosine sim 의 baseline. n < 1000 의 entry 의 의 linear scan 적합.
     """
 
     def __init__(
-        self, entries: Optional[Sequence[FAQEntry]] = None
+        self,
+        embedder: Embedder,
+        entries: Optional[Sequence[FAQEntry]] = None,
     ) -> None:
-        self._entries: List[FAQEntry] = list(entries or [])
+        self._embedder = embedder
+        self._entries: List[FAQEntry] = []
+        self._vectors: List[List[float]] = []
+        for entry in entries or []:
+            self.add(entry)
 
     def add(self, entry: FAQEntry) -> None:
+        """entry 추가 — id 중복 차단 + question 의 embed 의 사전 계산.
+
+        tags + question 결합 텍스트 embed = retrieval recall 향상.
+        """
+
+        for existing in self._entries:
+            if existing.id == entry.id:
+                raise ValueError(f"id 중복 — {entry.id} 이미 등록")
+        text_for_embed = entry.question
+        if entry.tags:
+            text_for_embed = f"{entry.question} {' '.join(entry.tags)}"
+        vec = self._embedder.embed(text_for_embed)
+        if len(vec) != self._embedder.dim():
+            raise ValueError(
+                f"embedder dim mismatch — entry={len(vec)} dim={self._embedder.dim()}"
+            )
         self._entries.append(entry)
+        self._vectors.append(vec)
 
     def size(self) -> int:
         return len(self._entries)
@@ -188,12 +301,25 @@ class EmbeddingRAGStore:
     def search(
         self, query: str, top_k: int = _DEFAULT_TOP_K
     ) -> List[FAQEntry]:
-        """실 search 미구현 — 별개 cycle 의 embeddings binding 의무."""
+        """query → top-k FAQEntry 의 cosine sim DESC 정렬.
 
-        raise NotImplementedError(
-            "EmbeddingRAGStore.search — sentence-transformers + cosine binding "
-            "별개 cycle 의무"
-        )
+        Notes
+        -----
+        sim 0 = 제외. tie = 입력 순서 안정 유지.
+        """
+
+        if top_k <= 0:
+            raise ValueError(f"top_k 양수 의무 — {top_k}")
+        if not query or not self._entries:
+            return []
+        q_vec = self._embedder.embed(query)
+        scored: List[Tuple[float, int, FAQEntry]] = []
+        for idx, (entry, vec) in enumerate(zip(self._entries, self._vectors)):
+            sim = cosine_similarity(q_vec, vec)
+            if sim > 0:
+                scored.append((sim, idx, entry))
+        scored.sort(key=lambda x: (-x[0], x[1]))
+        return [e for _, _, e in scored[:top_k]]
 
 
 def build_default_toonation_faq() -> List[FAQEntry]:
