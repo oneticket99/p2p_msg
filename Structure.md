@@ -111,6 +111,9 @@ p2p_msg/
 │   │   ├── session.py             # SessionState + DH ratchet + skip helper
 │   │   ├── skipped_keys.py        # LRU+TTL out-of-order delivery
 │   │   └── x3dh.py                # 사이클 37 — X3DH initial key agreement
+│   ├── notifications/             # 사이클 47 — Phase 2 push 알림 skeleton
+│   │   ├── __init__.py
+│   │   └── push.py                # 4 platform (APNS/FCM/SILENT/PULL) + silent/visible
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
