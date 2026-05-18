@@ -169,6 +169,90 @@ status: active
 
 ---
 
+## 8.54 사이클 116~117 + Phase 4 plan 18 cycle 본문 완성 (2026-05-22 신설)
+
+### 8.54.1 Phase 4 18 cycle (cycle 100~117) 총괄
+
+본 세션 chain — production infra base 완성. Item 1 docker + Item 2 .env + Item 3 nginx + Item 4 logging 4 영역 + 34 신규 파일.
+
+| Item | cycle 범위 | 핵심 산출물 | 신규 PASS |
+|---|---|---|---|
+| 100 prerequisite | 100 | httpx pip install + verify gate 2 skip → 0 skip | 0 (verify) |
+| Item 1 docker | 101~108 | docker-compose 6 컴포넌트 + mariadb + postfix DKIM + FCM SDK + nginx config + .env.example | 9 PASS + 17 파일 |
+| Item 2 .env | 109~111 | Config 통합 7 영역 frozen dataclass + activity middleware throttle | 40 PASS + 5 파일 |
+| Item 3 nginx | 112~115 | certbot + nginx config 35 PASS + Caddy 대안 + X-Request-ID + chain integration + user_activity repo | 63 PASS + 8 파일 |
+| Item 4 logging | 116~117 | KST formatter + JSON structured + sensitive redact + 7 logger 분류 | 32 PASS + 4 파일 |
+
+**Phase 4 누계** = 144 신규 PASS + 34 신규 파일 (cycle 99 1101 → cycle 117 1247).
+
+### 8.54.2 pytest + drift
+
+- pytest = **1247 passed + 9 deselected** (cycle 99 1101 → cycle 117 1247, +146 신규).
+- 자율 chain drift = **0건 65 연속** 사이클 37~117.
+- 영구 가드레일 = **39** (변경 무).
+
+### 8.54.3 핵심 산출물 — 4 영역 inventory
+
+**Item 1 docker stack (cycle 101~108)**:
+- `deploy/docker-compose.yml` + `.local.yml` + `.production.yml`
+- `deploy/mariadb/my.cnf` (KST + utf8mb4 + slow query)
+- `deploy/postfix/` Dockerfile + main.cf + master.cf + opendkim.conf + KeyTable/SigningTable/TrustedHosts + supervisord.conf + entrypoint.sh + DNS_RECORDS.md
+- `deploy/web/Dockerfile` (python:3.13-slim + non-root uid 1000)
+- `deploy/secrets/.gitkeep` + `deploy/postfix/dkim/.gitkeep`
+- `app/notifications/fcm_client.py` (graceful FCM lazy init) + tests
+
+**Item 2 .env 통합 (cycle 109~111)**:
+- `server/config.py` (7 영역 DBConfig/SMTPConfig/SignalingConfig/BotConfig/FCMConfig/TLSConfig/Config + load_env_files chain + production validate ConfigError)
+- `server/middleware/activity.py` (ActivityTracker 1분 throttle + extract_client_ip + activity_middleware + APP_KEY_ACTIVITY)
+- `server/middleware/__init__.py` (package init)
+
+**Item 3 nginx + DB audit wiring (cycle 112~115)**:
+- `deploy/nginx/nginx.conf` (worker auto + 5 rate limit zone + real_ip Docker bridge)
+- `deploy/nginx/conf.d/tootalk.conf` (HTTPS 443 + TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 8 location + WebSocket upgrade)
+- `deploy/nginx/CADDY_ALTERNATIVE.md`
+- `deploy/scripts/certbot_init.sh` + `certbot_renew.sh`
+- `server/middleware/request_id.py` (current_request_id contextvar + uuid4 fallback + response echo)
+- `server/db/repositories/user_activity.py` (ActivityAction 23 ENUM + SessionEndReason 5 ENUM + 4 repository 함수 + 5 parameterized SQL)
+
+**Item 4 logging (cycle 116~117)**:
+- `server/logging_setup/kst_formatter.py` (KSTFormatter text + KSTJSONFormatter JSON + request_id auto-inject + Asia/Seoul +09:00)
+- `server/logging_setup/redact.py` (9 redact pattern + RedactingFilter + DEFAULT_REDACT_PATTERNS)
+- `server/logging_setup/setup.py` (configure_logging idempotent + JSON vs text + handler filter attach + aiohttp.access WARNING cap)
+- `server/logging_setup/__init__.py` (6 export)
+
+### 8.54.4 production 진입 prerequisite 완성 항목
+
+- [x] httpx + firebase-admin server requirements 등록 + verify gate PASS
+- [x] docker compose 6 컴포넌트 stack base (mariadb + postfix + web + ws + nginx + certbot profile)
+- [x] postfix SPF/DKIM RSA 2048/DMARC DNS record 정본
+- [x] FCM Cloud Messaging SDK lazy graceful binding
+- [x] nginx TLS 1.2/1.3 + 5 rate limit zone + 8 location + WebSocket upgrade + 5 보안 header
+- [x] Let's Encrypt certbot init/renew cron 자동화
+- [x] Config 통합 7 영역 + production validate ConfigError defense-in-depth
+- [x] DB audit migration 0003 actual SQL wiring (23 action ENUM + 5 SQL)
+- [x] X-Request-ID propagation contextvar (cross-service trace base)
+- [x] activity middleware 1분 throttle (write storm 차단)
+- [x] KST + JSON structured + sensitive redact 9 pattern logging
+
+### 8.54.5 다음 세션 첫 액션 우선순위
+
+1. **cycle 118** — 평가 snapshot rewrite (productization + vibe-coding 종합 + HTML 2 mirror) — Phase 4 종결 점수 갱신.
+2. **cycle 119** — `v0.4.0-phase4-infra` tag + release-agent + GitHub release notes.
+3. **별개 cycle** — `server/api/auth_handlers.py` 회원가입 + 로그인 endpoint 의 actual DB wiring — INSERT 시 signup_ip + signup_user_agent parse + `log_activity(ActivityAction.SIGNUP)` 호출 + `create_session(LOGIN)` 호출.
+4. **별개 cycle** — activity_middleware 의 actual DB hook — log 의 현재 → `log_activity(LAST_ACTIVE)` SQL UPDATE.
+5. **Phase 5 진입 검토** — 다국어 (en/zh/ja) + mobile + emoji pack share + bot framework 마무리.
+
+### 8.54.6 manual test 의무 (사용자) — Phase 4 종결 직후
+
+- `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml up mariadb postfix` 기동 + healthy 확인.
+- 0003 migration 적용 + `DESCRIBE user_sessions; DESCRIBE user_activity_log;` 검증.
+- `.env.production` 의 ANTHROPIC_API_KEY + OPENAI_API_KEY + FCM_PROJECT_ID + ACME_EMAIL + TLS_PRIMARY_DOMAIN 실 값 입력.
+- `BOT_ENABLED=1 LOG_FORMAT=json python -m server.main` 의 JSON log line stdout 검증.
+- `curl -H "X-Request-ID: smoke" http://localhost:8080/healthz` 의 response X-Request-ID echo + JSON log line 의 `request_id` field 검증.
+- `deploy/scripts/certbot_init.sh` 실 도메인 의 인증서 발급 (production 진입 시).
+
+---
+
 ## 8.53 사이클 110~115 Phase 4 Item 2+3 본문 완성 6 cycle (2026-05-22 신설)
 
 ### 8.53.1 6 cycle 누계 chain
