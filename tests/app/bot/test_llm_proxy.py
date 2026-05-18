@@ -170,6 +170,133 @@ class TestAnthropicProvider:
         assert call_count == 2
 
 
+class TestProviderConcurrentInit:
+    """cycle 89 — AnthropicProvider/OpenAIProvider lazy init asyncio.Lock 검증."""
+
+    @pytest.mark.asyncio
+    async def test_anthropic_concurrent_init_single_from_env(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # 동시 5 chat() 호출 시 from_env 1회 만 실행 + client 재사용
+        import asyncio
+        import app.bot.anthropic_client as ac_module
+
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+
+        call_count = {"n": 0}
+        original_from_env = ac_module.from_env
+
+        def counting_from_env(transport=None):
+            call_count["n"] += 1
+
+            async def _stub(url, h, b):
+                # slight await 의 의 race window 의 노출
+                await asyncio.sleep(0.001)
+                return (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                )
+
+            return ac_module.AnthropicClient(
+                api_key="sk-test", transport=_stub
+            )
+
+        monkeypatch.setattr(ac_module, "from_env", counting_from_env)
+
+        provider = AnthropicProvider()
+        results = await asyncio.gather(
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+        )
+        assert len(results) == 5
+        assert call_count["n"] == 1  # lock 의 single init 검증
+        assert all(r.content == "ok" for r in results)
+
+    @pytest.mark.asyncio
+    async def test_openai_concurrent_init_single_from_env(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import asyncio
+        import app.bot.openai_client as oc_module
+        from app.bot.llm_proxy import OpenAIProvider
+
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+        call_count = {"n": 0}
+
+        def counting_from_env(transport=None):
+            call_count["n"] += 1
+
+            async def _stub(url, h, b):
+                await asyncio.sleep(0.001)
+                return (
+                    200,
+                    {},
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "ok",
+                                }
+                            }
+                        ]
+                    },
+                )
+
+            return oc_module.OpenAIClient(
+                api_key="sk-test", transport=_stub
+            )
+
+        monkeypatch.setattr(oc_module, "from_env", counting_from_env)
+
+        provider = OpenAIProvider()
+        results = await asyncio.gather(
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+            provider.chat([_user_msg()]),
+        )
+        assert len(results) == 5
+        assert call_count["n"] == 1
+        assert all(r.content == "ok" for r in results)
+
+    @pytest.mark.asyncio
+    async def test_anthropic_init_lock_lazy_created(self) -> None:
+        # __init__ 시점 _init_lock = None (sync event loop 부재 시 safe)
+        provider = AnthropicProvider()
+        assert provider._init_lock is None  # type: ignore[attr-defined]
+
+    @pytest.mark.asyncio
+    async def test_anthropic_lock_created_on_first_chat(self) -> None:
+        from app.bot.anthropic_client import AnthropicClient
+        import asyncio
+
+        async def _stub(url, h, b):
+            return (
+                200,
+                {},
+                {
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": "ok"}],
+                },
+            )
+
+        client = AnthropicClient(api_key="sk-x", transport=_stub)
+        provider = AnthropicProvider(client=client)
+        # client 명시 주입 시 lock 부재 (init 의무 무)
+        await provider.chat([_user_msg()])
+        assert provider._init_lock is None  # type: ignore[attr-defined]
+
+
 class TestSelectLLMProvider:
     """``select_llm_provider`` factory 검증."""
 

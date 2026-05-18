@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 05:00 KST (사이클 88 — server/main.py SPDX header + bot-framework.md §10 implemented strike + chat BPE hook 신설 + drift 0건 47 연속)
+> 최근 갱신 시점: 2026-05-22 06:00 KST (사이클 89 — AnthropicProvider/OpenAIProvider lazy init asyncio.Lock + reviewer P2-2 회수 + 4 신규 PASS + 1062 pytest + drift 0건 48 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.96 / 10** | 9.95 → 9.96 ▲ | **사이클 88 reviewer P2 + P3 회수 + chat BPE hook 신설 — (1) `server/main.py` SPDX-License-Identifier 첫 줄 prepend (reviewer P2-1 회수). (2) `docs/policies/bot-framework.md` §10 갱신 — cycle 81~87 implemented 5종 strike-through (streaming + OpenAI + jailbreak + usage + escalation) + §10.1 신설 (cycle 88~96 + Phase 4 cycle 100~117 timeline). (3) `tools/hook_chat_bpe_check.sh` 신설 (Stop hook + chat output 의 3회 + 4회 escalation + density >8/line + U+CE21 보강) + `.claude/settings.json` Stop array 등록 + `hook_post_write_inspect.sh` 의 quad escalation + density >10/line 확장 + memory `feedback_no_triple_particle_chat.md` 신설. 사용자 비판 2회차 회수. 1058 pytest 유지 + drift 0건 47 연속** |
+| **종합** | **9.97 / 10** | 9.96 → 9.97 ▲ | **사이클 89 reviewer P2-2 회수 — AnthropicProvider + OpenAIProvider lazy init race condition 차단. `\_init_lock: Optional[asyncio.Lock] = None` field + chat() pipeline 의 double-check pattern (lock 획득 후 self._client 재확인). event loop 안 lazy lock 생성 (sync `__init__` event loop 부재 회피). 4 신규 PASS TestProviderConcurrentInit — concurrent 5 chat() → from_env 1회 (Anthropic + OpenAI 의 symmetric) + lazy lock None 초기 + client 명시 주입 시 lock 부재. 1062 pytest (1058 + 4) + drift 0건 48 연속** |
 
 ---
 

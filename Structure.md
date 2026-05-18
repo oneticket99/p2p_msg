@@ -125,7 +125,7 @@ p2p_msg/
 │   │   └── input_forward.py       # 사이클 58 — Input Forward Backend + Mock + CGEvent placeholder
 │   ├── bot/                       # 사이클 65~70 — Phase 3 bot framework
 │   │   ├── __init__.py
-│   │   ├── llm_proxy.py           # 사이클 65 + 71 — BotMessage + LLMProvider + Mock + AnthropicProvider (cycle 71 AnthropicClient adapter) + RateLimitGate
+│   │   ├── llm_proxy.py           # 사이클 65 + 71 + 84 + 89 — BotMessage + LLMProvider + Mock + AnthropicProvider + OpenAIProvider + asyncio.Lock lazy init + RateLimitGate
 │   │   ├── customer_service_bot.py  # 사이클 66 + 69 + 83 — default 투네이션 고객센터 봇 + system prompt + history cap + RAGStore 통합 + scan_jailbreak opt-in
 │   │   ├── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
 │   │   ├── rag_context.py         # 사이클 68 + 75 + 79 — FAQ + KeywordRAGStore + Embedder + MockEmbedder + CachedEmbedder LRU + cosine_similarity + EmbeddingRAGStore

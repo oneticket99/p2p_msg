@@ -25,6 +25,7 @@ LLM 연동 인터랙티브 대화형 Q&A 의 핵심 layer. server-side proxy 패
 
 from __future__ import annotations
 
+import asyncio
 import os
 import time
 from dataclasses import dataclass, field
@@ -143,6 +144,8 @@ class AnthropicProvider:
     def __init__(self, client: Optional[object] = None) -> None:
         # client 는 AnthropicClient 또는 None — None 일 시 chat 호출 시 lazy 생성
         self._client = client
+        # cycle 89 — 동시 호출 시 from_env 중복 실행 차단 lock (lazy 생성)
+        self._init_lock: Optional[asyncio.Lock] = None
 
     @classmethod
     def is_available(cls) -> bool:
@@ -162,6 +165,9 @@ class AnthropicProvider:
         client 미주입 시 ``from_env()`` 의 lazy 생성 (ANTHROPIC_API_KEY 환경
         변수 + httpx_transport default). 후속 호출 의 동일 client 재사용.
 
+        cycle 89 — 동시 chat() 호출 race condition 차단. asyncio.Lock 의
+        double-check pattern (lock 획득 후 self._client 재확인).
+
         Raises
         ------
         AnthropicAuthError, AnthropicRateLimitError, AnthropicServerError,
@@ -172,10 +178,16 @@ class AnthropicProvider:
         """
 
         if self._client is None:
-            # 순환 import 회피 — chat 호출 시점 의 lazy import
-            from app.bot.anthropic_client import from_env
+            # event loop 안 lazy lock 생성 (sync __init__ 시점 부재 회피)
+            if self._init_lock is None:
+                self._init_lock = asyncio.Lock()
+            async with self._init_lock:
+                # double-check — lock 획득 직전 다른 task 가 init 했을 가능
+                if self._client is None:
+                    # 순환 import 회피 — chat 호출 시점 의 lazy import
+                    from app.bot.anthropic_client import from_env
 
-            self._client = from_env()
+                    self._client = from_env()
         return await self._client.chat(messages)  # type: ignore[union-attr]
 
 
@@ -193,6 +205,8 @@ class OpenAIProvider:
 
     def __init__(self, client: Optional[object] = None) -> None:
         self._client = client
+        # cycle 89 — 동시 호출 race condition 차단 lock (lazy 생성)
+        self._init_lock: Optional[asyncio.Lock] = None
 
     @classmethod
     def is_available(cls) -> bool:
@@ -207,12 +221,20 @@ class OpenAIProvider:
         return True
 
     async def chat(self, messages: List[BotMessage]) -> BotMessage:
-        """messages → assistant reply via OpenAIClient delegate."""
+        """messages → assistant reply via OpenAIClient delegate.
+
+        cycle 89 — 동시 chat() 호출 race condition 차단. asyncio.Lock 의
+        double-check pattern (AnthropicProvider 동일).
+        """
 
         if self._client is None:
-            from app.bot.openai_client import from_env
+            if self._init_lock is None:
+                self._init_lock = asyncio.Lock()
+            async with self._init_lock:
+                if self._client is None:
+                    from app.bot.openai_client import from_env
 
-            self._client = from_env()
+                    self._client = from_env()
         return await self._client.chat(messages)  # type: ignore[union-attr]
 
 
