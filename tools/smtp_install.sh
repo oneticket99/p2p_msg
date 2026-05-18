@@ -27,16 +27,21 @@ step() {
 }
 
 # ─── 1 패키지 설치 ──────────────────────────────────────────
-step "1 dnf install postfix + cyrus-sasl + mailx + swaks + iptables-services + opendkim + certbot + openssl"
+step "1 dnf install postfix + cyrus-sasl + s-nail + swaks + iptables-services + opendkim + certbot + openssl"
+# Rocky 9 mailx 부재 → s-nail (mail 명령 호환). EPEL → swaks. CRB → libmilter + libmemcached (opendkim dependency).
+dnf install -y dnf-plugins-core 2>&1 | tail -5 || true
+dnf config-manager --set-enabled crb 2>&1 | tail -5 || true
+dnf install -y epel-release 2>&1 | tail -10 || true
 dnf install -y \
   postfix cyrus-sasl cyrus-sasl-plain cyrus-sasl-md5 \
-  mailx swaks iptables-services \
+  s-nail swaks iptables-services \
+  sendmail-milter libmemcached \
   opendkim opendkim-tools \
-  certbot openssl ca-certificates 2>&1 | tail -30
+  certbot openssl ca-certificates 2>&1 | tail -50
 
 # rpm verify
 step "1.1 rpm 설치 검증"
-rpm -q postfix cyrus-sasl mailx swaks iptables-services opendkim certbot openssl
+rpm -q postfix cyrus-sasl s-nail swaks iptables-services opendkim certbot openssl
 
 # ─── 2 iptables ACCEPT 25/587/465 ──────────────────────────
 step "2 iptables ACCEPT 25/587/465 + persist"
