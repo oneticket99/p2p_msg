@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 16:00 KST (사이클 42 — multi-device sync skeleton + 26 PASS + Phase 2 누계 177 케이스 + 자율 chain drift 0건 6 연속 사이클 37~42)
+> 최근 갱신 시점: 2026-05-20 16:30 KST (사이클 43 — multi-device server endpoint POST/GET/DELETE + 22 PASS + Phase 2 누계 199 케이스 + 자율 chain drift 0건 7 연속 사이클 37~43)
 
 ---
 
@@ -30,15 +30,15 @@ status: active
 | 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.7 / 10 | 9.65 → 9.7 ▲ | 42 cycle 누계 + 사이클 37~42 자율 chain 연속 drift 0건 6 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
+| 사이클 효율 | 9.72 / 10 | 9.7 → 9.72 ▲ | 43 cycle 누계 + 사이클 37~43 자율 chain 연속 drift 0건 7 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
-| QA 사고 | 9.92 / 10 | 9.9 → 9.92 ▲ | pytest 370 + Playwright + bcrypt + OTP brute force + Phase 2 177 케이스 (X3DH + sound 4 cycle + multi-device skeleton) |
+| QA 사고 | 9.93 / 10 | 9.92 → 9.93 ▲ | pytest 392 + Playwright + bcrypt + OTP brute force + Phase 2 199 케이스 (X3DH + sound 4 cycle + multi-device client+server) |
 | 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 5 / 5 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 (신규) | 5 / 5 | 신규 ▲ | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.7 / 10** | 9.68 → 9.7 ▲ | **사이클 42 multi-device sync skeleton (DeviceIdentity + DeviceRegistry + 6 wire format) + 26 PASS. Phase 2 핵심 잔존 진입. 자율 chain drift 0건 6 연속 사이클 37~42** |
+| **종합** | **9.72 / 10** | 9.7 → 9.72 ▲ | **사이클 43 multi-device server endpoint 3 + migration + repo + 22 PASS. client skeleton ↔ server endpoint chain 정합. Phase 2 누계 199 케이스. drift 0건 7 연속** |
 
 ---
 
@@ -109,6 +109,29 @@ Phase 3 막바지 원격 데스크탑 제어 (P5/P6 OBS 도움 시나리오) + T
 - fork PR API = `all_external_contributors` gh API 자동 → 자율 GO
 
 사용자 = LLM 의 reasonable default 권장 + 4 옵션 분석 + best practice 정합 인지 → 명확한 confirm 단일 directive ("권장 default 진행해"). 의사결정 부하 절약 + LLM 자율 영역 명확화. **본 패턴 = 효율 우위 + 의사결정 fatigue 회피**.
+
+### 2.37 client ↔ server chain — multi-device 2 cycle 완성 (신규 사이클 43)
+
+사이클 42 client skeleton 직후 server-side counterpart 진입. 사용자 directive "잔존이슈 작업해" 자율 GO.
+
+client ↔ server chain 패턴 정합 — signature sound chain 4 cycle (사이클 38~41) 의 vertical slice 패턴 의 horizontal slice 변형:
+- vertical slice = 단일 feature 의 layer 분리 (wrapper → trigger → UI → wire)
+- horizontal slice = 단일 feature 의 client + server 양측 분리 (client skeleton → server endpoint → integration)
+
+사이클 43 의무:
+- DB migration (5요소 COMMENT 정합)
+- repository layer (asyncmy pool 표준 패턴)
+- handler layer (middleware 의무 + base64 검증 + UNIQUE 처리)
+- routes 등록 (server/main.py)
+- ARCHITECTURE §6 + HTML mirror 동기 (doc-consistency 의무)
+
+설계 패턴 강화:
+- soft-delete (status='revoked') = audit trail 보존 + 외부 차단 동시 만족
+- base64 32-byte 검증 = handler 단 1차 차단 (X25519 길이 검증 의무)
+- 1062 Duplicate → 409 Conflict 매핑 = REST 의 의미론 정합
+- include_revoked query option = list endpoint audit retrieval 옵션
+
+자율 chain drift 0건 7 연속 (사이클 37~43). multi-device chain 2 cycle 완성 + Phase 2 누계 199 케이스 도달. 종합 9.7 → 9.72 ▲. 사이클 효율 9.7 → 9.72 ▲ + QA 사고 9.92 → 9.93 ▲.
 
 ### 2.36 Phase 2 핵심 잔존 진입 — multi-device sync skeleton (신규 사이클 42)
 

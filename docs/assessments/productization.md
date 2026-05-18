@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-20 16:00 KST (사이클 42 — Phase 2 multi-device sync skeleton + 26 PASS + Phase 2 누계 177 케이스)
+> 최근 갱신 시점: 2026-05-20 16:30 KST (사이클 43 — Phase 2 multi-device server endpoint POST/GET/DELETE + 22 PASS + Phase 2 누계 199 케이스)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.0 / 10 | 7.9 → 8.0 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 121 케이스 (X3DH + Signal Protocol + skipped + ooo + device_registry 26) + signature sound 56 PASS + 370 pytest |
+| 기술 완성도 | 8.1 / 10 | 8.0 → 8.1 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 143 케이스 (X3DH + Signal Protocol + multi-device skeleton 26 + server endpoint 22) + signature sound 56 PASS + 392 pytest |
 | 시장 적합성 | 5.3 / 10 | 5.2 → 5.3 ▲ | Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등) |
 | 차별화 요소 | 9.25 / 10 | 9.2 → 9.25 ▲ | 친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device skeleton) + signature sound UX |
 | 사용자 가치 | 6.8 / 10 | 6.7 → 6.8 ▲ | P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire (실 사용 가능) |
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer |
 | 세션 간 정합 | 9.7 / 10 | = | handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무 |
-| 보안 hardening | 7.5 / 10 | 7.4 → 7.5 ▲ | E2EE Signal Protocol 121 케이스 (X3DH + multi-device skeleton 26) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
-| **종합** | **9.1 / 10** | 9.05 → 9.1 ▲ | **사이클 42 multi-device sync skeleton (DeviceIdentity + DeviceRegistry + 6 wire format 함수) + 26 PASS. Signal Protocol multi-device 모델 첫 layer. Phase 2 누계 177 케이스. 자율 chain drift 0건 6 연속 사이클 37~42** |
+| 보안 hardening | 7.6 / 10 | 7.5 → 7.6 ▲ | E2EE Signal Protocol 143 케이스 (X3DH + multi-device 48 = skeleton 26 + server endpoint 22) + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3 |
+| **종합** | **9.15 / 10** | 9.1 → 9.15 ▲ | **사이클 43 multi-device server endpoint 3 종 (POST/GET/DELETE /api/devices) + migration + repository + 22 PASS. multi-device chain 2 cycle 완성 (client skeleton 42 + server endpoint 43). Phase 2 누계 199 케이스. drift 0건 7 연속** |
 
 ---
 
@@ -140,6 +140,35 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.32 multi-device server endpoint — REST 3 종 + soft-delete revoke (신규 사이클 43)
+
+사용자 directive "잔존이슈 작업해" 자율 GO 사이클 43. 사이클 42 의 client skeleton 의 server-side counterpart.
+
+server stack 완성:
+- `server/db/migrations/0002_devices.sql` — 10 컬럼 5요소 COMMENT 정합 ([[feedback-db-schema-field-comments]])
+  - id BIGINT UNSIGNED PK + device_id VARCHAR(64) UNIQUE + user_id FK CASCADE
+  - label VARCHAR(128) + 3 X25519 BLOB (identity / signed_prekey / one_time_prekey)
+  - created_at / updated_at / last_seen_at + status ENUM active/revoked
+  - 4 INDEX (PK + UNIQUE + user_id + user_status 복합)
+- `server/db/repositories/devices.py` — DeviceRow + 5 async (insert_device + get_devices_by_user + get_device_by_device_id + revoke_device + update_last_seen)
+- `server/api/devices_handlers.py` — 3 endpoint
+  - POST /api/devices = 등록 + base64 32-byte 검증 + 1062 UNIQUE → 409
+  - GET /api/devices = list + include_revoked query option
+  - DELETE /api/devices/{device_id} = soft-delete (status='revoked') + user_id 검증
+- middleware Bearer 의무 (PUBLIC_PATHS 외 = 자동 적용)
+- `server/main.py` register_devices_routes 등록
+- `ARCHITECTURE.md §6` + HTML mirror 정합 row 추가
+
+tests 22 케이스 6 TestClass = DecodePubkey 4 + EncodePubkey 2 + DeviceRowToWire 4 + HandleRegisterDevice 6 + HandleListDevices 3 + HandleRevokeDevice 3.
+
+5 검증 PASS — AST + import + pytest 392 + doc-lint 0 + BPE 0 (3건 정정).
+
+multi-device chain 2 cycle 완성:
+- 사이클 42 client skeleton (device_registry.py + 26 PASS)
+- 사이클 43 server endpoint (migration + repo + handlers + 22 PASS)
+
+Phase 2 누계 = 199 케이스. 자율 chain drift 0건 7 연속 (사이클 37~43). 잔존: X3DH session fan-out (sender 매 recipient device loop) + sender keys (그룹 chat) + push 알림 + 백업.
 
 ### 2.31 multi-device sync skeleton — Signal Protocol N-device 모델 (신규 사이클 42)
 

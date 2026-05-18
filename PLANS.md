@@ -61,7 +61,8 @@
   - Alice/Bob integration test (4 PASS)
   - X3DH initial key exchange (`x3dh.py`, 11 PASS, 사이클 37)
   - **multi-device sync skeleton** (`device_registry.py`, 26 PASS, 사이클 42 — DeviceIdentity + DeviceRegistry + 6 wire format 함수)
-  - **잔존**: 서버 endpoint POST/GET devices + X3DH session fan-out (sender 의 매 recipient device loop) + sender keys (그룹 chat)
+  - **multi-device server endpoint** (`server/api/devices_handlers.py` + `server/db/repositories/devices.py` + migration 0002, 22 PASS, 사이클 43 — POST/GET/DELETE /api/devices)
+  - **잔존**: X3DH session fan-out (sender 의 매 recipient device loop) + sender keys (그룹 chat)
 - **그룹 채팅 (3~8명 mesh)** — n^2 PeerConnection 토폴로지 우선. 8명 초과 시 SFU 도입 검토 (Phase 3 이연 가능). **사이클 36 시점 미시작**
 - **WebRTC MediaStream** — Opus 음성 + H.264/VP8 영상. 에코 캔슬링 (WebRTC AEC3) + 자동 이득 조절. **미시작**
 - **signature sound** ([[project-signature-sound]]) — PyQt6 QSoundEffect + 자체 "뿅" WAV (200~400ms chiptune, 사용자 directive 2026-05-18). UX brand recognition 차별화. **사이클 38~41 완성** — 38 wrapper layer + 39 ChatView trigger + 40 SettingsDialog + 28 PASS + 41 main_window wire (`_sound_player` instance + ChatView inject + "환경설정…" 메뉴 Ctrl+, + modal slot). signature sound chain 4 cycle 완성. **잔존**: designer 최종 chiptune asset 교체 (placeholder → 최종 sound) + Phase 3 의 user_settings table 영속화.

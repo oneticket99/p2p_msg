@@ -29,6 +29,7 @@ from aiohttp import web
 from dotenv import load_dotenv
 
 from .api.auth_handlers import register_auth_routes
+from .api.devices_handlers import register_devices_routes
 from .auth.middleware import auth_middleware
 from .db.connection import close_pool, create_pool
 from .room import RoomRegistry
@@ -113,6 +114,9 @@ async def build_app() -> web.Application:
 
     # auth REST endpoint 등록
     register_auth_routes(app)
+
+    # devices REST endpoint 등록 (Phase 2 사이클 43 multi-device sync)
+    register_devices_routes(app)
 
     # DB pool — DB_ENABLED=1 시 활성. 로컬 dev 시 의
     if os.environ.get("DB_ENABLED", "0").strip() == "1":

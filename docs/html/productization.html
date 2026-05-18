@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 42)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 42 의 등가 렌더링.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 43)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 43 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     마지막 갱신 라인 = "2026-05-20 16:00 KST — 사이클 42 (multi-device sync skeleton + 26 PASS + Phase 2 누계 177)".
-     §1 종합 = 10점 만점 9 row + 종합 9.1 / 10 (Signal Protocol multi-device 모델 첫 layer).
-     §2.31 신규 (multi-device sync skeleton) 최우선 노출.
-     기술 8.0 / 시장 5.3 / 차별화 9.25 / 가치 6.8 / 수익화 5.4 / 운영 9.8 / 가드레일 10.0 / 정합 9.7 / 보안 7.5 = 평균 9.1 정합. -->
+     마지막 갱신 라인 = "2026-05-20 16:30 KST — 사이클 43 (multi-device server endpoint + 22 PASS + Phase 2 누계 199)".
+     §1 종합 = 10점 만점 9 row + 종합 9.15 / 10 (client ↔ server multi-device chain 2 cycle 완성).
+     §2.32 신규 (multi-device server endpoint REST 3 종) 최우선 노출.
+     기술 8.1 / 시장 5.3 / 차별화 9.25 / 가치 6.8 / 수익화 5.4 / 운영 9.8 / 가드레일 10.0 / 정합 9.7 / 보안 7.6 = 평균 9.15 정합. -->
 <style>
   :root{
     --bg:#fafafa;
@@ -88,7 +88,7 @@
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-20 16:00 KST</strong> — 사이클 42 (multi-device sync skeleton + 26 PASS + Phase 2 누계 177 케이스)<br>
+    최근 갱신 시점: <strong>2026-05-20 16:30 KST</strong> — 사이클 43 (multi-device server endpoint POST/GET/DELETE + 22 PASS + Phase 2 누계 199 케이스)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -96,8 +96,8 @@
 <nav class="toc">
   <strong>목차</strong>
   <ol>
-    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.1 / 10</a></li>
-    <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.31</a></li>
+    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.15 / 10</a></li>
+    <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.32</a></li>
     <li><a href="#sec-3">약점 (Productization Weaknesses)</a></li>
     <li><a href="#sec-4">시장 포지셔닝 옵션 (A/B/C/D)</a></li>
     <li><a href="#sec-5">단기 (3개월) 제품화 액션</a></li>
@@ -120,7 +120,7 @@
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">8.0 / 10</td><td class="center"><span class="up">7.9 → 8.0 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 121 케이스 (X3DH + Signal Protocol + skipped + ooo + device_registry 26) + signature sound 56 PASS + 370 pytest</td></tr>
+    <tr><td>기술 완성도</td><td class="center">8.1 / 10</td><td class="center"><span class="up">8.0 → 8.1 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 143 케이스 (X3DH + Signal Protocol + multi-device skeleton 26 + server endpoint 22) + signature sound 56 PASS + 392 pytest</td></tr>
     <tr><td>시장 적합성</td><td class="center">5.3 / 10</td><td class="center"><span class="up">5.2 → 5.3 ▲</span></td><td>Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등)</td></tr>
     <tr><td>차별화 요소</td><td class="center">9.25 / 10</td><td class="center"><span class="up">9.2 → 9.25 ▲</span></td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device skeleton) + signature sound UX</td></tr>
     <tr><td>사용자 가치</td><td class="center">6.8 / 10</td><td class="center"><span class="up">6.7 → 6.8 ▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire (실 사용 가능)</td></tr>
@@ -128,8 +128,8 @@
     <tr><td>운영 비용</td><td class="center">9.8 / 10</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer</td></tr>
     <tr><td>세션 간 정합</td><td class="center">9.7 / 10</td><td class="center">=</td><td>handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무</td></tr>
-    <tr><td>보안 hardening</td><td class="center">7.5 / 10</td><td class="center"><span class="up">7.4 → 7.5 ▲</span></td><td>E2EE Signal Protocol 121 케이스 (X3DH + multi-device skeleton 26) + skipped_keys LRU+TTL + decrypt_ooo replay 차단 + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.1 / 10</strong></td><td class="center"><span class="up">9.05 → 9.1 ▲</span></td><td><strong>사이클 42 multi-device sync skeleton (DeviceIdentity + DeviceRegistry + 6 wire format 함수) + 26 PASS. Signal Protocol multi-device 모델 첫 layer. Phase 2 누계 177 케이스</strong></td></tr>
+    <tr><td>보안 hardening</td><td class="center">7.6 / 10</td><td class="center"><span class="up">7.5 → 7.6 ▲</span></td><td>E2EE Signal Protocol 143 케이스 (X3DH + multi-device 48 = skeleton 26 + server endpoint 22) + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3</td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.15 / 10</strong></td><td class="center"><span class="up">9.1 → 9.15 ▲</span></td><td><strong>사이클 43 multi-device server endpoint REST 3 종 (POST/GET/DELETE /api/devices) + migration + repository + 22 PASS. client ↔ server chain 2 cycle 완성. Phase 2 누계 199 케이스</strong></td></tr>
   </tbody>
 </table>
 
@@ -255,6 +255,19 @@
   <li><strong>사이클 9 (d)</strong>: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합</li>
 </ul>
 <p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
+
+<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.32 multi-device server endpoint — REST 3 종 + soft-delete revoke <span class="new">신규 사이클 43</span></h3>
+<p>사용자 directive "잔존이슈 작업해" 자율 GO 사이클 43. 사이클 42 의 client skeleton 의 server-side counterpart.</p>
+<p>server stack 완성:</p>
+<ul>
+  <li><code>server/db/migrations/0002_devices.sql</code> — 10 컬럼 5요소 COMMENT 정합 (id PK + device_id UNIQUE + user_id FK CASCADE + label + 3 X25519 BLOB + 3 timestamp + status ENUM)</li>
+  <li><code>server/db/repositories/devices.py</code> — DeviceRow + 5 async (insert_device + get_devices_by_user + get_device_by_device_id + revoke_device + update_last_seen)</li>
+  <li><code>server/api/devices_handlers.py</code> — 3 endpoint (POST 등록 base64 32-byte + 1062→409 + GET list include_revoked option + DELETE soft-delete user_id 검증)</li>
+  <li>middleware Bearer 의무 (PUBLIC_PATHS 외 자동) + <code>server/main.py</code> routes 등록</li>
+  <li><code>ARCHITECTURE.md §6</code> + HTML mirror 정합 row 추가</li>
+</ul>
+<p>tests 22 케이스 6 TestClass — DecodePubkey 4 + EncodePubkey 2 + DeviceRowToWire 4 + HandleRegisterDevice 6 + HandleListDevices 3 + HandleRevokeDevice 3.</p>
+<p>5 검증 PASS — AST + import + pytest 392 + doc-lint 0 + BPE 0. multi-device chain 2 cycle 완성 (client skeleton 42 + server endpoint 43). Phase 2 누계 = 199 케이스. 자율 chain drift 0건 7 연속 (사이클 37~43). 잔존: X3DH session fan-out + sender keys (그룹) + push + 백업.</p>
 
 <h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.31 multi-device sync skeleton — Signal Protocol N-device 모델 <span class="new">신규 사이클 42</span></h3>
 <p>사용자 directive "진행해" 자율 GO. signature sound chain 4 cycle 완성 직후 Phase 2 핵심 잔존 = multi-device sync 진입.</p>
@@ -774,7 +787,7 @@
     <li>Markdown 정본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
   <p style="margin-top:14px;color:var(--muted);font-size:12px">
-    마지막 갱신: <strong>2026-05-20 16:00 KST</strong> — 사이클 42 (multi-device sync skeleton + 26 PASS + Phase 2 누계 177 케이스)
+    마지막 갱신: <strong>2026-05-20 16:30 KST</strong> — 사이클 43 (multi-device server endpoint + 22 PASS + Phase 2 누계 199 케이스)
   </p>
 </footer>
 
