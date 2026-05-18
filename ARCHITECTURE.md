@@ -180,7 +180,7 @@ sequenceDiagram
 | `server/mail/smtp_client.py` | aiosmtplib STARTTLS + SASL + UTF-8 한글 본문 (signup/password_reset 분기, 사이클 19) | `aiosmtplib>=3.0` | 서버 Mail |
 | `server/room.py` | `Peer` (user_id + db_room_id field 추가, 사이클 25) + `Room`·`RoomRegistry` | `server/protocol.py` | 서버 Room State |
 | `server/protocol.py` | TypedDict envelope + 오류 코드 (사이클 1) | — | 서버 Model |
-| `server/main.py` | entry + DB pool + auth middleware + session_store + on_cleanup (사이클 22) | 위 + `dotenv` + `signaling_persistence` | 서버 부트스트랩 |
+| `server/main.py` | entry + DB pool + auth middleware + session_store + on_cleanup (사이클 22) + bot LLM proxy 통합 (사이클 76 — BOT_ENABLED=1 시 AnthropicProvider 또는 MockLLMProvider 폴백 + RateLimitGate + register_bot_routes + ANTHROPIC_API_KEY 가용성 detect) | 위 + `dotenv` + `signaling_persistence` + `app/bot/llm_proxy` | 서버 부트스트랩 |
 | `tools/` | `md_agents.py` · `doc-lint.sh` · `claude-telegram.sh` · `hook_check_bpe_token_input.sh` (PreToolUse sketch) · `hook_telegram_report_stop.sh` (Stop sketch) · `db_init.py` (예정) · `build.py` (예정) | 표준 라이브러리 + bash | 운영 자동화 + enforcement layer sketch |
 | `.github/workflows/` | `ci.yml` 8 job · `docs-lint.yml` · `doc-gardener.yml` · `build.yml` (Phase 1 후반 — macOS native + Ubuntu wine cross-compile 듀얼) | self-hosted macOS arm64 + GitHub-hosted Ubuntu | CI 게이트 |
 | `LICENSE` (저장소 루트) | GPLv3 표준 본문 (GNU 674 lines, 사용자 directive 2026-05-17) | — | 라이선스 |

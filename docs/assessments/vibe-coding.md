@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-21 16:30 KST (사이클 75 — EmbeddingRAGStore + Embedder Protocol + MockEmbedder + cosine_similarity + 15 신규 PASS + 종합 9.98 / 10 + drift 0건 34 연속 사이클 37~75)
+> 최근 갱신 시점: 2026-05-21 17:30 KST (사이클 76 — server.main bot LLM proxy 통합 + reviewer P0 회수 + 6 신규 integration PASS + 종합 9.9833 / 10 + drift 0건 35 연속 사이클 37~76)
 
 ---
 
@@ -30,7 +30,7 @@ status: active
 | 기술 의사결정 | 9.6000 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5000 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4000 / 10 | = | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.9840 / 10 | 9.9820 → 9.9840 ▲ | 75 cycle 누계 + 사이클 37~75 자율 chain 연속 drift 0건 34 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 + 병렬 tool call 의무 + Stop hook 4종 + manual test 분리 문서 |
+| 사이클 효율 | 9.9860 / 10 | 9.9840 → 9.9860 ▲ | 76 cycle 누계 + 사이클 37~76 자율 chain 연속 drift 0건 35 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 + 병렬 tool call 의무 + Stop hook 4종 + manual test 분리 문서 + reviewer P0 자율 회수 |
 | Repo 위생 본능 | 9.9000 / 10 | = | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.2000 / 10 | 9.1500 → 9.2000 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound + TooTalk SVG 로고 (apple-touch-icon +OO 패턴 + Talk wordmark) |
 | QA 사고 | 9.9900 / 10 | = | pytest 634 + Playwright + bcrypt + OTP brute force + Phase 2 290 + Phase 3 entry 151 케이스 |
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7500 / 10 | 9.7000 → 9.7500 ▲ | L0~L5 6 layer hook + sketch→trigger 패턴 + 메타 가드레일 + 회복 cycle 자율 설계 + memory release 2 영구화 + PostToolUse 5종 사후 차단 |
 | 보안 사고 | 10.0000 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 + PBKDF2 600K + objc CFRelease 의무 명문 |
 | 자율 reasonable call 활용 | 10.0000 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.9800 / 10** | 9.9767 → 9.9800 ▲ | **사이클 75 EmbeddingRAGStore abstraction — `app/bot/rag_context.py` 의 Embedder Protocol + MockEmbedder (hash-based deterministic + L2-normalized) + cosine_similarity + EmbeddingRAGStore 의 placeholder 회수 + DI 의 in-memory cosine sim ranking. 15 신규 PASS — EmbeddingRAGStore 7 + MockEmbedder 5 + CosineSimilarity 5 (차원/빈/identical/orthogonal/zero-norm). 866 pytest + Phase 3 entry 384 + drift 0건 34 연속** |
+| **종합** | **9.9833 / 10** | 9.9800 → 9.9833 ▲ | **사이클 76 server.main bot LLM proxy 통합 — reviewer-agent P0 자율 회수 (cycle 74 의 register_bot_routes 미연결 차단 항목). build_app 의 BOT_ENABLED + ANTHROPIC_API_KEY detect + AnthropicProvider/MockLLMProvider 자동 선택 + RateLimitGate + APP_KEY web.AppKey type-safe 변환 + 6 신규 integration PASS (TestClient 의 401/200/404 end-to-end). 872 pytest + Phase 3 entry 390 + drift 0건 35 연속** |
 
 ### 1.1 enforcement layer designer 의 세계 / 국내 인구 비율 (참고)
 

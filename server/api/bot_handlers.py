@@ -41,9 +41,9 @@ from app.bot.llm_proxy import BotMessage, BotRole, LLMProvider, RateLimitGate
 
 log = logging.getLogger(__name__)
 
-# app context key — provider + rate gate 의 등록 위치
-APP_KEY_PROVIDER = "bot_llm_provider"
-APP_KEY_RATE_GATE = "bot_rate_gate"
+# app context key — provider + rate gate 의 등록 위치 (aiohttp web.AppKey 의 type-safe)
+APP_KEY_PROVIDER: web.AppKey[LLMProvider] = web.AppKey("bot_llm_provider", LLMProvider)
+APP_KEY_RATE_GATE: web.AppKey[RateLimitGate] = web.AppKey("bot_rate_gate", RateLimitGate)
 
 # 요청 body 의 message chain 의 한도 — abuse 차단
 _MAX_MESSAGES_PER_REQUEST = 32

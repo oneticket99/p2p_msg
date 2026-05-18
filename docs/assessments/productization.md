@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 16:30 KST (사이클 75 — EmbeddingRAGStore abstraction + Embedder Protocol + MockEmbedder + cosine_similarity + 15 신규 PASS + 866 pytest + drift 0건 34 연속)
+> 최근 갱신 시점: 2026-05-21 17:30 KST (사이클 76 — server.main bot LLM proxy 통합 + register_bot_routes + AnthropicProvider/MockLLMProvider 자동 선택 + 6 신규 integration PASS + 872 pytest + drift 0건 35 연속 + reviewer P0 회수)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.2 / 10 | 8.1 → 8.2 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + 클라이언트 노출 차단 + system role 클라이언트 주입 차단 + per-user rate limit) |
-| **종합** | **9.82 / 10** | 9.81 → 9.82 ▲ | **사이클 75 EmbeddingRAGStore abstraction — `app/bot/rag_context.py` 의 `Embedder` Protocol (embed + dim) + `MockEmbedder` (hash-based deterministic + L2-normalized + dim_value 양수 검증) + `cosine_similarity` (차원 mismatch / 빈 / zero-norm 검증) + `EmbeddingRAGStore` 의 placeholder 회수 + Embedder DI 의 in-memory cosine sim ranking (entries add 시 사전 embed 계산 + tags + question 결합 텍스트 의 retrieval recall 향상 + id 중복 차단 + top_k cap + sim 0 제외 + tie 안정 정렬). 15 신규 PASS — EmbeddingRAGStore 7 (add/size + 중복 reject + top_k 0 reject + empty query + empty store + ranks by similarity + top_k cap) + MockEmbedder 5 (dim 검증 + L2 norm + deterministic + empty zero vector) + CosineSimilarity 5 (dim mismatch + empty + identical 1.0 + orthogonal 0.0 + zero norm). 866 pytest (851 + 15) + Phase 3 entry 누계 384. drift 0건 34 연속** |
+| **종합** | **9.84 / 10** | 9.82 → 9.84 ▲ | **사이클 76 server.main bot LLM proxy 통합 — reviewer P0 회수. build_app 의 BOT_ENABLED=1 detect + AnthropicProvider.is_available() 의 ANTHROPIC_API_KEY 가용 시 활성 / 부재 시 MockLLMProvider 폴백 + BOT_RATE_PER_MINUTE default 20 의 RateLimitGate + register_messages_routes + register_bot_routes 등록. APP_KEY_PROVIDER + APP_KEY_RATE_GATE 의 web.AppKey 의 type-safe 변환. 6 신규 integration PASS. 872 pytest + Phase 3 entry 390 + drift 0건 35 연속** |
 
 ---
 

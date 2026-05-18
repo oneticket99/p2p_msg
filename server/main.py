@@ -28,8 +28,12 @@ from typing import Final
 from aiohttp import web
 from dotenv import load_dotenv
 
+from app.bot.llm_proxy import AnthropicProvider, MockLLMProvider, RateLimitGate
+
 from .api.auth_handlers import register_auth_routes
+from .api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE, register_bot_routes
 from .api.devices_handlers import register_devices_routes
+from .api.messages_handlers import register_messages_routes
 from .auth.middleware import auth_middleware
 from .db.connection import close_pool, create_pool
 from .room import RoomRegistry
@@ -44,12 +48,17 @@ ENV_HOST: Final[str] = "SIGNAL_SERVER_HOST"
 ENV_PORT: Final[str] = "SIGNAL_SERVER_WS_PORT"
 ENV_SCHEME: Final[str] = "SIGNAL_SERVER_WS_SCHEME"
 ENV_LOG_LEVEL: Final[str] = "LOG_LEVEL"
+# Bot LLM proxy — server-side LLM provider 의 활성 여부 + 분당 호출 cap
+ENV_BOT_ENABLED: Final[str] = "BOT_ENABLED"
+ENV_BOT_RATE_PER_MINUTE: Final[str] = "BOT_RATE_PER_MINUTE"
 
 # 환경변수 미지정 시 사용하는 기본값 — 데모/로컬 개발 기본
 DEFAULT_HOST: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 8765
 DEFAULT_SCHEME: Final[str] = "ws"
 DEFAULT_LOG_LEVEL: Final[str] = "INFO"
+# Bot rate limit default — per-user 의 분당 cap (memory feedback_bot_rate_abuse 정합)
+DEFAULT_BOT_RATE_PER_MINUTE: Final[int] = 20
 
 
 def configure_logging(log_level: str) -> None:
@@ -117,6 +126,35 @@ async def build_app() -> web.Application:
 
     # devices REST endpoint 등록 (Phase 2 사이클 43 multi-device sync)
     register_devices_routes(app)
+
+    # messages REST endpoint 등록 (Phase 3 사이클 60 ChatView lazy load)
+    register_messages_routes(app)
+
+    # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
+    if os.environ.get(ENV_BOT_ENABLED, "0").strip() == "1":
+        # ANTHROPIC_API_KEY 가용 = AnthropicProvider, 부재 = MockLLMProvider 폴백
+        if AnthropicProvider.is_available():
+            app[APP_KEY_PROVIDER] = AnthropicProvider()
+            logging.getLogger(__name__).info(
+                "Bot LLM provider = AnthropicProvider (ANTHROPIC_API_KEY 활성)"
+            )
+        else:
+            app[APP_KEY_PROVIDER] = MockLLMProvider()
+            logging.getLogger(__name__).warning(
+                "ANTHROPIC_API_KEY 부재 — MockLLMProvider 폴백 (개발 전용)"
+            )
+        rate_cap = _read_int_env(
+            ENV_BOT_RATE_PER_MINUTE, DEFAULT_BOT_RATE_PER_MINUTE
+        )
+        app[APP_KEY_RATE_GATE] = RateLimitGate(rate_per_minute=rate_cap)
+        register_bot_routes(app)
+        logging.getLogger(__name__).info(
+            "Bot endpoint POST /api/bot/chat 활성 — rate=%d/min", rate_cap
+        )
+    else:
+        logging.getLogger(__name__).info(
+            "BOT_ENABLED!=1 — /api/bot/chat 비활성 (LLM proxy off)"
+        )
 
     # DB pool — DB_ENABLED=1 시 활성. 로컬 dev 시 의
     if os.environ.get("DB_ENABLED", "0").strip() == "1":
