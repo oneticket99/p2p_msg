@@ -179,6 +179,43 @@ class AnthropicProvider:
         return await self._client.chat(messages)  # type: ignore[union-attr]
 
 
+class OpenAIProvider:
+    """OpenAI Chat Completions API provider — 사이클 84.
+
+    `app.bot.openai_client.OpenAIClient` 의 LLMProvider Protocol adapter +
+    AnthropicProvider 와 동일 의 dependency injection 패턴.
+
+    Notes
+    -----
+    is_available classmethod = OPENAI_API_KEY env + httpx import 의 가용성 prefetch.
+    chat = OpenAIClient.chat 의 delegate + 동일 예외 propagation.
+    """
+
+    def __init__(self, client: Optional[object] = None) -> None:
+        self._client = client
+
+    @classmethod
+    def is_available(cls) -> bool:
+        """OPENAI_API_KEY env + httpx import 가능 여부."""
+
+        if not os.environ.get("OPENAI_API_KEY"):
+            return False
+        try:
+            import httpx  # type: ignore[import]  # noqa: F401
+        except ImportError:
+            return False
+        return True
+
+    async def chat(self, messages: List[BotMessage]) -> BotMessage:
+        """messages → assistant reply via OpenAIClient delegate."""
+
+        if self._client is None:
+            from app.bot.openai_client import from_env
+
+            self._client = from_env()
+        return await self._client.chat(messages)  # type: ignore[union-attr]
+
+
 def select_llm_provider(name: Optional[str] = None) -> Type[LLMProvider]:
     """LLM provider 의 factory.
 
@@ -198,13 +235,15 @@ def select_llm_provider(name: Optional[str] = None) -> Type[LLMProvider]:
     ValueError
         unknown name.
     NotImplementedError
-        openai / gemini 의 별개 cycle 의무.
+        gemini 의 별개 cycle 의무.
     """
 
     if name is None:
-        # auto detect — anthropic 우선 + 가용 부재 시 mock 폴백
+        # auto detect — anthropic 우선 + openai fallback + mock 최종
         if AnthropicProvider.is_available():
             return AnthropicProvider  # type: ignore[return-value]
+        if OpenAIProvider.is_available():
+            return OpenAIProvider  # type: ignore[return-value]
         return MockLLMProvider  # type: ignore[return-value]
     name_l = name.lower()
     if name_l == "mock":
@@ -212,9 +251,7 @@ def select_llm_provider(name: Optional[str] = None) -> Type[LLMProvider]:
     if name_l == "anthropic":
         return AnthropicProvider  # type: ignore[return-value]
     if name_l == "openai":
-        raise NotImplementedError(
-            "openai provider 별개 cycle 의무 — openai sdk + OPENAI_API_KEY"
-        )
+        return OpenAIProvider  # type: ignore[return-value]
     if name_l == "gemini":
         raise NotImplementedError(
             "gemini provider 별개 cycle 의무 — google-generativeai + GOOGLE_API_KEY"

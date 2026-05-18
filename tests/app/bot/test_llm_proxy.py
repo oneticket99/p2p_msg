@@ -181,9 +181,12 @@ class TestSelectLLMProvider:
         cls = select_llm_provider("anthropic")
         assert cls is AnthropicProvider
 
-    def test_openai_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="openai provider"):
-            select_llm_provider("openai")
+    def test_openai_explicit(self) -> None:
+        # cycle 84 — placeholder NotImplementedError 회수
+        from app.bot.llm_proxy import OpenAIProvider
+
+        cls = select_llm_provider("openai")
+        assert cls is OpenAIProvider
 
     def test_gemini_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError, match="gemini provider"):
