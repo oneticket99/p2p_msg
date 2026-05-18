@@ -74,23 +74,16 @@ DEFAULT_LOG_LEVEL: Final[str] = "INFO"
 DEFAULT_BOT_RATE_PER_MINUTE: Final[int] = 20
 
 
-def configure_logging(log_level: str) -> None:
-    """루트 로거에 정본 §E 포맷 핸들러를 한 번만 부착한다.
+def configure_logging(log_level: str, log_format: str = "text") -> None:
+    """루트 로거 의 KST formatter + redact filter + JSON 분기.
 
-    형식: ``[YYYY-mm-dd H:i:s] LEVEL logger: message``
+    Phase 4 cycle 116~117 — server.logging_setup.configure_logging 의 wrapper.
+    LOG_FORMAT env (text / json) 의 caller 영역 전달 의무.
     """
-    root = logging.getLogger()
-    # 중복 핸들러 부착 방지 — 본 함수가 두 번 호출되어도 idempotent
-    for h in list(root.handlers):
-        root.removeHandler(h)
 
-    handler = logging.StreamHandler(stream=sys.stdout)
-    formatter = logging.Formatter(
-        fmt="[%(asctime)s] %(levelname)s %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
+    from .logging_setup import configure_logging as _real_configure
+
+    _real_configure(level=log_level, log_format=log_format)
 
     # 잘못된 레벨 문자열은 INFO 로 폴백 — 운영 사고 시 무중단 우선
     level = logging.getLevelName(log_level.upper())
@@ -276,7 +269,10 @@ def main() -> None:
     # 으로 주입되는 경우도 있음)
     load_dotenv(override=False)
 
-    configure_logging(os.environ.get(ENV_LOG_LEVEL, DEFAULT_LOG_LEVEL))
+    configure_logging(
+        os.environ.get(ENV_LOG_LEVEL, DEFAULT_LOG_LEVEL),
+        os.environ.get("LOG_FORMAT", "text"),
+    )
 
     try:
         asyncio.run(_serve())
