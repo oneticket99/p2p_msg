@@ -163,7 +163,7 @@ sequenceDiagram
 | `app/core/` | `AppState` 세션 상태 + `Config` .env 로딩 + `security.py` (PBKDF2-SHA256 600K iter + OTP + session token, 사이클 18) | `python-dotenv` + `hashlib` + `secrets` + `hmac` | 클라이언트 Core |
 | `app/net/` | 시그널링 WS client + `auth_client.py` REST client (사이클 21) | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net |
 | `app/rtc/` | aiortc 래퍼·DataChannel + protocol/peer/file_sender/file_receiver/image_processor (Agent #16) | `aiortc` · `Pillow` · `aiofiles` | 클라이언트 RTC |
-| `app/crypto/` | Phase 2 E2EE Signal Protocol — `e2ee.py` (AES-GCM+X25519+HKDF) + `double_ratchet.py` (KDF chain) + `session.py` (SessionState + DH ratchet) + `skipped_keys.py` (LRU+TTL) (사이클 27~35) | `cryptography>=42.0` | 클라이언트 E2EE |
+| `app/crypto/` | Phase 2 E2EE Signal Protocol — `e2ee.py` (AES-GCM+X25519+HKDF) + `double_ratchet.py` (KDF chain) + `session.py` (SessionState + DH ratchet) + `skipped_keys.py` (LRU+TTL) + `x3dh.py` (사이클 37 initial key agreement) + `device_registry.py` (사이클 42 multi-device 식별) + `fan_out.py` (사이클 44 N device fan-out 격리) + `sender_keys.py` (사이클 46 그룹 N×M → N+M reduction) (사이클 27~46) | `cryptography>=42.0` | 클라이언트 E2EE |
 | `app/main.py` | qasync entry + AuthClient 초기화 + MainWindow 진입 (사이클 22) | `qasync` + 위 5개 | 클라이언트 부트스트랩 |
 | `server/signaling.py` | WebSocket 핸들러 + DB 영속화 통합 (signaling_persistence dependency injection, 사이클 26) | `server/room.py` · `server/signaling_persistence.py` | 서버 Router |
 | `server/signaling_persistence.py` | DB 영속화 helper (rooms/peers/messages persist + pool=None silent skip, 사이클 24) | `server/db/repositories/` | 서버 Service Bridge |

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 44)</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 46)</title>
 <!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 44 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
      마지막 갱신 라인 = "2026-05-20 17:00 KST — 사이클 44 (X3DH session fan-out + 16 PASS + Phase 2 누계 215)".
@@ -88,7 +88,7 @@
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-20 17:00 KST</strong> — 사이클 44 (X3DH session fan-out + 16 PASS + Phase 2 누계 215 + multi-device chain 3 cycle 완성)<br>
+    최근 갱신 시점: <strong>2026-05-20 18:30 KST</strong> — 사이클 46 (Sender Keys 그룹 N×M→N+M reduction + 19 PASS 6 TestClass + Phase 2 누계 234 + telegram polling halt 진단 정정)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -96,7 +96,7 @@
 <nav class="toc">
   <strong>목차</strong>
   <ol>
-    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.2 / 10</a></li>
+    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 9.25 / 10</a></li>
     <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.33</a></li>
     <li><a href="#sec-3">약점 (Productization Weaknesses)</a></li>
     <li><a href="#sec-4">시장 포지셔닝 옵션 (A/B/C/D)</a></li>
@@ -120,16 +120,16 @@
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">8.2 / 10</td><td class="center"><span class="up">8.1 → 8.2 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 159 케이스 (multi-device 64 = skeleton 26 + endpoint 22 + fan-out 16) + signature sound 56 PASS + 408 pytest</td></tr>
-    <tr><td>시장 적합성</td><td class="center">5.3 / 10</td><td class="center"><span class="up">5.2 → 5.3 ▲</span></td><td>Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등)</td></tr>
-    <tr><td>차별화 요소</td><td class="center">9.3 / 10</td><td class="center"><span class="up">9.25 → 9.3 ▲</span></td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device 3 cycle 완성) + signature sound UX</td></tr>
-    <tr><td>사용자 가치</td><td class="center">6.8 / 10</td><td class="center"><span class="up">6.7 → 6.8 ▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire (실 사용 가능)</td></tr>
+    <tr><td>기술 완성도</td><td class="center">8.25 / 10</td><td class="center"><span class="up">8.2 → 8.25 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 178 케이스 (multi-device 64 + sender_keys 19) + signature sound 56 PASS + 427 pytest</td></tr>
+    <tr><td>시장 적합성</td><td class="center">5.3 / 10</td><td class="center">=</td><td>Toonation 옵션 B + P5/P6 페르소나 + signature sound UX brand recognition (KakaoTalk/Telegram 동등)</td></tr>
+    <tr><td>차별화 요소</td><td class="center">9.35 / 10</td><td class="center"><span class="up">9.3 → 9.35 ▲</span></td><td>친구간 원격 데스크탑 제어 + 이메일 OTP + 양방향 ProgressBar + E2EE Signal Protocol (X3DH + multi-device 3 cycle + group sender_keys N×M→N+M reduction) + signature sound UX</td></tr>
+    <tr><td>사용자 가치</td><td class="center">6.85 / 10</td><td class="center"><span class="up">6.8 → 6.85 ▲</span></td><td>P5 OBS 도움 + 회원가입 안정성 + E2EE + 청각 신호 + control dialog + main_window wire + 그룹 채팅 토대</td></tr>
     <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
     <tr><td>운영 비용</td><td class="center">9.8 / 10</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 34 누적 (doc-consistency) + doc-lint 강화 + PostToolUse hook + Stop hook 3 layer</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">9.7 / 10</td><td class="center">=</td><td>handoff + snapshot + freshness Stop hook + 매 cycle 동기 의무</td></tr>
-    <tr><td>보안 hardening</td><td class="center">7.7 / 10</td><td class="center"><span class="up">7.6 → 7.7 ▲</span></td><td>E2EE Signal Protocol 159 케이스 (multi-device 64 = skeleton 26 + endpoint 22 + fan-out 16 forward secrecy isolation) + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.2 / 10</strong></td><td class="center"><span class="up">9.15 → 9.2 ▲</span></td><td><strong>사이클 44 X3DH session fan-out (FanOutEnvelope + FanOutBatch + 3 함수) + 16 PASS. multi-device chain 3 cycle 완성 — Signal Protocol N-device 종단 흐름. Phase 2 누계 215 케이스</strong></td></tr>
+    <tr><td>세션 간 정합</td><td class="center">9.7 / 10</td><td class="center">=</td><td>handoff §8.46 polling halt 진단 정정 + snapshot + freshness Stop hook + 매 cycle 동기 의무</td></tr>
+    <tr><td>보안 hardening</td><td class="center">7.8 / 10</td><td class="center"><span class="up">7.7 → 7.8 ▲</span></td><td>E2EE Signal Protocol 178 케이스 (sender_keys 19 그룹 forward secrecy chain advance + multi-device 64 + base64 32-byte 검증 + UNIQUE 1062 처리 + soft-delete revoke + skipped_keys LRU+TTL) + §8.1 Defense-in-Depth 7 row + SMTP postfix + GPLv3</td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.25 / 10</strong></td><td class="center"><span class="up">9.2 → 9.25 ▲</span></td><td><strong>사이클 46 Sender Keys (SenderKeyState + SenderKeyDistribution + 5 함수 + ChainKey 재사용) + 19 PASS 6 TestClass. 그룹 채팅 N×M cipher 폭증 → N+M reduction Signal Protocol 정합. handoff §8.46 telegram polling halt 진단 정정. Phase 2 누계 234 케이스</strong></td></tr>
   </tbody>
 </table>
 

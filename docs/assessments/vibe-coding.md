@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 17:00 KST (사이클 44 — X3DH session fan-out + 16 PASS + Phase 2 누계 215 케이스 + multi-device chain 3 cycle 완성 + 자율 chain drift 0건 8 연속 사이클 37~44)
+> 최근 갱신 시점: 2026-05-20 18:30 KST (사이클 46 — Sender Keys 그룹 N×M→N+M reduction + 19 PASS 6 TestClass + Phase 2 누계 234 케이스 + telegram polling halt 진단 정정 + 자율 chain drift 0건 9 연속 사이클 37~46)
 
 ---
 
@@ -30,15 +30,15 @@ status: active
 | 기술 의사결정 | 9.6 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4 / 10 | 9.5 → 9.4 ▼ | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.75 / 10 | 9.72 → 9.75 ▲ | 44 cycle 누계 + 사이클 37~44 자율 chain 연속 drift 0건 8 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
+| 사이클 효율 | 9.77 / 10 | 9.75 → 9.77 ▲ | 46 cycle 누계 + 사이클 37~46 자율 chain 연속 drift 0건 9 연속 + 평균 1 cycle = code + test + lint + commit + push + snapshot 동기 |
 | Repo 위생 본능 | 9.9 / 10 | 10.0 → 9.9 ▼ | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.15 / 10 | 9.0 → 9.15 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound directive (KakaoTalk/Telegram 청각 brand recognition 직접 명문) |
-| QA 사고 | 9.94 / 10 | 9.93 → 9.94 ▲ | pytest 408 + Playwright + bcrypt + OTP brute force + Phase 2 215 케이스 (multi-device 3 cycle 완성 + forward secrecy isolation) |
+| QA 사고 | 9.95 / 10 | 9.94 → 9.95 ▲ | pytest 427 + Playwright + bcrypt + OTP brute force + Phase 2 234 케이스 (sender_keys 19 그룹 forward secrecy + multi-device 3 cycle + skip 처리) |
 | 세션 간 정합 인지 | 9.6 / 10 | 10.0 → 9.6 ▼ | handoff + snapshot + freshness Stop hook 강제화 (사이클 28~32) |
 | enforcement layer 설계 | 9.7 / 10 | 신규 | L0~L5 6 layer hook 체계 + sketch→trigger 패턴 + 메타 가드레일 (비판 2회 영구 메모리) + 회복 cycle 자율 설계 |
 | 보안 사고 | 10.0 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 |
 | 자율 reasonable call 활용 | 10.0 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.74 / 10** | 9.72 → 9.74 ▲ | **사이클 44 X3DH session fan-out + 16 PASS. multi-device chain 3 cycle 완성 (client 42 + server 43 + fan-out 44) = Signal Protocol multi-device 종단 흐름 완성. Phase 2 누계 215 케이스. drift 0건 8 연속** |
+| **종합** | **9.76 / 10** | 9.74 → 9.76 ▲ | **사이클 46 Sender Keys (SenderKeyState + SenderKeyDistribution + 5 함수) + 19 PASS 6 TestClass. 그룹 채팅 N×M cipher 폭증 → N+M reduction Signal Protocol 정합 + handoff §8.46 telegram polling halt 진단 정정. Phase 2 누계 234 케이스 + 427 pytest. drift 0건 9 연속** |
 
 ---
 
