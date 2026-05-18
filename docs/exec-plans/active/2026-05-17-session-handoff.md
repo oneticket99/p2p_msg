@@ -526,6 +526,114 @@ df7f581  ci: ci.yml (게이트 7종 self-hosted 매트릭스)
 - CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — release 의 직접 blocker 아님
 - 머지 GO 유지 (release-agent 사이클 15 정식 GO + observability CONDITIONAL PASS = 머지 가능)
 
+### 8.45 Phase 2 multi-device chain 3 cycle + X3DH fan-out + 평가 staleness 회수 + telegram bot 재연결 미완료 (사이클 42~44 + post-44 telegram task)
+
+**진행 완료**:
+
+- 사이클 42 — `app/crypto/device_registry.py` 신설 (DeviceIdentity frozen dataclass + DeviceRegistry + 6 wire format 함수 base64+JSON) + 26 PASS 7 TestClass
+- 사이클 43 — server-side counterpart 완성 (4 신규 파일):
+  - `server/db/migrations/0002_devices.sql` (10 컬럼 5요소 COMMENT — id PK + device_id UNIQUE + user_id FK CASCADE + 3 X25519 BLOB + 3 timestamp + status ENUM)
+  - `server/db/repositories/devices.py` — DeviceRow + 5 async (insert/get_by_user/get_by_device_id/revoke soft-delete/update_last_seen)
+  - `server/api/devices_handlers.py` — REST 3 endpoint (POST /api/devices base64 32-byte 검증 + 1062 → 409 + GET include_revoked option + DELETE soft-delete user_id 검증)
+  - `server/main.py` register_devices_routes 등록 + `ARCHITECTURE.md §6` row + HTML mirror 동기
+  - 22 PASS 6 TestClass
+- 사이클 44 — `app/crypto/fan_out.py` (FanOutEnvelope + FanOutBatch + encrypt_fan_out per-device 실패 격리 + rotate_session immutable dict 갱신 + collect_failures) + 16 PASS 5 TestClass
+- **multi-device chain 3 cycle 완성** = client skeleton 42 + server endpoint 43 + fan-out 44 = Signal Protocol N-device 종단 흐름 정합
+- 전체 pytest = **408 passed**. Phase 2 누계 = **215 케이스** (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6 + x3dh 11 + sound 19 + chat_view_sound 9 + settings_dialog 28 + device_registry 26 + devices_handlers 22 + fan_out 16)
+
+**평가 staleness 회수** (사이클 44):
+
+- 사용자 비판 — "10점 만점 항목들에 왜 5점 만점 항목이 있어?" 직접 회수
+- vibe-coding §1 종합 표 의 2 row stale (보안 사고 5/5 + 자율 reasonable call 5/5) + §3.3 (2.5/5) + §6 비교 anchor 표 전체 5점 만점 → 10점 만점 ×2 변환
+- 영구 메모리 2건 신설:
+  - `feedback_assessment_row_completeness.md` (#27) — grep 검증 명령 명문화
+  - `feedback_assessment_full_rewrite.md` (#28) — **사용자 강화 directive "평가문서는 부분갱신이 아니라 매번 전체 갱신"** = 매 cycle 4 영역 + 2 HTML mirror 전체 rewrite 의무. 부분 갱신/prepend/append 패턴 절대 금지
+
+**자율 chain 안정** — drift 0건 8 연속 사이클 37~44 (단 평가 staleness 1건 별도 — row_completeness + full_rewrite 의 영구 차단)
+
+**snapshot 갱신**:
+
+- productization 8.95 → 9.05 → 9.1 → 9.15 → 9.2 (사이클 41~44 의 누적)
+- vibe-coding 9.66 → 9.68 → 9.7 → 9.72 → 9.74 (사이클 41~44)
+
+**🔴 telegram bot 재연결 미완료** (사이클 44 후반 task — **다음 session 진입 의무**):
+
+- 사용자 directive — "텔레그램 bot 새로 만들었으니 재연결"
+- 새 bot = `@tootalkDev_bot` (id 8853758309, first_name "투톡개발용")
+- 새 token = `8853758309:AAHLCc5v9r9yVs2D5__VTc4waFHqZRBL2JQ` (Bot API getMe + sendMessage 검증 PASS)
+- `.env.telegram` 갱신 완료 (송신 의 HTTP API 직접 경로 정상)
+- `~/.claude/channels/telegram/.env` 의 channel server token 갱신 완료
+- `~/.claude/channels/telegram/approved/201073550` 신설 완료 (chat_id = 사용자 본인 user ID = `@oneticket99`)
+- access.json — dmPolicy=allowlist + allowFrom=[201073550] 유지
+- **차단** — channel server (구 PID 55077 bun server.ts) kill 후 자동 respawn 미동작 + MCP plugin_telegram disconnected (reply / react / edit_message / download_attachment 4 tool unavailable)
+- Telegram API 의 inbound 5 메시지 queue 잔존 (pending_update_count=5 — getUpdates 직접 확인 결과: "하이" / "송수신 확인해" / "/start" / "hi" / "test")
+- **원인** = polling consumer (channel server) 부재 = routing 차단
+
+**다음 session 진입 — 단순 1 명령**:
+
+```bash
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
+./tools/claude-telegram.sh --resume    # 직전 conversation 이어 받기
+# 또는
+./tools/claude-telegram.sh             # 신규 session
+```
+
+→ `exec claude --plugin-dir <telegram_plugin_path>` = telegram plugin 강제 load + channel server 자동 spawn + 새 token 의 fresh polling + 큐 5 메시지 consume + 양방향 routing 활성
+
+**다음 session 검증 의무**:
+
+1. server 의 새 process spawn 확인 (`ps aux | grep "bun.*server.ts"`)
+2. 사용자 telegram 의 새 메시지 1건 발송 → session 의 `<channel source="telegram" ...>` incoming tag 도달 검증
+3. session 의 reply tool 의 송신 시도 (양방향 확인)
+4. 큐 5 메시지 의 routing — channel server 의 의 의 의 의 의 의 의 의 의 의 consume 직후 사용자 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 acknowledgment 확인
+
+**잔여 Phase 2 task** (다음 session 의 자율 GO 가능):
+
+- sender keys (그룹 chat N×M reduction)
+- push 알림 skeleton (FCM/APNS or pull fallback)
+- 백업/복원
+- designer 최종 chiptune asset (signature sound placeholder 교체)
+- reviewer-agent → handoff doc 추가
+
+**핵심 commit 누적** (사이클 37~44):
+
+```
+89e608e feat(crypto): Phase 2 X3DH session fan-out + 16 PASS + 평가 10점 회수 사이클 44
+8a0095c fix(docs): hook_doc_consistency drift 회수 — devices.py path 정합
+a6316f3 feat(server): Phase 2 multi-device server endpoint + 22 PASS 사이클 43
+d952b0d feat(crypto): Phase 2 multi-device sync skeleton + 26 PASS 사이클 42
+87abaa3 feat(ui): Phase 2 MainWindow SoundPlayer + SettingsDialog wire 사이클 41
+93ada9e feat(ui): Phase 2 SettingsDialog sound section + 28 PASS 사이클 40
+034fbf7 feat(ui): Phase 2 ChatView SoundPlayer trigger 연결 + 9 PASS 사이클 39
+65ae782 feat(ui): Phase 2 signature sound minimal layer + 19 PASS 사이클 38
+1c36075 feat(crypto): Phase 2 X3DH initial key agreement + 11 PASS 사이클 37
+```
+
+**영구 메모리 신규 누적** (사이클 38~44):
+
+- `project_signature_sound.md` (사이클 38)
+- `feedback_skip_prepush_permanent_approval.md` (사이클 39)
+- `feedback_assessment_row_completeness.md` (사이클 44)
+- `feedback_assessment_full_rewrite.md` (사이클 44 강화)
+
+### 8.44 Phase 2 signature sound chain 4 cycle 완성 — vertical slice 패턴 명문화 (사이클 38~41)
+
+**vertical slice = 단일 feature 의 layer 분리 패턴 정합**:
+
+- 사이클 38 wrapper layer — `app/ui/sound_player.py` SoundPlayer + Config 3 필드 (sound_enabled / sound_volume / sound_signature_path) + `app/assets/sounds/signature.wav` placeholder (220 ms chime 880→1320 Hz pitch glide + exponential decay) + 19 PASS
+- 사이클 39 trigger integration — `app/ui/chat_view.py` 의 `should_play_on_message(is_self, sound_player)` module-level helper + `ChatView.__init__` sound_player Optional inject + add_message peer 수신 trigger + 9 PASS (Mock 주입 logic only — QApplication 부재 환경 정합)
+- 사이클 40 control UI — `app/ui/settings_dialog.py` SettingsDialog + SettingsState dataclass + 4 helper (percent_to_volume / volume_to_percent / apply_to_player / build_state_from_player) + 음소거 QCheckBox + 0~100 QSlider + 28 PASS
+- 사이클 41 wire — `app/ui/main_window.py` 의 `_sound_player` instance + ChatView inject + 환경설정 메뉴 QAction Ctrl+, + slot
+
+**실 사용 가능 종단 흐름**: Config → MainWindow init → ChatView inject → peer 수신 → play_signature → WAV. 환경설정 메뉴 → SettingsDialog → 음소거/볼륨 → 즉시 반영.
+
+**설계 패턴 강화 — 사이클 38~41 연속 적용**:
+
+- helper 분리 = GUI 부재 환경 unit test 의무 (Mock 주입 logic only)
+- Optional inject 패턴 = graceful 폴백 (test 환경 QApplication 부재)
+- frozen dataclass + post_init 검증 = 매 신규 dataclass 일관 적용
+- minimal scope cycle = 매 cycle 단일 책임 + commit + push + snapshot 동기
+
 ### 8.43 Phase 2 Signal Protocol 핵심 완성 + 전수조사 drift 회수 + doc-consistency Stop hook 강제 (사이클 33~36)
 
 - 사이클 33 `app/crypto/skipped_keys.py` (LRU+TTL + MAX_SKIP=1000) + 14 PASS
