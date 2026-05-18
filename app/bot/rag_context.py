@@ -24,6 +24,7 @@ system prompt 의 외 의 추가 context injection.
 from __future__ import annotations
 
 import math
+import threading
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Final, List, Optional, Protocol, Sequence, Tuple
@@ -248,9 +249,11 @@ class CachedEmbedder:
 
     Notes
     -----
-    thread-safety 미보장 — async 의 single event loop 의 가정. multi-thread
-    환경 의 별개 cycle 의 lock 의무. 텍스트 의 strip + lowercase 의 normalize
-    부재 — caller 가 의무.
+    cycle 94 — `threading.RLock` 의 LRU 연산 atomic 보장 (reviewer P1-2 회수).
+    move_to_end / popitem / counter increment 의 race condition 차단. async
+    single event loop 환경 은 inherent serial 의 lock 의 무영향. multi-thread
+    환경 (ThreadPoolExecutor 등) 의 동시 호출 시 atomic 보장.
+    텍스트 의 strip + lowercase normalize 부재 — caller 의무.
     """
 
     def __init__(self, embedder: "Embedder", max_cache: int = 256) -> None:
@@ -261,22 +264,37 @@ class CachedEmbedder:
         self._cache: "OrderedDict[str, List[float]]" = OrderedDict()
         self.hits: int = 0
         self.misses: int = 0
+        # cycle 94 — multi-thread 환경 의 LRU 연산 atomic 보장
+        self._lock: threading.RLock = threading.RLock()
 
     def embed(self, text: str) -> List[float]:
-        """text → 벡터 — cache hit 시 즉시 반환 + miss 시 backend 호출 + LRU 갱신."""
+        """text → 벡터 — cache hit 시 즉시 반환 + miss 시 backend 호출 + LRU 갱신.
 
-        cached = self._cache.get(text)
-        if cached is not None:
-            # LRU update — 최근 사용 의 위치 의 끝 이동
-            self._cache.move_to_end(text)
-            self.hits += 1
-            return cached
-        self.misses += 1
+        cycle 94 — `threading.RLock` 의 cache lookup + move_to_end + popitem +
+        counter increment atomic 보장.
+        """
+
+        with self._lock:
+            cached = self._cache.get(text)
+            if cached is not None:
+                # LRU update — 최근 사용 의 위치 의 끝 이동
+                self._cache.move_to_end(text)
+                self.hits += 1
+                return cached
+            self.misses += 1
+        # backend embed 호출 = lock 외 (긴 작업 의 lock contention 회피)
         vec = self._embedder.embed(text)
-        self._cache[text] = vec
-        if len(self._cache) > self._max_cache:
-            # 가장 오래된 entry 의 evict (FIFO end)
-            self._cache.popitem(last=False)
+        with self._lock:
+            # race condition 회수 — 다른 thread 가 동일 text 를 먼저 cache 등록한 경우 재확인
+            existing = self._cache.get(text)
+            if existing is not None:
+                # 다른 thread 가 미리 cache 등록 — 본 thread 가 새로 계산한 vec 폐기 + 기존 cache 반환
+                self._cache.move_to_end(text)
+                return existing
+            self._cache[text] = vec
+            if len(self._cache) > self._max_cache:
+                # 가장 오래된 entry 의 evict (FIFO end)
+                self._cache.popitem(last=False)
         return vec
 
     def dim(self) -> int:
@@ -285,18 +303,21 @@ class CachedEmbedder:
     def size(self) -> int:
         """현 cache 의 entry 수."""
 
-        return len(self._cache)
+        with self._lock:
+            return len(self._cache)
 
     def reset_stats(self) -> None:
         """hits + misses counter 의 0 reset (clear cache 부재)."""
 
-        self.hits = 0
-        self.misses = 0
+        with self._lock:
+            self.hits = 0
+            self.misses = 0
 
     def clear(self) -> None:
         """cache + stats 의 전수 reset."""
 
-        self._cache.clear()
+        with self._lock:
+            self._cache.clear()
         self.reset_stats()
 
 

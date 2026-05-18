@@ -363,11 +363,88 @@ class TestCachedEmbedder:
                 )
             ],
         )
-        # add 시 의 1 miss + search 시 의 query embed 1 miss
+        # add 시 1 miss + search 시 query embed 1 miss
         store.search("후원")
         store.search("후원")
         # 2번째 search = query hit
         assert cached.hits >= 1
+
+
+class TestCachedEmbedderConcurrency:
+    """cycle 94 — `threading.RLock` 기반 multi-thread 안전성 회귀 검증.
+
+    ThreadPoolExecutor 로 동시 embed 호출 후 cache + counter 무결성 확인.
+    reviewer P1-2 회수 — async sentence-transformers 전환 prerequisite.
+    """
+
+    def test_concurrent_same_text_no_corruption(self) -> None:
+        """동일 text 동시 embed 호출 시 cache size + hits+misses 합산 무결성.
+
+        50 thread 가 동일 text 호출 → cache size 1 + 합산 = 50.
+        race condition 부재 시 sum(hits, misses) = 호출 횟수.
+        """
+
+        from concurrent.futures import ThreadPoolExecutor
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        cached = CachedEmbedder(MockEmbedder(dim_value=8), max_cache=16)
+
+        def _call() -> int:
+            return len(cached.embed("동일-텍스트"))
+
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            results = list(pool.map(lambda _: _call(), range(50)))
+
+        # 50 호출 모두 동일 dim
+        assert all(r == 8 for r in results)
+        # cache size = 1 (동일 text)
+        assert cached.size() == 1
+        # hits + misses 합산 = 50 (counter increment race 차단)
+        assert cached.hits + cached.misses == 50
+        # 최소 1 miss (첫 호출) + 나머지 hit
+        assert cached.misses >= 1
+
+    def test_concurrent_distinct_text_under_capacity(self) -> None:
+        """서로 다른 text 동시 embed → cache 에 모두 등록 + 합산 무결성."""
+
+        from concurrent.futures import ThreadPoolExecutor
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        cached = CachedEmbedder(MockEmbedder(dim_value=4), max_cache=64)
+        texts = [f"text-{i}" for i in range(32)]
+
+        def _call(t: str) -> int:
+            return len(cached.embed(t))
+
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = list(pool.map(_call, texts))
+
+        assert all(r == 4 for r in results)
+        # 32 distinct text 모두 cache 등록
+        assert cached.size() == 32
+        # 각 text 1회씩 호출 = 모두 miss
+        assert cached.misses == 32
+        assert cached.hits == 0
+
+    def test_concurrent_lru_eviction_size_bounded(self) -> None:
+        """동시 embed 가 max_cache 초과 시 size <= max_cache 보장."""
+
+        from concurrent.futures import ThreadPoolExecutor
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        cached = CachedEmbedder(MockEmbedder(dim_value=4), max_cache=8)
+
+        def _call(i: int) -> int:
+            return len(cached.embed(f"text-{i}"))
+
+        # max_cache=8, 100 distinct text — eviction race 발생
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            list(pool.map(_call, range(100)))
+
+        # size 가 max_cache 초과 금지
+        assert cached.size() <= 8
+        # 모든 호출이 counter 에 반영
+        assert cached.hits + cached.misses == 100
 
 
 class TestCosineSimilarity:
