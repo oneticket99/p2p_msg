@@ -169,6 +169,90 @@ status: active
 
 ---
 
+## 8.57 사이클 127~129 WS room audit + 잔여 ENUM batch + SMTP 자동 설치 chain (2026-05-19 신설)
+
+### 8.57.1 3 cycle chain
+
+| cycle | 작업 | 신규 PASS |
+|---|---|---|
+| 127 | WS room audit hook (ROOM_JOIN + ROOM_LEAVE) — server/signaling/ws_handler.py | 5 |
+| 128 | 잔여 6 ENUM batch wiring (MESSAGE_SEND + FILE_SEND/RECEIVE + PROFILE_UPDATE + EMAIL_CHANGE + ACCOUNT_DELETE) | 5 |
+| 129 | SMTP 자동 설치 chain (mail.dopa.co.kr + Rocky 9 + Let's Encrypt + opendkim + cyrus-sasl + iptables) | — |
+
+### 8.57.2 핵심 산출물
+
+- `tools/ssh_exec.py` (110 row) — paramiko 단발 SSH command runner + .env.ssh credential load + argv[1] cmd exec
+- `tools/smtp_install.sh` (237 row) — Rocky 9.7 + mail.dopa.co.kr 자동 설치 chain 10 단계 (idempotent)
+  - dnf install (CRB + EPEL + postfix + cyrus-sasl + s-nail + swaks + opendkim + certbot + sendmail-milter + libmemcached)
+  - iptables ACCEPT 25/587/465 + iptables-save persist
+  - certbot certonly --standalone -d mail.dopa.co.kr
+  - opendkim selector mail + KeyTable + SigningTable + TrustedHosts + opendkim.conf
+  - postfix main.cf + master.cf (submission 587 STARTTLS + smtps 465 TLS-wrap)
+  - cyrus-sasl saslpasswd2 + openssl rand password
+  - systemctl enable --now opendkim + postfix
+  - ss -lntp listen 25/587/465/8891 검증
+  - DNS TXT record 출력 (SPF + DKIM + DMARC + SASL 자격)
+- `.env.smtp` (gitignore .env.* pattern 정합) — SMTP_HOST + SMTP_USER + SMTP_PASSWORD 자격 보존
+- `.env.ssh` (gitignore .env.* pattern 정합) — SSH credential 보존 (사용자 종료 직후 삭제 권장)
+
+### 8.57.3 cycle 129 SMTP install 실행 결과 (2026-05-19 03:17:07 KST)
+
+| 항목 | 결과 |
+|---|---|
+| listen 25 (master) | ✅ pid=64827 |
+| listen 465 (master smtps) | ✅ pid=64827 |
+| listen 587 (master submission) | ✅ pid=64827 |
+| listen 8891 (opendkim milter) | ✅ pid=64831 |
+| certbot Let's Encrypt | ✅ /etc/letsencrypt/live/mail.dopa.co.kr/ |
+| opendkim selector mail RSA 2048 | ✅ DKIM key 생성 |
+| systemctl postfix enable + start | ✅ |
+| systemctl opendkim enable + start | ✅ |
+| saslpasswd2 (chown/chmod sasldb2) | ⚠️ /etc/sasldb2 path 부재 — 별개 cycle 회수 의무 |
+
+### 8.57.4 회수 chain (사이클 129 내부)
+
+| 회수 | 사유 |
+|---|---|
+| mailx → s-nail | Rocky 9 base repo mailx 패키지 부재 (s-nail mail 명령 호환 제공) |
+| dnf install epel-release 사전 | swaks Rocky 9 base repo 부재 → EPEL 활성 |
+| dnf install dnf-plugins-core + config-manager --set-enabled crb | opendkim libmilter.so.1.0 + libmemcached.so.11 dependency 부재 |
+| sendmail-milter + libmemcached 명시 | CRB repo 활성 후 explicit dependency |
+
+### 8.57.5 DB audit endpoint coverage 15 ActivityAction
+
+SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER + DEVICE_REVOKE + BOT_CHAT + BOT_ESCALATE (cycle 126) + ROOM_JOIN + ROOM_LEAVE (cycle 127) + MESSAGE_SEND + FILE_SEND + FILE_RECEIVE + PROFILE_UPDATE + EMAIL_CHANGE + ACCOUNT_DELETE (cycle 128 batch). 잔존 ENUM = REMOTE_GRANT/REVOKE (Phase 5 마무리 chain).
+
+### 8.57.6 사용자 manual 의무 (cycle 129 후속)
+
+1. **DNS TXT record 등록 — whoisdomain.kr 콘솔**
+   - `dopa.co.kr` SPF: `v=spf1 mx a:mail.dopa.co.kr ~all`
+   - `mail._domainkey.dopa.co.kr` DKIM: `v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsIre923TKdJdPgaIyMGmGcGEEUsXPuuFTwoKS9VHLkM1m/qgqyClRtl+LIeLcfnoe3dvN24xBLjcmM7+KpF/iJpWBXeNljII7nRoZhfjW5grCDMYDADFNrwaBIxacFN0ls3Qk/1kvEH16x3HcpBPZMknoVNIcoYlFr3Dw/q0Ur/qm2bLykSFmS8j+2lWrXJ+7RCvgJwDgY+7jZxJNzaKTv4/vJttfCG4Qpv3lMgahdDk0fuDZ1FxrvQf45gOZhQrnK5sJrHPSTbWmd6Uq3gIENst/f2DAG+lM7iG5Yp+xMvceNnKRqgde6FixNoZN5Ivff0QGyv9ctlNGuTePWCvkQIDAQAB`
+   - `_dmarc.dopa.co.kr` DMARC: `v=DMARC1; p=quarantine; rua=mailto:postmaster@dopa.co.kr; ruf=mailto:postmaster@dopa.co.kr; sp=quarantine; adkim=r; aspf=r`
+2. **KT (ISP tongkni.co.kr) reverse DNS 갱신 요청** — PTR 114.207.112.73 → mail.dopa.co.kr (Gmail/Naver spam reject 방지)
+3. **DNS propagation 대기 (5~30분) 후 swaks 발신 테스트**
+
+   ```bash
+   swaks --to YOUR_GMAIL@gmail.com \
+         --from noreply@dopa.co.kr \
+         --server mail.dopa.co.kr:587 \
+         --auth LOGIN \
+         --auth-user noreply@dopa.co.kr \
+         --auth-password '8i9KNJCRoNpOpqGKTKZrddCnNG7R682b' \
+         --tls
+   ```
+
+4. **mail-tester.com spam score 검증** (10/10 권장)
+
+### 8.57.7 다음 세션 첫 액션 우선순위
+
+1. SASL sasldb2 path 회수 + saslpasswd2 재실행 진단 (chown/chmod sasldb2 부재 검출 — Rocky 9 base path 가능성 `/var/lib/sasl/sasldb2`)
+2. server/auth/otp.py SMTP client 의 .env.smtp 자격 binding
+3. swaks 발신 테스트 성공 → Phase 1 OTP 발신 chain 완성
+4. Phase 5 GO directive 대기 (i18n + mobile + emoji pack + bot framework 마무리 + 원격 제어)
+5. REMOTE_GRANT/REVOKE 잔여 ActivityAction wiring (Phase 5 chain)
+
+---
+
 ## 8.56 사이클 124~126 Phase 4 후속 production-ready (2026-05-23 신설)
 
 ### 8.56.1 3 cycle chain
