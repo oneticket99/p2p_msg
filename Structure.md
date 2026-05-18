@@ -272,6 +272,7 @@ p2p_msg/
 | `app/README.md` | 공통 | 클라 빠른 시작·환경변수·계층 의존도·플랫폼별 주의사항 |
 | `app/ui/main_window.py` | ui | `QMainWindow` — 메뉴바·ChatView·입력바·StatusBar 결합 |
 | `app/ui/chat_view.py` | ui | `QScrollArea` + `QVBoxLayout` — `MessageBubble` 누적·자동 스크롤 |
+| `app/ui/chat_history_policy.py` | ui | 사이클 59 — volatile (30일 이상 휘발) + lazy load (1개월 batch fetch) 정책 layer (MessageMetadata + LazyLoadRequest + partition_volatile_active) |
 | `app/ui/message_bubble.py` | ui | 단일 메시지 표시 위젯 (내/상대 좌우 정렬 + 타임스탬프) |
 | `app/ui/status_bar.py` | ui | 시그널링 연결 상태 + 동일 방 peer 수 표시 (화이트리스트 검증) |
 | `app/ui/file_progress_widget.py` | ui | 송수신 양방향 ProgressBar (회색 = 송신 큐, 파란 = ACK 누적) |
