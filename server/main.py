@@ -29,7 +29,12 @@ from typing import Final
 from aiohttp import web
 from dotenv import load_dotenv
 
-from app.bot.llm_proxy import AnthropicProvider, MockLLMProvider, RateLimitGate
+from app.bot.llm_proxy import (
+    AnthropicProvider,
+    MockLLMProvider,
+    OpenAIProvider,
+    RateLimitGate,
+)
 
 from .api.auth_handlers import register_auth_routes
 from .api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE, register_bot_routes
@@ -132,17 +137,26 @@ async def build_app() -> web.Application:
     register_messages_routes(app)
 
     # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
+    # cycle 96 (QA P3) — Anthropic → OpenAI → Mock 의 3 layer fallback chain
     if os.environ.get(ENV_BOT_ENABLED, "0").strip() == "1":
-        # ANTHROPIC_API_KEY 가용 = AnthropicProvider, 부재 = MockLLMProvider 폴백
+        bot_logger = logging.getLogger(__name__)
         if AnthropicProvider.is_available():
             app[APP_KEY_PROVIDER] = AnthropicProvider()
-            logging.getLogger(__name__).info(
+            bot_logger.info(
                 "Bot LLM provider = AnthropicProvider (ANTHROPIC_API_KEY 활성)"
+            )
+        elif OpenAIProvider.is_available():
+            app[APP_KEY_PROVIDER] = OpenAIProvider()
+            bot_logger.info(
+                "Bot LLM provider = OpenAIProvider "
+                "(ANTHROPIC_API_KEY 부재, OPENAI_API_KEY 활성)"
             )
         else:
             app[APP_KEY_PROVIDER] = MockLLMProvider()
-            logging.getLogger(__name__).warning(
-                "ANTHROPIC_API_KEY 부재 — MockLLMProvider 폴백 (개발 전용)"
+            bot_logger.warning(
+                "Bot LLM provider = MockLLMProvider 폴백 — "
+                "ANTHROPIC_API_KEY + OPENAI_API_KEY 모두 부재 (개발 전용, "
+                "프로덕션 배포 시 환경 변수 설정 필수)"
             )
         rate_cap = _read_int_env(
             ENV_BOT_RATE_PER_MINUTE, DEFAULT_BOT_RATE_PER_MINUTE

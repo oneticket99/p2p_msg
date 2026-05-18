@@ -11,7 +11,7 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
-from app.bot.llm_proxy import MockLLMProvider
+from app.bot.llm_proxy import AnthropicProvider, MockLLMProvider, OpenAIProvider
 from server.api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE
 from server.main import build_app
 
@@ -60,6 +60,57 @@ class TestBuildAppBotEnabled:
             for route in app.router.routes()
         }
         assert "/api/bot/chat" in paths
+
+    @pytest.mark.asyncio
+    async def test_openai_fallback_when_only_openai_key_present(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """cycle 96 QA P3 — ANTHROPIC 부재 + OPENAI 가용 시 OpenAIProvider 폴백.
+
+        httpx 미설치 환경 에서 `OpenAIProvider.is_available()` 가 False 반환 →
+        본 케이스 skip. httpx 설치 + OPENAI_API_KEY 활성 시 OpenAIProvider 선택.
+        """
+
+        monkeypatch.setenv("BOT_ENABLED", "1")
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
+        monkeypatch.setenv("DB_ENABLED", "0")
+        # OpenAIProvider.is_available() = httpx 미설치 시 False 반환 (graceful)
+        if not OpenAIProvider.is_available():
+            pytest.skip("httpx 미설치 — OpenAIProvider 비활성")
+        app = await build_app()
+        provider = app[APP_KEY_PROVIDER]
+        assert isinstance(provider, OpenAIProvider)
+
+    @pytest.mark.asyncio
+    async def test_anthropic_preferred_over_openai(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """cycle 96 QA P3 — Anthropic + OpenAI 모두 가용 시 Anthropic 우선."""
+
+        monkeypatch.setenv("BOT_ENABLED", "1")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
+        monkeypatch.setenv("DB_ENABLED", "0")
+        if not AnthropicProvider.is_available():
+            pytest.skip("httpx 미설치 — AnthropicProvider 비활성")
+        app = await build_app()
+        provider = app[APP_KEY_PROVIDER]
+        assert isinstance(provider, AnthropicProvider)
+
+    @pytest.mark.asyncio
+    async def test_mock_when_both_keys_absent(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """cycle 96 QA P3 — 두 key 모두 부재 시 MockLLMProvider 폴백 + warning log."""
+
+        monkeypatch.setenv("BOT_ENABLED", "1")
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.setenv("DB_ENABLED", "0")
+        app = await build_app()
+        provider = app[APP_KEY_PROVIDER]
+        assert isinstance(provider, MockLLMProvider)
 
     @pytest.mark.asyncio
     async def test_custom_rate_cap_honored(
