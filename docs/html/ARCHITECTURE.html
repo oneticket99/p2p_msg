@@ -206,7 +206,7 @@ sequenceDiagram
   <tbody>
     <tr><td><code>app/ui/</code></td><td>PyQt6 위젯·QSS·이벤트 핸들러</td><td><code>app/core/</code></td><td>클라이언트 UI 계층</td></tr>
     <tr><td><code>app/core/</code></td><td>세션 상태·메시지 큐·MariaDB 영속화</td><td><code>app/net/</code> · <code>app/rtc/</code> · <code>app/db/</code></td><td>클라이언트 Core 계층</td></tr>
-    <tr><td><code>app/net/</code></td><td>시그널링 WS 클라이언트·재연결·백오프</td><td><code>aiohttp</code> · <code>app/core/</code> 콜백</td><td>클라이언트 Net 계층</td></tr>
+    <tr><td><code>app/net/</code></td><td>시그널링 WS 클라이언트 + <code>auth_client.py</code> + <code>messages_client.py</code> (사이클 62 lazy load REST) · 재연결 · 백오프</td><td><code>aiohttp</code> · <code>app/core/</code> 콜백</td><td>클라이언트 Net 계층</td></tr>
     <tr><td><code>app/rtc/</code></td><td>aiortc 래퍼·DataChannel·청크 송수신</td><td><code>aiortc</code> · <code>app/core/</code> 콜백</td><td>클라이언트 RTC 계층</td></tr>
     <tr><td><code>app/db/</code></td><td>MariaDB 스키마·마이그레이션 (사용자 directive 2026-05-17)</td><td><code>asyncmy</code> 드라이버</td><td>클라이언트 영속화</td></tr>
     <tr><td><code>app/auth/</code></td><td>회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17)</td><td><code>aiohttp</code> (server/auth API 호출) + <code>app/core/</code> 세션</td><td>클라이언트 Auth 계층</td></tr>

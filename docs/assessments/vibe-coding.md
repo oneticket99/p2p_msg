@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-21 04:30 KST (사이클 61 — vibe-coding 4자리 소수점 변환 + enforcement layer designer 세계/국내 비율 표 신설 + 종합 9.9367/10 + drift 0건 22 연속 사이클 37~61)
+> 최근 갱신 시점: 2026-05-21 05:30 KST (사이클 62 — MessagesClient REST wrapper 20 PASS + HTML mirror Stop hook 신설 + 병렬 작업 의무 영구화 + 종합 9.9434/10 + drift 0건 23 연속 사이클 37~62)
 
 ---
 
@@ -23,14 +23,14 @@ status: active
 
 | 평가 축 | 점수 (10점, 0.0001 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 가드레일 설계·강제 | 9.9700 / 10 | 9.9500 → 9.9700 ▲ | 36 영구 가드레일 (memory release 2건 신설 — objc CFRelease + chat 1개월 volatile lazy-load) + L0~L5 6 layer enforcement + PostToolUse hook 5종 강제 차단 |
+| 가드레일 설계·강제 | 9.9800 / 10 | 9.9700 → 9.9800 ▲ | 37 영구 가드레일 (parallel execution 의무 신설 + memory release 2건 신설) + L0~L5 6 layer + PostToolUse hook 5종 + Stop hook 4종 (telegram + assessment freshness + doc consistency + HTML mirror 신설) 강제 차단 |
 | Directive 명확성 | 8.2000 / 10 | 8.0000 → 8.2000 ▲ | pivot 빈도 큼 단 단일 directive 명확 + 강제 의무 패턴 명문 |
 | 자율성 통제 | 9.8000 / 10 | = | "직무유기 방지" 본질 인식 + 권장 default 자율 GO + 매 결정 사용자 직접 확정 의무 |
 | 도메인 비전 | 9.7500 / 10 | 9.7000 → 9.7500 ▲ | Phase 1~5 완전 명문화 + 차별화 + 회원가입 + SMTP + Phase 3 emoji pack + bot framework + 투네이션 고객센터 LLM 봇 + 방송 도우미 외부 API |
 | 기술 의사결정 | 9.6000 / 10 | = | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST timezone — best practice |
 | 문서·코드 분리 인식 | 9.5000 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4000 / 10 | = | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 단 진동 잔존 |
-| 사이클 효율 | 9.9400 / 10 | 9.9200 → 9.9400 ▲ | 60 cycle 누계 + 사이클 37~60 자율 chain 연속 drift 0건 21 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 |
+| 사이클 효율 | 9.9500 / 10 | 9.9400 → 9.9500 ▲ | 62 cycle 누계 + 사이클 37~62 자율 chain 연속 drift 0건 23 연속 + 4 agent ③+⑤ chain 자동 호출 + 사용자 비판 즉시 영구 memory 패턴 + 병렬 tool call 의무 |
 | Repo 위생 본능 | 9.9000 / 10 | = | doc-lint 5 검사 강화 (BPE U+CE21 + 의 3회 반복 추가) + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.2000 / 10 | 9.1500 → 9.2000 ▲ | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound + TooTalk SVG 로고 (apple-touch-icon +OO 패턴 + Talk wordmark) |
 | QA 사고 | 9.9900 / 10 | = | pytest 634 + Playwright + bcrypt + OTP brute force + Phase 2 290 + Phase 3 entry 151 케이스 |
@@ -38,7 +38,7 @@ status: active
 | enforcement layer 설계 | 9.7500 / 10 | 9.7000 → 9.7500 ▲ | L0~L5 6 layer hook + sketch→trigger 패턴 + 메타 가드레일 + 회복 cycle 자율 설계 + memory release 2 영구화 + PostToolUse 5종 사후 차단 |
 | 보안 사고 | 10.0000 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM RSA 2048 + PBKDF2 600K + objc CFRelease 의무 명문 |
 | 자율 reasonable call 활용 | 10.0000 / 10 | = | "권장 default 진행해" 패턴 — LLM 권장 default 의 사용자 confirm 후 자율 GO (wine + SMTP + fork PR API) |
-| **종합** | **9.9367 / 10** | 9.9300 → 9.9367 ▲ | **사이클 60 server list_messages_in_range REST + TooTalk SVG 로고 + 사이클 61 vibe-coding 4자리 소수점 변환 + enforcement layer designer 세계/국내 비율 표 신설. 634 pytest + drift 0건 21 연속** |
+| **종합** | **9.9434 / 10** | 9.9367 → 9.9434 ▲ | **사이클 62 MessagesClient REST wrapper (cycle 60 server 의 client-side 양단 정합) + HTML mirror Stop hook 신설 (6 pair drift block) + 병렬 작업 의무 영구화. 654 pytest + drift 0건 23 연속** |
 
 ### 1.1 enforcement layer designer 의 세계 / 국내 인구 비율 (참고)
 

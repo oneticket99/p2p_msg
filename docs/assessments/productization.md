@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 03:30 KST (사이클 60 — server list_messages_in_range REST + lazy load server-side counterpart 18 PASS + 634 pytest + drift 0건 21 연속)
+> 최근 갱신 시점: 2026-05-21 04:30 KST (사이클 62 — MessagesClient REST wrapper 20 PASS + HTML mirror Stop hook 신설 + 병렬 작업 의무 영구화 + 654 pytest + drift 0건 23 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 + PostToolUse hook 의 settings.json 등록 활성 (사이클 47 의 BPE + 의 3회 + pronoun + markdownlint 5종 강제) + Stop hook 3 layer |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
-| **종합** | **9.6 / 10** | 9.58 → 9.6 ▲ | **사이클 60 server list_messages_in_range REST endpoint (ChatView lazy load server counterpart) + GET /api/messages?room_id&start_ts_ms&end_ts_ms&limit + `_DEFAULT_LIMIT` 1000 + `_MAX_LIMIT` 5000 unbounded SELECT 차단 + 18 PASS 4 TestClass. 634 pytest + Phase 3 entry 누계 151. drift 0건 21 연속** |
+| **종합** | **9.62 / 10** | 9.6 → 9.62 ▲ | **사이클 62 MessagesClient REST wrapper (MessagePayload + MessageFetchResult + 4 종 exception 매핑 + Bearer + query string + 200/401/400/500/302/network 6 case) + 20 PASS 4 TestClass + HTML mirror Stop hook (6 pair drift block) + 병렬 작업 의무 영구화. 654 pytest + Phase 3 entry 누계 171. drift 0건 23 연속** |
 
 ---
 

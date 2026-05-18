@@ -47,6 +47,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_doc_consistency.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_html_mirror_consistency.sh"
           }
         ]
       }

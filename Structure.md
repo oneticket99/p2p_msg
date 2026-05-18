@@ -126,6 +126,7 @@ p2p_msg/
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
+│   │   ├── messages_client.py     # 사이클 62 — REST MessagesClient (lazy load)
 │   │   └── signaling_client.py
 │   ├── rtc/
 │   │   ├── __init__.py

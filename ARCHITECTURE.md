@@ -161,7 +161,7 @@ sequenceDiagram
 |---|---|---|---|
 | `app/ui/` | PyQt6 위젯·QSS·signup/login/reset dialog (사이클 23) + main_window 계정 메뉴 | `app/core/` · `app/net/auth_client.py` | 클라이언트 UI 계층 |
 | `app/core/` | `AppState` 세션 상태 + `Config` .env 로딩 + `security.py` (PBKDF2-SHA256 600K iter + OTP + session token, 사이클 18) | `python-dotenv` + `hashlib` + `secrets` + `hmac` | 클라이언트 Core |
-| `app/net/` | 시그널링 WS client + `auth_client.py` REST client (사이클 21) | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net |
+| `app/net/` | 시그널링 WS client + `auth_client.py` REST client (사이클 21) + `messages_client.py` (사이클 62 — ChatView lazy load 의 client-side wrapper + MessagePayload + MessageFetchResult + Bearer 인증 + 401/400/5xx/network 4 종 exception 매핑) | `aiohttp` · `app/core/` 콜백 | 클라이언트 Net |
 | `app/rtc/` | aiortc 래퍼·DataChannel + protocol/peer/file_sender/file_receiver/image_processor (Agent #16) | `aiortc` · `Pillow` · `aiofiles` | 클라이언트 RTC |
 | `app/crypto/` | Phase 2 E2EE Signal Protocol — `e2ee.py` (AES-GCM+X25519+HKDF) + `double_ratchet.py` (KDF chain) + `session.py` (SessionState + DH ratchet) + `skipped_keys.py` (LRU+TTL) + `x3dh.py` (사이클 37 initial key agreement) + `device_registry.py` (사이클 42 multi-device 식별) + `fan_out.py` (사이클 44 N device fan-out 격리) + `sender_keys.py` (사이클 46 그룹 N×M → N+M reduction) (사이클 27~46) | `cryptography>=42.0` | 클라이언트 E2EE |
 | `app/notifications/` | Phase 2 push 알림 skeleton (사이클 47) — `push.py` 의 4 platform (APNS/FCM/SILENT/PULL) + PushTarget + PushPayload + silent/visible format + offline filter + PushBatch | (transport-agnostic, gateway 호출 = 별개 cycle) | 클라이언트 Notification |

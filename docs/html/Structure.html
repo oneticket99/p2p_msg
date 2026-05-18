@@ -188,7 +188,7 @@ flowchart LR
 <tr><td><code>app/</code></td><td>PyQt6 데스크탑 클라 패키지 · UI → Core → {Net, RTC} 단방향 · qasync 단일 이벤트 루프</td></tr>
 <tr><td><code>app/ui/</code></td><td>QWidget 계층 (메인 윈도우·채팅뷰·버블·상태바·진행률 위젯) · <code>app/core/</code> 만 import</td></tr>
 <tr><td><code>app/core/</code></td><td>상태 머신 + 환경변수 로딩 (Qt 의존성 없음) · 외부 의존 없음 · 단위 테스트 가능</td></tr>
-<tr><td><code>app/net/</code></td><td>aiohttp WS 시그널링 클라 · <code>app/core/</code> 콜백 · 9종 envelope 송수신</td></tr>
+<tr><td><code>app/net/</code></td><td>aiohttp WS 시그널링 클라 + <code>auth_client.py</code> + <code>messages_client.py</code> (사이클 62 lazy load REST wrapper) · <code>app/core/</code> 콜백 · 9종 envelope 송수신</td></tr>
 <tr><td><code>app/rtc/</code></td><td>aiortc WebRTC PeerConnection + DataChannel 송수신 · <code>app/core/</code> 콜백 · 5종 파일 메시지</td></tr>
 <tr><td><code>app/auth/</code></td><td>회원가입/로그인/OTP/비번찾기 클라이언트 (사용자 directive 2026-05-17) · server/auth API 호출</td></tr>
 <tr><td><code>app/db/</code></td><td>MariaDB 스키마·마이그레이션 (asyncmy 드라이버) · <code>app/core/</code> 영속화</td></tr>
