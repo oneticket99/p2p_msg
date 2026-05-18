@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 02:00 KST (사이클 85 — bot usage tracker + per-user/provider/period 집계 + Anthropic/OpenAI usage extract + 31 신규 PASS + 996 pytest + drift 0건 44 연속)
+> 최근 갱신 시점: 2026-05-22 03:00 KST (사이클 86 — bot escalation queue + TicketStatus 4종 + EscalationReason 6종 + lifecycle 의 enqueue/assign/resolve/close + 28 신규 PASS + 1024 pytest + drift 0건 45 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.93 / 10** | 9.92 → 9.93 ▲ | **사이클 85 bot usage tracker — `app/bot/usage_tracker.py` 신설. UsageRecord frozen dataclass (user_id + provider + model + input_tokens + output_tokens + timestamp_ms + validation 7종) + total_tokens property + UsageSummary (count + input + output + total) + UsageTracker (record + size + clear + all_records copy + summarize_by_user + summarize_by_provider + summarize_by_period minute/hour/day + total). extract_anthropic_usage (input_tokens/output_tokens) + extract_openai_usage (prompt_tokens/completion_tokens) helper + bool isinstance(int)=True edge case 차단 + 음수 graceful 0 clamp. 31 신규 PASS 5 TestClass — Validation 9 + Summary 2 + Tracker 13 + Anthropic 5 + OpenAI 3. 996 pytest + Phase 3 entry 514 + drift 0건 44 연속** |
+| **종합** | **9.94 / 10** | 9.93 → 9.94 ▲ | **사이클 86 bot escalation queue — `app/bot/escalation_queue.py` 신설. TicketStatus Enum (PENDING/ASSIGNED/RESOLVED/CLOSED) + EscalationReason Enum 6종 (USER_REQUEST/JAILBREAK/RATE_LIMIT/LOW_CONFIDENCE/LONG_RESPONSE/EXPLICIT) + EscalationTicket frozen dataclass (ticket_id + user_id + reason + message + created_at_ms + status + agent_id + resolved_at_ms + 7 validation) + EscalationQueue 의 lifecycle (enqueue PENDING → assign ASSIGNED + agent_id → resolve RESOLVED + resolved_at_ms → close CLOSED 의 모든 상태 의 transition + 중복 차단) + list_pending/assigned/by_user/by_agent (created_at_ms ASC FIFO) + get/size/clear + next_ticket_id monotonic. 28 신규 PASS 7 TestClass — Validation 7 + Enqueue 3 + Assign 4 + Resolve 3 + Close 3 + ListAndLookup 6 + ClearAndId 2. 1024 pytest + Phase 3 entry 542 + drift 0건 45 연속** |
 
 ---
 
