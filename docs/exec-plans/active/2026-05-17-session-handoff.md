@@ -169,6 +169,65 @@ status: active
 
 ---
 
+## 8.53 사이클 110~115 Phase 4 Item 2+3 본문 완성 6 cycle (2026-05-22 신설)
+
+### 8.53.1 6 cycle 누계 chain
+
+| cycle | 작업 | 신규 PASS / 파일 |
+|---|---|---|
+| 110 | server/main.py Config 통합 refactor + test pollution 회수 | 0 (refactor) |
+| 111 | activity middleware + ActivityTracker 1분 throttle | 20 PASS + 3 파일 |
+| 112 | nginx certbot init/renew + nginx config 검증 + Caddy 대안 doc | 35 PASS + 5 파일 |
+| 113 | X-Request-ID propagation middleware + contextvar | 8 PASS + 2 파일 |
+| 114 | middleware chain integration smoke (real TestServer) | 4 PASS + 1 파일 |
+| 115 | user_activity repository skeleton (23 ENUM + 5 SQL) | 16 PASS + 2 파일 |
+
+**누계** = 83 신규 PASS + 13 신규 파일 (cycle 109 1132 → cycle 115 1215).
+
+### 8.53.2 pytest + drift
+
+- pytest = **1215 passed + 9 deselected** (cycle 109 1132 → cycle 115 1215, +83 신규).
+- 자율 chain drift = **0건 64 연속** 사이클 37~115.
+
+### 8.53.3 핵심 산출물
+
+**middleware chain 3 layer**:
+- `server/middleware/activity.py` — ActivityTracker + activity_middleware + extract_client_ip + APP_KEY_ACTIVITY
+- `server/middleware/request_id.py` — current_request_id contextvar + get_request_id + request_id_middleware
+- `server/main.py` build_app — `[request_id, auth, activity]` chain + cfg = Config.from_env() single entry
+
+**nginx production 자동화**:
+- `deploy/scripts/certbot_init.sh` — Let's Encrypt 초기 발급 + STAGING flag + dual SAN
+- `deploy/scripts/certbot_renew.sh` — cron 03:00 KST 갱신 + nginx -t + reload
+- `deploy/docker-compose.yml` — certbot service (profile certbot) + certbot_webroot volume
+- `deploy/nginx/CADDY_ALTERNATIVE.md` — 10 기준 비교 + 유지 근거 + Phase 5+ 전환 조건
+
+**DB audit migration 0003 actual SQL wiring**:
+- `server/db/repositories/user_activity.py` — ActivityAction 23 ENUM + SessionEndReason 5 ENUM + 4 repository 함수 (log_activity + create_session + update_session_last_active + close_session) + 5 parameterized SQL (injection 차단)
+
+**테스트**:
+- `tests/server/test_middleware_activity.py` — 20 PASS 5 TestClass
+- `tests/server/test_middleware_request_id.py` — 8 PASS 4 TestClass
+- `tests/server/test_middleware_chain_integration.py` — 4 PASS aiohttp TestServer wire-level
+- `tests/server/db/test_user_activity.py` — 16 PASS 7 TestClass
+- `tests/deploy/test_nginx_config.py` — 35 PASS 7 TestClass grep-style
+
+### 8.53.4 다음 세션 첫 액션 우선순위
+
+1. **cycle 116** — Phase 4 Item 4 logging — KST `Asia/Seoul` Formatter + JSON structured (request_id contextvar auto-inject + level + timestamp + name + message + extra fields).
+2. **cycle 117** — sensitive redact (이메일/비번/토큰 패턴 mask) + 7 logger 분류 (auth + bot + signaling + db + push + activity + bot_handlers) + aiohttp access middleware.
+3. **별개 cycle** — 회원가입 + 로그인 endpoint 의 actual DB wiring — `server/api/auth_handlers.py` 의 INSERT 시 signup_ip + signup_user_agent parse + `log_activity(ActivityAction.SIGNUP)` 호출 + `create_session(LOGIN)` 호출 의 의무.
+4. **별개 cycle** — activity_middleware 의 DB hook wiring — log 만 의 현재 → `log_activity(LAST_ACTIVE)` actual SQL UPDATE.
+
+### 8.53.5 manual test 의무 (사용자)
+
+- `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml up mariadb postfix` 의 local stack 기동 + healthy 확인.
+- 0003 migration 의 mariadb 적용 + `DESCRIBE user_sessions; DESCRIBE user_activity_log;` 검증.
+- `BOT_ENABLED=1 ANTHROPIC_API_KEY=sk-ant-... python -m server.main` 의 build_app 의 Config 통합 + middleware chain 실 기동.
+- `curl -H "X-Request-ID: smoke-test" http://localhost:8080/healthz` 의 response X-Request-ID header echo + log 의 request_id correlation 검증.
+
+---
+
 ## 8.52 사이클 100~109 Phase 4 진입 10 cycle 누계 chain (2026-05-22 신설)
 
 ### 8.52.1 Phase 4 Item 1+2 base 22 신규 파일

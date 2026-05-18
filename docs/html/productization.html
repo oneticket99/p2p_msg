@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 109)</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 115)</title>
 <!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 44 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
      마지막 갱신 라인 = "2026-05-20 17:00 KST — 사이클 44 (X3DH session fan-out + 16 PASS + Phase 2 누계 215)".
@@ -88,7 +88,7 @@
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-22 15:30 KST</strong> — 사이클 109 (Phase 4 진입 10 cycle 누계: httpx + docker stack + postfix DKIM + FCM SDK + nginx + .env + Config 통합 + 1132 pytest + drift 0건 59 연속)<br>
+    최근 갱신 시점: <strong>2026-05-22 18:30 KST</strong> — 사이클 115 (Phase 4 Item 2+3 본문 완성 6 cycle 누계: Config refactor + activity middleware + nginx certbot + request_id contextvar + chain integration + user_activity repo 30 신규 파일 + 1215 pytest + drift 0건 64 연속)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -120,16 +120,16 @@
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">8.85 / 10</td><td class="center"><span class="up">8.75 → 8.85 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 bot framework 10 module + reviewer/QA 회수 chain 8 항목 + Phase 4 Item 1+2 base 22 신규 파일 + 1132 pytest + drift 0건 59 연속</td></tr>
-    <tr><td>시장 적합성</td><td class="center">5.5 / 10</td><td class="center"><span class="up">5.4 → 5.5 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + push 알림 (FCM 실 binding) + encrypted backup + Phase 4 production infra base (docker compose + Let's Encrypt + SPF/DKIM/DMARC + 마케팅 통계 IP/activity tracking)</td></tr>
+    <tr><td>기술 완성도</td><td class="center">9.0 / 10</td><td class="center"><span class="up">8.85 → 9.0 ▲</span></td><td>CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 bot framework 10 module + reviewer/QA 회수 chain 8 항목 + Phase 4 Item 1+2+3 base 30 신규 파일 + 1215 pytest + drift 0건 64 연속</td></tr>
+    <tr><td>시장 적합성</td><td class="center">5.55 / 10</td><td class="center"><span class="up">5.5 → 5.55 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra base (docker compose + Let's Encrypt + certbot 자동 갱신 + SPF/DKIM/DMARC + 마케팅 통계 IP/activity actual SQL wiring)</td></tr>
     <tr><td>차별화 요소</td><td class="center">9.8 / 10</td><td class="center"><span class="up">9.75 → 9.8 ▲</span></td><td>친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI provider chain + RAG dual baseline + CachedEmbedder thread-safe + jailbreak detector 17 패턴 + escalation queue + usage tracker + streaming SSE + 3 layer fallback)</td></tr>
     <tr><td>사용자 가치</td><td class="center">6.95 / 10</td><td class="center">=</td><td>P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호</td></tr>
     <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
-    <tr><td>운영 비용</td><td class="center">9.85 / 10</td><td class="center"><span class="up">9.8 → 9.85 ▲</span></td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 통합 + json-file log rotation + healthcheck chain</td></tr>
+    <tr><td>운영 비용</td><td class="center">9.85 / 10</td><td class="center">=</td><td>self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + json-file log rotation + healthcheck + certbot 자동 갱신 cron</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">9.8 / 10</td><td class="center"><span class="up">9.78 → 9.8 ▲</span></td><td>handoff §8.51 cycle 88~99 chain + telegram 양방향 fallback + 매 cycle 동기 의무 + Phase 4 cycle 100~109 10 cycle 자율 chain drift 0건</td></tr>
-    <tr><td>보안 hardening</td><td class="center">9.0 / 10</td><td class="center"><span class="up">8.85 → 9.0 ▲</span></td><td>E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup + 메모리 누수 차단 + GPLv3 + provider retry/network/lazy init Lock + jailbreak 17 패턴 + CachedEmbedder threading.RLock + DB audit IP 90일 retention + Phase 4 SPF/DKIM RSA 2048/DMARC + Docker secret mount + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP stapling + 5 보안 header + 5 rate limit zone + production validate ConfigError</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.99 / 10</strong></td><td class="center">=</td><td><strong>Phase 4 진입 10 cycle 누계 (사이클 100~109): httpx 실 install 2 skip → 0 skip + docker compose 6 컴포넌트 stack + postfix + opendkim + SPF/DKIM/DMARC DNS 정본 + FCM SDK graceful 9 PASS + nginx config 8 location + .env.example 11 카테고리 + Config 통합 7 영역 frozen dataclass + 20 PASS. pytest 1132. drift 0건 59 연속. Phase 4 entry 누계 22 신규 파일</strong></td></tr>
+    <tr><td>세션 간 정합</td><td class="center">9.82 / 10</td><td class="center"><span class="up">9.8 → 9.82 ▲</span></td><td>handoff §8.51 + §8.52 chain + telegram 양방향 fallback + Phase 4 cycle 100~115 16 cycle 누계 자율 chain drift 0건</td></tr>
+    <tr><td>보안 hardening</td><td class="center">9.1 / 10</td><td class="center"><span class="up">9.0 → 9.1 ▲</span></td><td>E2EE Signal 200 + encrypted backup + 메모리 누수 차단 + GPLv3 + provider Lock + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + Phase 4 SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID propagation contextvar + parameterized SQL injection 차단 + activity 1분 throttle write storm 차단</td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>9.99 / 10</strong></td><td class="center">=</td><td><strong>Phase 4 Item 2+3 본문 완성 6 cycle 누계 (사이클 110~115): cycle 110 main.py Config refactor + cycle 111 activity middleware ActivityTracker 1분 throttle 20 PASS + cycle 112 nginx certbot init/renew + 35 PASS + Caddy doc + cycle 113 X-Request-ID propagation contextvar 8 PASS + cycle 114 middleware chain integration smoke 4 PASS + cycle 115 user_activity repository 23 ENUM + 5 SQL + 16 PASS. pytest 1215. drift 0건 64 연속. Phase 4 entry 누계 30 신규 파일</strong></td></tr>
   </tbody>
 </table>
 

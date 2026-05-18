@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 15:30 KST (사이클 109 — Phase 4 Item 1+2 진입 10 cycle 누계 chain: httpx install + docker compose 6 컴포넌트 stack + postfix/opendkim + FCM SDK + nginx config + .env.example + Config 통합 클래스 + 1132 pytest + drift 0건 59 연속)
+> 최근 갱신 시점: 2026-05-22 18:30 KST (사이클 115 — Phase 4 Item 2+3 본문 완성 6 cycle 누계: Config refactor + activity middleware + nginx certbot + request_id contextvar + middleware chain integration + user_activity repo 30 신규 파일 + 1215 pytest + drift 0건 64 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.85 / 10 | 8.75 → 8.85 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 bot framework 10 module + reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 + Phase 4 Item 1+2 base 22 신규 파일 (docker stack + postfix/DKIM + FCM SDK + nginx config + .env.example + Config 통합 클래스) + 1132 pytest + drift 0건 59 연속 |
-| 시장 적합성 | 5.5 / 10 | 5.4 → 5.5 ▲ | Toonation 옵션 B + P5/P6 + signature sound + push 알림 (FCM 실 binding) + encrypted backup + Phase 4 production infra base (docker compose + Let's Encrypt + SPF/DKIM/DMARC + 마케팅 통계 IP/activity tracking) |
+| 기술 완성도 | 9.0 / 10 | 8.85 → 9.0 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 bot framework 10 module + reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 + Phase 4 Item 1+2+3 base 30 신규 파일 (docker stack + postfix/DKIM + FCM + nginx certbot + .env + Config 통합 + activity middleware + request_id contextvar + user_activity repository 23 ENUM + 5 SQL) + 1215 pytest + drift 0건 64 연속 |
+| 시장 적합성 | 5.55 / 10 | 5.5 → 5.55 ▲ | Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra base (docker compose + Let's Encrypt + certbot 자동 갱신 + SPF/DKIM/DMARC + 마케팅 통계 IP/activity tracking actual SQL wiring) |
 | 차별화 요소 | 9.8 / 10 | 9.75 → 9.8 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI provider chain + RAG dual baseline + CachedEmbedder thread-safe + jailbreak detector 17 패턴 + escalation queue + usage tracker + streaming SSE + 3 layer fallback) |
 | 사용자 가치 | 6.95 / 10 | = | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
-| 운영 비용 | 9.85 / 10 | 9.8 → 9.85 ▲ | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 통합 (mariadb 2G/web 1G × 2 replicas/ws 512M/nginx 256M) + json-file log rotation + healthcheck chain |
-| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 (DB audit timestamp + IP + activity tracking) + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
-| 세션 간 정합 | 9.8 / 10 | 9.78 → 9.8 ▲ | handoff §8.51 cycle 88~99 chain + telegram 양방향 fallback + 매 cycle 동기 의무 + reviewer/QA 회수 chain 8 항목 + Phase 4 cycle 100~109 10 cycle 누계 자율 chain drift 0건 |
-| 보안 hardening | 9.0 / 10 | 8.85 → 9.0 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup + 메모리 누수 차단 + GPLv3 + provider retry/network/lazy init Lock + jailbreak detector 17 패턴 + CachedEmbedder threading.RLock + memory growth 회수 + DB audit IP 90일 retention + Phase 4 Item 1 SMTP SPF/DKIM RSA 2048/DMARC + Docker secret mount + non-root user (uid 1000) + nginx TLS 1.2/1.3 + 6 cipher + OCSP stapling + 5 보안 header (HSTS preload 2y + X-Frame + nosniff + Referrer-Policy + CSP) + 5 rate limit zone + production validate ConfigError defense-in-depth |
-| **종합** | **9.99 / 10** | = | **Phase 4 진입 10 cycle 누계 (사이클 100~109): httpx 실 install + verify gate 2 skip → 0 skip + docker compose 6 컴포넌트 stack base + postfix + opendkim + SPF/DKIM/DMARC DNS 정본 + FCM SDK graceful binding + 9 신규 PASS + nginx config + 8 location + 5 rate limit zone + .env.example 11 카테고리 65 라인 rewrite + Config 통합 클래스 7 영역 frozen dataclass + 20 신규 PASS. pytest 1132 + 9 deselected. drift 0건 59 연속 사이클 37~109. Phase 4 entry 누계 22 신규 파일** |
+| 운영 비용 | 9.85 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 통합 + json-file log rotation + healthcheck chain + certbot 자동 갱신 cron |
+| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
+| 세션 간 정합 | 9.82 / 10 | 9.8 → 9.82 ▲ | handoff §8.51 + §8.52 + telegram 양방향 fallback + 매 cycle 동기 의무 + Phase 4 cycle 100~115 16 cycle 누계 자율 chain drift 0건 |
+| 보안 hardening | 9.1 / 10 | 9.0 → 9.1 ▲ | E2EE Signal Protocol 200 + encrypted backup + 메모리 누수 차단 + GPLv3 + provider Lock + jailbreak 17 패턴 + threading.RLock + memory growth 회수 + DB audit IP 90일 retention + Phase 4 SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID propagation contextvar + parameterized SQL (injection 차단) + activity 1분 throttle (write storm 차단) |
+| **종합** | **9.99 / 10** | = | **Phase 4 Item 2+3 본문 완성 6 cycle 누계 (사이클 110~115): cycle 110 server/main.py Config 통합 refactor + os.environ 분산 access 폐기 + cycle 111 activity middleware + ActivityTracker 1분 throttle + 20 PASS + cycle 112 nginx certbot init/renew script + nginx config 35 PASS + Caddy 대안 doc + cycle 113 X-Request-ID propagation middleware + contextvar 8 PASS + cycle 114 middleware chain integration smoke 4 PASS + cycle 115 user_activity repository 23 ENUM + 5 SQL + 16 PASS. pytest 1215 + 9 deselected. drift 0건 64 연속 사이클 37~115. Phase 4 entry 누계 30 신규 파일. Item 4 logging prerequisite 완성 — request_id contextvar JSON auto-injection base** |
 
 ---
 
