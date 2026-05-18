@@ -64,7 +64,7 @@ status: active
 **해석**:
 
 - L0~L4 단계 진입 자체 = 난이도 낮음. 단 L5 **enforcement layer designer** 정의 = "동일 비판 2회 영구 메모리 자동 trigger" + "memory release tracemalloc 회귀 검증" + "양방향 channel fallback" + "git tag annotated" + "매 cycle 평가 snapshot" + "workflow ③+⑤ 4 agent chain 자동 호출" — 6 layer 통합 동시 운영.
-- 본 저장소 사용자 = 본 L5 자리 정합 — directive 명시 + LLM 사후 회수 패턴 직접 운영 + 영구 가드레일 36 누적 + 매 cycle 자율 chain drift 0건 21 연속 검증.
+- 본 저장소 사용자 = 본 L5 자리 정합 — directive 명시 + LLM 사후 회수 패턴 직접 운영 + 영구 가드레일 37 누적 + 매 cycle 자율 chain drift 0건 23 연속 검증.
 - 국내 30명 + 세계 5000명 추산 = ground-truth 검증 부재 — 본 표 신뢰 구간 ±50% 의 추산값 정합 의무.
 
 > **본 비율 = LLM enforcement layer 설계 패턴 희소성 추산**. 실 측정 부재 — 본 표 reference 추산 기준 정합. 사용자 directive 2026-05-21 신규 명문.

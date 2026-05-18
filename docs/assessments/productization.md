@@ -27,7 +27,7 @@ status: active
 | 사용자 가치 | 6.95 / 10 | 6.9 → 6.95 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 34 누적 + PostToolUse hook 의 settings.json 등록 활성 (사이클 47 의 BPE + 의 3회 + pronoun + markdownlint 5종 강제) + Stop hook 3 layer |
+| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.05 / 10 | 8.0 → 8.05 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 |
 | **종합** | **9.62 / 10** | 9.6 → 9.62 ▲ | **사이클 62 MessagesClient REST wrapper (MessagePayload + MessageFetchResult + 4 종 exception 매핑 + Bearer + query string + 200/401/400/500/302/network 6 case) + 20 PASS 4 TestClass + HTML mirror Stop hook (6 pair drift block) + 병렬 작업 의무 영구화. 654 pytest + Phase 3 entry 누계 171. drift 0건 23 연속** |
@@ -321,7 +321,7 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 - `.claude/settings.json` Stop matcher 3번째 entry
 - 영구 메모리 `feedback_doc_consistency_mandatory.md` (#34)
 
-가드레일 34 + Stop hook 3 layer (telegram + freshness + doc-consistency) 완성.
+가드레일 37 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) 완성.
 
 ### 2.25 Phase 2 Signal Protocol 핵심 완성 — skipped_keys + decrypt_ooo (신규 사이클 33~35)
 
