@@ -254,6 +254,122 @@ class TestMockEmbedder:
         assert e.embed("query text") == e.embed("query text")
 
 
+class TestCachedEmbedder:
+    """``CachedEmbedder`` LRU cache decorator 검증 (cycle 79)."""
+
+    def test_max_cache_zero_rejected(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        with pytest.raises(ValueError, match="max_cache"):
+            CachedEmbedder(MockEmbedder(dim_value=4), max_cache=0)
+
+    def test_max_cache_negative_rejected(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        with pytest.raises(ValueError, match="max_cache"):
+            CachedEmbedder(MockEmbedder(dim_value=4), max_cache=-1)
+
+    def test_first_call_miss_second_call_hit(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=8), max_cache=4)
+        v1 = c.embed("query")
+        v2 = c.embed("query")
+        assert v1 == v2
+        assert c.hits == 1
+        assert c.misses == 1
+
+    def test_different_text_separate_miss(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=8), max_cache=4)
+        c.embed("query a")
+        c.embed("query b")
+        assert c.hits == 0
+        assert c.misses == 2
+        assert c.size() == 2
+
+    def test_lru_eviction_at_capacity(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=8), max_cache=2)
+        c.embed("a")
+        c.embed("b")
+        c.embed("c")  # "a" evicted
+        # "a" 의 재호출 = miss (cache 부재)
+        c.embed("a")
+        assert c.misses == 4  # a + b + c + a (재호출)
+        assert c.size() == 2  # b + c 의 evict 후 의 b + a 또는 c + a
+
+    def test_lru_move_to_end_on_hit(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=8), max_cache=2)
+        c.embed("a")
+        c.embed("b")
+        c.embed("a")  # "a" hit + LRU 의 의 끝 이동
+        c.embed("c")  # "b" evict (a 의 최근)
+        # "a" 의 재호출 = hit (still cached)
+        c.embed("a")
+        assert c.hits == 2  # 2번째 a + 4번째 a
+        assert c.misses == 3  # a + b + c
+
+    def test_dim_delegates(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=12))
+        assert c.dim() == 12
+
+    def test_reset_stats(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=4), max_cache=4)
+        c.embed("q")
+        c.embed("q")
+        c.reset_stats()
+        assert c.hits == 0
+        assert c.misses == 0
+        # cache 는 보존
+        assert c.size() == 1
+
+    def test_clear_resets_cache_and_stats(self) -> None:
+        from app.bot.rag_context import CachedEmbedder, MockEmbedder
+
+        c = CachedEmbedder(MockEmbedder(dim_value=4), max_cache=4)
+        c.embed("q")
+        c.clear()
+        assert c.size() == 0
+        assert c.hits == 0
+        assert c.misses == 0
+
+    def test_works_with_embedding_rag_store(self) -> None:
+        from app.bot.rag_context import (
+            CachedEmbedder,
+            EmbeddingRAGStore,
+            FAQEntry,
+            MockEmbedder,
+        )
+
+        cached = CachedEmbedder(MockEmbedder(dim_value=16), max_cache=8)
+        store = EmbeddingRAGStore(
+            embedder=cached,
+            entries=[
+                FAQEntry(
+                    id="x",
+                    topic="t",
+                    question="후원 결제",
+                    answer="ans",
+                    tags=("후원",),
+                )
+            ],
+        )
+        # add 시 의 1 miss + search 시 의 query embed 1 miss
+        store.search("후원")
+        store.search("후원")
+        # 2번째 search = query hit
+        assert cached.hits >= 1
+
+
 class TestCosineSimilarity:
     """``cosine_similarity`` 벡터 유사도 검증."""
 

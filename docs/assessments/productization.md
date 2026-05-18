@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 19:00 KST (사이클 76+77+78 — server.main 통합 + ConnectionError/OSError/TimeoutError network retry + bot_handlers user_id type hardening + 16 신규 PASS + 882 pytest + drift 0건 37 연속 + reviewer P0+P1+P2 회수)
+> 최근 갱신 시점: 2026-05-21 20:00 KST (사이클 79 — CachedEmbedder LRU decorator + OrderedDict + hit/miss counter + 10 신규 PASS + 892 pytest + drift 0건 38 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.3 / 10 | 8.2 → 8.3 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 클라이언트 주입 차단 + per-user rate limit + bool/float user_id auth bypass 차단) |
-| **종합** | **9.86 / 10** | 9.84 → 9.86 ▲ | **사이클 77+78 reviewer P1+P2 회수 — cycle 77: AnthropicClient.chat() 의 transport 호출 try/except (ConnectionError, OSError, TimeoutError) + retry 정합 + max_retries 소진 시 AnthropicServerError + 6 신규 PASS. cycle 78: bot_handlers 의 _reply_to_wire hasattr fallback 제거 (Enum.value 직접 access) + user_id 의 bool isinstance(int)=True edge case 명시 차단 (auth bypass 회피) + 4 신규 PASS (bool/float/string/zero reject). 882 pytest (872 + 6 + 4) + Phase 3 entry 400 + drift 0건 37 연속** |
+| **종합** | **9.87 / 10** | 9.86 → 9.87 ▲ | **사이클 79 CachedEmbedder LRU decorator — `app/bot/rag_context.py` 의 CachedEmbedder 신설 (Embedder Protocol wrapper + OrderedDict 기반 LRU cache + max_cache 양수 의무 + hit/miss counter instrumentation + LRU move_to_end on hit + popitem evict + dim delegate + reset_stats + clear). 10 신규 PASS — max_cache zero/negative reject + first miss/second hit + different text separate miss + LRU eviction at capacity + LRU move_to_end + dim delegate + reset_stats + clear + EmbeddingRAGStore 통합. 892 pytest (882 + 10) + Phase 3 entry 410 + drift 0건 38 연속** |
 
 ---
 

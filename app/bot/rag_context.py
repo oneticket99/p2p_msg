@@ -24,6 +24,7 @@ system prompt 의 외 의 추가 context injection.
 from __future__ import annotations
 
 import math
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Final, List, Optional, Protocol, Sequence, Tuple
 
@@ -223,6 +224,80 @@ class MockEmbedder:
 
     def dim(self) -> int:
         return self._dim
+
+
+class CachedEmbedder:
+    """Embedder Protocol wrapper — OrderedDict 기반 LRU cache.
+
+    동일 텍스트 의 embed 호출 의 중복 회피 — sentence-transformers + OpenAI
+    embedding API 의 호출 비용 의 절감 + 응답 지연 회피.
+
+    Parameters
+    ----------
+    embedder : Embedder
+        wrapping target — 실 embed 의 backend (MockEmbedder + sentence-transformers).
+    max_cache : int
+        LRU cache 의 최대 entry 수 (default 256 + 양수 의무).
+
+    Attributes
+    ----------
+    hits : int
+        cache hit 횟수 (instrumentation).
+    misses : int
+        cache miss 횟수.
+
+    Notes
+    -----
+    thread-safety 미보장 — async 의 single event loop 의 가정. multi-thread
+    환경 의 별개 cycle 의 lock 의무. 텍스트 의 strip + lowercase 의 normalize
+    부재 — caller 가 의무.
+    """
+
+    def __init__(self, embedder: "Embedder", max_cache: int = 256) -> None:
+        if max_cache <= 0:
+            raise ValueError(f"max_cache 양수 의무 — {max_cache}")
+        self._embedder = embedder
+        self._max_cache = max_cache
+        self._cache: "OrderedDict[str, List[float]]" = OrderedDict()
+        self.hits: int = 0
+        self.misses: int = 0
+
+    def embed(self, text: str) -> List[float]:
+        """text → 벡터 — cache hit 시 즉시 반환 + miss 시 backend 호출 + LRU 갱신."""
+
+        cached = self._cache.get(text)
+        if cached is not None:
+            # LRU update — 최근 사용 의 위치 의 끝 이동
+            self._cache.move_to_end(text)
+            self.hits += 1
+            return cached
+        self.misses += 1
+        vec = self._embedder.embed(text)
+        self._cache[text] = vec
+        if len(self._cache) > self._max_cache:
+            # 가장 오래된 entry 의 evict (FIFO end)
+            self._cache.popitem(last=False)
+        return vec
+
+    def dim(self) -> int:
+        return self._embedder.dim()
+
+    def size(self) -> int:
+        """현 cache 의 entry 수."""
+
+        return len(self._cache)
+
+    def reset_stats(self) -> None:
+        """hits + misses counter 의 0 reset (clear cache 부재)."""
+
+        self.hits = 0
+        self.misses = 0
+
+    def clear(self) -> None:
+        """cache + stats 의 전수 reset."""
+
+        self._cache.clear()
+        self.reset_stats()
 
 
 def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
