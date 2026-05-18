@@ -921,7 +921,7 @@
 
 <h3 id="s-3-3">3.3 코드 vs 문서 시간 분배</h3>
 
-<p>본 세션 누계 = 코드 9% · 문서 91% (사이클 4 대비 약간 감소 — wine + SMTP 정책 추가). Phase 1 MVP 완성도 = 5.0/10.</p>
+<p><span class="strike">본 세션 누계 = 코드 9% · 문서 91% · Phase 1 MVP 완성도 5.0/10</span> — cycle 16 Phase 1 코드 진입 이후 본격 코드 chain. 현 누계 pytest 1257 + Playwright + integration fixture. Phase 1~4 4 tag (v0.1.0 + v0.2.0-phase2 + v0.3.0-phase3-bot + v0.4.0-phase4-infra) push 완료. 코드 비율 우위 도달.</p>
 
 <h3 id="s-3-4">3.4 BPE 가드레일 자체 LLM 의존 (사이클 5 — 한계 노출)</h3>
 
@@ -937,7 +937,7 @@
 
 <h3 id="s-3-5">3.5 Test 진입</h3>
 
-<p>pytest 인프라 active + 첫 test 12건. Phase 1 코드 진입 후만 추가 test 의 의무.</p>
+<p><span class="strike">pytest 인프라 active + 첫 test 12건</span> — 누계 1257 PASS + 9 deselected. Phase 1 12 → Phase 2 290 → Phase 3 642 → Phase 4 144. drift 0건 66 연속 사이클 37~117.</p>
 
 <h3 id="s-3-6">3.6 <s>self-hosted runner 등록 미완</s> (<span class="badge-go">사이클 5 해소</span>)</h3>
 
