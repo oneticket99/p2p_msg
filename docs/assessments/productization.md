@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-17
+last_verified: 2026-05-22
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 07:00 KST (사이클 91 — unbounded memory growth 회수 batch — UsageTracker deque maxlen + EscalationQueue evict_old + RateLimitGate prune_stale + reviewer P1-1 회수 + 14 신규 PASS + 1076 pytest + drift 0건 49 연속)
+> 최근 갱신 시점: 2026-05-22 12:30 KST (사이클 98 — reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료 + httpx 등록 + DB audit migration 0003 + 1101 pytest + drift 0건 53 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.65 / 10 | 8.6 → 8.65 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 entry remote 78 + chat_history_policy 37 PASS (volatile + lazy load 정책 layer) + dogfooding 18 PASS + 616 pytest + v0.2.0-phase2 tag |
-| 시장 적합성 | 5.4 / 10 | 5.35 → 5.4 ▲ | Toonation 옵션 B + P5/P6 + signature sound + push 알림 + encrypted backup (사용자 history 보호) |
-| 차별화 요소 | 9.75 / 10 | 9.7 → 9.75 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load 정책 + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework default 고객센터 ↔ RAGStore 통합 + 방송 도우미 별개 API + Anthropic Messages API client (사이클 70 — serialize/parse/transport + 4 종 예외 매핑) |
-| 사용자 가치 | 6.95 / 10 | 6.9 → 6.95 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
+| 기술 완성도 | 8.75 / 10 | 8.65 → 8.75 ▲ | CI 8 job GREEN + Phase 1 + Phase 2 E2EE 200 + Phase 3 bot framework 10 module + reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료 + 1101 pytest + 2 skipped + drift 0건 53 연속 |
+| 시장 적합성 | 5.4 / 10 | = | Toonation 옵션 B + P5/P6 + signature sound + push 알림 + encrypted backup |
+| 차별화 요소 | 9.8 / 10 | 9.75 → 9.8 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI provider chain + RAG dual baseline + CachedEmbedder thread-safe + jailbreak detector 17 패턴 + escalation queue + usage tracker + streaming SSE + 3 layer fallback) |
+| 사용자 가치 | 6.95 / 10 | = | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
-| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
-| 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
-| 보안 hardening | 8.65 / 10 | 8.5 → 8.65 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit + user_id type 차단) + jailbreak detector heuristic (6 category × Korean/English) + bot_handlers 통합 (BLOCKED → HTTP 400 + LLM 호출 차단 + SUSPICIOUS log + user role 만 scan) |
-| **종합** | **9.98 / 10** | 9.97 → 9.98 ▲ | **사이클 91 unbounded memory growth 회수 batch (reviewer P1-1) — (a) UsageTracker `collections.deque(maxlen)` ring buffer 의 oldest FIFO evict + default 100_000 + 0 = 무제한 (테스트 fixture) + max_records property. (b) EscalationQueue evict_old(now_ms, retention_ms) — RESOLVED/CLOSED 의 resolved_at_ms < cutoff evict + retention 음수 차단 + PENDING/ASSIGNED 의 resolved_at_ms 부재 skip. (c) RateLimitGate prune_stale(now_seconds) — 모든 timestamp cutoff 이전 인 user_id key 자체 삭제 + active_users() monitoring helper. 14 신규 PASS — TestUsageTrackerMaxRecords 4 + TestEvictOld 6 + TestRateLimitGateStalePrune 4. 1076 pytest (1062 + 14) + drift 0건 49 연속** |
+| 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 (DB audit timestamp + IP + activity tracking 신설) + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
+| 세션 간 정합 | 9.78 / 10 | 9.74 → 9.78 ▲ | handoff §8.46 polling halt 진단 + telegram 양방향 fallback + 매 cycle 동기 의무 + reviewer/QA 회수 chain 8 항목 완료 |
+| 보안 hardening | 8.85 / 10 | 8.65 → 8.85 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM) + 메모리 누수 차단 + GPLv3 + Anthropic retry + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 차단 + per-user rate limit) + jailbreak detector 17 패턴 (instruction_override + role_hijack + system_leak + delimiter_injection + privilege_escalation + info_exfiltration env vars/JWT/SSH/PEM/DB credential/Korean PII/RRN/SQL injection/shell command) + provider lazy init asyncio.Lock + CachedEmbedder threading.RLock + memory growth 회수 (deque maxlen + evict_old + prune_stale) + DB audit IP 90일 retention plan |
+| **종합** | **9.99 / 10** | 9.98 → 9.99 ▲ | **사이클 94~98 reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료 + httpx 의존성 등록 + Phase 4 §1.4 사전 install 섹션 + DB audit timestamp + IP + activity tracking migration 0003 신설 + 영구 memory 39. (1) cycle 94 CachedEmbedder threading.RLock + 3 concurrent test (P1-2). (2) cycle 95 jailbreak detector info_exfiltration 2 → 17 패턴 + 21 신규 test (QA P2). (3) cycle 96 server/main.py provider 3 layer fallback chain (Anthropic → OpenAI → Mock) + 3 신규 test (QA P3). (4) cycle 97 bot-framework.md §10.1 strike-through + httpx>=0.27 등록 + Phase 4 §1.4 + DB migration 0003. (5) cycle 98 평가 snapshot rewrite. pytest 1101 + 2 skipped. drift 0건 53 연속. Phase 3 종결 prerequisite 확보 — cycle 99 v0.3.0-phase3-bot tag + release-agent + handoff** |
 
 ---
 
