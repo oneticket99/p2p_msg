@@ -23,6 +23,7 @@ binding. cycle 65 `llm_proxy.AnthropicProvider` placeholder 다음 의 serializa
 
 from __future__ import annotations
 
+import asyncio
 import os
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Final, List, Optional, Tuple
@@ -39,6 +40,13 @@ _DEFAULT_MODEL: Final[str] = "claude-3-5-sonnet-latest"
 _DEFAULT_MAX_TOKENS: Final[int] = 1024
 # httpx timeout default — 초 단위
 _DEFAULT_TIMEOUT_SECONDS: Final[float] = 30.0
+# retry default — 0 = 회수 무 (backwards compat) + caller opt-in 의무
+_DEFAULT_MAX_RETRIES: Final[int] = 0
+# 지수 backoff base — 초 단위 (1.0 * 2^attempt)
+_DEFAULT_BACKOFF_BASE_SECONDS: Final[float] = 1.0
+
+
+SleepFn = Callable[[float], Awaitable[None]]
 
 
 class AnthropicError(Exception):
@@ -190,6 +198,12 @@ class AnthropicClient:
         API base URL (테스트 의 override 가능).
     transport : HttpTransport
         HTTP 전송 함수 — default placeholder + caller 의 주입 의무.
+    max_retries : int
+        429 / 5xx 응답 의 재시도 횟수 (default 0 = 회수 무). 양수 음수 차단.
+    backoff_base_seconds : float
+        지수 backoff base — 실 delay = base * 2^attempt (default 1.0).
+    sleep_fn : SleepFn
+        async sleep 함수 — 테스트 의 의 mock 주입 가능 (default asyncio.sleep).
     """
 
     api_key: str
@@ -197,6 +211,9 @@ class AnthropicClient:
     max_tokens: int = _DEFAULT_MAX_TOKENS
     base_url: str = _API_BASE
     transport: HttpTransport = field(default=_placeholder_transport)
+    max_retries: int = _DEFAULT_MAX_RETRIES
+    backoff_base_seconds: float = _DEFAULT_BACKOFF_BASE_SECONDS
+    sleep_fn: SleepFn = field(default=asyncio.sleep)
 
     def __post_init__(self) -> None:
         if not self.api_key:
@@ -209,6 +226,14 @@ class AnthropicClient:
             raise ValueError(f"max_tokens 양수 의무 — {self.max_tokens}")
         if not self.base_url:
             raise ValueError("base_url 빈 문자열 불가")
+        if self.max_retries < 0:
+            raise ValueError(
+                f"max_retries 음수 차단 — {self.max_retries}"
+            )
+        if self.backoff_base_seconds <= 0:
+            raise ValueError(
+                f"backoff_base_seconds 양수 의무 — {self.backoff_base_seconds}"
+            )
 
     def build_headers(self) -> dict:
         """API 요청 헤더 — x-api-key + anthropic-version + content-type."""
@@ -235,43 +260,58 @@ class AnthropicClient:
     async def chat(self, messages: List[BotMessage]) -> BotMessage:
         """messages chain → assistant reply.
 
+        Retry 정책 — max_retries > 0 시 429 / 5xx 응답 의 지수 backoff 재시도.
+        지수 backoff 의 delay = backoff_base_seconds * 2^attempt (attempt 0~).
+        max_retries 초과 시 마지막 status 의 대응 예외 raise.
+
         Raises
         ------
         ValueError
             messages 빈 list.
         AnthropicAuthError
-            401 / 403.
+            401 / 403 (재시도 없음).
         AnthropicRateLimitError
-            429.
+            429 + 재시도 소진.
         AnthropicServerError
-            5xx.
+            5xx + 재시도 소진.
         AnthropicMalformedError
             응답 schema 위반.
         AnthropicError
-            그 외 4xx 또는 transport ImportError.
+            그 외 4xx 또는 transport ImportError (재시도 없음).
         """
 
         if not messages:
             raise ValueError("messages 빈 list 불가")
         url = f"{self.base_url}{_API_PATH}"
-        status, body = await self.transport(
-            url, self.build_headers(), self.build_body(messages)
-        )
-        if status == 200:
-            return parse_response(body)
-        if status in (401, 403):
-            raise AnthropicAuthError(
-                f"인증 실패 status={status} body={body}"
-            )
-        if status == 429:
-            raise AnthropicRateLimitError(
-                f"rate limit status=429 body={body}"
-            )
-        if 500 <= status < 600:
-            raise AnthropicServerError(
-                f"서버 장애 status={status} body={body}"
-            )
-        raise AnthropicError(f"unexpected status={status} body={body}")
+        headers = self.build_headers()
+        body = self.build_body(messages)
+        attempt = 0
+        while True:
+            status, resp_body = await self.transport(url, headers, body)
+            if status == 200:
+                return parse_response(resp_body)
+            if status in (401, 403):
+                raise AnthropicAuthError(
+                    f"인증 실패 status={status} body={resp_body}"
+                )
+            retryable = status == 429 or (500 <= status < 600)
+            if not retryable:
+                raise AnthropicError(
+                    f"unexpected status={status} body={resp_body}"
+                )
+            if attempt >= self.max_retries:
+                if status == 429:
+                    raise AnthropicRateLimitError(
+                        f"rate limit status=429 body={resp_body} "
+                        f"(retries={self.max_retries} 소진)"
+                    )
+                raise AnthropicServerError(
+                    f"서버 장애 status={status} body={resp_body} "
+                    f"(retries={self.max_retries} 소진)"
+                )
+            delay = self.backoff_base_seconds * (2 ** attempt)
+            await self.sleep_fn(delay)
+            attempt += 1
 
 
 def from_env(transport: Optional[HttpTransport] = None) -> AnthropicClient:

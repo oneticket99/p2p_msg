@@ -289,6 +289,169 @@ class TestChatWithMockTransport:
         assert body["messages"] == [{"role": "user", "content": "U"}]
 
 
+class TestRetryAndBackoff:
+    """retry/backoff 정책 검증 — 429 + 5xx 재시도, 지수 backoff delay, 예외 매핑."""
+
+    @staticmethod
+    def _sequence_transport(responses: List[Tuple[int, dict]]):
+        # 호출 순서 의 응답 list 의 sequential 반환
+        idx = {"i": 0}
+
+        async def _t(url: str, headers: dict, body: dict) -> Tuple[int, dict]:
+            i = idx["i"]
+            idx["i"] = i + 1
+            return responses[i] if i < len(responses) else responses[-1]
+
+        return _t
+
+    @staticmethod
+    def _sleep_recorder():
+        # 호출 시점 delay 의 기록 + 실 대기 부재
+        delays: List[float] = []
+
+        async def _sleep(seconds: float) -> None:
+            delays.append(seconds)
+
+        return delays, _sleep
+
+    def test_max_retries_negative_rejected(self) -> None:
+        with pytest.raises(ValueError, match="max_retries"):
+            AnthropicClient(api_key="sk-x", max_retries=-1)
+
+    def test_backoff_base_zero_rejected(self) -> None:
+        with pytest.raises(ValueError, match="backoff_base_seconds"):
+            AnthropicClient(api_key="sk-x", backoff_base_seconds=0)
+
+    @pytest.mark.asyncio
+    async def test_429_retry_then_succeeds(self) -> None:
+        # 429 → 429 → 200 의 chain — 재시도 후 성공
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"error": "rate"}),
+                (429, {"error": "rate"}),
+                (
+                    200,
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=3,
+            backoff_base_seconds=1.0,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        # 2번 sleep — attempt 0 + attempt 1
+        assert delays == [1.0, 2.0]
+
+    @pytest.mark.asyncio
+    async def test_5xx_retry_then_succeeds(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (503, {"error": "x"}),
+                (
+                    200,
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        assert delays == [1.0]
+
+    @pytest.mark.asyncio
+    async def test_429_exhausted_raises_rate_limit(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport([(429, {"e": "x"})])
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicRateLimitError, match="소진"):
+            await client.chat([_user("u")])
+        # max_retries=2 → 2번 sleep (attempt 0 + 1) + 최종 3번째 시도 의 실패
+        assert delays == [1.0, 2.0]
+
+    @pytest.mark.asyncio
+    async def test_5xx_exhausted_raises_server_error(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport([(500, {"e": "x"})])
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicServerError, match="소진"):
+            await client.chat([_user("u")])
+        assert delays == [1.0]
+
+    @pytest.mark.asyncio
+    async def test_401_no_retry(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport([(401, {"e": "x"})])
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=3,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicAuthError):
+            await client.chat([_user("u")])
+        # 401 = 재시도 없음
+        assert delays == []
+
+    @pytest.mark.asyncio
+    async def test_max_retries_zero_default(self) -> None:
+        # max_retries=0 (default) + 429 = 즉시 RateLimitError
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport([(429, {"e": "x"})])
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicRateLimitError):
+            await client.chat([_user("u")])
+        assert delays == []
+
+    @pytest.mark.asyncio
+    async def test_exponential_backoff_progression(self) -> None:
+        # backoff_base_seconds=0.5 + max_retries=4 + 항상 503 → delay 4번
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport([(503, {"e": "x"})])
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=4,
+            backoff_base_seconds=0.5,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicServerError):
+            await client.chat([_user("u")])
+        # 0.5 * 2^0, 0.5 * 2^1, 0.5 * 2^2, 0.5 * 2^3 = 0.5, 1.0, 2.0, 4.0
+        assert delays == [0.5, 1.0, 2.0, 4.0]
+
+
 class TestFromEnv:
     """``from_env`` ANTHROPIC_API_KEY 의 클라이언트 생성."""
 
