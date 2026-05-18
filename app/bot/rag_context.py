@@ -1,0 +1,302 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Phase 3 bot RAG context layer — 사이클 68.
+
+memory `project_bot_framework.md` (A) 투네이션 고객센터 봇 의 RAG context 의
+실 layer — FAQ + 정책 문서 의 retrieval. cycle 66 `customer_service_bot` 의
+system prompt 의 외 의 추가 context injection.
+
+본 cycle 범위
+-------------
+- ``FAQEntry`` frozen dataclass — id + topic + question + answer + tags
+- ``RAGStore`` Protocol — search(query, top_k) async / sync
+- ``KeywordRAGStore`` — substring + token overlap 의 simple ranking (no deps)
+- ``EmbeddingRAGStore`` placeholder — sentence-transformers + cosine sim 의 별개 cycle
+- ``build_default_toonation_faq`` — 5 영역 의 default 10 entry
+- ``compose_rag_context`` — query → top-k entry → prompt-ready 의 context string
+
+본 cycle 의 범위 외 (별개 cycle):
+- sentence-transformers / OpenAI embeddings / 의 실 vector store
+- FAISS / Chroma / pgvector 의 외부 의존
+- 정책 markdown 의 chunk + embedding pipeline
+- 의미 검색 의 ranking + rerank model
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Final, List, Optional, Protocol, Sequence, Tuple
+
+# default top-k — caller 의 권장 max
+_DEFAULT_TOP_K: Final[int] = 3
+# stopwords 의 minimal Korean + English (token overlap 의 noise 제거)
+_STOPWORDS: Final[frozenset] = frozenset(
+    {
+        "의", "은", "는", "이", "가", "을", "를", "에", "과", "와", "도", "만",
+        "the", "a", "an", "is", "of", "to", "for", "and", "or",
+    }
+)
+
+
+@dataclass(frozen=True, slots=True)
+class FAQEntry:
+    """단일 FAQ entry — RAG store 의 base record.
+
+    Attributes
+    ----------
+    id : str
+        고유 식별자 (예: "donate-001").
+    topic : str
+        5 영역 (donation / payout / obs / fraud / refund).
+    question : str
+        FAQ 의 의 question 텍스트.
+    answer : str
+        모범 답변 — bot reply 의 base.
+    tags : tuple[str, ...]
+        token match 의 추가 keywords (frozen 의무).
+    """
+
+    id: str
+    topic: str
+    question: str
+    answer: str
+    tags: Tuple[str, ...] = field(default_factory=tuple)
+
+    def __post_init__(self) -> None:
+        if not self.id:
+            raise ValueError("id 빈 문자열 불가")
+        if not self.topic:
+            raise ValueError("topic 빈 문자열 불가")
+        if not self.question:
+            raise ValueError("question 빈 문자열 불가")
+        if not self.answer:
+            raise ValueError("answer 빈 문자열 불가")
+
+
+class RAGStore(Protocol):
+    """RAG store interface — substring 또는 embedding 등 의 backend 통일."""
+
+    def search(self, query: str, top_k: int = _DEFAULT_TOP_K) -> List[FAQEntry]:
+        """query 의 의 top-k FAQ entry 반환."""
+        ...
+
+    def add(self, entry: FAQEntry) -> None:
+        """entry 추가."""
+        ...
+
+    def size(self) -> int:
+        """저장 entry 수."""
+        ...
+
+
+def _tokenize(text: str) -> List[str]:
+    """간단 token split — whitespace + lowercase + stopword 제거."""
+
+    tokens = [t.lower() for t in text.split() if t]
+    return [t for t in tokens if t not in _STOPWORDS]
+
+
+def _score_entry(query_tokens: List[str], entry: FAQEntry) -> float:
+    """token overlap + substring boost — 단순 ranking.
+
+    Returns
+    -------
+    float
+        0.0 ~ 1.0 의 score. substring 의 query 발견 = +0.5 boost.
+    """
+
+    if not query_tokens:
+        return 0.0
+    # token overlap = question + tags 의 token 의 set intersection
+    haystack = set(_tokenize(entry.question))
+    for tag in entry.tags:
+        haystack.update(_tokenize(tag))
+    overlap = sum(1 for t in query_tokens if t in haystack)
+    base_score = overlap / max(1, len(query_tokens))
+    # substring boost
+    q_lower = " ".join(query_tokens)
+    if q_lower and q_lower in entry.question.lower():
+        base_score += 0.5
+    return min(1.0, base_score)
+
+
+class KeywordRAGStore:
+    """substring + token overlap 의 simple RAG store — no dependencies.
+
+    Parameters
+    ----------
+    entries : Sequence[FAQEntry] | None
+        초기 entry list. None = 빈 store.
+    """
+
+    def __init__(self, entries: Optional[Sequence[FAQEntry]] = None) -> None:
+        self._entries: List[FAQEntry] = list(entries or [])
+
+    def add(self, entry: FAQEntry) -> None:
+        """entry 추가 — 동일 id 존재 시 ValueError."""
+
+        for existing in self._entries:
+            if existing.id == entry.id:
+                raise ValueError(f"id 중복 — {entry.id} 이미 등록")
+        self._entries.append(entry)
+
+    def size(self) -> int:
+        return len(self._entries)
+
+    def search(
+        self, query: str, top_k: int = _DEFAULT_TOP_K
+    ) -> List[FAQEntry]:
+        """query → top-k FAQEntry 의 score DESC 정렬.
+
+        Notes
+        -----
+        score 0 = 제외. tie = 의 입력 순서 보존.
+        """
+
+        if top_k <= 0:
+            raise ValueError(f"top_k 양수 의무 — {top_k}")
+        if not query:
+            return []
+        q_tokens = _tokenize(query)
+        scored = [
+            (_score_entry(q_tokens, e), idx, e)
+            for idx, e in enumerate(self._entries)
+        ]
+        # score > 0 만 + DESC score + ASC idx (tie 안정)
+        filtered = [(s, i, e) for s, i, e in scored if s > 0]
+        filtered.sort(key=lambda x: (-x[0], x[1]))
+        return [e for _, _, e in filtered[:top_k]]
+
+
+class EmbeddingRAGStore:
+    """sentence-transformers + cosine sim placeholder — 사이클 68 skeleton.
+
+    실 구현 = sentence-transformers 의 model load + embed batch + numpy /
+    scipy cosine similarity + FAISS index 의 별개 cycle 의무.
+    """
+
+    def __init__(
+        self, entries: Optional[Sequence[FAQEntry]] = None
+    ) -> None:
+        self._entries: List[FAQEntry] = list(entries or [])
+
+    def add(self, entry: FAQEntry) -> None:
+        self._entries.append(entry)
+
+    def size(self) -> int:
+        return len(self._entries)
+
+    def search(
+        self, query: str, top_k: int = _DEFAULT_TOP_K
+    ) -> List[FAQEntry]:
+        """실 search 미구현 — 별개 cycle 의 embeddings binding 의무."""
+
+        raise NotImplementedError(
+            "EmbeddingRAGStore.search — sentence-transformers + cosine binding "
+            "별개 cycle 의무"
+        )
+
+
+def build_default_toonation_faq() -> List[FAQEntry]:
+    """투네이션 default FAQ 10 entry — 5 영역 × 2.
+
+    실 service 의 FAQ markdown 의 import 의 별개 cycle (별개 doc 의 chunk +
+    embedding pipeline). 본 cycle = minimal seed.
+    """
+
+    return [
+        FAQEntry(
+            id="donate-001",
+            topic="donation",
+            question="후원 결제 수단 의 종류?",
+            answer="카드 / 토스 / 카카오페이 / 계좌이체 의 4 종 의 결제 수단 지원.",
+            tags=("후원", "결제", "카드", "토스", "카카오페이"),
+        ),
+        FAQEntry(
+            id="donate-002",
+            topic="donation",
+            question="후원 메시지 의 화면 표시 정책?",
+            answer="후원 메시지 = OBS 위젯 의 의 화면 overlay 의 의 표시. 욕설 필터 자동 적용.",
+            tags=("후원", "메시지", "OBS", "위젯", "표시"),
+        ),
+        FAQEntry(
+            id="payout-001",
+            topic="payout",
+            question="정산 주기 + 수수료?",
+            answer="정산 주기 = 매주 화요일. 수수료 = 10%. 세금계산서 = 분기 마감.",
+            tags=("정산", "주기", "수수료", "세금"),
+        ),
+        FAQEntry(
+            id="payout-002",
+            topic="payout",
+            question="정산 보류 사유?",
+            answer="정산 보류 = 사기 신고 진행 중 또는 미인증 계좌 + 신원 인증 미완료.",
+            tags=("정산", "보류", "사기", "인증"),
+        ),
+        FAQEntry(
+            id="obs-001",
+            topic="obs",
+            question="OBS 위젯 URL 발급 방법?",
+            answer="설정 → 위젯 → URL 발급 클릭 + OBS 의 browser source 의 URL 의 붙여넣기.",
+            tags=("OBS", "위젯", "URL", "발급", "browser source"),
+        ),
+        FAQEntry(
+            id="obs-002",
+            topic="obs",
+            question="OBS 위젯 의 transparent + chroma key?",
+            answer="위젯 = 의 default transparent (alpha 채널 지원). chroma key 의 부재 권장.",
+            tags=("OBS", "위젯", "transparent", "chroma", "투명"),
+        ),
+        FAQEntry(
+            id="fraud-001",
+            topic="fraud",
+            question="무단 결제 신고 절차?",
+            answer="고객센터 → 사기 신고 → 결제 내역 첨부. 24시간 응답 의무 + 환급 진행.",
+            tags=("사기", "신고", "무단", "결제", "환급"),
+        ),
+        FAQEntry(
+            id="fraud-002",
+            topic="fraud",
+            question="도용 후원 환급 기간?",
+            answer="도용 후원 = 신고 직후 정산 보류 + 1주 의 조사 + 환급 의 처리.",
+            tags=("도용", "후원", "환급", "조사"),
+        ),
+        FAQEntry(
+            id="refund-001",
+            topic="refund",
+            question="환불 정책 의 일자 한도?",
+            answer="환불 = 7일 내 + 미정산 후원 의 한도. 정산 완료 후 = 사기 신고 의 의 별개 절차.",
+            tags=("환불", "7일", "미정산", "한도"),
+        ),
+        FAQEntry(
+            id="refund-002",
+            topic="refund",
+            question="환불 신청 양식 의 의무 정보?",
+            answer="환불 신청 = 후원 ID + 사유 + 결제 영수증 의 3 항목 의무.",
+            tags=("환불", "신청", "양식", "영수증"),
+        ),
+    ]
+
+
+def compose_rag_context(
+    query: str,
+    store: RAGStore,
+    top_k: int = _DEFAULT_TOP_K,
+) -> str:
+    """query → top-k entry → prompt-ready context string.
+
+    Returns
+    -------
+    str
+        "# 참고 FAQ\\n\\n- Q: ...\\n  A: ...\\n\\n..." 의 markdown.
+        빈 결과 = 빈 string.
+    """
+
+    entries = store.search(query, top_k=top_k)
+    if not entries:
+        return ""
+    lines = ["# 참고 FAQ", ""]
+    for e in entries:
+        lines.append(f"- Q: {e.question}")
+        lines.append(f"  A: {e.answer}")
+        lines.append("")
+    return "\n".join(lines)

@@ -127,7 +127,8 @@ p2p_msg/
 │   │   ├── __init__.py
 │   │   ├── llm_proxy.py           # 사이클 65 — BotMessage + LLMProvider + Mock + Anthropic placeholder + RateLimitGate
 │   │   ├── customer_service_bot.py  # 사이클 66 — default 투네이션 고객센터 봇 + system prompt + history cap
-│   │   └── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
+│   │   ├── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
+│   │   └── rag_context.py         # 사이클 68 — FAQ + KeywordRAGStore + Embedding placeholder
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
