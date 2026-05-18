@@ -136,12 +136,14 @@ def _parse_messages(raw: Any) -> List[BotMessage]:
 
 
 def _reply_to_wire(reply: BotMessage) -> Dict[str, Any]:
-    """BotMessage reply → JSON wire dict."""
+    """BotMessage reply → JSON wire dict.
+
+    BotMessage.role 은 BotRole enum 의 보장 (BotMessage 의 dataclass validation).
+    Enum.value 의 직접 access — hasattr fallback 부재 (cycle 78 hardening).
+    """
 
     return {
-        "role": reply.role.value
-        if hasattr(reply.role, "value")
-        else str(reply.role),
+        "role": reply.role.value,
         "content": reply.content,
         "timestamp_ms": reply.timestamp_ms,
     }
@@ -169,7 +171,8 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
     user_id = request.get("user_id")
     if user_id is None:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
-    if not isinstance(user_id, int) or user_id <= 0:
+    # bool 의 isinstance(int) is True 의 edge case 명시 차단 (cycle 78 hardening)
+    if isinstance(user_id, bool) or not isinstance(user_id, int) or user_id <= 0:
         raise web.HTTPUnauthorized(reason="user_id 양수 int 의무")
 
     # rate limit gate — per-user_id 의 abuse 차단

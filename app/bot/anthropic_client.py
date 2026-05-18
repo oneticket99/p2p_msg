@@ -338,9 +338,22 @@ class AnthropicClient:
         body = self.build_body(messages)
         attempt = 0
         while True:
-            status, resp_headers, resp_body = await self.transport(
-                url, headers, body
-            )
+            try:
+                status, resp_headers, resp_body = await self.transport(
+                    url, headers, body
+                )
+            except (ConnectionError, OSError, TimeoutError) as exc:
+                # transient network 장애 — retry 가능 (max_retries 의 cap 의무)
+                if attempt >= self.max_retries:
+                    raise AnthropicServerError(
+                        f"network 장애 (retries={self.max_retries} 소진) — {exc}"
+                    ) from exc
+                delay = self.backoff_base_seconds * (2 ** attempt)
+                if self.jitter_max_seconds > 0:
+                    delay += self.jitter_fn() * self.jitter_max_seconds
+                await self.sleep_fn(delay)
+                attempt += 1
+                continue
             if status == 200:
                 return parse_response(resp_body)
             if status in (401, 403):

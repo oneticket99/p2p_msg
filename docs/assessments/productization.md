@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 17:30 KST (사이클 76 — server.main bot LLM proxy 통합 + register_bot_routes + AnthropicProvider/MockLLMProvider 자동 선택 + 6 신규 integration PASS + 872 pytest + drift 0건 35 연속 + reviewer P0 회수)
+> 최근 갱신 시점: 2026-05-21 19:00 KST (사이클 76+77+78 — server.main 통합 + ConnectionError/OSError/TimeoutError network retry + bot_handlers user_id type hardening + 16 신규 PASS + 882 pytest + drift 0건 37 연속 + reviewer P0+P1+P2 회수)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
-| 보안 hardening | 8.2 / 10 | 8.1 → 8.2 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + 클라이언트 노출 차단 + system role 클라이언트 주입 차단 + per-user rate limit) |
-| **종합** | **9.84 / 10** | 9.82 → 9.84 ▲ | **사이클 76 server.main bot LLM proxy 통합 — reviewer P0 회수. build_app 의 BOT_ENABLED=1 detect + AnthropicProvider.is_available() 의 ANTHROPIC_API_KEY 가용 시 활성 / 부재 시 MockLLMProvider 폴백 + BOT_RATE_PER_MINUTE default 20 의 RateLimitGate + register_messages_routes + register_bot_routes 등록. APP_KEY_PROVIDER + APP_KEY_RATE_GATE 의 web.AppKey 의 type-safe 변환. 6 신규 integration PASS. 872 pytest + Phase 3 entry 390 + drift 0건 35 연속** |
+| 보안 hardening | 8.3 / 10 | 8.2 → 8.3 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + network error retry + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + system role 클라이언트 주입 차단 + per-user rate limit + bool/float user_id auth bypass 차단) |
+| **종합** | **9.86 / 10** | 9.84 → 9.86 ▲ | **사이클 77+78 reviewer P1+P2 회수 — cycle 77: AnthropicClient.chat() 의 transport 호출 try/except (ConnectionError, OSError, TimeoutError) + retry 정합 + max_retries 소진 시 AnthropicServerError + 6 신규 PASS. cycle 78: bot_handlers 의 _reply_to_wire hasattr fallback 제거 (Enum.value 직접 access) + user_id 의 bool isinstance(int)=True edge case 명시 차단 (auth bypass 회피) + 4 신규 PASS (bool/float/string/zero reject). 882 pytest (872 + 6 + 4) + Phase 3 entry 400 + drift 0건 37 연속** |
 
 ---
 

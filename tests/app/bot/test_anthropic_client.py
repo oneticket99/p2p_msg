@@ -708,6 +708,142 @@ class TestRetryAfterAndJitter:
         assert delays == [4.25]
 
 
+class TestNetworkErrorRetry:
+    """transport network 장애 (ConnectionError + OSError + TimeoutError) 의 retry 검증 (cycle 77)."""
+
+    @staticmethod
+    def _sleep_recorder():
+        delays: List[float] = []
+
+        async def _sleep(seconds: float) -> None:
+            delays.append(seconds)
+
+        return delays, _sleep
+
+    @staticmethod
+    def _failing_transport(exc_factory, success_after: int = -1):
+        """attempt counter 별 의 raise 또는 success 응답.
+
+        success_after = -1 → 항상 raise
+        success_after = N → N번째 호출 (0-idx) 부터 200 응답
+        """
+        idx = {"i": 0}
+
+        async def _t(url: str, headers: dict, body: dict):
+            i = idx["i"]
+            idx["i"] = i + 1
+            if success_after >= 0 and i >= success_after:
+                return (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                )
+            raise exc_factory()
+
+        return _t
+
+    @pytest.mark.asyncio
+    async def test_connection_error_retry_then_succeeds(self) -> None:
+        # ConnectionError → ConnectionError → 200 의 chain
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: ConnectionError("connection refused"), success_after=2
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=3,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        # 2번 sleep 의 (attempt 0 + 1)
+        assert delays == [1.0, 2.0]
+
+    @pytest.mark.asyncio
+    async def test_os_error_retry_then_succeeds(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: OSError("network unreachable"), success_after=1
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        assert delays == [1.0]
+
+    @pytest.mark.asyncio
+    async def test_timeout_error_retry_then_succeeds(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: TimeoutError("read timeout"), success_after=1
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        assert delays == [1.0]
+
+    @pytest.mark.asyncio
+    async def test_connection_error_exhausted_raises_server_error(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: ConnectionError("refused"), success_after=-1
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            sleep_fn=sleep_fn,
+        )
+        with pytest.raises(AnthropicServerError, match="network 장애"):
+            await client.chat([_user("u")])
+        assert delays == [1.0, 2.0]
+
+    @pytest.mark.asyncio
+    async def test_network_error_max_retries_zero_immediate_raise(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: ConnectionError("refused"), success_after=-1
+        )
+        client = AnthropicClient(
+            api_key="sk-x", transport=transport, sleep_fn=sleep_fn
+        )
+        with pytest.raises(AnthropicServerError):
+            await client.chat([_user("u")])
+        assert delays == []
+
+    @pytest.mark.asyncio
+    async def test_network_error_jitter_combined(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._failing_transport(
+            lambda: OSError("x"), success_after=1
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            backoff_base_seconds=1.0,
+            jitter_max_seconds=2.0,
+            sleep_fn=sleep_fn,
+            jitter_fn=lambda: 0.5,
+        )
+        await client.chat([_user("u")])
+        # backoff 1.0 + jitter 0.5 * 2.0 = 2.0
+        assert delays == [2.0]
+
+
 class TestFromEnv:
     """``from_env`` ANTHROPIC_API_KEY 의 클라이언트 생성."""
 

@@ -354,6 +354,32 @@ class TestHandleBotChat:
             await handle_bot_chat(req)
 
     @pytest.mark.asyncio
+    async def test_bool_user_id_rejected(self) -> None:
+        # bool 의 isinstance(int) is True — auth bypass 차단 (cycle 78 hardening)
+        req = _make_request(user_id=True)
+        with pytest.raises(web.HTTPUnauthorized, match="양수 int"):
+            await handle_bot_chat(req)
+
+    @pytest.mark.asyncio
+    async def test_float_user_id_rejected(self) -> None:
+        # float 의 not isinstance(int) — 차단
+        req = _make_request(user_id=3.14)
+        with pytest.raises(web.HTTPUnauthorized, match="양수 int"):
+            await handle_bot_chat(req)
+
+    @pytest.mark.asyncio
+    async def test_string_user_id_rejected(self) -> None:
+        req = _make_request(user_id="42")
+        with pytest.raises(web.HTTPUnauthorized, match="양수 int"):
+            await handle_bot_chat(req)
+
+    @pytest.mark.asyncio
+    async def test_zero_user_id_rejected(self) -> None:
+        req = _make_request(user_id=0)
+        with pytest.raises(web.HTTPUnauthorized, match="양수 int"):
+            await handle_bot_chat(req)
+
+    @pytest.mark.asyncio
     async def test_provider_receives_parsed_messages(self) -> None:
         provider = _MockProvider()
         req = _make_request(
