@@ -110,9 +110,32 @@ _PATTERNS: Final[Tuple[Tuple[str, str, int], ...]] = (
     ("privilege_escalation", r"(grant|give|enable)\s+(me\s+)?(admin|root|sudo)", 2),
     ("privilege_escalation", r"unrestricted\s+mode", 1),
     ("privilege_escalation", r"bypass\s+(safety|filter|guardrail)", 2),
-    # info exfiltration — API key + secret + PII 의 의도된 추출
-    ("info_exfiltration", r"(reveal|expose|leak)\s+(\w+\s+){0,2}(api[\s_-]?key|secret|password|token)", 2),
+    # info exfiltration — API key + secret + credential + PII 의도된 추출
+    # 영문 reveal/expose/leak/show/print/dump → credential 키워드
+    ("info_exfiltration", r"(reveal|expose|leak|show|print|dump|return)\s+(\w+\s+){0,3}(api[\s_-]?key|secret|password|passwd|token|credential)", 2),
     ("info_exfiltration", r"api[\s_-]?key\s*[:=]\s*\S+", 1),
+    # 환경 변수 + dotenv 추출 시도
+    ("info_exfiltration", r"(show|print|reveal|dump|cat)\s+(\w+\s+){0,2}(env|environment|dotenv|\.env)\s*(file|var|variable)?", 2),
+    ("info_exfiltration", r"(os\.environ|process\.env|getenv)\s*\[\s*['\"]?[\w]+", 2),
+    # JWT + Bearer token 추출
+    ("info_exfiltration", r"(reveal|expose|show|print)\s+(\w+\s+){0,2}(bearer|jwt|access[\s_-]?token|refresh[\s_-]?token)", 2),
+    # SSH / private key 추출
+    ("info_exfiltration", r"(reveal|expose|show|cat|read)\s+(\w+\s+){0,2}(private[\s_-]?key|ssh[\s_-]?key|id_rsa|id_ed25519)", 2),
+    ("info_exfiltration", r"-----BEGIN\s+(RSA\s+|EC\s+|OPENSSH\s+)?(PRIVATE|ENCRYPTED)\s+KEY", 2),
+    # DB connection string 추출
+    ("info_exfiltration", r"(reveal|expose|show|print|dump)\s+(\w+\s+){0,2}(database|db|mysql|postgres|mariadb|mongo)\s*(password|credential|connection)", 2),
+    ("info_exfiltration", r"(mysql|postgres|postgresql|mongodb|mariadb)://[^@\s]+:[^@\s]+@", 2),
+    # Korean equivalents — credential 노출 시도
+    ("info_exfiltration", r"(비밀번호|패스워드|암호|키|토큰|시크릿|크리덴셜)[를을은는이가]?\s*(알려|공개|출력|보여|드러내|노출|반환)", 2),
+    ("info_exfiltration", r"(api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key)[를을은는이가]?\s*(알려|공개|출력|보여|드러내|노출)", 2),
+    ("info_exfiltration", r"환경[\s_]*변수[를을은는이가]?\s*(알려|공개|출력|보여|드러내|노출|반환)", 2),
+    # PII — 주민등록번호 + 카드번호 + 전화번호 추출 시도
+    ("info_exfiltration", r"(주민(등록)?번호|주민번호|카드번호|계좌번호|전화번호|이메일)[를을은는이가]?\s*(알려|공개|출력|보여|드러내|노출)", 2),
+    ("info_exfiltration", r"\b\d{6}[-\s]?[1-4]\d{6}\b", 2),
+    # SQL injection 시도 — '; DROP TABLE / UNION SELECT
+    ("info_exfiltration", r"(;\s*(DROP|TRUNCATE|DELETE|UPDATE)\s+TABLE|UNION\s+SELECT|OR\s+1\s*=\s*1)", 2),
+    # Shell command injection — credential 파일 cat
+    ("info_exfiltration", r"(cat|less|more|head|tail)\s+(/etc/(passwd|shadow|hosts)|~?/?\.ssh/|~?/?\.aws/credentials|~?/?\.config/)", 2),
 )
 
 
