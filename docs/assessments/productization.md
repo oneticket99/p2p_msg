@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 14:30 KST (사이클 73 — AnthropicClient retry-after honor + jitter + transport 3-tuple (status/headers/body) + 9 신규 PASS + 822 pytest + drift 0건 32 연속)
+> 최근 갱신 시점: 2026-05-21 15:30 KST (사이클 74 — server-side /api/bot/chat LLM proxy endpoint + ANTHROPIC_API_KEY 격리 + per-user RateLimitGate + 4 종 예외 → HTTP status 매핑 + 29 신규 PASS + 851 pytest + drift 0건 33 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -29,8 +29,8 @@ status: active
 | 운영 비용 | 9.8 / 10 | = | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
-| 보안 hardening | 8.1 / 10 | 8.05 → 8.1 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff (transient 장애 회수 + abuse 의 의도된 패턴 감지 base) |
-| **종합** | **9.79 / 10** | 9.78 → 9.79 ▲ | **사이클 73 AnthropicClient retry-after honor + jitter + transport 3-tuple refactor — HttpTransport 의 응답 schema (status, headers, body) 의 3-tuple 확장 (이전 2-tuple → 3-tuple) + `_parse_retry_after(headers)` helper (case-insensitive lookup + 음수/비숫자/cap 검증) + `_RETRY_AFTER_MAX_SECONDS=60` cap (DoS 회피) + `jitter_max_seconds: float = 0.0` field + `jitter_fn: JitterFn = random.random` field. chat() pipeline 의 retry-after 헤더 우선 적용 (429 응답 시 헤더 값 → 지수 backoff override) + jitter 추가 (jitter_max_seconds > 0 시 jitter_fn() * max 의 추가). 9 신규 PASS — jitter 음수 reject + retry-after 5초 honor + Retry-After capitalized + invalid/negative/cap 의 fallback + jitter 추가 + jitter_max=0 의 부재 + retry-after + jitter 결합. 822 pytest (813 + 9) + Phase 3 entry 누계 340. drift 0건 32 연속** |
+| 보안 hardening | 8.2 / 10 | 8.1 → 8.2 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff + server-side LLM proxy (ANTHROPIC_API_KEY 격리 + 클라이언트 노출 차단 + system role 클라이언트 주입 차단 + per-user rate limit) |
+| **종합** | **9.81 / 10** | 9.79 → 9.81 ▲ | **사이클 74 server-side /api/bot/chat LLM proxy endpoint — `server/api/bot_handlers.py` 신설 (handle_bot_chat + _parse_role + _parse_messages + _reply_to_wire + register_bot_routes + APP_KEY_PROVIDER/APP_KEY_RATE_GATE app context). 보안 — ANTHROPIC_API_KEY 의 서버 환경 변수 격리 + 클라이언트 의 system role 주입 차단 + auth_middleware Bearer 의무 + 32 messages cap + 16KB content cap + per-user RateLimitGate. 예외 매핑 — auth → 500 + rate limit → 503 + server error → 502 + malformed → 502 + generic → 500. 29 PASS 4 TestClass — ParseRole 5 + ParseMessages 10 + ReplyToWire 1 + HandleBotChat 13 (auth + provider missing + invalid JSON + body not dict + rate limit + happy path + 5 종 예외 매핑 + provider 호출 검증). 851 pytest (822 + 29) + Phase 3 entry 누계 369. drift 0건 33 연속. bot framework chain (cycle 65~74) 의 client → server LLM proxy → Anthropic API 의 horizontal layer 완성** |
 
 ---
 

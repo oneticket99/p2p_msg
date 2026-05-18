@@ -129,7 +129,7 @@ p2p_msg/
 │   │   ├── customer_service_bot.py  # 사이클 66 + 69 — default 투네이션 고객센터 봇 + system prompt + history cap + RAGStore 통합
 │   │   ├── streaming_helper.py    # 사이클 67 — 방송 도우미 봇 별개 API (YT/Twitch/CHZZK/Kick/OBS)
 │   │   ├── rag_context.py         # 사이클 68 — FAQ + KeywordRAGStore + Embedding placeholder
-│   │   └── anthropic_client.py    # 사이클 70 — Messages API serialize + parse + transport Protocol + 4 종 예외 매핑
+│   │   └── anthropic_client.py    # 사이클 70 + 72 + 73 — Messages API serialize + parse + transport 3-tuple + 4 종 예외 매핑 + retry/backoff + retry-after honor + jitter
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
@@ -163,10 +163,12 @@ p2p_msg/
 │   ├── room.py                    # 사이클 25 — Peer.user_id + db_room_id field 추가
 │   ├── signaling.py               # 사이클 26 — DB 영속화 dependency injection
 │   ├── signaling_persistence.py   # 사이클 24 — DB 영속화 helper (rooms/peers/messages)
-│   ├── api/                       # 사이클 21 + 43 — REST endpoint
+│   ├── api/                       # 사이클 21 + 43 + 60 + 74 — REST endpoint
 │   │   ├── __init__.py
 │   │   ├── auth_handlers.py       # /api/auth/{register,verify,login,reset/*}
-│   │   └── devices_handlers.py    # 사이클 43 — POST/GET/DELETE /api/devices (multi-device)
+│   │   ├── devices_handlers.py    # 사이클 43 — POST/GET/DELETE /api/devices (multi-device)
+│   │   ├── messages_handlers.py   # 사이클 60 — GET /api/messages (lazy load)
+│   │   └── bot_handlers.py        # 사이클 74 — POST /api/bot/chat LLM proxy (server-side ANTHROPIC_API_KEY 격리)
 │   ├── auth/                      # 사이클 20 — 5 use case + middleware
 │   │   ├── __init__.py
 │   │   ├── exceptions.py          # 7 도메인 예외 + HTTP status 매핑
