@@ -456,28 +456,37 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 
 ## 3. 약점 (Productization Weaknesses)
 
-### 3.1 기능 누락 (Phase 1 의도적 보류)
+### 3.1 ~~기능 누락 (Phase 1 의도적 보류)~~ — Phase 1~4 진입 완료 (사이클 117)
 
-| 누락 기능 | 시장 영향 | Phase |
+| 기능 | 상태 | 진입 cycle |
 |---|---|---|
-| 그룹 채팅 | 메신저 핵심 — 1:1 만으로 시장 진입 불가 | Phase 2+ |
-| 음성·영상 통화 | Signal/Telegram 대체 자격 미달 | Phase 3+ |
-| E2EE (Signal Protocol) | 보안 메신저 표방 시 필수 | Phase 2 |
-| 모바일 (iOS/Android) | 데스크탑 단독 = 사용자 풀 1/10 | Phase 4+ |
-| 푸시 알림 | 메신저 retention 핵심 | Phase 2 |
-| 자동 업데이트 | 데스크탑 앱 표준 | Phase 3 |
-| **원격 데스크탑 제어** (차별화) | TeamViewer 의 대체 가치 | **Phase 3 막바지** |
-| **모바일 의 원격 제어 보기** | 모바일 입력 주입 OS 제약 | Phase 5+ |
+| 1:1 채팅 + 회원가입 + 파일전송 | ✅ Phase 1 v0.1.0 | cycle 16~36 |
+| E2EE Signal Protocol (X3DH + Double Ratchet) | ✅ Phase 2 v0.2.0 | cycle 24~46 |
+| multi-device + signature sound + push (FCM) | ✅ Phase 2 v0.2.0 | cycle 38~47 |
+| Bot framework (Anthropic + OpenAI + jailbreak + RAG) | ✅ Phase 3 v0.3.0 | cycle 65~99 |
+| Production infra (docker + nginx + certbot + KST logging) | ✅ Phase 4 v0.4.0 | cycle 100~117 |
+| 그룹 채팅 | 🟡 Phase 5+ 후보 | — |
+| 음성·영상 통화 | 🟡 Phase 5+ 후보 | — |
+| 모바일 (iOS/Android) | 🟡 Phase 5+ 후보 | — |
+| 자동 업데이트 | 🟡 Phase 5+ 후보 | — |
+| **원격 데스크탑 제어** (차별화) | 🟡 Phase 3 막바지 진입 base (cycle 57~58) | partial |
+| **emoji pack share** (차별화) | 🟡 Phase 5+ 후보 | — |
 
-### 3.2 보안 deprioritized 정합
+### 3.2 ~~보안 deprioritized~~ — Phase 4 cycle 112~117 회수 완료
 
-- 데모 시그널링 hardening 보류 (Phase 1 한정)
-- 정식 진입 시 TLS + 인증 + rate-limit + DDoS
+- ✅ TLS 1.2/1.3 + 6 cipher + OCSP stapling (nginx cycle 105)
+- ✅ 5 rate limit zone (auth + api + bot + upload + ws_conn) (nginx cycle 105)
+- ✅ 5 보안 header (HSTS preload 2y + X-Frame + nosniff + Referrer + CSP) (nginx cycle 105)
+- ✅ SPF + DKIM RSA 2048 + DMARC (postfix cycle 102)
+- ✅ sensitive redact 9 pattern (logging cycle 117)
+- ✅ DDoS 1차 — nginx rate_limit_zone + ws_conn limit
+- 🟡 DDoS L7 — CloudFlare 등 외부 service (Phase 5+ 검토)
 
-### 3.3 사용자 식별·복원 모델
+### 3.3 ~~사용자 식별·복원~~ — Phase 1+2 완성
 
-- 회원가입 + 이메일 OTP 도입 완료 (사용자 directive 2026-05-17)
-- 단 키 페어 인증 + E2EE 결합 = Phase 2 의 예정
+- ✅ 회원가입 + 이메일 OTP + 비번 재설정 (Phase 1 v0.1.0)
+- ✅ E2EE Signal Protocol 키 페어 + multi-device sync + sender keys (Phase 2 v0.2.0)
+- ✅ DB audit migration 0003 — signup_ip + last_login_ip + user_sessions + user_activity_log 23 ENUM (cycle 97 + cycle 119)
 
 ### 3.4 ~~라이선스 미확정~~ (✅ 사이클 6 해소)
 
@@ -490,22 +499,25 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 - Windows runner 의무 = wine cross-compile 대체 (영구 회수)
 - workflow 3종 GREEN 도달
 
-### 3.6 코드 진입 미완
+### 3.6 ~~코드 진입 미완~~ — Phase 1+2+3+4 본문 완성
 
-- Phase 1 MVP 실 코드 미작성 (config.py + tests 12건만)
-- 문서 91% + 코드 9% 비율 (직전 90%/10% 의 약간 감소 — auth/SMTP 정책 추가)
-- [[feedback-doc-perfection-before-code]] 8 체크리스트 통과 + 사용자 GO 후 진입
+- ✅ Phase 1 v0.1.0 — 회원가입 + 채팅 + 파일전송 + MariaDB
+- ✅ Phase 2 v0.2.0-phase2 — E2EE Signal 200 PASS + multi-device + sound + push
+- ✅ Phase 3 v0.3.0-phase3-bot — 10 module + reviewer 8 회수
+- ✅ Phase 4 v0.4.0-phase4-infra — 34 신규 파일 + 144 PASS
+- 코드 비율 = pytest 1257 + integration test + Playwright fixture (코드 우위)
 
-### 3.7 추가 차별화 보류
+### 3.7 차별화 잔존
 
-- Phase 3 막바지 원격 제어 = 본 차별화 핵심 (단 Phase 1 완성 후만)
-- [[project-phase1-completion-priority]] scope creep 차단
+- 🟡 원격 데스크탑 제어 base — cycle 57~58 skeleton 신설 + Phase 3 막바지 본격 진입 잔존
+- 🟡 emoji pack share — Phase 5+ 후보 (project_emoji_pack_share memory)
+- 🟡 bot framework Toonation API 직접 통합 (옵션 B) — 사용자 결정 대기
 
-### 3.8 데모 서버 SSH 접근 차단 (신규 사이클 5)
+### 3.8 manual test 의무 (사용자 직접 영역)
 
-- 본 cycle main session 의 SSH 접근 시도 `Connection reset by peer`
-- SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md 절차 13 섹션)
-- 자동화 한계 — SSH 자격 + 권한 = 사용자 직접 영역
+- SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md)
+- Let's Encrypt 인증서 발급 = 실 도메인 + certbot_init.sh manual run
+- docker compose production stack 기동 = .env.production secrets 입력 + manual
 
 ---
 
@@ -561,10 +573,15 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 | 0 | **fork PR 승인 정책 strict (gh API 자동)** | ✅ (사이클 5) |
 | 0 | **SMTP 정책 + 절차 (postfix + Let's Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리** | ✅ (사이클 5) |
 | 0 | **GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책** | ✅ (사이클 6) |
-| 1 | SMTP 실제 설치 (114.207.112.73 SSH) | 🟡 사용자 직접 |
-| 2 | Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB) | 🔴 GO 대기 |
-| 3 | Toonation 통합 시나리오 검토 (옵션 B) | 🔴 GO 대기 |
-| 4 | Agent #16 산출물 reviewer-agent 검토 | 🔴 사용자 결정 |
+| 0 | **Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)** | ✅ (사이클 16~36, v0.1.0) |
+| 0 | **Phase 2 E2EE Signal Protocol (X3DH + Double Ratchet + multi-device + signature sound + push)** | ✅ (사이클 24~46, v0.2.0-phase2) |
+| 0 | **Phase 3 bot framework (10 module + Anthropic/OpenAI + jailbreak 17 패턴 + RAG dual baseline)** | ✅ (사이클 65~99, v0.3.0-phase3-bot) |
+| 0 | **Phase 4 production infra (docker stack + Config 통합 + nginx certbot + KST/JSON/redact logging + DB audit 0003)** | ✅ (사이클 100~117, v0.4.0-phase4-infra) |
+| 0 | **Agent #16 산출물 reviewer-agent 검토** | ✅ (handoff §8.46+ 회수) |
+| 1 | SMTP 실제 설치 (114.207.112.73 SSH) — manual | 🟡 사용자 직접 |
+| 2 | Let's Encrypt 인증서 발급 (certbot_init.sh 실 도메인) — manual | 🟡 사용자 직접 |
+| 3 | Toonation 통합 시나리오 검토 (옵션 B) — Phase 3 default bot 의 Toonation API 직접 통합 | 🔴 사용자 결정 |
+| 4 | Phase 5 진입 검토 (다국어 + mobile + emoji pack share + bot framework 마무리) | 🔴 사용자 결정 |
 
 ---
 
