@@ -43,7 +43,12 @@ from .api.messages_handlers import register_messages_routes
 from .auth.middleware import auth_middleware
 from .config import Config
 from .db.connection import close_pool, create_pool
-from .middleware import APP_KEY_ACTIVITY, ActivityTracker, activity_middleware
+from .middleware import (
+    APP_KEY_ACTIVITY,
+    ActivityTracker,
+    activity_middleware,
+    request_id_middleware,
+)
 from .room import RoomRegistry
 from .signaling import build_routes
 
@@ -127,8 +132,11 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     """
     # cycle 110 — Config 통합 single entry. None 시 lazy load.
     cfg = config if config is not None else Config.from_env()
-    # 한글 주석: middleware chain — auth → activity (auth 직후 user_id 의 throttle)
-    app = web.Application(middlewares=[auth_middleware, activity_middleware])
+    # 한글 주석: middleware chain — request_id → auth → activity 의 순차.
+    # request_id 가 최상단 (모든 request 의 trace 의무, log correlation base).
+    app = web.Application(
+        middlewares=[request_id_middleware, auth_middleware, activity_middleware]
+    )
     # 한글 주석: 후속 endpoint 의 의존성 주입 — app["config"] 등록
     app["config"] = cfg
     # cycle 111 — DB audit migration 0003 의 actual code wiring base.
