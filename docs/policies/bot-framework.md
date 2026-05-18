@@ -234,13 +234,13 @@ class MyProvider:
 
 ### 10.1 본 cycle 의 추가 후보 (cycle 88+)
 
-- **cycle 88** — `server/main.py` SPDX header (P2-1) + 정책 §10 갱신 (본 cycle)
-- **cycle 89~90** — AnthropicProvider / OpenAIProvider lazy init asyncio.Lock (reviewer P2-2)
-- **cycle 91~93** — UsageTracker + EscalationQueue + RateLimitGate unbounded memory 회수 (reviewer P1-1)
-- **cycle 94** — CachedEmbedder asyncio.Lock (reviewer P1-2)
-- **cycle 95** — jailbreak detector info_exfiltration 패턴 확장 (QA P2)
-- **cycle 96** — `server/main.py` MockLLMProvider 폴백 log 정정 (QA P3)
-- **cycle 97~99** — Phase 3 종결 + `v0.3.0-phase3-bot` tag + release-agent
+- ~~**cycle 88**~~ — ✅ 완료 — `server/main.py` SPDX header (P2-1) + 정책 §10 갱신
+- ~~**cycle 89~90**~~ — ✅ 완료 — AnthropicProvider / OpenAIProvider lazy init asyncio.Lock (reviewer P2-2). `_init_lock: Optional[asyncio.Lock]` + double-check pattern.
+- ~~**cycle 91~93**~~ — ✅ 완료 — UsageTracker `collections.deque(maxlen)` ring buffer + EscalationQueue `evict_old(now_ms, retention_ms)` + RateLimitGate `prune_stale(now_seconds)` (reviewer P1-1)
+- ~~**cycle 94**~~ — ✅ 완료 — CachedEmbedder `threading.RLock` thread-safety + double-check pattern + 3 concurrent test (reviewer P1-2)
+- ~~**cycle 95**~~ — ✅ 완료 — `jailbreak_detector.info_exfiltration` patterns 2 → 17 확장 (env vars + JWT + SSH/PEM + DB credential + Korean PII + RRN regex + SQL injection + shell command) + 21 신규 test (QA P2)
+- ~~**cycle 96**~~ — ✅ 완료 — `server/main.py` provider 3 layer fallback chain (Anthropic → OpenAI → Mock) + 분기별 log 명문 + 3 신규 integration test (QA P3)
+- **cycle 97~99** — Phase 3 종결 + `v0.3.0-phase3-bot` tag + release-agent + handoff 갱신 (본 cycle = 97 정책 본문 갱신)
 - **cycle 100~117** — Phase 4 진입 — [2026-05-22-phase4-infra-setup.md](../exec-plans/active/2026-05-22-phase4-infra-setup.md)
 
 ---
