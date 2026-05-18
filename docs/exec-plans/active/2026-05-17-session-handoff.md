@@ -169,6 +169,35 @@ status: active
 
 ---
 
+## 8.56 사이클 124~126 Phase 4 후속 production-ready (2026-05-23 신설)
+
+### 8.56.1 3 cycle chain
+
+| cycle | 작업 | 신규 PASS |
+|---|---|---|
+| 124 | healthz + readyz endpoint 신설 (Docker HEALTHCHECK + nginx + k8s probe) | 7 |
+| 125 | bot_escalations DB 영속화 (Phase 3 cycle 86 in-memory → MariaDB) | 15 |
+| 126 | bot_escalate audit hook + escalation enqueue (jailbreak BLOCKED chain) | 1~3 |
+
+### 8.56.2 핵심 산출물
+
+- server/api/health_handlers.py — handle_healthz + handle_readyz
+- server/db/migrations/0005_bot_escalations.sql — 9 컬럼 + 4 index
+- server/db/repositories/bot_escalations.py — 8 SQL + 8 함수
+- server/api/bot_handlers.py — `_scan_jailbreak` BLOCKED chain → escalation enqueue + BOT_ESCALATE audit
+
+### 8.56.3 DB audit endpoint coverage 9 ActivityAction
+
+SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER + DEVICE_REVOKE + BOT_CHAT + BOT_ESCALATE (cycle 126 신규). 잔존 14 ENUM = Phase 5 신규 endpoint 또는 별개 cycle.
+
+### 8.56.4 다음 세션 첫 액션 우선순위
+
+1. Phase 5 사용자 GO directive 대기
+2. 별개 cycle — 잔존 14 ENUM wiring (room/message/file/remote/profile/email/account)
+3. manual test 시점 도달
+
+---
+
 ## 8.55 사이클 119~123 Phase 4 후속 wiring + Phase 5 plan 초안 (2026-05-22 신설)
 
 ### 8.55.1 5 cycle chain 누계

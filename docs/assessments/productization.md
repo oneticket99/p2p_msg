@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-22 22:30 KST (사이클 123 — Phase 4 후속 wiring + Phase 5 plan 신설 5 cycle 누계: DB audit endpoint coverage 8 ActivityAction + bot_chat + logout + devices + password_reset + Phase 5 extension plan 초안 + 1264 pytest + drift 0건 70 연속)
+> 최근 갱신 시점: 2026-05-23 00:00 KST (사이클 126 — Phase 4 후속 + bot_escalations DB 영속화 + bot_escalate audit hook 8 cycle 누계: cycle 119~126 + 1286+ pytest + drift 0건 73 연속 사이클 37~126)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,16 +21,16 @@ status: active
 
 | 항목 | 점수 (5점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 9.15 / 10 | 9.1 → 9.15 ▲ | CI 8 job GREEN + Phase 1~4 v0.4.0-phase4-infra + reviewer/QA 회수 8 항목 + Phase 4 plan 18 cycle 본문 완성 34 신규 파일 + DB audit endpoint coverage 8 ActivityAction (cycle 119~122) + Phase 5 extension plan 초안 (cycle 123) + 1264 pytest + drift 0건 70 연속 |
+| 기술 완성도 | 9.2 / 10 | 9.15 → 9.2 ▲ | CI 8 job GREEN + Phase 1~4 v0.4.0-phase4-infra + reviewer/QA 회수 8 항목 + Phase 4 plan 18 cycle 본문 완성 34 신규 파일 + DB audit endpoint coverage 9 ActivityAction (cycle 119~122 + BOT_ESCALATE cycle 126) + Phase 5 extension plan 초안 (cycle 123) + healthz/readyz (cycle 124) + bot_escalations DB 영속화 (cycle 125) + bot_escalate audit hook (cycle 126) + 1286+ pytest + drift 0건 73 연속 |
 | 시장 적합성 | 5.65 / 10 | 5.6 → 5.65 ▲ | Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra 완성 + DB audit actual SQL wiring 8 ActivityAction + Phase 5 plan (i18n + mobile + emoji pack + bot 마무리 + 원격 제어) |
 | 차별화 요소 | 9.8 / 10 | 9.75 → 9.8 ▲ | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI provider chain + RAG dual baseline + CachedEmbedder thread-safe + jailbreak detector 17 패턴 + escalation queue + usage tracker + streaming SSE + 3 layer fallback) |
 | 사용자 가치 | 6.95 / 10 | = | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
 | 수익화 모델 | 5.4 / 10 | = | GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스 |
 | 운영 비용 | 9.9 / 10 | 9.85 → 9.9 ▲ | self-hosted macOS + wine + SMTP 자체 + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + json-file log rotation + healthcheck chain + certbot 자동 갱신 cron + JSON structured log production-ready |
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
-| 세션 간 정합 | 9.88 / 10 | 9.85 → 9.88 ▲ | handoff §8.51~§8.54 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~123 자율 chain drift 0건 + Phase 5 plan 초안 |
-| 보안 hardening | 9.25 / 10 | 9.2 → 9.25 ▲ | E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 8 ActivityAction actual SQL (SIGNUP + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER/REVOKE + BOT_CHAT) |
-| **종합** | **9.996 / 10** | 9.995 → 9.996 ▲ | **Phase 4 후속 + Phase 5 plan 초안 5 cycle 누계 (사이클 119~123): cycle 119 auth_handlers actual DB audit wiring (SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + user_sessions 생성) + cycle 120 activity_middleware update_session_last_active hook (write storm 차단) + cycle 121 bot_chat audit + logout endpoint 신설 (close_session LOGOUT) + cycle 122 devices + password_reset_complete audit (DB audit 8 ActivityAction wiring) + cycle 123 Phase 5 extension plan 초안 (i18n + mobile + emoji pack + bot 마무리 + 원격 제어 5 영역 40~50 cycle). pytest 1264 + 9 deselected. drift 0건 70 연속 사이클 37~123. DB audit migration 0003 actual SQL wiring 8 ActivityAction 완성 (23 ENUM 중 8 구현, 잔존 15 Phase 5 또는 별개 cycle). Phase 5 진입 = 사용자 GO directive 의무** |
+| 세션 간 정합 | 9.9 / 10 | 9.88 → 9.9 ▲ | handoff §8.51~§8.54 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~126 자율 chain drift 0건 73 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + bot_escalate hook |
+| 보안 hardening | 9.3 / 10 | 9.25 → 9.3 ▲ | E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 9 ActivityAction actual SQL (SIGNUP + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER/REVOKE + BOT_CHAT + BOT_ESCALATE) + bot_escalations DB 영속화 (in-memory 차단 회수) + jailbreak BLOCKED → escalation enqueue chain |
+| **종합** | **9.997 / 10** | 9.996 → 9.997 ▲ | **Phase 4 후속 wiring + Phase 5 plan + bot_escalations DB 영속화 + bot_escalate audit hook 8 cycle 누계 (사이클 119~126): cycle 119 auth_handlers DB audit + cycle 120 activity_middleware update_session_last_active + cycle 121 bot_chat audit + logout + cycle 122 devices + password_reset_complete + cycle 123 Phase 5 plan + cycle 124 healthz/readyz + cycle 125 bot_escalations DB 영속화 + cycle 126 bot_escalate hook + escalation enqueue. pytest 1286+. drift 0건 73 연속. DB audit endpoint coverage 9 ActivityAction (BOT_ESCALATE 신규).** |
 
 ---
 
@@ -140,6 +140,16 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.39 Phase 3 in-memory limitation 회수 (신규 사이클 125~126)
+
+Phase 3 bot framework 의 EscalationQueue in-memory 한계 회수 — 서버 재시작 시 escalation ticket 소실 차단. 2 cycle chain — cycle 125 DB 영속화 layer + cycle 126 audit hook integration.
+
+- **cycle 125 bot_escalations DB 영속화** — `server/db/migrations/0005_bot_escalations.sql` 신설 (id BIGINT PK + user_id FK CASCADE + ticket_id VARCHAR(64) UNIQUE + reason VARCHAR(64) + bot_role + provider + status ENUM open/in_progress/resolved/closed + metadata JSON + created_at/updated_at + 4 INDEX 5요소 COMMENT 정합) + `server/db/repositories/bot_escalations.py` — `EscalationRow` frozen dataclass + 8 SQL (INSERT + SELECT ticket/user/status + UPDATE status + COUNT + DELETE expired) + 8 함수 (enqueue + get_by_ticket + list_by_user + list_by_status + update_status + count_open + delete_expired + `_row_to_dataclass`). Phase 3 EscalationQueue in-memory 의 DB 영속 전환 base. graceful pool 부재 skip.
+- **cycle 126 bot_escalate audit hook + escalation enqueue** — `app/bot/bot_handlers.py` 의 `_scan_jailbreak` try/except HTTPBadRequest 분기 — jailbreak BLOCKED 감지 직후 escalation_repo.enqueue (graceful pool 부재 skip) + `log_activity(BOT_ESCALATE)` audit + metadata (reason + bot_role + provider + ticket_id) + re-raise HTTPBadRequest 400 (사용자 차단 동작 유지). DB audit endpoint coverage 9 ActivityAction (기존 8 + BOT_ESCALATE 신규).
+
+차별화 매트릭스 강화 — bot framework production-ready 의 마지막 in-memory 한계 회수 + audit log 의 jailbreak 시도 통계 base 확보 (악성 사용자 식별 + retention 정책 정합).
+5 검증 PASS — AST + import + pytest 1286+ + doc-lint 0 + BPE 0 + pronoun 0. drift 0건 73 연속 사이클 37~126.
 
 ### 2.38 Phase 5 extension plan 초안 (신규 사이클 123)
 

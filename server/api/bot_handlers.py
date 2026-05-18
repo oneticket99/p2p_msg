@@ -39,6 +39,8 @@ from app.bot.anthropic_client import (
 )
 from app.bot.jailbreak_detector import JailbreakSignal, detect, summarize_categories
 from app.bot.llm_proxy import BotMessage, BotRole, LLMProvider, RateLimitGate
+from app.bot.escalation_queue import EscalationReason
+from server.db.repositories import bot_escalations as escalations_repo
 from server.db.repositories.user_activity import ActivityAction, log_activity
 from server.middleware.activity import extract_client_ip
 
@@ -235,7 +237,43 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
     messages = _parse_messages(body.get("messages"))
 
     # cycle 82 — jailbreak heuristic detection (user content scan)
-    _scan_jailbreak(messages)
+    # cycle 126 — BLOCKED 시 escalation enqueue + BOT_ESCALATE audit + 400 raise
+    try:
+        _scan_jailbreak(messages)
+    except web.HTTPBadRequest as exc:
+        pool = request.app.get("db_pool")
+        if pool is not None:
+            # 마지막 user message 의 content 추출 (escalation 본문)
+            last_user_msg = next(
+                (m.content for m in reversed(messages) if m.role == BotRole.USER),
+                "",
+            )
+            if last_user_msg:
+                try:
+                    await escalations_repo.enqueue(
+                        pool,
+                        user_id=user_id,
+                        reason=EscalationReason.JAILBREAK,
+                        message=last_user_msg[:16000],
+                    )
+                except Exception as e:  # noqa: BLE001
+                    log.warning(
+                        "jailbreak escalation enqueue 실패 user_id=%d: %s",
+                        user_id,
+                        e,
+                    )
+            try:
+                await log_activity(
+                    pool,
+                    user_id=user_id,
+                    action=ActivityAction.BOT_ESCALATE,
+                    ip_address=extract_client_ip(request),
+                    user_agent=request.headers.get("User-Agent", "")[:255] or None,
+                    metadata={"reason": "jailbreak", "http_status": 400},
+                )
+            except Exception as e:  # noqa: BLE001
+                log.warning("BOT_ESCALATE audit 실패 user_id=%d: %s", user_id, e)
+        raise exc
 
     # provider lookup — app context 의 의 등록 의무
     provider: Optional[LLMProvider] = request.app.get(APP_KEY_PROVIDER)
