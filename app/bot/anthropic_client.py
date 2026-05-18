@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import random
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Final, List, Optional, Tuple
 
@@ -44,9 +45,45 @@ _DEFAULT_TIMEOUT_SECONDS: Final[float] = 30.0
 _DEFAULT_MAX_RETRIES: Final[int] = 0
 # 지수 backoff base — 초 단위 (1.0 * 2^attempt)
 _DEFAULT_BACKOFF_BASE_SECONDS: Final[float] = 1.0
+# jitter — backoff delay 의 추가 randomization 의 default 부재 (caller opt-in)
+_DEFAULT_JITTER_MAX_SECONDS: Final[float] = 0.0
+# retry-after 헤더 의 cap — 비정상 큰 값 차단 (DoS 회피)
+_RETRY_AFTER_MAX_SECONDS: Final[float] = 60.0
 
 
 SleepFn = Callable[[float], Awaitable[None]]
+JitterFn = Callable[[], float]
+
+
+def _parse_retry_after(headers: dict) -> Optional[float]:
+    """retry-after 헤더 의 초 단위 float 추출.
+
+    Anthropic API 는 정수 초 단위 의 retry-after 반환 (HTTP date 미지원).
+    헤더 키 = 의 대소문자 무시 의 처리 (case-insensitive).
+
+    Returns
+    -------
+    float | None
+        파싱 성공 시 의 양수 + cap 초과 시 cap + 실패 / 음수 / 부재 시 None.
+    """
+
+    if not headers:
+        return None
+    # case-insensitive lookup
+    raw: Optional[str] = None
+    for key, value in headers.items():
+        if isinstance(key, str) and key.lower() == "retry-after":
+            raw = str(value) if value is not None else None
+            break
+    if raw is None or not raw.strip():
+        return None
+    try:
+        seconds = float(raw.strip())
+    except (TypeError, ValueError):
+        return None
+    if seconds <= 0:
+        return None
+    return min(seconds, _RETRY_AFTER_MAX_SECONDS)
 
 
 class AnthropicError(Exception):
@@ -145,13 +182,14 @@ def parse_response(body: dict) -> BotMessage:
 
 
 # HTTP transport — caller 가 주입 가능
-# (url, headers, json_body) → (status_code, response_body_dict)
-HttpTransport = Callable[[str, dict, dict], Awaitable[Tuple[int, dict]]]
+# (url, headers, json_body) → (status_code, response_headers, response_body_dict)
+# cycle 73 — 3-tuple 의 response_headers 추가 (retry-after 헤더 의 honor 용)
+HttpTransport = Callable[[str, dict, dict], Awaitable[Tuple[int, dict, dict]]]
 
 
 async def _placeholder_transport(
     url: str, headers: dict, body: dict
-) -> Tuple[int, dict]:
+) -> Tuple[int, dict, dict]:
     """미주입 default — httpx_transport() 또는 mock transport 의무."""
 
     raise NotImplementedError(
@@ -168,7 +206,9 @@ def httpx_transport(timeout: float = _DEFAULT_TIMEOUT_SECONDS) -> HttpTransport:
     파일 갱신 의무. 호출 시 ImportError → AnthropicError 변환.
     """
 
-    async def _send(url: str, headers: dict, body: dict) -> Tuple[int, dict]:
+    async def _send(
+        url: str, headers: dict, body: dict
+    ) -> Tuple[int, dict, dict]:
         try:
             import httpx  # type: ignore[import]
         except ImportError as exc:
@@ -177,7 +217,7 @@ def httpx_transport(timeout: float = _DEFAULT_TIMEOUT_SECONDS) -> HttpTransport:
             ) from exc
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(url, headers=headers, json=body)
-            return (resp.status_code, resp.json())
+            return (resp.status_code, dict(resp.headers), resp.json())
 
     return _send
 
@@ -202,8 +242,13 @@ class AnthropicClient:
         429 / 5xx 응답 의 재시도 횟수 (default 0 = 회수 무). 양수 음수 차단.
     backoff_base_seconds : float
         지수 backoff base — 실 delay = base * 2^attempt (default 1.0).
+    jitter_max_seconds : float
+        backoff delay 의 추가 jitter range — 실 jitter = jitter_fn() * max
+        (default 0.0 = jitter 부재). 음수 차단.
     sleep_fn : SleepFn
         async sleep 함수 — 테스트 의 의 mock 주입 가능 (default asyncio.sleep).
+    jitter_fn : JitterFn
+        [0, 1) range 의 float 의 sync 함수 — default random.random.
     """
 
     api_key: str
@@ -213,7 +258,9 @@ class AnthropicClient:
     transport: HttpTransport = field(default=_placeholder_transport)
     max_retries: int = _DEFAULT_MAX_RETRIES
     backoff_base_seconds: float = _DEFAULT_BACKOFF_BASE_SECONDS
+    jitter_max_seconds: float = _DEFAULT_JITTER_MAX_SECONDS
     sleep_fn: SleepFn = field(default=asyncio.sleep)
+    jitter_fn: JitterFn = field(default=random.random)
 
     def __post_init__(self) -> None:
         if not self.api_key:
@@ -233,6 +280,10 @@ class AnthropicClient:
         if self.backoff_base_seconds <= 0:
             raise ValueError(
                 f"backoff_base_seconds 양수 의무 — {self.backoff_base_seconds}"
+            )
+        if self.jitter_max_seconds < 0:
+            raise ValueError(
+                f"jitter_max_seconds 음수 차단 — {self.jitter_max_seconds}"
             )
 
     def build_headers(self) -> dict:
@@ -287,7 +338,9 @@ class AnthropicClient:
         body = self.build_body(messages)
         attempt = 0
         while True:
-            status, resp_body = await self.transport(url, headers, body)
+            status, resp_headers, resp_body = await self.transport(
+                url, headers, body
+            )
             if status == 200:
                 return parse_response(resp_body)
             if status in (401, 403):
@@ -309,7 +362,15 @@ class AnthropicClient:
                     f"서버 장애 status={status} body={resp_body} "
                     f"(retries={self.max_retries} 소진)"
                 )
-            delay = self.backoff_base_seconds * (2 ** attempt)
+            # retry-after 헤더 의 honor (429 우선) — 부재 / 비정상 시 지수 backoff
+            retry_after = _parse_retry_after(resp_headers)
+            if retry_after is not None:
+                delay = retry_after
+            else:
+                delay = self.backoff_base_seconds * (2 ** attempt)
+            # jitter 추가 — jitter_max_seconds > 0 시 jitter_fn() * max 의 추가
+            if self.jitter_max_seconds > 0:
+                delay += self.jitter_fn() * self.jitter_max_seconds
             await self.sleep_fn(delay)
             attempt += 1
 

@@ -127,6 +127,7 @@ class TestAnthropicProvider:
         ):
             return (
                 200,
+                {},
                 {
                     "role": "assistant",
                     "content": [{"type": "text", "text": "응답"}],
@@ -153,6 +154,7 @@ class TestAnthropicProvider:
             call_count += 1
             return (
                 200,
+                {},
                 {
                     "role": "assistant",
                     "content": [{"type": "text", "text": f"reply-{call_count}"}],

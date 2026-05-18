@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-21 13:30 KST (사이클 72 — AnthropicClient retry/backoff + 429/5xx 지수 backoff + sleep_fn DI + 9 신규 PASS + 813 pytest + drift 0건 31 연속)
+> 최근 갱신 시점: 2026-05-21 14:30 KST (사이클 73 — AnthropicClient retry-after honor + jitter + transport 3-tuple (status/headers/body) + 9 신규 PASS + 822 pytest + drift 0건 32 연속)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 37 누적 (parallel execution 신설 + memory release 2건) + PostToolUse hook 5종 강제 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설 사이클 62) |
 | 세션 간 정합 | 9.74 / 10 | 9.72 → 9.74 ▲ | handoff §8.46 polling halt 진단 정정 + telegram 양방향 fallback (Bot API direct long-poll + Monitor stream) + 매 cycle 동기 의무 |
 | 보안 hardening | 8.1 / 10 | 8.05 → 8.1 ▲ | E2EE Signal Protocol 200 + push privacy-preserving + encrypted backup (PBKDF2 600K + AES-256-GCM + version enforcement) + 메모리 누수 차단 의무 명문 (objc CFRelease + chat 1개월 volatile + file chunk 즉시 release) + GPLv3 + Anthropic retry/backoff (transient 장애 회수 + abuse 의 의도된 패턴 감지 base) |
-| **종합** | **9.78 / 10** | 9.77 → 9.78 ▲ | **사이클 72 AnthropicClient retry/backoff — `app/bot/anthropic_client.py` 의 AnthropicClient 의 4 신규 field (max_retries=0 default + backoff_base_seconds=1.0 + sleep_fn=asyncio.sleep + validation) + chat() pipeline 의 retry loop — 429 + 5xx 의 지수 backoff (base * 2^attempt) + max_retries 초과 시 RateLimitError/ServerError + 401/403 의 즉시 raise (재시도 없음) + 그 외 4xx 의 base AnthropicError. 9 신규 PASS — max_retries 음수/0 차단 + 429 재시도 후 200 성공 + 5xx 재시도 후 200 성공 + 429 소진 시 RateLimitError + 5xx 소진 시 ServerError + 401 retry 없음 + max_retries=0 default + exponential backoff progression [0.5, 1.0, 2.0, 4.0]. 813 pytest (804 + 9) + Phase 3 entry 누계 331. drift 0건 31 연속** |
+| **종합** | **9.79 / 10** | 9.78 → 9.79 ▲ | **사이클 73 AnthropicClient retry-after honor + jitter + transport 3-tuple refactor — HttpTransport 의 응답 schema (status, headers, body) 의 3-tuple 확장 (이전 2-tuple → 3-tuple) + `_parse_retry_after(headers)` helper (case-insensitive lookup + 음수/비숫자/cap 검증) + `_RETRY_AFTER_MAX_SECONDS=60` cap (DoS 회피) + `jitter_max_seconds: float = 0.0` field + `jitter_fn: JitterFn = random.random` field. chat() pipeline 의 retry-after 헤더 우선 적용 (429 응답 시 헤더 값 → 지수 backoff override) + jitter 추가 (jitter_max_seconds > 0 시 jitter_fn() * max 의 추가). 9 신규 PASS — jitter 음수 reject + retry-after 5초 honor + Retry-After capitalized + invalid/negative/cap 의 fallback + jitter 추가 + jitter_max=0 의 부재 + retry-after + jitter 결합. 822 pytest (813 + 9) + Phase 3 entry 누계 340. drift 0건 32 연속** |
 
 ---
 

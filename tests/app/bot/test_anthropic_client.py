@@ -7,7 +7,7 @@ transport 의 8 상태 + from_env 환경 변수.
 
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pytest
 
@@ -187,11 +187,11 @@ class TestChatWithMockTransport:
     """``chat`` 의 status code → 예외 매핑 검증."""
 
     @staticmethod
-    def _make_transport(status: int, body: dict):
+    def _make_transport(status: int, body: dict, resp_headers: Optional[dict] = None):
         async def _transport(
             url: str, headers: dict, json_body: dict
-        ) -> Tuple[int, dict]:
-            return (status, body)
+        ) -> Tuple[int, dict, dict]:
+            return (status, resp_headers or {}, body)
 
         return _transport
 
@@ -269,10 +269,11 @@ class TestChatWithMockTransport:
 
         async def _spy(
             url: str, headers: dict, body: dict
-        ) -> Tuple[int, dict]:
+        ) -> Tuple[int, dict, dict]:
             captured.append((url, headers, body))
             return (
                 200,
+                {},
                 {
                     "role": "assistant",
                     "content": [{"type": "text", "text": "ok"}],
@@ -293,11 +294,13 @@ class TestRetryAndBackoff:
     """retry/backoff 정책 검증 — 429 + 5xx 재시도, 지수 backoff delay, 예외 매핑."""
 
     @staticmethod
-    def _sequence_transport(responses: List[Tuple[int, dict]]):
-        # 호출 순서 의 응답 list 의 sequential 반환
+    def _sequence_transport(responses: List[Tuple[int, dict, dict]]):
+        # 호출 순서 의 응답 list 의 sequential 반환 — (status, headers, body) 3-tuple
         idx = {"i": 0}
 
-        async def _t(url: str, headers: dict, body: dict) -> Tuple[int, dict]:
+        async def _t(
+            url: str, headers: dict, body: dict
+        ) -> Tuple[int, dict, dict]:
             i = idx["i"]
             idx["i"] = i + 1
             return responses[i] if i < len(responses) else responses[-1]
@@ -328,10 +331,11 @@ class TestRetryAndBackoff:
         delays, sleep_fn = self._sleep_recorder()
         transport = self._sequence_transport(
             [
-                (429, {"error": "rate"}),
-                (429, {"error": "rate"}),
+                (429, {}, {"error": "rate"}),
+                (429, {}, {"error": "rate"}),
                 (
                     200,
+                    {},
                     {
                         "role": "assistant",
                         "content": [{"type": "text", "text": "ok"}],
@@ -356,9 +360,10 @@ class TestRetryAndBackoff:
         delays, sleep_fn = self._sleep_recorder()
         transport = self._sequence_transport(
             [
-                (503, {"error": "x"}),
+                (503, {}, {"error": "x"}),
                 (
                     200,
+                    {},
                     {
                         "role": "assistant",
                         "content": [{"type": "text", "text": "ok"}],
@@ -379,7 +384,7 @@ class TestRetryAndBackoff:
     @pytest.mark.asyncio
     async def test_429_exhausted_raises_rate_limit(self) -> None:
         delays, sleep_fn = self._sleep_recorder()
-        transport = self._sequence_transport([(429, {"e": "x"})])
+        transport = self._sequence_transport([(429, {}, {"e": "x"})])
         client = AnthropicClient(
             api_key="sk-x",
             transport=transport,
@@ -394,7 +399,7 @@ class TestRetryAndBackoff:
     @pytest.mark.asyncio
     async def test_5xx_exhausted_raises_server_error(self) -> None:
         delays, sleep_fn = self._sleep_recorder()
-        transport = self._sequence_transport([(500, {"e": "x"})])
+        transport = self._sequence_transport([(500, {}, {"e": "x"})])
         client = AnthropicClient(
             api_key="sk-x",
             transport=transport,
@@ -408,7 +413,7 @@ class TestRetryAndBackoff:
     @pytest.mark.asyncio
     async def test_401_no_retry(self) -> None:
         delays, sleep_fn = self._sleep_recorder()
-        transport = self._sequence_transport([(401, {"e": "x"})])
+        transport = self._sequence_transport([(401, {}, {"e": "x"})])
         client = AnthropicClient(
             api_key="sk-x",
             transport=transport,
@@ -424,7 +429,7 @@ class TestRetryAndBackoff:
     async def test_max_retries_zero_default(self) -> None:
         # max_retries=0 (default) + 429 = 즉시 RateLimitError
         delays, sleep_fn = self._sleep_recorder()
-        transport = self._sequence_transport([(429, {"e": "x"})])
+        transport = self._sequence_transport([(429, {}, {"e": "x"})])
         client = AnthropicClient(
             api_key="sk-x",
             transport=transport,
@@ -438,7 +443,7 @@ class TestRetryAndBackoff:
     async def test_exponential_backoff_progression(self) -> None:
         # backoff_base_seconds=0.5 + max_retries=4 + 항상 503 → delay 4번
         delays, sleep_fn = self._sleep_recorder()
-        transport = self._sequence_transport([(503, {"e": "x"})])
+        transport = self._sequence_transport([(503, {}, {"e": "x"})])
         client = AnthropicClient(
             api_key="sk-x",
             transport=transport,
@@ -450,6 +455,257 @@ class TestRetryAndBackoff:
             await client.chat([_user("u")])
         # 0.5 * 2^0, 0.5 * 2^1, 0.5 * 2^2, 0.5 * 2^3 = 0.5, 1.0, 2.0, 4.0
         assert delays == [0.5, 1.0, 2.0, 4.0]
+
+
+class TestRetryAfterAndJitter:
+    """retry-after 헤더 honor + jitter randomization 검증 (cycle 73)."""
+
+    @staticmethod
+    def _sleep_recorder():
+        delays: List[float] = []
+
+        async def _sleep(seconds: float) -> None:
+            delays.append(seconds)
+
+        return delays, _sleep
+
+    @staticmethod
+    def _sequence_transport(responses):
+        idx = {"i": 0}
+
+        async def _t(url: str, headers: dict, body: dict):
+            i = idx["i"]
+            idx["i"] = i + 1
+            return responses[i] if i < len(responses) else responses[-1]
+
+        return _t
+
+    def test_jitter_max_seconds_negative_rejected(self) -> None:
+        with pytest.raises(ValueError, match="jitter_max_seconds"):
+            AnthropicClient(api_key="sk-x", jitter_max_seconds=-0.1)
+
+    @pytest.mark.asyncio
+    async def test_retry_after_header_honored_over_backoff(self) -> None:
+        # 429 + retry-after: 5 → 지수 backoff (1.0) 대신 5초 사용
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"retry-after": "5"}, {"e": "rate"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=2,
+            backoff_base_seconds=1.0,
+            sleep_fn=sleep_fn,
+        )
+        msg = await client.chat([_user("u")])
+        assert msg.content == "ok"
+        # retry-after 5 의 backoff 1.0 의 override
+        assert delays == [5.0]
+
+    @pytest.mark.asyncio
+    async def test_retry_after_capitalized_header(self) -> None:
+        # case-insensitive lookup — "Retry-After" capitalized
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"Retry-After": "3"}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            sleep_fn=sleep_fn,
+        )
+        await client.chat([_user("u")])
+        assert delays == [3.0]
+
+    @pytest.mark.asyncio
+    async def test_retry_after_invalid_falls_back_to_backoff(self) -> None:
+        # retry-after 의 비숫자 / 음수 → 지수 backoff fallback
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"retry-after": "garbage"}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            backoff_base_seconds=2.0,
+            sleep_fn=sleep_fn,
+        )
+        await client.chat([_user("u")])
+        assert delays == [2.0]
+
+    @pytest.mark.asyncio
+    async def test_retry_after_negative_falls_back(self) -> None:
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"retry-after": "-5"}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            backoff_base_seconds=1.5,
+            sleep_fn=sleep_fn,
+        )
+        await client.chat([_user("u")])
+        assert delays == [1.5]
+
+    @pytest.mark.asyncio
+    async def test_retry_after_capped_at_max(self) -> None:
+        # retry-after 의 비정상 큰 값 → 60초 cap
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"retry-after": "9999"}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            sleep_fn=sleep_fn,
+        )
+        await client.chat([_user("u")])
+        # cap 의 _RETRY_AFTER_MAX_SECONDS = 60.0
+        assert delays == [60.0]
+
+    @pytest.mark.asyncio
+    async def test_jitter_added_to_delay(self) -> None:
+        # jitter_max_seconds=2.0 + jitter_fn=lambda: 0.5 → 추가 1.0
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            backoff_base_seconds=1.0,
+            jitter_max_seconds=2.0,
+            sleep_fn=sleep_fn,
+            jitter_fn=lambda: 0.5,
+        )
+        await client.chat([_user("u")])
+        # backoff 1.0 + jitter 0.5 * 2.0 = 2.0
+        assert delays == [2.0]
+
+    @pytest.mark.asyncio
+    async def test_jitter_zero_max_no_jitter(self) -> None:
+        # default jitter_max_seconds=0.0 + 항상 0.9 의 jitter_fn → 추가 0
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            backoff_base_seconds=1.0,
+            sleep_fn=sleep_fn,
+            jitter_fn=lambda: 0.9,
+        )
+        await client.chat([_user("u")])
+        # jitter_max_seconds=0 → 추가 무 → backoff 1.0 의 그대로
+        assert delays == [1.0]
+
+    @pytest.mark.asyncio
+    async def test_jitter_combined_with_retry_after(self) -> None:
+        # retry-after 의 base + jitter 의 추가 의 정합
+        delays, sleep_fn = self._sleep_recorder()
+        transport = self._sequence_transport(
+            [
+                (429, {"retry-after": "4"}, {"e": "x"}),
+                (
+                    200,
+                    {},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "ok"}],
+                    },
+                ),
+            ]
+        )
+        client = AnthropicClient(
+            api_key="sk-x",
+            transport=transport,
+            max_retries=1,
+            jitter_max_seconds=1.0,
+            sleep_fn=sleep_fn,
+            jitter_fn=lambda: 0.25,
+        )
+        await client.chat([_user("u")])
+        # retry-after 4.0 + jitter 0.25 * 1.0 = 4.25
+        assert delays == [4.25]
 
 
 class TestFromEnv:
@@ -467,8 +723,8 @@ class TestFromEnv:
 
         async def _stub(
             url: str, headers: dict, body: dict
-        ) -> Tuple[int, dict]:
-            return (200, {})
+        ) -> Tuple[int, dict, dict]:
+            return (200, {}, {})
 
         client = from_env(transport=_stub)
         assert isinstance(client, AnthropicClient)
@@ -481,8 +737,8 @@ class TestFromEnv:
 
         async def _custom(
             url: str, headers: dict, body: dict
-        ) -> Tuple[int, dict]:
-            return (200, {})
+        ) -> Tuple[int, dict, dict]:
+            return (200, {}, {})
 
         client = from_env(transport=_custom)
         assert client.transport is _custom
