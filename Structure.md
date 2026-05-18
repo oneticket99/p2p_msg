@@ -133,7 +133,8 @@ p2p_msg/
 │   │   ├── openai_client.py       # 사이클 84 — Chat Completions API (Bearer + system inline + choices[0].message) + retry/backoff + retry-after + jitter
 │   │   ├── jailbreak_detector.py  # 사이클 81 — prompt injection / jailbreak heuristic (6 category + Korean/English + NONE/SUSPICIOUS/BLOCKED)
 │   │   ├── usage_tracker.py       # 사이클 85 — UsageRecord + UsageTracker + per-user/provider/period 집계 + Anthropic/OpenAI usage extract
-│   │   └── escalation_queue.py    # 사이클 86 — EscalationTicket + TicketStatus/EscalationReason Enum + EscalationQueue lifecycle (PENDING/ASSIGNED/RESOLVED/CLOSED)
+│   │   ├── escalation_queue.py    # 사이클 86 — EscalationTicket + TicketStatus/EscalationReason Enum + EscalationQueue lifecycle (PENDING/ASSIGNED/RESOLVED/CLOSED)
+│   │   └── streaming.py           # 사이클 87 — SSE parser (Anthropic + OpenAI) + StreamEvent 7종 + StreamChunk + delta extract + accumulate
 │   ├── net/
 │   │   ├── __init__.py
 │   │   ├── auth_client.py         # 사이클 21 — REST AuthClient
