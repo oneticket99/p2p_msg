@@ -253,6 +253,12 @@ flowchart LR
 <tr><td><code>server/signaling.py</code></td><td>Router</td><td>WS upgrade·JSON 디코드·5종 클라 메시지 화이트리스트·<code>RoomRegistry</code> 위임·ERROR 응답 · <code>from</code> 위변조 방어 (정본 §E)</td></tr>
 <tr><td><code>server/room.py</code></td><td>Service</td><td><code>Peer</code> · <code>Room</code> · <code>RoomRegistry</code> 상태 머신·OFFER/ANSWER/ICE 1:1 전달·<code>PEER_JOINED</code>/<code>PEER_LEFT</code> 브로드캐스트·연결 종료 cleanup·<code>send_lock</code> 직렬화</td></tr>
 <tr><td><code>server/protocol.py</code></td><td>Model</td><td>TypedDict envelope 9종 (5+4) · 6종 오류 코드 상수 · <code>wire_to_internal</code>/<code>internal_to_wire</code>/<code>is_valid_client_type</code> 헬퍼 · 외부 IO 없음</td></tr>
+<tr><td><code>server/api/auth_handlers.py</code></td><td>Router</td><td>REST 5 endpoint — <code>/api/auth/{register,verify,login,reset/request,reset/consume}</code> (사이클 21)</td></tr>
+<tr><td><code>server/api/devices_handlers.py</code></td><td>Router</td><td>REST 3 endpoint — POST <code>/api/devices</code> + GET <code>/api/devices</code> + DELETE <code>/api/devices/{device_id}</code> · base64 32-byte 검증 + 1062 → 409 · multi-device sync (Phase 2 사이클 43)</td></tr>
+<tr><td><code>server/auth/</code></td><td>Service</td><td>5 use case (register/verify/login/reset_password) + middleware (Bearer + public path skip) + 7 exception (사이클 20)</td></tr>
+<tr><td><code>server/db/</code></td><td>Repository</td><td>asyncmy pool + 8 repository (users/email_verification/password_reset/rooms/peers/file_meta/messages/devices) + 2 migration (0001_init.sql + 0002_devices.sql, 60+ 필드 5요소 COMMENT)</td></tr>
+<tr><td><code>server/mail/smtp_client.py</code></td><td>Service</td><td>aiosmtplib STARTTLS + SASL + UTF-8 한글 본문 (signup / password_reset 분기, 사이클 19)</td></tr>
+<tr><td><code>server/signaling_persistence.py</code></td><td>Service Bridge</td><td>DB 영속화 helper (rooms / peers / messages persist + pool=None silent skip, 사이클 24)</td></tr>
 </tbody>
 </table>
 

@@ -168,7 +168,7 @@ sequenceDiagram
 | `server/signaling.py` | WebSocket 핸들러 + DB 영속화 통합 (signaling_persistence dependency injection, 사이클 26) | `server/room.py` · `server/signaling_persistence.py` | 서버 Router |
 | `server/signaling_persistence.py` | DB 영속화 helper (rooms/peers/messages persist + pool=None silent skip, 사이클 24) | `server/db/repositories/` | 서버 Service Bridge |
 | `server/api/auth_handlers.py` | REST 5 endpoint — /api/auth/{register,verify,login,reset/request,reset/consume} (사이클 21) | `aiohttp` + `server/auth/` | 서버 Router REST |
-| `server/api/devices_handlers.py` | REST 3 endpoint — POST /api/devices + GET /api/devices + DELETE /api/devices/{device_id} (Phase 2 사이클 43 multi-device sync) | `aiohttp` + `server/db/repositories/devices` | 서버 Router REST |
+| `server/api/devices_handlers.py` | REST 3 endpoint — POST /api/devices + GET /api/devices + DELETE /api/devices/{device_id} (Phase 2 사이클 43 multi-device sync) | `aiohttp` + `server/db/repositories/devices.py` | 서버 Router REST |
 | `server/auth/` | 5 use case (register/verify/login/reset_password) + middleware (Bearer + public path skip) + 7 exception (사이클 20) | `app.core.security` (PBKDF2) + `server/db/repositories/` + `aiosmtplib` | 서버 Auth Service |
 | `server/db/` | `connection.py` (asyncmy pool + 환경변수 8) + 8 repository (users/email_verification/password_reset/rooms/peers/file_meta/messages/devices) + `migrations/0001_init.sql` + `0002_devices.sql` (60+ 필드 COMMENT 5요소 의무, 사이클 18~19 + 43) | `asyncmy>=0.2.10` | 서버 영속화 |
 | `server/mail/smtp_client.py` | aiosmtplib STARTTLS + SASL + UTF-8 한글 본문 (signup/password_reset 분기, 사이클 19) | `aiosmtplib>=3.0` | 서버 Mail |

@@ -139,9 +139,10 @@ p2p_msg/
 │   ├── room.py                    # 사이클 25 — Peer.user_id + db_room_id field 추가
 │   ├── signaling.py               # 사이클 26 — DB 영속화 dependency injection
 │   ├── signaling_persistence.py   # 사이클 24 — DB 영속화 helper (rooms/peers/messages)
-│   ├── api/                       # 사이클 21 — REST endpoint
+│   ├── api/                       # 사이클 21 + 43 — REST endpoint
 │   │   ├── __init__.py
-│   │   └── auth_handlers.py       # /api/auth/{register,verify,login,reset/*}
+│   │   ├── auth_handlers.py       # /api/auth/{register,verify,login,reset/*}
+│   │   └── devices_handlers.py    # 사이클 43 — POST/GET/DELETE /api/devices (multi-device)
 │   ├── auth/                      # 사이클 20 — 5 use case + middleware
 │   │   ├── __init__.py
 │   │   ├── exceptions.py          # 7 도메인 예외 + HTTP status 매핑
@@ -150,13 +151,15 @@ p2p_msg/
 │   │   ├── register.py            # email/username/password 검증 + OTP 발급
 │   │   ├── reset_password.py      # 비번 재설정 silent success
 │   │   └── verify.py              # signup OTP 검증
-│   ├── db/                        # 사이클 18~19 — MariaDB asyncmy pool + 7 repository
+│   ├── db/                        # 사이클 18~19 + 43 — MariaDB asyncmy pool + 8 repository
 │   │   ├── __init__.py
 │   │   ├── connection.py          # asyncmy create_pool + 환경변수 8
 │   │   ├── migrations/
-│   │   │   └── 0001_init.sql      # 7 table 52 필드 COMMENT 5요소 의무
+│   │   │   ├── 0001_init.sql      # 7 table 52 필드 COMMENT 5요소 의무
+│   │   │   └── 0002_devices.sql   # 사이클 43 — devices 10 필드 COMMENT (multi-device)
 │   │   └── repositories/
 │   │       ├── __init__.py
+│   │       ├── devices.py         # 사이클 43 — DeviceRow + 5 async (insert/get/revoke)
 │   │       ├── email_verification.py
 │   │       ├── file_meta.py
 │   │       ├── messages.py
