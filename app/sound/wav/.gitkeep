@@ -1,0 +1,14 @@
+# app/sound/wav/ — TooTalk signature sound 6 옵션 chiptune WAV placeholder
+#
+# 한글 주석 — 본 디렉토리 는 Phase 2 후속 cycle 의 실 WAV 생성 의무.
+# 6 옵션 chiptune WAV 200~400ms 8-bit retro 풍 — `SIGNATURE_OPTIONS` 정합.
+#
+# 본격 cycle 의 생성 대상 6 파일:
+#   - tootalk_ppyong.wav  (default — 뿅, 사용자 directive 2026-05-18)
+#   - tootalk_blip.wav    (깔끔한 단음)
+#   - tootalk_ding.wav    (종소리)
+#   - tootalk_chime.wav   (차임벨 2음)
+#   - tootalk_pop.wav     (풍선 터지는 소리)
+#   - tootalk_soft.wav    (부드러운 알림)
+#
+# 본 cycle 132 = skeleton 한정 — WAV 부재 시 SignatureSound graceful False 반환.

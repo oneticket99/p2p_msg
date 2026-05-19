@@ -1,0 +1,113 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""사용자 sound preference dataclass + JSON persist (cycle 132 skeleton).
+
+한글 주석 — 사용자 directive 2026-05-18 (signature sound) 의 직접 토글 옵션:
+  - option: 6 chiptune 안 하나 (default "ppyong" — 뿅)
+  - volume: 0.0~1.0 cap
+  - muted: 음소거 토글
+
+JSON persist 경로 = ``~/.tootalk/sound_preferences.json`` (XDG 대안 부재 환경 폴백).
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Optional
+
+from app.sound import DEFAULT_OPTION, SIGNATURE_OPTIONS
+
+log = logging.getLogger(__name__)
+
+# 한글 주석 — JSON persist 의 default 경로 (사용자 home 디렉토리 의 hidden dir)
+DEFAULT_PREF_PATH = Path.home() / ".tootalk" / "sound_preferences.json"
+
+
+@dataclass(slots=True)
+class UserSoundPreferences:
+    """사용자 signature sound 설정 dataclass — JSON persist 의무.
+
+    Attributes
+    ----------
+    option : str
+        6 chiptune 옵션 안 하나 — ``SIGNATURE_OPTIONS`` 의 key. 부재 시 default ppyong.
+    volume : float
+        볼륨 0.0~1.0 cap — UI 슬라이더 매핑.
+    muted : bool
+        음소거 토글 — True 시 play() 차단.
+    """
+
+    option: str = DEFAULT_OPTION
+    volume: float = 0.7
+    muted: bool = False
+
+    def __post_init__(self) -> None:
+        # 한글 주석 — 6 옵션 외 부재 의 option 자동 폴백 + volume 의 cap
+        if self.option not in SIGNATURE_OPTIONS:
+            log.warning(
+                "[pref] option=%r 부재 — default %s 폴백",
+                self.option,
+                DEFAULT_OPTION,
+            )
+            self.option = DEFAULT_OPTION
+        self.volume = max(0.0, min(1.0, float(self.volume)))
+        self.muted = bool(self.muted)
+
+    def to_dict(self) -> dict:
+        # 한글 주석 — JSON serialize 용 dict 변환
+        return asdict(self)
+
+
+def load_user_sound_preferences(
+    path: Optional[Path] = None,
+) -> UserSoundPreferences:
+    """JSON 파일 경유 사용자 sound preference 로딩 — 부재 시 default 반환.
+
+    Parameters
+    ----------
+    path : Path | None
+        명시적 JSON 경로. None 이면 ``DEFAULT_PREF_PATH`` 사용.
+    """
+
+    pref_path = path or DEFAULT_PREF_PATH
+    if not pref_path.is_file():
+        log.info("[pref] %s 부재 — default UserSoundPreferences 반환", pref_path)
+        return UserSoundPreferences()
+    try:
+        raw = json.loads(pref_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        log.warning("[pref] %s 로딩 실패 — %r → default 폴백", pref_path, exc)
+        return UserSoundPreferences()
+    # 한글 주석 — dict 안 알려진 key 만 추출 (forward-compat 의 unknown key 무시)
+    return UserSoundPreferences(
+        option=str(raw.get("option", DEFAULT_OPTION)),
+        volume=float(raw.get("volume", 0.7)),
+        muted=bool(raw.get("muted", False)),
+    )
+
+
+def save_user_sound_preferences(
+    pref: UserSoundPreferences,
+    path: Optional[Path] = None,
+) -> bool:
+    """사용자 sound preference JSON persist — 디렉토리 부재 시 자동 생성.
+
+    Returns
+    -------
+    bool
+        성공 시 True, IO 실패 시 False.
+    """
+
+    pref_path = path or DEFAULT_PREF_PATH
+    try:
+        pref_path.parent.mkdir(parents=True, exist_ok=True)
+        pref_path.write_text(
+            json.dumps(pref.to_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return True
+    except OSError as exc:
+        log.warning("[pref] %s 저장 실패 — %r", pref_path, exc)
+        return False

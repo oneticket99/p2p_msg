@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# ==============================================================================
+# crontab.txt — TooTalk SMTP infra 자동화 cron 정본
+# ------------------------------------------------------------------------------
+# 한글 주석 — 사용자 manual SSH 의 root crontab 등록 의무 안내
+# 등록 절차:
+#   scp tools/crontab.txt root@114.207.112.73:/root/crontab.txt
+#   ssh root@114.207.112.73 'crontab /root/crontab.txt'
+#   ssh root@114.207.112.73 'crontab -l'   # 등록 확인
+#
+# 의존:
+#   - /root/cert_renew_check.sh (tools/cert_renew_check.sh scp + chmod +x)
+#   - /usr/bin/certbot (Let's Encrypt)
+#   - postfix + opendkim systemd unit
+# ==============================================================================
+
+# Let's Encrypt cert 만료 30일 알람 + renew dry-run (매일 03:00 KST)
+0 3 * * * /root/cert_renew_check.sh /etc/letsencrypt/live/mail.dopa.co.kr/fullchain.pem 30
+
+# certbot renew (매월 3일 02:00 KST + post-hook postfix + nginx reload)
+0 2 3 * * /usr/bin/certbot renew --quiet --post-hook "systemctl reload postfix nginx 2>/dev/null"
+
+# postfix queue 적체 alarm (매일 00:00 KST — 100건 초과 시 stderr)
+0 0 * * * test "$(postqueue -p | grep -c '^[A-F0-9]' || echo 0)" -lt 100 || echo "postfix queue 적체"
+
+# opendkim 헬스체크 (5분 — 비정상 종료 시 systemd restart)
+*/5 * * * * pgrep -x opendkim >/dev/null || systemctl restart opendkim
