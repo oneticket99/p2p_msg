@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 # 한글 주석 — branding asset path
-_LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_logo.svg"
+_LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
 
 
 class WelcomeDialog(QDialog):
@@ -60,17 +60,12 @@ class WelcomeDialog(QDialog):
         banner_layout = QVBoxLayout(banner)
         banner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — SVG 로고 380×100 → 240×64 scale + 흰색 bg 안 렌더
+        # 한글 주석 — PNG 원본 그대로 (cycle 169.3) — QPixmap 직접 load + scale
         logo_label = QLabel()
         if _LOGO_PATH.is_file():
-            renderer = QSvgRenderer(str(_LOGO_PATH))
-            pixmap = QPixmap(240, 64)
-            pixmap.fill(Qt.GlobalColor.transparent)
-            from PyQt6.QtGui import QPainter
-            painter = QPainter(pixmap)
-            renderer.render(painter)
-            painter.end()
-            logo_label.setPixmap(pixmap)
+            pixmap = QPixmap(str(_LOGO_PATH))
+            scaled = pixmap.scaledToHeight(80, Qt.TransformationMode.SmoothTransformation)
+            logo_label.setPixmap(scaled)
         else:
             logo_label.setText("TooTalk")
             logo_label.setStyleSheet("color: #ffffff; font-size: 32px; font-weight: 700;")

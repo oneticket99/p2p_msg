@@ -36,7 +36,7 @@ from app.net.auth_client import AuthClient
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
-_ICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_icon.svg"
+_ICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
 
 
 class SignupDialog(QDialog):
@@ -56,16 +56,12 @@ class SignupDialog(QDialog):
         outer.setSpacing(14)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — logo icon top 64×64
+        # 한글 주석 — PNG 원본 그대로 (cycle 169.3) — QPixmap 직접 load + 64 height scale
         logo_label = QLabel()
         if _ICON_PATH.is_file():
-            renderer = QSvgRenderer(str(_ICON_PATH))
-            pixmap = QPixmap(64, 64)
-            pixmap.fill(Qt.GlobalColor.transparent)
-            painter = QPainter(pixmap)
-            renderer.render(painter)
-            painter.end()
-            logo_label.setPixmap(pixmap)
+            pixmap = QPixmap(str(_ICON_PATH))
+            scaled = pixmap.scaledToHeight(64, Qt.TransformationMode.SmoothTransformation)
+            logo_label.setPixmap(scaled)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         outer.addWidget(logo_label)
 
