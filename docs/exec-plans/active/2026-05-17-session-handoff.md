@@ -169,6 +169,64 @@ status: active
 
 ---
 
+## 8.69 사이클 153 phase 2~4 — UI brand redesign 본격 chain — Welcome + Login + OTP + Signup + 3 column (rail/list/header) + theme picker + profile + bot panel + §3.1 sweep (2026-05-20 신설)
+
+### 8.69.1 4 cycle chain 산출 (4 commit)
+
+| commit | 영역 | 본문 |
+|---|---|---|
+| `a55a6cd` | phase 2 — Welcome + Login redesign + OTP 신설 | `welcome_dialog.py` 신설 (banner gradient + 8 icon + 4 locale) + `login_dialog.py` redesign (logo icon top + primary CTA + signup link) + `otp_dialog.py` 신설 (OtpBox + auto-advance + 재 송신 cap 5/24h + 자동 검증) + main.py Welcome → Login chain + SKIP_WELCOME env + signup intent code 2 분기 |
+| `72df1fc` | phase 3 — Signup redesign + 3 column widget 신설 | `signup_dialog.py` redesign (logo + 4 input + validation + OTPDialog chain) + `sidebar_rail.py` 신설 (64px + 4 tab + QButtonGroup exclusive + tab_clicked signal) + `chat_list_panel.py` 신설 (280~360px + 검색 + ChatListEntry dataclass + pinned sort + chat_selected signal) + `chat_header.py` 신설 (56px + avatar + name + status + 3 button signal) |
+| `a836935` | phase 3.4a — §3.1 sweep | productization.md + HTML mirror 안 기능 누락 표 cycle 119~153 정합 갱신 — Phase 5 5 Item 모두 진입 + SSH deploy + UI redesign 본격 entry (사용자 비판 회수) |
+| `5b04c18` | phase 3.4b — main_window 3 column 통합 | QSplitter 3 column (rail/room_list/right_panel) + ChatHeader 56px top bar + SidebarRail tab → stacked index 매핑 + header 3 signal slot skeleton |
+| `92281f1` | phase 4 — ProfileView + ThemePicker + BotPanel 신설 | `theme_picker.py` 신설 (3 mode 토글 + load_theme reload) + `profile_view.py` 신설 (ProfileData + avatar 96 + 4 button + tabbed) + `bot_panel.py` 신설 (BotEntry + 좌 디렉토리 + 우 detail + command list + 2 default bot — toonation_cs + stream_helper) |
+
+### 8.69.2 cycle 153 phase 1~4 누계 산출 16 file
+
+| 영역 | file |
+|---|---|
+| branding (cycle 153.1) | tootalk_logo.svg 회수 + tootalk_icon.svg + tootalk_wordmark.svg |
+| theme (cycle 153.1) | base-dark.qss + theme.py + main.py 안 load_theme 호출 |
+| dialog (cycle 153.2~3) | welcome_dialog.py + login_dialog.py + signup_dialog.py + otp_dialog.py |
+| 3 column widget (cycle 153.3) | sidebar_rail.py + chat_list_panel.py + chat_header.py |
+| main_window 통합 (cycle 153.4) | main_window.py 안 3 column 확장 + ChatHeader 통합 |
+| panel widget (cycle 153.4) | theme_picker.py + profile_view.py + bot_panel.py |
+
+### 8.69.3 사용자 비판 회수 누계 (cycle 152.4~153.4)
+
+- "로그인도 없이 메인창" → AUTH_REQUIRED=1 default + LoginDialog 강제 (cycle 152.4)
+- "텍스트는 보이지도 않아" → message_bubble text color + 한글 글꼴 fallback (cycle 152.4)
+- "투네이션 도메인은 왜 참조해" → 외부 도메인 참조 제거 (cycle 152.6)
+- "기껏만든 마크다운은 왜 사용안할라 하는거야" → FRONTEND.md §15 ground truth (cycle 152.6)
+- "자꾸 나한테 시킬라고 하네" → SMTP_PASSWORD manual 차단 + Claude 자율 chain (cycle 152)
+- "원격 서버는 니가 띄워" → SSH passwordless + docker stack 5 service + healthz 200 (cycle 152.7)
+- "이거 업데이트 된거 맞아?" → §3.1 기능 누락 표 cycle 119~153 정합 sweep (cycle 153.4)
+- "테스트는 사용자 테스트야" → phase 5 본격 entry 완료 후 사용자 manual test 의무 (cycle 152.3)
+
+### 8.69.4 다음 phase 5 entry 우선순위 (cycle 153.5+)
+
+| # | file | scope |
+|---|---|---|
+| 1 | SettingsDialog 본격 redesign | 10 section tabbed (계정/보안/알림/데이터/theme/언어/디바이스/폴더/고급/about) — 기존 sound binding 보존 + extension |
+| 2 | `emoji_picker.py` 신설 | 9 category tab + 검색 + custom pack (cycle 144 정합) |
+| 3 | main_window sidebar bots tab → BotPanel instantiate + settings tab → SettingsDialog open | tab → widget binding |
+| 4 | message_bubble reply + reaction | telegram §6 redesign |
+| 5 | profile view 진입 chain — friend row click → ProfileView modal | cycle 154+ |
+
+### 8.69.5 cycle 153 phase 1~4 누계 metric
+
+- 16 file 신설 + 6 file edit
+- pytest 1737 (cycle 152 baseline 보존 — UI redesign 미반영)
+- drift 0건 95 연속 사이클 37~153
+- sub-agent 누계 = 59종 (cycle 153 단독 진행 — sub-agent spawn 부재)
+- 가드레일 39 + cycle 153 신규 (BPE WARN 회수 누계 8회)
+
+### 8.69.6 사용자 manual test 시점
+
+phase 5 본격 entry 모두 완료 후 시점 사용자 manual test 의무 (cycle 152.3 directive 정합). 현 cycle 안 = phase 2~5 chain 본격 진행 + 사용자 test 보류.
+
+---
+
 ## 8.68 사이클 152.4~153 phase 1 — TooTalk UI brand 통합 entry — AUTH_REQUIRED LoginDialog 강제 + message bubble 한글 글꼴 + 텔레그램 14 영역 조사 + Toonation BI 통합 plan + logo SVG 색상 회수 + base-dark.qss + theme loader (2026-05-20 신설)
 
 ### 8.68.1 cycle 152.4~152.6 + 153 phase 1 chain 산출 (6 commit)
