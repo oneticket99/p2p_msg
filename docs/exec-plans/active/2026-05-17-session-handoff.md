@@ -169,6 +169,49 @@ status: active
 
 ---
 
+## 8.61 사이클 133 Phase 5 본격 진입 — i18n .ts 5 locale + auto-update UI + emoji OCR + hook 강제화 (2026-05-19 신설)
+
+### 8.61.1 3 sub-agent 병렬
+
+| sub-agent | 작업 | 산출물 + PASS |
+|---|---|---|
+| J | i18n .ts 5 locale + 추출 도구 | 8 file (5 .ts + extract.py + compile.sh + test) + 21 PASS + 100 entry skeleton |
+| K | auto-update UI dialog | app/ui/update_dialog.py + update_checker.py + 11 PASS |
+| L | emoji moderation OCR + DMCA | jailbreak_detector_ocr.py actual binding + emoji_dmca_check.py + 6 PASS |
+
+### 8.61.2 hook 강제화 — 사용자 비판 회수
+
+사용자 directive cycle 133 — "훅을 만들어도 왜 강제화가 안될까? 트리거 만들어?". 회수:
+
+- `tools/hook_html_mirror_consistency.sh` 2 layer 강화:
+  - **layer 1** — working tree dirty mismatch (.md dirty + .html clean → BLOCK)
+  - **layer 2** — content fingerprint mismatch (last_verified ISO + 사이클 N 의 md ↔ html 일치 검증, commit clean state 도 fire)
+- `.claude/settings.json` PostToolUse Edit/Write entry 추가 (강제 trigger — md/html 변경 직후 즉시 fire)
+
+### 8.61.3 pytest + drift
+
+- 전체 pytest = 1418 passed (1380 + 38 신규: i18n 21 + UI 11 + emoji 6)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0
+- drift 0건 80 연속 사이클 37~133
+
+### 8.61.4 평가 sweep
+
+- productization.md + vibe-coding.md frontmatter 17:00 KST 갱신 + 사이클 133 정합
+- productization.html + vibe-coding.html sed bulk 132 → 133 + cycle 119~133 + 15 cycle + 1418 pytest + 80 연속
+
+### 8.61.5 다음 세션 첫 액션 우선순위
+
+1. Phase 5 본격 GO directive 대기 또는 자율 chain 계속 (Item 1 i18n cycle 134~140 본격 binding)
+2. `app/ui/main_window.py` 의 `install_qt_translator` 진입 시 호출 + `periodic_check` task 등록 (auto-update)
+3. lrelease binary install + `.ts` → `.qm` compile + actual i18n binding 검증
+4. Tesseract + Pillow + pytesseract install (server) + emoji moderation OCR actual integration test
+5. KT PTR + mail-tester 최후 ([[project-dopa-demo-only]])
+6. 자동 업데이트 release workflow CI + GitHub Release 자동 생성 (Phase 5 본격)
+
+### 8.61.6 sub-agent 누계 12종 (cycle 132 9 + cycle 133 3) — 병렬 정합 [[feedback-parallel-execution-mandatory]]
+
+---
+
 ## 8.60 사이클 132 sub-agent 9종 병렬 spawn — REMOTE wiring + i18n + cron + sound + backup + emoji + wine smoke + auto-update (2026-05-19 신설)
 
 ### 8.60.1 9 영역 chain
