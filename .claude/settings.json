@@ -78,6 +78,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_assessment_token_rewrite_trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_dereliction_check.sh"
           }
         ]
       }
