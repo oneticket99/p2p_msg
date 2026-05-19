@@ -75,7 +75,7 @@ class LoginDialog(QDialog):
             "background: transparent;"
             " color: #ffffff;"
             " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
-            " font-size: 66px;"
+            " font-size: 59px;"
             " font-weight: 700;"
             " letter-spacing: -1px;"
         )

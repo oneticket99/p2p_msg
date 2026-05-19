@@ -475,8 +475,8 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 | 영역 | 값 | 비고 |
 |---|---|---|
 | symbol PNG height | **50 px** | `app/assets/branding/tootalk_symbol.png` (Toonation 공식 brand resource) + `scaledToHeight(50, SmoothTransformation)` |
-| Talk QLabel font-size | **66 px** | font-weight 700 + letter-spacing -1px + family `-apple-system, 'SF Pro Display', 'Inter', sans-serif` (cycle 169.21 — 55 → 66 추가 20% 증가) |
-| symbol:Talk ratio | **50 : 66 ≈ 0.76** | 모든 dialog (Welcome + Login + Signup) 동일 의무 |
+| Talk QLabel font-size | **59 px** | font-weight 700 + letter-spacing -1px + family `-apple-system, 'SF Pro Display', 'Inter', sans-serif` (cycle 169.22 — 66 → 59 10% 축소) |
+| symbol:Talk ratio | **50 : 59 ≈ 0.85** | 모든 dialog (Welcome + Login + Signup) 동일 의무 |
 | logo_row spacing | **0** | `setSpacing(0)` + `setContentsMargins(0, 0, 0, 0)` (symbol + Talk 딱붙임) |
 | symbol_label bg | **transparent** | `setStyleSheet("background: transparent;")` + `WA_TranslucentBackground` |
 | talk_label color | **#ffffff** | 흰색 (banner gradient 또는 dark dialog 위 노출) |
