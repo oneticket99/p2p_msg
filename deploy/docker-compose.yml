@@ -81,6 +81,22 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
       FCM_CREDENTIAL_PATH: /run/secrets/fcm_service_account.json
+      # cycle 132~151 신규 service 의 환경변수 chain — 신규 endpoint 의 의무 주입.
+      # 모두 graceful 부재 가능 (모듈 의 lazy import + try/except).
+      # i18n (cycle 132 Phase 5 Item 1) — 기본 ko + 지원 5종 (ko/en/ja/zh/es).
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-ko}
+      # 자동 업데이트 (cycle 132 version_handlers) — 데모 서버 의 release 채널 base URL.
+      AUTO_UPDATE_BASE_URL: ${AUTO_UPDATE_BASE_URL:-http://localhost:8080}
+      # bot streaming (cycle 138~151 chzzk/twitch/kick/youtube) — provider 별 토큰 graceful.
+      CHZZK_CHANNEL_ID: ${CHZZK_CHANNEL_ID:-}
+      TWITCH_OAUTH_TOKEN: ${TWITCH_OAUTH_TOKEN:-}
+      KICK_CHANNEL_ID: ${KICK_CHANNEL_ID:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      # OBS websocket (cycle 145) — 로컬 OBS Studio 의 websocket 4444 의무.
+      OBS_WEBSOCKET_URL: ${OBS_WEBSOCKET_URL:-}
+      OBS_WEBSOCKET_PASSWORD: ${OBS_WEBSOCKET_PASSWORD:-}
+      # Toonation (cycle 142~143) — donation alert API. graceful 부재.
+      TOONATION_API_KEY: ${TOONATION_API_KEY:-}
     secrets:
       - fcm_service_account.json
     networks:

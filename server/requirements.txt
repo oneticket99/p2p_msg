@@ -16,3 +16,14 @@ httpx>=0.27
 # app/notifications/fcm_client.py 의 실 binding. 미설치 시 graceful
 # log warning + push skip (PULL 폴백). production 의무.
 firebase-admin>=7.0
+# Phase 3 cycle 132~151 — bot streaming (chzzk/twitch/kick WebSocket chat 구독)
+# app/bot/streaming/*.py + app/bot/obs_websocket_client.py 의 실 binding.
+# 미설치 시 graceful — provider.is_available() 반환 False + mock 폴백.
+websockets>=12.0
+# Phase 3 cycle 138~145 — emoji 이미지 moderation (DMCA pHash + OCR)
+# app/bot/emoji_dmca_check.py + app/bot/jailbreak_detector_ocr.py 의 실 binding.
+# 미설치 시 graceful — check_dmca() / detect_ocr() 가 empty 반환 + log warning.
+# 본 3 dependency = optional + 데모 서버 의무 (production emoji 검수 활성 시).
+Pillow>=10.0
+pytesseract>=0.3.10
+ImageHash>=4.3

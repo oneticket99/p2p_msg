@@ -5,10 +5,18 @@
 FROM python:3.13-slim AS base
 
 # 한글 주석: OS 패키지 (mariadb-client psql ping curl 등). cache layer 최소화.
+# cycle 152 — tesseract-ocr (jailbreak_detector_ocr 의 system binary 의무) +
+# libjpeg/libwebp/libpng (Pillow 빌드 base) + libmagic1 (file MIME 감지) 추가.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     tzdata \
+    tesseract-ocr \
+    tesseract-ocr-kor \
+    libjpeg62-turbo \
+    libwebp7 \
+    libpng16-16 \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/* \
     && cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime \
     && echo "Asia/Seoul" > /etc/timezone
