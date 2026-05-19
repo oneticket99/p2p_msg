@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T21:00:00+09:00
+last_verified: 2026-05-19T22:30:00+09:00
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 21:00 KST (사이클 148 — sub-agent 5종 병렬 chain 누계 산출물 통합 — OBS WebSocket v5 actual binding + emoji 관리자 메뉴 binding + messages dual smoke test + signaling e2e + remote coord transform: cycle 119~148 30 cycle 누계 + 1673 pytest + drift 0건 91 연속 사이클 37~148 + sub-agent 누계 46종 병렬 + Phase 5 5 Item 모두 actual binding 부분 진입). 이전 사이클 145~147 — sub-agent 7종 누계 (doc sweep + i18n .qm + streaming 4 platform + test fail 회수 + rooms invite + emoji list_pending + mobile Flutter base): cycle 119~147 29 cycle 누계 + 1636 pytest + drift 0건 90 연속 사이클 37~147 + sub-agent 누계 41종 병렬
+> 최근 갱신 시점: 2026-05-19 22:30 KST (사이클 152 — cycle 149~152 4 cycle chain 누계 + server docker 환경 cycle 100~151 산출 통합 — web Dockerfile tesseract/Pillow/ImageHash/pytesseract 4 신규 dependency + docker-compose 12 env + migration 0001~0007 자동 적용 + OBS Studio install 의무 부재 영구화 + release.yml dual macOS arm64 + Windows x64 + DMCA phash emoji dispatcher + 원격 제어 좌표 보정 coord_transform + mobile cycle 181 prereq doc: cycle 119~152 34 cycle 누계 + 1737 pytest + drift 0건 95 연속 사이클 37~152 + sub-agent 누계 59종 병렬 + Phase 5 5 Item 모두 actual binding 진입). 이전 사이클 148 — sub-agent 5종 (OBS v5 + emoji admin menu + messages dual smoke + signaling e2e + remote coord transform + assessment token rewrite trigger): cycle 119~148 30 cycle 누계 + 1673 pytest + drift 0건 91 연속
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---

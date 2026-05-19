@@ -1,7 +1,7 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T21:00:00+09:00
+last_verified: 2026-05-19T22:30:00+09:00
 status: active
 ---
 
@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 21:00 KST (사이클 148 — sub-agent 5종 병렬 chain 누계 산출물 통합 — OBS WebSocket v5 actual binding + emoji 관리자 메뉴 binding + messages dual smoke test + signaling e2e + remote coord transform: 30 cycle 누계 cycle 119~148 + 1673 pytest + drift 0건 91 연속 사이클 37~148 + sub-agent 누계 46종 병렬 + Phase 5 5 Item 모두 actual binding 부분 진입). 이전 사이클 145~147 — sub-agent 7종 누계 (doc sweep + i18n .qm + streaming 4 platform + test fail 회수 + rooms invite + emoji list_pending + mobile Flutter base): 29 cycle 누계 cycle 119~147 + 1636 pytest + drift 0건 90 연속 사이클 37~147
+> 최근 갱신 시점: 2026-05-19 22:30 KST (사이클 152 — cycle 149~152 4 cycle chain 누계 + server docker 환경 cycle 100~151 산출 통합 + OBS Studio install 의무 부재 영구화 + release.yml dual macOS arm64 + Windows x64 + DMCA phash emoji dispatcher + 원격 제어 좌표 보정 + mobile cycle 181 prereq doc: 34 cycle 누계 cycle 119~152 + 1737 pytest + drift 0건 95 연속 사이클 37~152 + sub-agent 누계 59종 병렬 + Phase 5 5 Item 모두 actual binding 진입). 이전 사이클 148 — sub-agent 5종 (OBS v5 + emoji admin menu + messages dual smoke + signaling e2e + remote coord transform): 30 cycle 누계 cycle 119~148 + 1673 pytest + drift 0건 91 연속
 
 ---
 

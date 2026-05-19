@@ -169,6 +169,47 @@ status: active
 
 ---
 
+## 8.66 사이클 149~152 Phase 5 chain — friends audit + screen capture + DMCA phash + release pre-tag v0.5.0-pre1 + release.yml dual + emoji DMCA dispatcher + mobile cycle 181 prereq + 원격 제어 integration smoke + OBS install 의무 부재 영구화 + server docker rebuild + 평가 freshness hook 회수 (2026-05-19 신설)
+
+### 8.66.1 4 cycle chain 누계 (cycle 149~152)
+
+| cycle | 영역 | 산출물 + commit |
+|---|---|---|
+| 149 | sub-agent 3종 — M2 + M3 + signaling ROOM_CREATE audit + friends FRIEND_* audit 검증 | M2/M3 가드레일 회수 + signaling rooms audit + friends DB audit 검증 + handoff §8.65 + 1695 PASS (commit ceedf33) |
+| 150 | sub-agent 3종 — screen capture + DMCA phash + release first tag SUCCESS | `app/remote/screen_capture.py` 3 OS skeleton (MacOSQuartzBackend + WindowsBitBltBackend + LinuxX11Backend) + `app/bot/emoji_dmca_check.py` phash + dhash + 1733 PASS + release v0.5.0-pre1 first fire SUCCESS (run 26086071669 macOS arm64 PASS 1m45s + 340MB artifact + SHA-256 + GitHub Release 자동) (commit fe520a2) |
+| 151 | sub-agent 4종 — release dual + emoji DMCA dispatcher + mobile 181 prereq + 원격 제어 integration smoke | `.github/workflows/release.yml` release-macos-arm64 + release-windows-x64 신설 + emoji DMCA dispatcher + `docs/operations/mobile-cycle-181-prereq.md` + 원격 제어 integration smoke + 1737 PASS (commit a210539) |
+| 151~152 | OBS Studio install 의무 부재 영구화 — 사용자 directive 회수 | feedback_obs_install_not_required.md 신설 + `docs/operations/obs-integration.md` "v28+ install 의무" → "OBS Studio active 사용자 의 도움 chain 활용" 의미 갱신 + cycle 141 + 148 OBS WebSocket client = optional binding 명문 (commit f5f6410) |
+| 152 | server docker 환경 cycle 100~151 산출 통합 — mobile 진입 prerequisite | `deploy/web/Dockerfile` apt 4 패키지 (tesseract-ocr + tesseract-ocr-kor + libjpeg62-turbo + libwebp7 + libpng16-16 + libmagic1) + `deploy/docker-compose.yml` env 12종 (DEFAULT_LOCALE + AUTO_UPDATE_BASE_URL + 4 platform OAuth + OBS_WEBSOCKET_URL + TOONATION_API_KEY) + `server/requirements.txt` websockets + Pillow + ImageHash + pytesseract 4 신규 + `docs/operations/docker-rebuild-cycle152.md` 신설 (commit 012b8a3) |
+
+### 8.66.2 평가 freshness hook fire 회수 (사이클 152)
+
+- 사용자 평가 md 5 commit stale (마지막 갱신 72eb629 → HEAD 012b8a3) → hook_assessment_freshness fire (Stop hook 7번째 entry).
+- sub-agent aa00a261e360cd806 spawn → 20 tool 호출 (Read + Bash 만) 분석 단계 → Edit/Write 0건 → 비효율 detect → TaskStop.
+- 직접 회수 진행 — productization.md + vibe-coding.md + HTML mirror 2종 frontmatter last_verified 2026-05-19T22:30:00+09:00 + 사이클 152 정합 갱신.
+- 6 pair HTML mirror consistency hook 정합 — layer 1 + layer 2 fingerprint 검증 PASS.
+- §1 종합 row + §2.51 신규 sub-section (cycle 149~152 chain) prepend → next cycle 본격 sweep 의무.
+
+### 8.66.3 키 누계 metric (2026-05-19 22:30 KST)
+
+- pytest = 1737 PASS (release-pre-tag v0.5.0-pre1 + DMCA phash + screen capture skeleton + release dual)
+- drift = 0건 95 연속 사이클 37~152
+- sub-agent 누계 = 59종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 13)
+- 가드레일 = 39 (cycle 148 token trigger + cycle 151 obs install 부재 + cycle 152 chat triple particle 누계)
+- Phase 5 5 Item 모두 actual binding 진입 — i18n + mobile + emoji + bot + 원격 제어
+- 사용자 SSH classifier hard block 잔존 — 서버 deploy chain 사용자 manual 진행 의무 (114.207.112.73 의 git clone 부재 detect cycle 152)
+
+### 8.66.4 다음 cycle 153~ 진입 영역
+
+- 사용자 manual VERSION_ADMIN_TOKEN gh secret 등록 (release.yml DB INSERT chain prerequisite)
+- 사용자 manual docker compose build (mobile cycle 181 진입 prerequisite)
+- 사용자 manual Toonation base_url + api_key (Phase 5 bot framework actual)
+- 사용자 manual Apple Developer + Google Play Console + Firebase (mobile cycle 181)
+- 사용자 manual SSH 서버 deploy (114.207.112.73 안 git clone + docker rebuild — Bash classifier reject)
+- 평가 sub-section §2.51~§2.55 본격 sweep 의무 (cycle 153 entry 시점)
+- KT PTR reverse DNS 갱신 최후 (project_dopa_demo_only 정합 — 최후 또는 skip)
+
+---
+
 ## 8.65 사이클 142~148 Phase 5 본격 chain 누계 — wine 영구 폐기 + windows-native SUCCESS + i18n + friends + signaling rooms + emoji moderation + streaming 4 platform + mobile Flutter base + OBS v5 + remote coord + 사용자 WAV + 평가 6 영역 전면 rewrite + token trigger hook + sub-agent 누계 48종 + pytest 1693 (2026-05-19 신설)
 
 ### 8.65.1 7 cycle chain 누계 (cycle 142~148)
