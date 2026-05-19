@@ -145,6 +145,9 @@ class ChatView(QScrollArea):
         text: str,
         ts: datetime,
         is_self: bool = False,
+        *,
+        reply_to: Optional["object"] = None,
+        reactions: Optional[dict] = None,
     ) -> None:
         """신규 메시지를 리스트에 추가하고 하단으로 자동 스크롤.
 
@@ -166,6 +169,8 @@ class ChatView(QScrollArea):
             ts=ts,
             is_self=is_self,
             parent=self._content,
+            reply_to=reply_to,  # type: ignore[arg-type]
+            reactions=reactions,
         )
 
         # stretch 슬롯 직전 (count - 1 위치) 에 삽입

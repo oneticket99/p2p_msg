@@ -862,6 +862,8 @@ class MainWindow(QMainWindow):
             if not hasattr(self, "_bot_panel_idx"):
                 from app.ui.bot_panel import BotPanel
                 bot_panel = BotPanel(parent=self._stacked)
+                # cycle 153.8 — command click → InputBar text inject chain
+                bot_panel.command_invoked.connect(self._on_bot_command_invoked)  # type: ignore[arg-type]
                 self._bot_panel_idx = self._stacked.addWidget(bot_panel)
             self._stacked.setCurrentIndex(self._bot_panel_idx)
         elif tab_key == "settings":
@@ -890,6 +892,19 @@ class MainWindow(QMainWindow):
     def _on_input_file_attached(self, paths: list) -> None:
         """InputBar file_attached → 파일 송신 chain (cycle 154+ entry)."""
         log.info("input file attached — %d file (cycle 154+ binding)", len(paths))
+
+    @pyqtSlot(str, str)
+    def _on_bot_command_invoked(self, bot_username: str, command: str) -> None:
+        """BotPanel command click → InputBar text inject + send chain."""
+        # 한글 주석 — bot command 본문 = "/command @bot_username" pattern
+        message = f"{command} @{bot_username}"
+        try:
+            if hasattr(self, "_input_bar"):
+                self._input_bar._text_edit.setPlainText(message)
+                self._input_bar._text_edit.setFocus()
+            log.info("bot command inject — %s %s", command, bot_username)
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("bot command inject 실패 — %r", exc)
 
     @pyqtSlot(int)
     def _on_friend_profile_open(self, friend_id: int) -> None:

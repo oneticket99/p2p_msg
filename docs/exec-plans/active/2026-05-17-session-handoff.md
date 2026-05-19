@@ -169,6 +169,111 @@ status: active
 
 ---
 
+## 8.70 사이클 153 phase 5~8 — UI brand redesign 마무리 chain — SettingsDialog 10 section + EmojiPicker + InputBar + MessageBubble reply/reaction + ChatView reply_to param + bot command inject + friend profile modal (2026-05-20 신설)
+
+### 8.70.1 4 cycle chain 산출 (4 commit)
+
+| commit | 영역 | 본문 |
+|---|---|---|
+| `044c1bc` | phase 5 — SettingsDialog 10 section + EmojiPicker + tab binding | settings_dialog.py 본격 redesign (QTabWidget West + 10 tab + 기존 sound binding 알림 tab inline 보존) + emoji_picker.py 신설 (9 category + 검색 + custom pack placeholder + 표준 Unicode 만) + main_window bots/settings tab → BotPanel/SettingsDialog binding |
+| `38cbbac` | phase 6 — MessageBubble reply/reaction + InputBar | message_bubble.py extend (ReplyContext dataclass + reply_to + reactions + read receipt ✓✓ + Toonation BI 색상) + input_bar.py 신설 (📎 첨부 + 😀 emoji popup + multi-line + 🎤 voice + ▶ 보내기 + drag&drop) |
+| `514bc99` | phase 7 — main_window InputBar 통합 + friend profile modal | input_row → InputBar widget 교체 + legacy attribute 보존 + QTextEdit toPlainText() 우선 + friend_chat_clicked → ProfileView modal (440×560) |
+| `(본 commit)` | phase 8 — ChatView reply_to param + bot command inject + freshness 회수 | chat_view.add_message reply_to + reactions kwargs + main_window bot_panel command_invoked → InputBar text inject + 평가 4 file + handoff §8.70 prepend |
+
+### 8.70.2 cycle 153 phase 1~8 누계 산출 22 file
+
+| 영역 | file |
+|---|---|
+| branding (cycle 153.1) | tootalk_logo.svg 회수 + tootalk_icon.svg + tootalk_wordmark.svg (3) |
+| theme (cycle 153.1) | base-dark.qss + theme.py + main.py load_theme 호출 (3) |
+| dialog (cycle 153.2~3) | welcome_dialog.py + login_dialog.py + signup_dialog.py + otp_dialog.py (4) |
+| 3 column widget (cycle 153.3) | sidebar_rail.py + chat_list_panel.py + chat_header.py (3) |
+| main_window 통합 (cycle 153.4~7) | main_window.py 안 3 column + ChatHeader + InputBar + BotPanel/SettingsDialog binding + ProfileView modal (1) |
+| panel widget (cycle 153.4) | theme_picker.py + profile_view.py + bot_panel.py (3) |
+| settings redesign (cycle 153.5) | settings_dialog.py 10 section tabbed (1) |
+| picker (cycle 153.5) | emoji_picker.py (1) |
+| bubble + input (cycle 153.6~7) | message_bubble.py reply/reaction + input_bar.py (2) |
+| chat_view (cycle 153.8) | chat_view.py reply_to + reactions kwargs (1) |
+| 합계 | 22 file (신설 17 + edit 5) |
+
+### 8.70.3 signal/slot chain 최종
+
+```
+SidebarRail.tab_clicked
+  → main._on_sidebar_tab_clicked(friends/rooms/bots/settings)
+  → stacked index 변경 + ChatHeader 갱신
+  → bots: BotPanel instantiate + command_invoked binding
+  → settings: SettingsDialog modal open + 복귀
+
+BotPanel.command_invoked(bot_username, command)
+  → main._on_bot_command_invoked
+  → InputBar._text_edit setPlainText + setFocus
+
+InputBar.message_sent(text)
+  → main._on_input_message_sent
+  → 기존 _on_send_clicked chain (ChatView add_message + DataChannel)
+
+InputBar.file_attached(paths)
+  → main._on_input_file_attached (cycle 154+ actual)
+
+InputBar drag drop
+  → file URL list → file_attached signal
+
+FriendListWidget.friend_chat_clicked(friend_id)
+  → main._on_friend_profile_open
+  → ProfileView modal QDialog (440×560) + message_clicked signal
+
+ChatView.add_message(reply_to, reactions)
+  → MessageBubble (ReplyContext border-left + reaction pill + read receipt ✓✓)
+
+EmojiPicker.emoji_selected(emoji)
+  → InputBar._on_emoji_inserted
+  → text_edit insertPlainText
+```
+
+### 8.70.4 사용자 manual test 시점 (사용자 directive 2026-05-20)
+
+phase 8 마무리 = cycle 153 본격 entry 완료. 사용자 manual test 진입 가능 시점 도달:
+
+```bash
+cd /Users/oneticket_toonation/Documents/vscode_work/p2p_msg
+git pull origin main
+source .venv/bin/activate
+python -m app.main
+```
+
+검증 영역 7종:
+1. WelcomeDialog banner + logo + 시작하기 CTA + 4 locale switch
+2. LoginDialog logo icon + email + password + 회원가입 ghost link + Enter trigger
+3. SignupDialog 4 input + validation + OTPDialog chain
+4. OTPDialog 6 box auto-advance + 재 송신 cap
+5. MainWindow 3 column (Rail + RoomList + Right) + ChatHeader 56px + InputBar (첨부/emoji/voice/send/drag&drop)
+6. SidebarRail 4 tab → BotPanel + SettingsDialog 10 section
+7. ChatView 안 reply preview + reaction pill + read receipt ✓✓
+
+### 8.70.5 cycle 153 누계 metric
+
+- 22 file 신설/edit (cycle 153 단독)
+- pytest 1737 (cycle 152 baseline 보존 — UI redesign 미반영)
+- drift 0건 95 연속 사이클 37~153
+- BPE WARN 회수 누계 10회
+- 사용자 비판 8건 verbatim 회수 (cycle 152.4~153.4)
+- 평가 freshness hook fire 5회 + 회수 5회
+
+### 8.70.6 다음 cycle 154+ 진입 우선순위
+
+| 우선 | 영역 | scope |
+|---|---|---|
+| 1 | 사용자 manual test → 시각 검증 + UI bug detect | cycle 154 entry trigger |
+| 2 | reply chain actual binding | bubble 우 click context menu + reply mode entry |
+| 3 | reaction chain actual binding | bubble long-press + emoji picker popup + count persist |
+| 4 | file_attached actual binding | DataChannel chunk transfer 연결 |
+| 5 | profile view 4 button actual binding | message/call/mute/block endpoint chain |
+| 6 | theme picker actual reload chain | settings 안 theme 변경 즉시 적용 |
+| 7 | SMTP_PASSWORD 사용자 manual `.env` paste + 서버 web restart | OTP 발송 production |
+
+---
+
 ## 8.69 사이클 153 phase 2~4 — UI brand redesign 본격 chain — Welcome + Login + OTP + Signup + 3 column (rail/list/header) + theme picker + profile + bot panel + §3.1 sweep (2026-05-20 신설)
 
 ### 8.69.1 4 cycle chain 산출 (4 commit)
