@@ -152,12 +152,28 @@ class OTPDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — 재 송신 link + cancel
+        # 한글 주석 — 재 송신 button (cycle 169.46 회수 — setFlat 폐기 + hit area 강제 + cursor)
         link_row = QHBoxLayout()
         link_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._resend_btn = QPushButton(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
         self._resend_btn.setProperty("variant", "ghost")
-        self._resend_btn.setFlat(True)
+        self._resend_btn.setMinimumHeight(36)
+        self._resend_btn.setMinimumWidth(180)
+        self._resend_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._resend_btn.setStyleSheet(
+            "QPushButton {"
+            " color: #22D3EE;"
+            " background: transparent;"
+            " border: 1px solid #22D3EE;"
+            " border-radius: 6px;"
+            " padding: 6px 16px;"
+            " font-size: 13px;"
+            " font-weight: 600;"
+            "}"
+            " QPushButton:hover { background: rgba(34,211,238,0.12); }"
+            " QPushButton:pressed { background: rgba(34,211,238,0.20); }"
+            " QPushButton:disabled { color: #6b7280; border-color: #374151; }"
+        )
         self._resend_btn.clicked.connect(self._on_resend_clicked)  # type: ignore[arg-type]
         link_row.addWidget(self._resend_btn)
         outer.addLayout(link_row)
