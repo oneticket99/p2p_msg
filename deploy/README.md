@@ -68,4 +68,4 @@ docker compose exec mariadb mariadb -u tootalk -p tootalk -e "SHOW TABLES;"
 - [Phase 4 infra setup plan](../docs/exec-plans/active/2026-05-22-phase4-infra-setup.md)
 - [bot framework 정책](../docs/policies/bot-framework.md)
 - [DB schema 정본](../server/db/migrations/)
-- [SMTP 데모 서버 memory](~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_smtp_demo_server.md)
+- SMTP 데모 서버 memory — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_smtp_demo_server.md` (local 자격 memory)

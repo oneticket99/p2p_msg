@@ -77,7 +77,7 @@ docker compose run --rm certbot certonly \
 
 ## 참조
 
-- [project_smtp_demo_server.md](~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_smtp_demo_server.md) — SMTP 데모 서버 memory (사용자 directive 2026-05-17)
+- `project_smtp_demo_server.md` path = `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_smtp_demo_server.md` — SMTP 데모 서버 memory (사용자 directive 2026-05-17)
 - [postfix Dockerfile](Dockerfile)
 - [opendkim.conf](opendkim.conf)
 - [Phase 4 infra setup §2.6 보안 의무](../../docs/exec-plans/active/2026-05-22-phase4-infra-setup.md)

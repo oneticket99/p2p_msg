@@ -177,17 +177,21 @@ Phase 5 = TooTalk 의 **확장 단계**. Phase 1~4 의 메신저 base + bot fram
 
 ---
 
-## 7. 누적 cycle 의 예상
+## 7. 누적 cycle 의 예상 + 진행 순서
 
-| Item | cycle 범위 | 누계 |
-|---|---|---|
-| Item 1 i18n | 130~139 | 10 cycle |
-| Item 2 mobile | 140~149 | 10 cycle (별개 codebase, 본 plan 외 가능) |
-| Item 3 emoji pack | 140~146 | 7 cycle |
-| Item 4 bot 마무리 | 150~160 | 11 cycle |
-| Item 5 원격 제어 | 165~176 | 12 cycle |
+**진행 순서 — 사용자 directive 2026-05-19 정합** ([[project-phase5-mobile-last]]):
 
-**Phase 5 누계 = 40~50 cycle** (Phase 4 의 18 cycle 의 2~3배).
+| 순서 | Item | cycle 범위 | 누계 |
+|---|---|---|---|
+| 1 | Item 1 i18n | 131~140 | 10 cycle |
+| 2 | Item 3 emoji pack share | 141~150 | 10 cycle |
+| 3 | Item 4 bot 마무리 | 151~165 | 15 cycle |
+| 4 | Item 5 원격 제어 본격 | 166~180 | 15 cycle |
+| 5 | **Item 2 mobile (가장 마지막)** | 181~200 | 20 cycle |
+
+**Phase 5 누계 = 70 cycle 추정** (Phase 4 의 18 cycle 의 약 4배 — mobile codebase 별개 + Flutter / dart binding / libsignal-dart / FCM mobile SDK 의 추가 prerequisite).
+
+**Item 2 mobile 의무 prerequisite**: Item 1 (i18n) + Item 3 (emoji pack share) + Item 4 (bot framework 마무리) + Item 5 (원격 제어) 의 모든 완료 후 진입. 데스크탑 client (PyQt6) 완전 안정화 + 차별화 emoji + bot production + 원격 제어 본격 도입 후 mobile dogfooding base 확보 정합.
 
 ---
 
@@ -204,7 +208,7 @@ Phase 5 = TooTalk 의 **확장 단계**. Phase 1~4 의 메신저 base + bot fram
 
 - [Phase 4 plan](2026-05-22-phase4-infra-setup.md)
 - [Phase 1 MVP plan](2026-05-17-tootalk-phase1-mvp.md)
-- [bot framework 정책](../../docs/policies/bot-framework.md)
-- [memory project_emoji_pack_share](~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_emoji_pack_share.md)
-- [memory project_bot_framework](~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_bot_framework.md)
-- [memory project_phase2_remote_control_differentiator](~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_phase2_remote_control_differentiator.md)
+- [bot framework 정책](../../policies/bot-framework.md)
+- memory `project_emoji_pack_share.md` — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_emoji_pack_share.md` (Phase 3+ emoji pack 차별화)
+- memory `project_bot_framework.md` — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_bot_framework.md` (Phase 3 마무리 + Phase 5 본격)
+- memory `project_phase2_remote_control_differentiator.md` — `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/project_phase2_remote_control_differentiator.md` (원격 제어 차별화)
