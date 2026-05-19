@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import sys
 
 import qasync
@@ -97,8 +98,18 @@ def main() -> int:
     api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").rstrip("/ws")
     auth_client = AuthClient(api_base)
 
-    # 5) 메인 윈도우 표시 (AUTH_REQUIRED=1 시 로그인 우선 의)
-    window = MainWindow(config=config)
+    # 5) AUTH_REQUIRED=1 시 LoginDialog 강제 진입 — Phase 1 회원가입 + 이메일 OTP 의무
+    # default = 1 (사용자 directive 2026-05-19 cycle 152 회수)
+    auth_required = os.environ.get("AUTH_REQUIRED", "1") == "1"
+    if auth_required:
+        login = LoginDialog(auth_client=auth_client)
+        if login.exec() != login.DialogCode.Accepted:
+            logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
+            loop.run_until_complete(auth_client.close())
+            return 0
+
+    # 6) 메인 윈도우 표시
+    window = MainWindow(config=config, auth_client=auth_client)
     window.show()
 
     # 6) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리

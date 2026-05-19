@@ -100,11 +100,17 @@ class MessageBubble(QFrame):
             )
             bubble_layout.addWidget(sender_label)
 
-        # 본문 텍스트 라벨 — 줄바꿈 허용
+        # 본문 텍스트 라벨 — 줄바꿈 허용 + 한글 글꼴 fallback + dark mode 안 text color 명시
         text_label = QLabel(text, bubble)
         text_label.setWordWrap(True)
         text_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        text_label.setStyleSheet(
+            "color: #1a1a1a;"
+            " font-size: 13px;"
+            " font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR',"
+            " 'Malgun Gothic', sans-serif;"
         )
         bubble_layout.addWidget(text_label)
 
