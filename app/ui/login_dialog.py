@@ -1,17 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""로그인 다이얼로그 — email + password → 세션 토큰 발급."""
+"""LoginDialog — email + password 세션 토큰 발급 (cycle 153 phase 2 redesign).
+
+Toonation BI 통합 — logo icon top + primary CTA + 한글 글꼴 통합 + brand 색상.
+정합 = FRONTEND.md §15 + telegram-ui-survey.md §2 + toonation-brand-integration-plan §4.2.
+"""
 
 from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import Optional
 
-from PyQt6.QtCore import QCoreApplication
+from PyQt6.QtCore import QCoreApplication, Qt
+from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import (
     QDialog,
-    QFormLayout,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
@@ -22,14 +29,16 @@ from PyQt6.QtWidgets import (
 from app.net.auth_client import AuthClient
 
 log = logging.getLogger(__name__)
-
-# 한글 주석 — cycle 144 i18n production binding. MainWindow context 의 20 .ts
-# entry 와 정합 의무 — QCoreApplication.translate 호출 helper.
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
+
+_ICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_icon.svg"
 
 
 class LoginDialog(QDialog):
-    """로그인 다이얼로그 — 성공 시 세션 토큰 + user_id 보관 후 accept()."""
+    """로그인 다이얼로그 — Toonation BI 통합 redesign + email + password.
+
+    성공 시 세션 토큰 + user_id 보관 후 accept().
+    """
 
     def __init__(self, auth_client: AuthClient, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -37,35 +46,83 @@ class LoginDialog(QDialog):
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        # 한글 주석 — title 의 "TooTalk · 로그인" 패턴. 로그인 토큰 의 tr() wrap.
         self.setWindowTitle(f"TooTalk · {_tr('로그인')}")
-        self.setMinimumWidth(320)
+        self.setMinimumWidth(420)
+        self.setMinimumHeight(480)
 
-        form = QFormLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(32, 32, 32, 32)
+        outer.setSpacing(16)
+        outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        # 한글 주석 — logo icon top (64×64 — tootalk_icon.svg)
+        logo_label = QLabel()
+        if _ICON_PATH.is_file():
+            renderer = QSvgRenderer(str(_ICON_PATH))
+            pixmap = QPixmap(64, 64)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            renderer.render(painter)
+            painter.end()
+            logo_label.setPixmap(pixmap)
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        outer.addWidget(logo_label)
+
+        # 한글 주석 — title + sub
+        title = QLabel(_tr("TooTalk 로그인"))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700;")
+        outer.addWidget(title)
+
+        sub = QLabel(_tr("email + password 입력"))
+        sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        outer.addWidget(sub)
+
+        outer.addSpacing(16)
+
+        # 한글 주석 — email + password input — Toonation 통합 style
         self._email_edit = QLineEdit()
         self._email_edit.setPlaceholderText("user@example.com")
-        form.addRow("이메일", self._email_edit)
+        self._email_edit.setMinimumHeight(44)
+        outer.addWidget(self._email_edit)
 
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        # 한글 주석 — "비밀번호" .ts entry 의 tr() wrap (5 locale 매핑 검증 의무).
-        form.addRow(_tr("비밀번호"), self._password_edit)
+        self._password_edit.setPlaceholderText(_tr("비밀번호"))
+        self._password_edit.setMinimumHeight(44)
+        outer.addWidget(self._password_edit)
 
-        row = QHBoxLayout()
-        # 한글 주석 — "로그인" / "취소" 의 2 entry 의 tr() wrap (en=Login/Cancel 등 정합).
+        outer.addSpacing(8)
+
+        # 한글 주석 — 로그인 button (primary) + cancel (secondary)
         btn_login = QPushButton(_tr("로그인"))
+        btn_login.setProperty("variant", "primary")
+        btn_login.setMinimumHeight(44)
         btn_login.clicked.connect(self._on_login_clicked)  # type: ignore[arg-type]
+        outer.addWidget(btn_login)
+
+        btn_row = QHBoxLayout()
         btn_cancel = QPushButton(_tr("취소"))
+        btn_cancel.setProperty("variant", "ghost")
+        btn_cancel.setFlat(True)
         btn_cancel.clicked.connect(self.reject)  # type: ignore[arg-type]
-        row.addWidget(btn_cancel)
-        row.addWidget(btn_login)
-        form.addRow(row)
+
+        btn_signup_link = QPushButton(_tr("회원가입"))
+        btn_signup_link.setProperty("variant", "ghost")
+        btn_signup_link.setFlat(True)
+        btn_signup_link.clicked.connect(self._on_signup_link_clicked)  # type: ignore[arg-type]
+
+        btn_row.addWidget(btn_cancel)
+        btn_row.addStretch(1)
+        btn_row.addWidget(btn_signup_link)
+        outer.addLayout(btn_row)
+
+        # 한글 주석 — Enter key 시 login trigger
+        self._password_edit.returnPressed.connect(self._on_login_clicked)  # type: ignore[arg-type]
 
     @property
     def token(self) -> Optional[str]:
-        """로그인 PASS 시 세션 토큰 (accept() 후 caller 단 조회)."""
-
         return self._token
 
     @property
@@ -76,7 +133,6 @@ class LoginDialog(QDialog):
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
         if not email or not password:
-            # 한글 주석 — 경고문 안 "비밀번호" 의 tr() 의 부분 lookup 의무.
             QMessageBox.warning(
                 self,
                 "TooTalk",
@@ -85,6 +141,12 @@ class LoginDialog(QDialog):
             return
         asyncio.ensure_future(self._do_login(email, password))
 
+    def _on_signup_link_clicked(self) -> None:
+        """회원가입 link click — 본 dialog 종료 + 사용자 main flow 안 SignupDialog 분기."""
+        # 한글 주석 — reject + 별개 dialog code 의 signup 의도 명시 (main.py 안 분기 의무)
+        self.setResult(2)  # 한글 주석 — 2 = signup intent (cycle 154+ main.py 안 정합 의무)
+        self.reject()
+
     async def _do_login(self, email: str, password: str) -> None:
         result = await self._client.login(email, password)
         if result.ok:
@@ -92,7 +154,6 @@ class LoginDialog(QDialog):
             self._user_id = result.user_id
             self.accept()
         else:
-            # 한글 주석 — "로그인" .ts entry tr() + 실패 의 suffix 결합.
             QMessageBox.critical(
                 self,
                 f"{_tr('로그인')} 실패",
