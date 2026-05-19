@@ -30,6 +30,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_post_write_inspect.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_html_mirror_consistency.sh"
           }
         ]
       }
