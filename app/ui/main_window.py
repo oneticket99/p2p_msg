@@ -895,8 +895,28 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(list)
     def _on_input_file_attached(self, paths: list) -> None:
-        """InputBar file_attached → 파일 송신 chain (cycle 154+ entry)."""
-        log.info("input file attached — %d file (cycle 154+ binding)", len(paths))
+        """InputBar file_attached → DataChannel chunk transfer chain (cycle 154.2 actual)."""
+        log.info("input file attached — %d file", len(paths))
+        # 한글 주석 — cycle 154.2 file_sender 의존 graceful binding
+        try:
+            file_sender = getattr(self, "_file_sender", None)
+            if file_sender is None:
+                # 한글 주석 — placeholder ChatView 안 system message render
+                from datetime import datetime
+                for path in paths:
+                    self._chat_view.add_message(
+                        sender="system",
+                        text=f"📎 첨부 (송신 대기): {path}",
+                        ts=datetime.now(),
+                        is_self=True,
+                    )
+                return
+            # 한글 주석 — file_sender.send(path) async coroutine chain (cycle 119+ FileSender 정합)
+            import asyncio
+            for path in paths:
+                asyncio.ensure_future(file_sender.send(path))
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("file attached chain 실패 — %r", exc)
 
     @pyqtSlot(str, str)
     def _on_chat_reply_requested(self, sender: str, text: str) -> None:
@@ -953,10 +973,53 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         view = ProfileView(parent=modal)
         view.set_profile(profile)
-        # cycle 154+ — 4 button signal 연결 chain
-        view.message_clicked.connect(lambda _uid=friend_id: modal.accept())  # type: ignore[arg-type]
+        # cycle 154.2 — 4 button actual binding chain
+        view.message_clicked.connect(lambda _uid=friend_id: self._profile_message_clicked(modal, friend_id))  # type: ignore[arg-type]
+        view.call_clicked.connect(lambda _uid=friend_id: self._profile_call_clicked(friend_id))  # type: ignore[arg-type]
+        view.mute_clicked.connect(lambda _uid=friend_id: self._profile_mute_clicked(friend_id))  # type: ignore[arg-type]
+        view.block_clicked.connect(lambda _uid=friend_id: self._profile_block_clicked(modal, friend_id))  # type: ignore[arg-type]
         layout.addWidget(view)
         modal.exec()
+
+    def _profile_message_clicked(self, modal, friend_id: int) -> None:
+        """profile 메시지 button → modal close + chat 진입 (cycle 154.2)."""
+        modal.accept()
+        # 한글 주석 — 1:1 chat 진입 — friend_chat_clicked 등가 path 이미 main_window 안 처리
+        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+        self._chat_header.set_chat(f"friend #{friend_id}", "online", "👤")
+
+    def _profile_call_clicked(self, friend_id: int) -> None:
+        """profile 통화 button — cycle 200+ WebRTC SDP entry."""
+        log.info("profile call clicked — friend_id=%d cycle 200+ entry", friend_id)
+
+    def _profile_mute_clicked(self, friend_id: int) -> None:
+        """profile 음소거 토글 (cycle 154.2)."""
+        muted = getattr(self, "_muted_friends", set())
+        if friend_id in muted:
+            muted.discard(friend_id)
+        else:
+            muted.add(friend_id)
+        self._muted_friends = muted
+        log.info("profile mute toggle — friend_id=%d muted=%s", friend_id, friend_id in muted)
+
+    def _profile_block_clicked(self, modal, friend_id: int) -> None:
+        """profile 차단 button → friends_client.block endpoint (cycle 154.2)."""
+        from PyQt6.QtWidgets import QMessageBox
+        confirm = QMessageBox.question(
+            self,
+            "TooTalk",
+            f"friend #{friend_id} 차단?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if confirm == QMessageBox.StandardButton.Yes:
+            client = getattr(self, "_friends_client", None)
+            if client is not None:
+                import asyncio
+                try:
+                    asyncio.ensure_future(client.block(friend_id))  # type: ignore[attr-defined]
+                except Exception as exc:  # pragma: no cover - graceful
+                    log.debug("block chain 실패 — %r", exc)
+            modal.accept()
 
     @pyqtSlot()
     def _on_header_search(self) -> None:

@@ -169,6 +169,55 @@ status: active
 
 ---
 
+## 8.71 사이클 154 — reply chain + reaction emoji picker + file_attached DataChannel + profile 4 button actual binding (2026-05-20 신설)
+
+### 8.71.1 cycle 154 2 commit 산출
+
+| commit | 영역 |
+|---|---|
+| `0b15e77` | cycle 154 entry — reply chain (bubble context menu 5 entry + ChatView signal 재발산 + InputBar reply preview + clear 취소) |
+| `(본 commit)` | cycle 154.2 — reaction picker popup + file_attached DataChannel chain + profile 4 button actual + freshness 회수 |
+
+### 8.71.2 산출 4 file
+
+| file | 변경 |
+|---|---|
+| `message_bubble.py` | _open_reaction_picker method — EmojiPicker popup + emoji_selected → add_reaction chain (graceful 부재 시 기본 👍 fallback) |
+| `main_window.py` | `_on_input_file_attached` → `file_sender.send(path)` async + graceful placeholder + `_profile_message_clicked` modal close + chat 진입 + `_profile_call_clicked` (cycle 200+) + `_profile_mute_clicked` (toggle set) + `_profile_block_clicked` (QMessageBox confirm + `friends_client.block` async) |
+| 평가 4 pair | frontmatter 02:30 KST sweep |
+| handoff §8.71 | 본 sub-section prepend |
+
+### 8.71.3 reply + reaction Flow 최종
+
+```
+bubble 우 click → menu 5 entry
+  ↳ 답장 → reply_requested → ChatView 재발산 → main_window → InputBar.set_reply_to
+  😀 반응 추가 → EmojiPicker popup → emoji_selected → add_reaction → pill 갱신
+  📋 복사 → clipboard.setText
+  ➡ 전달 / 🗑 삭제 → cycle 155+ entry
+
+InputBar.set_reply_to(sender, text)
+  → reply preview bar inject (border-left cyan + sender + 60자 + ✕ 취소)
+  → 메시지 송신 시 reply_context() snapshot 의무 (cycle 154.3+)
+
+profile 4 button actual
+  💬 message → modal accept + 1:1 chat 진입
+  📞 call → cycle 200+ entry log
+  🔇 mute → _muted_friends set toggle
+  🚫 block → QMessageBox confirm + friends_client.block async chain
+```
+
+### 8.71.4 다음 cycle 154.3+ 진입
+
+| 우선 | 작업 |
+|---|---|
+| 1 | reply context payload 안 reply_to field 송신 (data_channel.send) |
+| 2 | reaction count server persist (REST endpoint cycle 155+) |
+| 3 | theme picker actual reload (SettingsDialog 안 ThemePicker theme_changed signal → load_theme reload) |
+| 4 | 사용자 manual test feedback 회수 chain |
+
+---
+
 ## 8.70 사이클 153 phase 5~8 — UI brand redesign 마무리 chain — SettingsDialog 10 section + EmojiPicker + InputBar + MessageBubble reply/reaction + ChatView reply_to param + bot command inject + friend profile modal (2026-05-20 신설)
 
 ### 8.70.1 4 cycle chain 산출 (4 commit)

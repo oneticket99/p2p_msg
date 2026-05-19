@@ -218,6 +218,19 @@ class MessageBubble(QFrame):
         self._reactions[emoji] = self._reactions.get(emoji, 0) + 1
         self.reaction_added.emit(emoji)
 
+    def _open_reaction_picker(self, global_pos: "QPoint") -> None:
+        """EmojiPicker popup → 선택 시 add_reaction chain."""
+        try:
+            from app.ui.emoji_picker import EmojiPicker
+        except Exception:  # pragma: no cover - graceful
+            self.add_reaction("👍")
+            return
+        picker = EmojiPicker(parent=self)
+        picker.setWindowFlags(Qt.WindowType.Popup)
+        picker.emoji_selected.connect(self.add_reaction)  # type: ignore[arg-type]
+        picker.move(global_pos.x(), global_pos.y())
+        picker.show()
+
     def reactions(self) -> dict[str, int]:
         """현 reaction count snapshot."""
         return dict(self._reactions)
@@ -240,7 +253,7 @@ class MessageBubble(QFrame):
         if chosen is act_reply:
             self.reply_requested.emit(self._sender, self._text)
         elif chosen is act_react:
-            self.add_reaction("👍")
+            self._open_reaction_picker(event.globalPos())
         elif chosen is act_copy:
             app = QApplication.instance()
             if app is not None:
