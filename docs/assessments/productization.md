@@ -589,7 +589,7 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 
 ## 3. 약점 (Productization Weaknesses)
 
-### 3.1 ~~기능 누락 (Phase 1 의도적 보류)~~ — Phase 1~4 + Phase 5 5 Item 모두 진입 완료 (사이클 148)
+### 3.1 ~~기능 누락~~ — Phase 1~4 + Phase 5 5 Item 모두 진입 + cycle 153 UI redesign 본격 entry (사이클 153)
 
 | 기능 | 상태 | 진입 cycle |
 |---|---|---|
@@ -598,14 +598,18 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 | multi-device + signature sound + push (FCM) | ✅ Phase 2 v0.2.0 | cycle 38~47 |
 | Bot framework (Anthropic + OpenAI + jailbreak + RAG) | ✅ Phase 3 v0.3.0 | cycle 65~99 |
 | Production infra (docker + nginx + certbot + KST logging) | ✅ Phase 4 v0.4.0 | cycle 100~117 |
+| DB audit endpoint coverage 28 ActivityAction | ✅ 후속 chain | cycle 119~144 |
+| SMTP 자동 설치 chain (mail.dopa.co.kr + Let's Encrypt + opendkim + cyrus-sasl + iptables) | ✅ Phase 1 OTP 발신 production-ready | cycle 129~131 |
 | **그룹 채팅 + 친구 + signaling rooms** | ✅ Phase 5 Item 진입 (REST + UI + WebRTC mesh + friends + rooms persist e2e) | cycle 134~144 |
-| **다국어 i18n (5 locale)** | ✅ Phase 5 Item 1 actual binding (24 tr() call sites + .qm 5 locale) | cycle 134~145 |
-| **emoji pack share + moderation** | ✅ Phase 5 Item 3 actual binding (admin menu + list_pending + DMCA chain) | cycle 144~148 |
-| **bot framework streaming 4 platform** | ✅ Phase 5 Item 4 actual client (YouTube + Twitch + CHZZK + Kick) + OBS WebSocket v5 actual handshake | cycle 146~148 |
-| **원격 데스크탑 제어** (차별화) | ✅ Phase 5 Item 5 base + coord transform (DPI + Retina backing scale) | cycle 57~58 + 148 |
-| **mobile Flutter base** | ✅ Phase 5 Item 2 prerequisite (mobile/ Flutter + flutter-webrtc + ws_client.dart) | cycle 147 |
-| 자동 업데이트 | ✅ Phase 5 prerequisite (auto-update server endpoint + client startup chain) | cycle 132~139 |
-| 음성·영상 통화 | 🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무) | — |
+| **다국어 i18n (5 locale)** | ✅ Phase 5 Item 1 actual binding (24 tr() call + .qm 5 locale) | cycle 134~145 |
+| **emoji pack share + moderation** (차별화) | ✅ Phase 5 Item 3 actual binding (admin menu + list_pending + DMCA phash + OCR jailbreak) | cycle 144~151 |
+| **bot framework streaming 4 platform** | ✅ Phase 5 Item 4 actual client (YouTube + Twitch + CHZZK + Kick) + OBS WebSocket v5 handshake | cycle 146~148 |
+| **원격 데스크탑 제어** (차별화) | ✅ Phase 5 Item 5 base + coord transform (DPI + Retina backing scale) + screen capture skeleton 3 OS | cycle 57~58 + 148~151 |
+| **mobile Flutter base** | ✅ Phase 5 Item 2 prerequisite (mobile/ Flutter + flutter-webrtc + ws_client.dart + cycle 181 prereq doc) | cycle 147~151 |
+| 자동 업데이트 | ✅ Phase 5 prereq (auto-update server endpoint + client startup chain + release.yml dual macOS arm64 + Windows x64) | cycle 132~151 |
+| **SSH deploy chain + 서버 docker stack 본격** | ✅ ssh-deploy-agent + healthz 200 PASS + 5 service (mariadb + web + ws + nginx + postfix profile) | cycle 152 |
+| **UI Toonation BI 통합 redesign** | ✅ phase 1~3 (theme.qss + logo SVG 회수 + WelcomeDialog + LoginDialog + OTPDialog + SignupDialog + SidebarRail + ChatListPanel + ChatHeader) | cycle 153.1~3 |
+| 음성·영상 통화 | 🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무) | cycle 200+ |
 
 ### 3.2 ~~보안 deprioritized~~ — Phase 4 cycle 112~117 회수 완료
 

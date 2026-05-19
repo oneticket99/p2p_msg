@@ -592,7 +592,7 @@
 <!-- §3 -->
 <h2 id="sec-3">3. 약점 (Productization Weaknesses)</h2>
 
-<h3>3.1 <span class="strike">기능 누락 (Phase 1 의도적 보류)</span> — Phase 1~4 진입 완료 (사이클 117) + 후속 chain (사이클 119~131)</h3>
+<h3>3.1 <span class="strike">기능 누락</span> — Phase 1~4 + Phase 5 5 Item 모두 진입 + cycle 153 UI redesign 본격 entry (사이클 153)</h3>
 <table>
   <thead><tr><th>기능</th><th>상태</th><th>진입 cycle</th></tr></thead>
   <tbody>
@@ -601,14 +601,18 @@
     <tr><td>multi-device + signature sound + push (FCM)</td><td><span class="ok">✅ Phase 2 v0.2.0</span></td><td>cycle 38~47</td></tr>
     <tr><td>Bot framework (Anthropic + OpenAI + jailbreak + RAG)</td><td><span class="ok">✅ Phase 3 v0.3.0</span></td><td>cycle 65~99</td></tr>
     <tr><td>Production infra (docker + nginx + certbot + KST logging)</td><td><span class="ok">✅ Phase 4 v0.4.0</span></td><td>cycle 100~117</td></tr>
-    <tr><td>DB audit endpoint coverage 15 ActivityAction</td><td><span class="ok">✅ 후속 chain</span></td><td>cycle 119~128</td></tr>
-    <tr><td>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl)</td><td><span class="ok">✅ 사이클 145</span></td><td>cycle 129</td></tr>
-    <tr><td>그룹 채팅</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
-    <tr><td>음성·영상 통화</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
-    <tr><td>모바일 (iOS/Android)</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
-    <tr><td>자동 업데이트</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
-    <tr><td><strong>원격 데스크탑 제어</strong> (차별화)</td><td><span class="pending">🟡 Phase 3 막바지 진입 base (cycle 57~58)</span></td><td>partial</td></tr>
-    <tr><td><strong>emoji pack share</strong> (차별화)</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
+    <tr><td>DB audit endpoint coverage 28 ActivityAction</td><td><span class="ok">✅ 후속 chain</span></td><td>cycle 119~144</td></tr>
+    <tr><td>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables)</td><td><span class="ok">✅ Phase 1 OTP 발신 production-ready</span></td><td>cycle 129~131</td></tr>
+    <tr><td><strong>그룹 채팅 + 친구 + signaling rooms</strong></td><td><span class="ok">✅ Phase 5 Item 진입 (REST + UI + WebRTC mesh + friends + rooms persist e2e)</span></td><td>cycle 134~144</td></tr>
+    <tr><td><strong>다국어 i18n (5 locale)</strong></td><td><span class="ok">✅ Phase 5 Item 1 actual binding (24 tr() call + .qm 5 locale)</span></td><td>cycle 134~145</td></tr>
+    <tr><td><strong>emoji pack share + moderation</strong> (차별화)</td><td><span class="ok">✅ Phase 5 Item 3 actual binding (admin menu + list_pending + DMCA phash + OCR jailbreak)</span></td><td>cycle 144~151</td></tr>
+    <tr><td><strong>bot framework streaming 4 platform</strong></td><td><span class="ok">✅ Phase 5 Item 4 actual client (YouTube + Twitch + CHZZK + Kick) + OBS WebSocket v5 handshake</span></td><td>cycle 146~148</td></tr>
+    <tr><td><strong>원격 데스크탑 제어</strong> (차별화)</td><td><span class="ok">✅ Phase 5 Item 5 base + coord transform (DPI + Retina backing scale) + screen capture skeleton 3 OS</span></td><td>cycle 57~58 + 148~151</td></tr>
+    <tr><td><strong>mobile Flutter base</strong></td><td><span class="ok">✅ Phase 5 Item 2 prerequisite (mobile/ Flutter + flutter-webrtc + ws_client.dart + cycle 181 prereq doc)</span></td><td>cycle 147~151</td></tr>
+    <tr><td>자동 업데이트</td><td><span class="ok">✅ Phase 5 prereq (auto-update server endpoint + client startup chain + release.yml dual macOS arm64 + Windows x64)</span></td><td>cycle 132~151</td></tr>
+    <tr><td><strong>SSH deploy chain + 서버 docker stack 본격</strong></td><td><span class="ok">✅ ssh-deploy-agent + healthz 200 PASS + 5 service (mariadb + web + ws + nginx + postfix profile)</span></td><td>cycle 152</td></tr>
+    <tr><td><strong>UI Toonation BI 통합 redesign</strong></td><td><span class="ok">✅ phase 1~3 (theme.qss + logo SVG 회수 + WelcomeDialog + LoginDialog redesign + OTPDialog + SignupDialog + SidebarRail + ChatListPanel + ChatHeader)</span></td><td>cycle 153.1~3</td></tr>
+    <tr><td>음성·영상 통화</td><td><span class="pending">🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무)</span></td><td>cycle 200+</td></tr>
   </tbody>
 </table>
 
