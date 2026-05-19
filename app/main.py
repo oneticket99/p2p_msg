@@ -23,6 +23,7 @@ import qasync
 from PyQt6.QtWidgets import QApplication
 
 from app.core.config import Config, load_config
+from app.i18n import install_qt_translator, resolve_locale
 from app.net.auth_client import AuthClient
 from app.ui.login_dialog import LoginDialog
 from app.ui.main_window import MainWindow
@@ -75,6 +76,18 @@ def main() -> int:
     qt_app = QApplication(sys.argv)
     qt_app.setApplicationName("TooTalk")
     qt_app.setOrganizationName("TooTalk")
+
+    # 3-1) i18n QTranslator 부착 — Phase 5 cycle 134 actual binding
+    # 한글 주석 — UserLocalePreferences 의 persist locale 우선, 부재 시 env LOCALE/LANG → resolve_locale fallback
+    try:
+        from app.config.user_preferences import load_user_locale_preferences
+        locale_pref = load_user_locale_preferences()
+        chosen_locale = locale_pref.locale
+    except Exception as locale_exc:  # pragma: no cover - 의존 부재 graceful
+        log.debug("locale pref 로딩 실패 — env fallback (%r)", locale_exc)
+        chosen_locale = resolve_locale()
+    installed = install_qt_translator(qt_app, locale=chosen_locale)
+    log.info("i18n QTranslator — locale=%s installed=%s", chosen_locale, installed)
 
     loop = qasync.QEventLoop(qt_app)
     asyncio.set_event_loop(loop)

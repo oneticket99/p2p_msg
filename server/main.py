@@ -178,6 +178,17 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
             "remote_handlers 등록 실패 — skeleton skip (%s)", exc
         )
 
+    # 그룹 채팅 룸 endpoint 등록 (cycle 135 — 6 REST endpoint + audit)
+    # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
+    try:
+        from .api.rooms_handlers import register_rooms_routes
+
+        register_rooms_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "rooms_handlers 등록 실패 — skeleton skip (%s)", exc
+        )
+
     # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
     # cycle 96 (QA P3) — Anthropic → OpenAI → Mock 의 3 layer fallback chain
     # cycle 110 — Config.bot 경유 (os.environ 직접 access 회수)

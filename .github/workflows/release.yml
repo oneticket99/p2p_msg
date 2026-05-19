@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# TooTalk(p2p_msg) Phase 5 cycle 134 — release workflow.
+# git tag push (vX.Y.Z[-phase]) 의 GitHub Release 자동 생성 + SHA-256 capture +
+# POST /api/version/release 의 DB app_versions row 자동 INSERT chain.
+#
+# 참조 — docs/operations/release-workflow.md.
+# 보안 주의 — 모든 github.* context 값 = env: 경유 주입 (injection 차단).
+
+name: release
+
+on:
+  push:
+    tags:
+      # 한글 주석: semver + phase suffix (예 v0.5.0-phase5) 또는 plain (예 v0.5.0) 의무
+      - "v*-*"
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  # 한글 주석: GitHub Release 생성 + zip artifact upload 의 contents write 의무
+  contents: write
+
+jobs:
+  release-macos-arm64:
+    name: macOS arm64 release
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 3.13 venv + deps
+        run: |
+          # 한글 주석 — self-hosted runner 의 python3.13 + venv + PyInstaller
+          python3.13 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
+
+      - name: PyInstaller build
+        run: |
+          # 한글 주석 — native macOS arm64 의 .app 산출
+          .venv/bin/pyinstaller build/tootalk.spec --clean --noconfirm --distpath dist
+          ls -la dist
+
+      - name: Zip artifact
+        run: |
+          # 한글 주석 — TooTalk.app 의 macos-arm64.zip 패키징
+          cd dist && zip -r "TooTalk-macos-arm64.zip" "TooTalk.app"
+
+      - name: SHA-256 + size capture
+        id: sha
+        run: |
+          # 한글 주석 — sha256sum macOS = shasum -a 256 / stat -f%z 의 byte size
+          HASH=$(shasum -a 256 dist/TooTalk-macos-arm64.zip | awk '{print $1}')
+          SIZE=$(stat -f%z dist/TooTalk-macos-arm64.zip)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "[release] sha256=$HASH size=$SIZE"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/TooTalk-macos-arm64.zip
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+
+      - name: POST /api/version/release (DB INSERT)
+        env:
+          ADMIN_TOKEN: ${{ secrets.VERSION_ADMIN_TOKEN }}
+          API_HOST: ${{ secrets.API_HOST }}
+          VERSION_TAG: ${{ github.ref_name }}
+          REPO_FULL: ${{ github.repository }}
+          SHA_HASH: ${{ steps.sha.outputs.hash }}
+          FILE_SIZE: ${{ steps.sha.outputs.size }}
+        run: |
+          # 한글 주석 — admin Bearer + version + zip_url + sha256 + size 의 POST chain
+          # github.* context = env 경유 주입 (workflow injection 차단)
+          if [ -z "$ADMIN_TOKEN" ] || [ -z "$API_HOST" ]; then
+            echo "[release] VERSION_ADMIN_TOKEN 또는 API_HOST secrets 부재 — DB INSERT skip"
+            exit 0
+          fi
+          ZIP_URL="https://github.com/${REPO_FULL}/releases/download/${VERSION_TAG}/TooTalk-macos-arm64.zip"
+          PAYLOAD=$(printf '{"version":"%s","platform":"macos-arm64","zip_url":"%s","sha256":"%s","file_size":%s,"is_latest":true}' \
+            "$VERSION_TAG" "$ZIP_URL" "$SHA_HASH" "$FILE_SIZE")
+          curl -fsS -X POST "${API_HOST}/api/version/release" \
+            -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"

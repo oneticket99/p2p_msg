@@ -17,12 +17,15 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Optional
 
+from app.i18n import DEFAULT_LOCALE, SUPPORTED_LOCALES
 from app.sound import DEFAULT_OPTION, SIGNATURE_OPTIONS
 
 log = logging.getLogger(__name__)
 
 # 한글 주석 — JSON persist 의 default 경로 (사용자 home 디렉토리 의 hidden dir)
 DEFAULT_PREF_PATH = Path.home() / ".tootalk" / "sound_preferences.json"
+# 한글 주석 — locale preference JSON persist 경로 (cycle 134 신설)
+DEFAULT_LOCALE_PREF_PATH = Path.home() / ".tootalk" / "locale_preferences.json"
 
 
 @dataclass(slots=True)
@@ -101,6 +104,92 @@ def save_user_sound_preferences(
     """
 
     pref_path = path or DEFAULT_PREF_PATH
+    try:
+        pref_path.parent.mkdir(parents=True, exist_ok=True)
+        pref_path.write_text(
+            json.dumps(pref.to_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return True
+    except OSError as exc:
+        log.warning("[pref] %s 저장 실패 — %r", pref_path, exc)
+        return False
+
+
+@dataclass(slots=True)
+class UserLocalePreferences:
+    """사용자 locale 설정 dataclass — JSON persist 의무 (cycle 134 신설).
+
+    Attributes
+    ----------
+    locale : str
+        5 locale (``ko``, ``en``, ``zh-CN``, ``zh-TW``, ``ja``) 안 하나.
+        부재/unsupported 의 default 폴백 = ``ko``.
+    """
+
+    locale: str = DEFAULT_LOCALE
+
+    def __post_init__(self) -> None:
+        # 한글 주석 — 5 locale 외 부재 시 default ko 폴백
+        if self.locale not in SUPPORTED_LOCALES:
+            log.warning(
+                "[pref] locale=%r unsupported — default %s 폴백",
+                self.locale,
+                DEFAULT_LOCALE,
+            )
+            self.locale = DEFAULT_LOCALE
+
+    def to_dict(self) -> dict:
+        # 한글 주석 — JSON serialize 용 dict 변환
+        return asdict(self)
+
+
+def load_user_locale_preferences(
+    path: Optional[Path] = None,
+) -> UserLocalePreferences:
+    """JSON 파일 경유 locale preference 로딩 — 부재 시 default ko 반환.
+
+    Parameters
+    ----------
+    path : Path | None
+        명시적 JSON 경로. None 이면 ``DEFAULT_LOCALE_PREF_PATH`` 사용.
+    """
+
+    pref_path = path or DEFAULT_LOCALE_PREF_PATH
+    if not pref_path.is_file():
+        log.info(
+            "[pref] %s 부재 — default UserLocalePreferences (ko) 반환",
+            pref_path,
+        )
+        return UserLocalePreferences()
+    try:
+        raw = json.loads(pref_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        log.warning(
+            "[pref] %s 로딩 실패 — %r → default 폴백",
+            pref_path,
+            exc,
+        )
+        return UserLocalePreferences()
+    # 한글 주석 — dict 안 알려진 key 만 추출 (forward-compat 의 unknown key 무시)
+    return UserLocalePreferences(
+        locale=str(raw.get("locale", DEFAULT_LOCALE)),
+    )
+
+
+def save_user_locale_preferences(
+    pref: UserLocalePreferences,
+    path: Optional[Path] = None,
+) -> bool:
+    """locale preference JSON persist — 디렉토리 부재 시 자동 생성.
+
+    Returns
+    -------
+    bool
+        성공 시 True, IO 실패 시 False.
+    """
+
+    pref_path = path or DEFAULT_LOCALE_PREF_PATH
     try:
         pref_path.parent.mkdir(parents=True, exist_ok=True)
         pref_path.write_text(
