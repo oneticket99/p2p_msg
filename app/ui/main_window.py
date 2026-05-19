@@ -925,6 +925,17 @@ class MainWindow(QMainWindow):
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("file attached chain 실패 — %r", exc)
 
+    async def _post_and_resolve(self, msg_client, room_id: int, text: str, client_uuid: str) -> None:
+        """server POST → message_id resolve → bubble.set_message_id chain (cycle 163)."""
+        try:
+            resp = await msg_client.post_message(room_id, text)
+            server_message_id = resp.get("message_id") if isinstance(resp, dict) else None
+            if server_message_id is not None:
+                self._chat_view.resolve_pending_message_id(client_uuid, int(server_message_id))
+                log.debug("post_message resolve — uuid=%s message_id=%s", client_uuid, server_message_id)
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("post_message 실패 graceful — %r", exc)
+
     @pyqtSlot(str, str)
     def _on_chat_reply_requested(self, sender: str, text: str) -> None:
         """ChatView reply_to_message signal → InputBar reply mode set."""
@@ -1083,28 +1094,44 @@ class MainWindow(QMainWindow):
         )
         self._input_edit.clear()
 
-        # cycle 161 — mesh_manager broadcast_payload chain actual 통합
-        # 한글 주석 — MessagePayload v1.0 schema + ReplyToField + DataChannel fan-out
+        # cycle 161~163 — mesh_manager broadcast + server REST POST chain
+        # MessagePayload v1.0 + ReplyToField + uuid → bubble mapping + server message_id resolve
         try:
+            from app.net.message_protocol import ReplyToField, build_text_payload
+            proto_reply = None
+            if reply_ctx is not None:
+                proto_reply = ReplyToField(
+                    message_id="",
+                    sender=reply_ctx.original_sender,
+                    preview=reply_ctx.original_text[:60],
+                )
+            payload = build_text_payload(
+                sender=self._config.user_nickname,
+                text=text,
+                reply_to=proto_reply,
+            )
+
+            # cycle 163 — client uuid → bubble mapping 등록
+            try:
+                self._chat_view.register_pending_bubble(payload.id)
+            except Exception:  # pragma: no cover - graceful
+                pass
+
+            import asyncio
+            # 한글 주석 — mesh broadcast (DataChannel fan-out, ≤ 8 peer)
             mesh = getattr(self, "_mesh_manager", None)
             if mesh is not None:
-                from app.net.message_protocol import ReplyToField, build_text_payload
-                proto_reply = None
-                if reply_ctx is not None:
-                    proto_reply = ReplyToField(
-                        message_id="",  # cycle 162+ server message_id 발급 후 정합
-                        sender=reply_ctx.original_sender,
-                        preview=reply_ctx.original_text[:60],
-                    )
-                payload = build_text_payload(
-                    sender=self._config.user_nickname,
-                    text=text,
-                    reply_to=proto_reply,
-                )
-                import asyncio
                 asyncio.ensure_future(mesh.broadcast_payload(payload))
+
+            # cycle 163 — server REST POST + message_id resolve chain
+            msg_client = getattr(self, "_messages_client", None)
+            current_room = getattr(self, "_current_room_id", None)
+            if msg_client is not None and current_room:
+                asyncio.ensure_future(
+                    self._post_and_resolve(msg_client, current_room, text, payload.id)
+                )
         except Exception as exc:  # pragma: no cover - graceful
-            log.debug("mesh broadcast_payload 실패 graceful — %r", exc)
+            log.debug("send chain 실패 graceful — %r", exc)
 
     @pyqtSlot(int)
     def _on_room_entered(self, room_id: int) -> None:

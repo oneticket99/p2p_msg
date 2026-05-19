@@ -113,6 +113,28 @@ class ChatView(QScrollArea):
         if self._last_bubble is not None:
             self._last_bubble.set_message_id(message_id)
 
+    def register_pending_bubble(self, client_uuid: str) -> None:
+        """송신 직전 client uuid → bubble mapping 등록 (cycle 163 race 해소).
+
+        main_window post_message 직전 호출 의무. server resolve 시점 lookup chain.
+        """
+        if self._last_bubble is not None:
+            self._pending_bubbles[client_uuid] = self._last_bubble
+
+    def resolve_pending_message_id(self, client_uuid: str, message_id: int) -> bool:
+        """client uuid lookup → bubble.set_message_id chain (cycle 163).
+
+        Returns
+        -------
+        bool
+            lookup 성공 + set 완료 시 True, uuid 부재 시 False.
+        """
+        bubble = self._pending_bubbles.pop(client_uuid, None)
+        if bubble is None:
+            return False
+        bubble.set_message_id(message_id)
+        return True
+
     def add_message_from_payload(self, payload) -> None:
         """MessagePayload (cycle 156) → add_message 변환 — DataChannel 수신 path.
 
@@ -165,6 +187,9 @@ class ChatView(QScrollArea):
         self._reactions_client = reactions_client
         # cycle 162 — 마지막 bubble 참조 보관 (server message_id resolve 후 set_message_id chain)
         self._last_bubble = None
+        # cycle 163 — pending bubble dict (client uuid → bubble) — race 해소 chain
+        # multi-bubble 동시 송신 시 server resolve 시점 uuid lookup 의무
+        self._pending_bubbles: dict[str, object] = {}
 
         # 스크롤 영역 기본 설정 — 가로 스크롤은 비활성, 세로만 사용
         self.setWidgetResizable(True)
