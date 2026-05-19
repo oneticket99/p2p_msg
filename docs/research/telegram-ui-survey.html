@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>텔레그램 UI 14 영역 조사 — TooTalk redesign base (사이클 152.5)</title>
+<!-- 한글 주석: 본 HTML 은 docs/research/telegram-ui-survey.md 등가 interactive 보고.
+     사용자 directive 2026-05-19 cycle 152.5 "정리한 레이아웃 디자인에 대해서 html 로 보고해" 회수.
+     14 section + telegram vs TooTalk 등가 side-by-side + ASCII mockup + Toonation 브랜드 컬러. -->
+<style>
+  :root{
+    --toon-primary: #0066FF;
+    --toon-deep: #0052FF;
+    --toon-cyan: #22D3EE;
+    --toon-cyan-light: #67E8F9;
+    --toon-navy: #0F172A;
+    --tg-blue: #3390EC;
+    --tg-bg-dark: #1a1a1a;
+    --tg-bg-hover: #2a2a2a;
+    --fg: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #374151;
+    --card-bg: #1f2937;
+    --good: #22c55e;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--tg-bg-dark);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.6}
+  body{max-width:1280px;margin:0 auto;padding:0 24px 96px}
+  header.hero{padding:48px 0 32px;border-bottom:2px solid var(--toon-primary);margin-bottom:32px}
+  header.hero h1{font-size:32px;margin:0 0 12px;color:var(--toon-primary)}
+  header.hero .sub{font-size:14px;color:var(--muted)}
+  header.hero .pill{display:inline-block;padding:2px 10px;border-radius:6px;background:var(--toon-primary);color:#fff;font-size:12px;margin-right:6px}
+  nav.toc{position:sticky;top:0;background:var(--tg-bg-dark);padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:32px;z-index:10}
+  nav.toc ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  nav.toc a{display:inline-block;padding:6px 12px;border:1px solid var(--border);border-radius:6px;color:var(--fg);text-decoration:none;font-size:13px;transition:all 0.15s}
+  nav.toc a:hover{background:var(--toon-primary);border-color:var(--toon-primary);color:#fff}
+  section.area{margin:48px 0;padding:24px;background:var(--card-bg);border-radius:12px;border:1px solid var(--border)}
+  section.area h2{font-size:22px;margin:0 0 4px;color:var(--toon-cyan)}
+  section.area .meta{font-size:12px;color:var(--muted);margin-bottom:20px}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
+  @media (max-width:880px){.compare-grid{grid-template-columns:1fr}}
+  .compare-card{padding:16px;background:var(--tg-bg-dark);border:1px solid var(--border);border-radius:8px}
+  .compare-card.tg{border-left:4px solid var(--tg-blue)}
+  .compare-card.tt{border-left:4px solid var(--toon-primary)}
+  .compare-card h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .compare-card.tg h3::before{content:"📨";font-size:18px}
+  .compare-card.tt h3::before{content:"🛡️";font-size:18px}
+  .compare-card h3 .label{color:var(--muted);font-weight:400;font-size:12px}
+  .mockup{font-family:"SF Mono","Monaco","Consolas",monospace;font-size:11px;line-height:1.4;background:#0d0d0d;padding:12px;border-radius:6px;color:#a5b4fc;white-space:pre;overflow-x:auto;margin:10px 0;border:1px solid #1f2937}
+  table.spec{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  table.spec th{background:var(--toon-primary);color:#fff;padding:6px 10px;text-align:left;font-size:12px}
+  table.spec td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  table.spec td:first-child{color:var(--muted);width:30%}
+  .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .badge.done{background:rgba(34,197,94,0.2);color:var(--good)}
+  .badge.wip{background:rgba(245,158,11,0.2);color:var(--warn)}
+  .badge.todo{background:rgba(239,68,68,0.2);color:var(--bad)}
+  .priority-list{counter-reset:item;padding-left:0}
+  .priority-list .item{counter-increment:item;display:flex;align-items:start;gap:14px;padding:14px;margin:8px 0;background:var(--tg-bg-dark);border-radius:8px;border-left:4px solid var(--toon-cyan)}
+  .priority-list .item::before{content:counter(item);min-width:32px;height:32px;background:var(--toon-primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .priority-list .body{flex:1}
+  .priority-list .title{font-weight:600;font-size:14px;margin-bottom:4px}
+  .priority-list .scope{font-size:12px;color:var(--muted)}
+  footer.refs{margin-top:64px;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+  footer.refs a{color:var(--toon-cyan)}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin:8px 0 20px}
+  .legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  .dot.done{background:var(--good)}
+  .dot.wip{background:var(--warn)}
+  .dot.todo{background:var(--bad)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="pill">cycle 152.5</span>
+  <span class="pill">last_verified 2026-05-19T23:50:00+09:00</span>
+  <h1>텔레그램 UI 14 영역 조사 — TooTalk redesign base</h1>
+  <div class="sub">
+    사용자 directive 2026-05-19 — "지금부터 텔레그램의 각 레이아웃 다 조사해" + "html 로 보고해" 정합.<br>
+    텔레그램 데스크톱 (tdesktop) UI 각 영역 + TooTalk 등가 mapping + cycle 153~ design entry manifest.
+  </div>
+  <div class="legend" style="margin-top:14px">
+    <span><span class="dot done"></span>구현 완료</span>
+    <span><span class="dot wip"></span>부분 진입</span>
+    <span><span class="dot todo"></span>cycle 153~ entry</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <ul>
+    <li><a href="#a1">①welcome</a></li>
+    <li><a href="#a2">②login</a></li>
+    <li><a href="#a3">③OTP</a></li>
+    <li><a href="#a4">④2FA</a></li>
+    <li><a href="#a5">⑤3col</a></li>
+    <li><a href="#a6">⑥chat</a></li>
+    <li><a href="#a7">⑦친구</a></li>
+    <li><a href="#a8">⑧그룹</a></li>
+    <li><a href="#a9">⑨설정</a></li>
+    <li><a href="#a10">⑩프로필</a></li>
+    <li><a href="#a11">⑪검색</a></li>
+    <li><a href="#a12">⑫sticker</a></li>
+    <li><a href="#a13">⑬bot</a></li>
+    <li><a href="#a14">⑭첨부</a></li>
+    <li><a href="#a15">⑮통화</a></li>
+    <li><a href="#a16">로드맵</a></li>
+  </ul>
+</nav>
+
+<!-- ① WELCOME -->
+<section class="area" id="a1">
+  <h2>① Welcome 화면 (intro) <span class="badge wip">부분</span></h2>
+  <div class="meta">사용자 paste Image #30 정합 + TooTalk WelcomeDialog 신설 의무</div>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">desktop intro</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ ✈️  banner (navy gradient)  │
+│   🎤 🎵 📷 💬 🔒 🖼️ 😀     │
+├─────────────────────────────┤
+│                             │
+│      Telegram Desktop       │
+│   공식 텔레그램 데스크톱에  │
+│      오신 것을 환영합니다     │
+│       빠르고 안전합니다.     │
+│                             │
+│  ┌───────────────────────┐  │
+│  │     시작하기          │  │
+│  └───────────────────────┘  │
+│                             │
+│      Continue in English    │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><th colspan="2">spec</th></tr>
+        <tr><td>색상</td><td>navy <code>#0F172A</code> → tg-blue <code>#3390EC</code></td></tr>
+        <tr><td>logo</td><td>종이비행기 + cloud illustration</td></tr>
+        <tr><td>icon cluster</td><td>7종 (mic/music/camera/chat/lock/photo/emoji)</td></tr>
+        <tr><td>CTA</td><td>full-width 파란 button</td></tr>
+        <tr><td>locale link</td><td>"Continue in English"</td></tr>
+      </table>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 <span class="label">WelcomeDialog 신설</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ ✉️  banner (Toonation navy) │
+│   🎤 🔊 📷 💬 🔒 😀 🤖 🖥️  │
+├─────────────────────────────┤
+│                             │
+│         TooTalk             │
+│   친구와 직접 연결 P2P 메신저  │
+│   원격 데스크탑 + GPLv3 OSS  │
+│                             │
+│  ┌───────────────────────┐  │
+│  │     시작하기          │  │
+│  └───────────────────────┘  │
+│                             │
+│  한국어 | English | 中 | 日  │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><th colspan="2">spec</th></tr>
+        <tr><td>색상</td><td>Toonation navy <code>#0F172A</code> → primary <code>#0066FF</code></td></tr>
+        <tr><td>logo</td><td>TooTalk SVG + cloud + 차별화 icon</td></tr>
+        <tr><td>icon cluster</td><td>8종 (mic + WAV + cam + chat + lock + emoji + bot + 원격)</td></tr>
+        <tr><td>CTA</td><td>full-width Toonation primary</td></tr>
+        <tr><td>locale</td><td>4 locale switch row (ko/en/zh/ja)</td></tr>
+        <tr><td>file</td><td><code>app/ui/welcome_dialog.py</code> 신설</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ② LOGIN PHONE -->
+<section class="area" id="a2">
+  <h2>② Login phone entry <span class="badge todo">redesign 의무</span></h2>
+  <div class="meta">TooTalk = email 기반 (Phase 1 directive — project_auth_email_otp_required)</div>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">phone</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│         ✈️                  │
+│                             │
+│     당신의 휴대전화         │
+│  휴대전화 번호 입력 (국제)   │
+│                             │
+│  [🇰🇷 South Korea  ▼]      │
+│  [+82  ▼] [10 1234 5678]    │
+│                             │
+│  ┌───────────────────────┐  │
+│  │       다음            │  │
+│  └───────────────────────┘  │
+│                             │
+│      Continue in English    │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 <span class="label">email + signup</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│         💬                  │
+│                             │
+│       회원가입              │
+│   email + username + pwd    │
+│                             │
+│  [email@example.com      ]  │
+│  [username (영문 3~16자)  ]  │
+│  [password (8~32자)      ]  │
+│  [password 확인          ]  │
+│                             │
+│  ┌───────────────────────┐  │
+│  │      가입 + OTP 송신   │  │
+│  └───────────────────────┘  │
+│                             │
+│  이미 계정 있음? 로그인 →  │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><td>endpoint</td><td><code>POST /api/auth/signup</code> (cycle 119)</td></tr>
+        <tr><td>SMTP</td><td>mail.dopa.co.kr (cycle 129)</td></tr>
+        <tr><td>validation</td><td>email RFC 5322 + username regex + bcrypt 10 round</td></tr>
+        <tr><td>file</td><td><code>app/ui/signup_dialog.py</code> + <code>login_dialog.py</code> redesign</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ③ OTP -->
+<section class="area" id="a3">
+  <h2>③ OTP code verify <span class="badge todo">redesign 의무</span></h2>
+  <div class="meta">6 digit box + auto-advance + paste 지원 + 3분 유효 + 재 송신 link</div>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">SMS/in-app code</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│   ✈️  +82 10 1234 5678 ✏️  │
+│                             │
+│  사용자 다른 텔레그램 앱 안 │
+│  6자리 코드 송신             │
+│                             │
+│   [_] [_] [_]  [_] [_] [_]  │
+│                             │
+│   코드 재 송신 (30s)        │
+│   SMS 송신 요청             │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 <span class="label">email OTP</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│   💬  user@example.com ✏️   │
+│                             │
+│   메일함 안 6 digit OTP     │
+│   확인 (3분 유효)           │
+│                             │
+│   [_] [_] [_]  [_] [_] [_]  │
+│                             │
+│   재 송신 (남은 5/5)        │
+│   다른 메일 사용            │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><td>endpoint</td><td><code>POST /api/auth/otp/verify</code></td></tr>
+        <tr><td>유효 시간</td><td>3분 (180 sec)</td></tr>
+        <tr><td>재 송신 cap</td><td>5회 / 24h</td></tr>
+        <tr><td>brute force</td><td>5회 fail → 60 sec lock</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ④ 2FA -->
+<section class="area" id="a4">
+  <h2>④ 2FA cloud password <span class="badge todo">Phase 2~3 entry</span></h2>
+  <div class="meta">Telegram SRP 6a 정합 / TooTalk = E2EE Signal 200 이미 진입</div>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">SRP 6a</span></h3>
+      <div class="mockup">┌─────────────────────────────┐
+│           🔒                │
+│      Cloud Password         │
+│  사용자 cloud password 입력 │
+│                             │
+│   [password         👁]    │
+│                             │
+│  ┌───────────────────────┐  │
+│  │    Submit             │  │
+│  └───────────────────────┘  │
+│                             │
+│   비밀번호 잊었음?          │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 <span class="label">future entry</span></h3>
+      <div class="mockup">[Phase 2~3 진입 시점 entry]
+
+E2EE Signal Protocol 이미 200
+PASS (X3DH + Double Ratchet).
+별개 2FA password = optional
+hardening.
+
+cycle 153~ skeleton placeholder
+만 추가, actual binding =
+Phase 2~3 본격.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ 3 COLUMN -->
+<section class="area" id="a5">
+  <h2>⑤ 메인 화면 — 3 column layout <span class="badge wip">현재 단일 column</span></h2>
+  <div class="meta">사용자 Image #27 정합 / QSplitter 3 분할 의무</div>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">3 column</span></h3>
+      <div class="mockup">┌────┬───────────────┬──────────────────┐
+│ 📁 │ 🔍 검색       │ ◀ 김상연  📞 🔍 ⋯│
+│ 🆕 ├───────────────┼──────────────────┤
+│ ⚙️ │ 📌 핀 채팅    │                  │
+│ 👤 │ ─────────     │   message bubble │
+│    │ 🟢 친구A 5초전│       (peer)     │
+│ 64 │ 💬 안녕!  🔴2 │                  │
+│ px │ ─────────     │  message bubble  │
+│    │ 친구B 1시간   │       (self)     │
+│    │ 잘 지내?      │            ✓✓ 19:14│
+│    │ ─────────     ├──────────────────┤
+│    │ 그룹채팅 ...  │ 📎 입력... 😀 🎤 ▶│
+└────┴───────────────┴──────────────────┘
+   icon     chat list           chat view
+   rail     280~320px           flex</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 <span class="label">QSplitter 3 분할</span></h3>
+      <div class="mockup">┌────┬───────────────┬──────────────────┐
+│ 👥 │ 🔍 친구/방    │ ◀ FriendA  📞 🔍 ⋯│
+│ 🏠 ├───────────────┼──────────────────┤
+│ 🤖 │ 친구 (12)     │                  │
+│ ⚙️ │ ─────────     │   peer message   │
+│    │ 🟢 친구A     │                  │
+│ 64 │ 마지막 메시지 │   self message   │
+│ px │ ─────────     │           ✓✓ 19:14│
+│    │ 방 (3)        ├──────────────────┤
+│    │ 🌟 그룹A 8명  │ 📎 입력... 😀 🎤 ▶│
+└────┴───────────────┴──────────────────┘
+   tab     friend+room       ChatView
+   rail    QListWidget       기존 widget</div>
+      <table class="spec">
+        <tr><td>file</td><td><code>app/ui/main_window.py</code> QSplitter 적용</td></tr>
+        <tr><td>left rail</td><td>4 tab vertical (친구 + 방 + 봇 + 설정)</td></tr>
+        <tr><td>middle</td><td>FriendList + RoomList + 검색 통합</td></tr>
+        <tr><td>right</td><td>현 ChatView 보존 + header bar 추가</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ CHAT VIEW -->
+<section class="area" id="a6">
+  <h2>⑥ 채팅 view — bubble + reaction + reply <span class="badge wip">부분</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 <span class="label">message + bubble</span></h3>
+      <div class="mockup">┌────────────────────────────────┐
+│  ┌──────────────────┐          │ ← peer
+│  │ ┃ 김상연          │           │   bubble
+│  │ ┃ 원본 reply...   │           │
+│  │ 안녕하세요        │           │
+│  │              19:14│           │
+│  └──────────────────┘  ❤️ 3      │
+│                                 │
+│         ┌──────────────────┐  ← self
+│         │ ㅋㅋ            │  │   bubble
+│         │       19:15 ✓✓ │  │
+│         └──────────────────┘  │
+│                                 │
+│         ┌──────────────────┐  │
+│         │ 📎 file.pdf      │  │
+│         │   2.3 MB ⬇       │  │
+│         └──────────────────┘  │
+└────────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 진행 상태</h3>
+      <table class="spec">
+        <tr><td>bubble 색상</td><td><span class="badge done">완료</span> cycle 152.4 fix (text color + 한글 font fallback)</td></tr>
+        <tr><td>reply (↳)</td><td><span class="badge todo">cycle 153</span></td></tr>
+        <tr><td>reaction (emoji)</td><td><span class="badge todo">cycle 154</span> emoji pack 정합</td></tr>
+        <tr><td>read receipt ✓✓</td><td><span class="badge wip">부분</span> ack chain 진입</td></tr>
+        <tr><td>첨부 file</td><td><span class="badge done">완료</span> chunk transfer + 진행 widget</td></tr>
+        <tr><td>sticker 단독 bubble</td><td><span class="badge todo">Phase 5</span></td></tr>
+        <tr><td>voice waveform</td><td><span class="badge todo">cycle 200+</span></td></tr>
+        <tr><td>forward 헤더</td><td><span class="badge todo">cycle 154</span></td></tr>
+        <tr><td>입력 bar (clip + emoji + voice + send)</td><td><span class="badge wip">부분</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑦ FRIEND -->
+<section class="area" id="a7">
+  <h2>⑦ 친구 / contact 추가 <span class="badge wip">cycle 144 정합</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ 🔍 사용자명 / 전화 검색     │
+├─────────────────────────────┤
+│ [Search Result]             │
+│ 👤 김상연  @kimsangyeon     │
+│ 👤 친구B   @userb           │
+│                             │
+│ ┌──────────┐ ┌──────────┐  │
+│ │ QR Scan  │ │ Invite   │  │
+│ └──────────┘ └──────────┘  │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 (cycle 144 friends REST)</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ 🔍 email / username 검색    │
+├─────────────────────────────┤
+│ 👤 friend@example.com       │
+│    @username                │
+│    [친구 요청 송신]          │
+│                             │
+│ ┌──────────────────────┐    │
+│ │ QR Invite (32 hex)   │    │
+│ └──────────────────────┘    │
+│                             │
+│ pending requests (2)        │
+│ ─────                       │
+│ 👤 친구C  [수락] [거절]      │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><td>endpoint</td><td><code>/api/friends</code> 8 method (cycle 144)</td></tr>
+        <tr><td>status</td><td>pending / accepted / blocked / removed</td></tr>
+        <tr><td>audit</td><td>5 ActivityAction (FRIEND_REQUEST / ACCEPT / REJECT / BLOCK / REMOVE)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑧ GROUP -->
+<section class="area" id="a8">
+  <h2>⑧ 그룹 / channel 생성 <span class="badge wip">cycle 135 정합</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│  New Group                  │
+├─────────────────────────────┤
+│  📷 사진 upload             │
+│  [그룹 이름            ]    │
+│  [설명 (옵션)          ]    │
+│                             │
+│  멤버 선택 (검색)            │
+│  [🔍                  ]    │
+│  ☐ 친구A                    │
+│  ☑ 친구B                    │
+│  ☐ 친구C                    │
+│                             │
+│  [Public / Private 선택]    │
+│                             │
+│  [Create]                   │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 (cycle 135 rooms)</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│  방 만들기                  │
+├─────────────────────────────┤
+│  [방 이름             ]     │
+│  [설명 (옵션)         ]     │
+│                             │
+│  멤버 invite (최대 8 peer)  │
+│  [🔍 친구 검색       ]      │
+│  ☐ 친구A                    │
+│  ☑ 친구B  ☑ 친구C            │
+│                             │
+│  ⚠️ mesh ≤ 8 peer cap        │
+│     SFU 진입 = Phase 5+      │
+│                             │
+│  room_code = 32 hex unique  │
+│  [방 생성]                   │
+└─────────────────────────────┘</div>
+      <table class="spec">
+        <tr><td>endpoint</td><td><code>/api/rooms</code> 7 method</td></tr>
+        <tr><td>room_code</td><td>32 hex unique</td></tr>
+        <tr><td>peer cap</td><td>≤ 8 mesh (full-mesh)</td></tr>
+        <tr><td>SFU</td><td>Phase 5+ prerequisite</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑨ SETTINGS -->
+<section class="area" id="a9">
+  <h2>⑨ 설정 (Settings) — 10 section <span class="badge todo">통합 dialog 의무</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램 settings</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ ⚙️ Settings                 │
+├─────────────────────────────┤
+│ 👤 계정 — profile/handle    │
+│ 🔒 개인정보 + 보안           │
+│ 🔔 알림 + 소리              │
+│ 💾 데이터 + 저장공간         │
+│ 🎨 채팅 themes              │
+│ 🌐 언어 (14+ locale)        │
+│ 📱 디바이스                 │
+│ 📁 폴더                     │
+│ ⚙️ 고급                     │
+│ 💎 Premium                  │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 mapping</h3>
+      <table class="spec">
+        <tr><td>계정</td><td>email + username + bio + avatar</td></tr>
+        <tr><td>보안</td><td>E2EE Signal 200 + jailbreak + 2FA (cycle 153~)</td></tr>
+        <tr><td>알림 + 소리</td><td>signature sound (cycle 132 WAV) + per-friend mute</td></tr>
+        <tr><td>데이터</td><td>chat_history_policy + auto-download cap</td></tr>
+        <tr><td>themes</td><td>Toonation 5 컬러 + dark/light</td></tr>
+        <tr><td>언어</td><td>5 locale (ko/en/zh-CN/zh-TW/ja) cycle 132~149</td></tr>
+        <tr><td>디바이스</td><td>devices endpoint (cycle 119)</td></tr>
+        <tr><td>폴더</td><td>Phase 5+ entry</td></tr>
+        <tr><td>file</td><td><code>app/ui/settings_dialog.py</code> 신설</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑩ PROFILE -->
+<section class="area" id="a10">
+  <h2>⑩ 프로필 view <span class="badge todo">cycle 154 entry</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│          ⭕                  │
+│       (large avatar)         │
+│        김상연 ✓             │
+│       online                │
+├─────────────────────────────┤
+│ 📞 통화 💬 메시지 🔇 🚫     │
+├─────────────────────────────┤
+│ 전화 +82 10...              │
+│ username @kimsangyeon       │
+│ bio "안녕하세요..."          │
+├─────────────────────────────┤
+│ 공통 그룹 (3)               │
+│ 미디어 / Files / Links      │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│          ⭕                  │
+│      (avatar SVG)            │
+│       친구A ✓                │
+│      online / 5분전          │
+├─────────────────────────────┤
+│ 📞 통화 💬 메시지 🔇 🚫     │
+├─────────────────────────────┤
+│ email friend@example.com    │
+│ username @friend_a          │
+│ bio "TooTalk user"           │
+├─────────────────────────────┤
+│ 공통 방 (2)                  │
+│ 미디어 / 파일 / sticker      │
+└─────────────────────────────┘</div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑪ SEARCH -->
+<section class="area" id="a11">
+  <h2>⑪ 검색 (Global Search) <span class="badge todo">cycle 154+ entry</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ 🔍 검색 ...                  │
+├─────────────────────────────┤
+│ Chats (3)                   │
+│ Contacts (5)                │
+│ Messages (12)               │
+│ Channels (2)                │
+│ Bots (1)                    │
+├─────────────────────────────┤
+│ filter: from / date / media │
+│ next ◀ prev ▶                │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ 🔍 친구 / 방 / 메시지 검색  │
+├─────────────────────────────┤
+│ 친구 (cycle 144) ✓           │
+│ 방 (cycle 135) ✓             │
+│ 메시지 (chat 내부) ✓         │
+│ 봇 (cycle 150~) ⏳           │
+├─────────────────────────────┤
+│ 전역 검색 = cycle 154+ entry │
+└─────────────────────────────┘</div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑫ STICKER -->
+<section class="area" id="a12">
+  <h2>⑫ sticker / emoji picker <span class="badge wip">cycle 140~146 Phase 5</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌──────────────────────────────┐
+│ 😀 🐶 🍔 ⚽ 🚗 💡 ♥️ 🚩 ⭐ │
+├──────────────────────────────┤
+│ [😀 😁 😂 🤣 😃 😄 😅 ...] │
+│ [😆 😉 😊 😋 😎 😍 ...]    │
+│ ...                          │
+├──────────────────────────────┤
+│ 🔍 emoji 검색                │
+│ 최근 사용 ⭐                  │
+└──────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 (emoji_pack_share)</h3>
+      <table class="spec">
+        <tr><td>emoji pack share</td><td>Phase 3+ 차별화 — 누구나 등록 + 공개 디렉토리</td></tr>
+        <tr><td>moderation queue</td><td>cycle 144 (pending / approved / rejected)</td></tr>
+        <tr><td>DMCA phash</td><td>cycle 150 fuzzy threshold 5</td></tr>
+        <tr><td>OCR jailbreak</td><td>tesseract-ocr + Pillow + pytesseract (cycle 152)</td></tr>
+        <tr><td>file</td><td><code>app/ui/emoji_picker.py</code> 신설 (cycle 154~)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑬ BOT -->
+<section class="area" id="a13">
+  <h2>⑬ bot interaction <span class="badge wip">cycle 150~160</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ @bot 입력 → inline popup    │
+│ ─────────                   │
+│ result A                    │
+│ result B                    │
+│ ─────────                   │
+│ / 입력 → command list       │
+│ /start                      │
+│ /help                       │
+│ ─────────                   │
+│ 메시지 안 inline button:    │
+│ [callback] [URL] [pay]      │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 (bot framework)</h3>
+      <table class="spec">
+        <tr><td>default</td><td>투네이션 고객센터 봇 (LLM 인터랙티브 Q&A)</td></tr>
+        <tr><td>방송 도우미</td><td>OBS + YouTube + Twitch + CHZZK + Kick (Nightbot 등가)</td></tr>
+        <tr><td>BotFather 등가</td><td>token + webhook + 공개 디렉토리</td></tr>
+        <tr><td>inline</td><td>@bot 본문 검색 popup</td></tr>
+        <tr><td>payment</td><td>Phase 3 마무리 단계</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑭ ATTACHMENT -->
+<section class="area" id="a14">
+  <h2>⑭ 파일 첨부 picker <span class="badge wip">drag & drop 부분</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│ 📎 클릭 → menu              │
+├─────────────────────────────┤
+│ 🖼️  Photo / Video          │
+│ 📄 File                     │
+│ 📍 Location                 │
+│ 👤 Contact                  │
+│ 📊 Poll                     │
+├─────────────────────────────┤
+│ 사진 grid (multi-select)    │
+│ caption: [...]              │
+│ [압축 / 원본] 토글           │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가</h3>
+      <table class="spec">
+        <tr><td>chunk transfer</td><td><span class="badge done">완료</span> FileSender + 진행 widget</td></tr>
+        <tr><td>drag & drop</td><td><span class="badge wip">부분</span> PyQt6 dropEvent</td></tr>
+        <tr><td>location / contact / poll</td><td><span class="badge todo">Phase 5</span></td></tr>
+        <tr><td>multi-select</td><td><span class="badge todo">cycle 154</span></td></tr>
+        <tr><td>caption + 압축</td><td><span class="badge todo">cycle 154</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑮ CALL -->
+<section class="area" id="a15">
+  <h2>⑮ 통화 (voice / video) <span class="badge todo">cycle 200+ entry</span></h2>
+
+  <div class="compare-grid">
+    <div class="compare-card tg">
+      <h3>텔레그램</h3>
+      <div class="mockup">┌─────────────────────────────┐
+│        ⭕ (avatar)           │
+│        김상연               │
+│       Ringing...            │
+│                             │
+│   📞 (큰 accept button)     │
+│   ❌ (큰 decline)           │
+├─────────────────────────────┤
+│ 통화 진행 시:               │
+│ 🎤 mute / 🔊 / 📷 / 📞 end │
+└─────────────────────────────┘</div>
+    </div>
+
+    <div class="compare-card tt">
+      <h3>TooTalk 등가 (WebRTC SDP)</h3>
+      <table class="spec">
+        <tr><td>signaling</td><td>WS room (cycle 135) + SDP offer/answer</td></tr>
+        <tr><td>mute / speaker / camera</td><td><span class="badge todo">cycle 200+</span></td></tr>
+        <tr><td>screen share</td><td>원격 데스크탑 chain 정합 (cycle 166~180)</td></tr>
+        <tr><td>그룹 통화</td><td>mesh ≤ 8 peer cap</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑯ ROADMAP -->
+<section class="area" id="a16">
+  <h2>⑯ cycle 153~ design entry 로드맵 — 우선순위 8</h2>
+
+  <div class="priority-list">
+    <div class="item">
+      <div class="body">
+        <div class="title">WelcomeDialog (§1) 신설</div>
+        <div class="scope"><code>app/ui/welcome_dialog.py</code> + main.py 안 LoginDialog 직전 호출 + 8 icon + 4 locale switch + Toonation primary CTA</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">LoginDialog + SignupDialog redesign (§2+§3)</div>
+        <div class="scope">email + username + password + OTP 6 box auto-advance + 재 송신 link + brute force lock</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">메인 화면 3 column QSplitter (§5)</div>
+        <div class="scope">left rail (4 tab) + middle (FriendList + RoomList + 검색) + right (ChatView + header bar)</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">ChatView reply + reaction (§6)</div>
+        <div class="scope">reply preview border-left + reaction pill + emoji panel + read receipt ✓✓</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">SettingsDialog 10 section (§9)</div>
+        <div class="scope">tabbed dialog + i18n + theme + notification + devices + 폴더 placeholder</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">sticker / emoji picker (§12)</div>
+        <div class="scope">9 category tab + emoji 검색 + 최근 사용 + custom pack 통합 (emoji_pack_share 정합)</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">bot inline + command (§13)</div>
+        <div class="scope">@bot 입력 popup + / 입력 자동 완성 + inline button (URL/callback/payment)</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="body">
+        <div class="title">통화 voice/video (§15)</div>
+        <div class="scope">WebRTC audio/video SDP + ring screen + 통화 진행 control (mute/speaker/camera)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="refs">
+  <strong>참조</strong><br>
+  · 정본 md: <a href="telegram-ui-survey.md">telegram-ui-survey.md</a> (cycle 152.5 신설)<br>
+  · 사용자 directive 2026-05-19 cycle 152.5 — "지금부터 텔레그램의 각 레이아웃 다 조사해" + "html 로 보고해"<br>
+  · tdesktop 공식 GitHub: <a href="https://github.com/telegramdesktop/tdesktop">telegramdesktop/tdesktop</a><br>
+  · Theme Reference: <a href="https://github.com/telegramdesktop/tdesktop/wiki/Theme-Reference">tdesktop wiki Theme Reference</a><br>
+  · Telegram Auth API: <a href="https://core.telegram.org/api/auth">core.telegram.org/api/auth</a><br>
+  · 가드레일: <code>feedback-design-interactive-html</code> + <code>project-p2p-msg-overview</code> + <code>project-emoji-pack-share</code> + <code>project-bot-framework</code><br>
+  · 마지막 갱신: 2026-05-19 23:50 KST — 사이클 152.5
+</footer>
+
+</body>
+</html>
