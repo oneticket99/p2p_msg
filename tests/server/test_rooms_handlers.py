@@ -169,6 +169,23 @@ class TestCreateRoom:
         assert params[0] == 42  # user_id
         assert params[1] == ActivityAction.ROOM_CREATE.value
         assert params[2] == 77  # target_id = room_id
+        # 한글 주석: cycle 149 — metadata 안 room_code + kind 동시 emit 정합 검증.
+        meta = json.loads(params[5])
+        assert meta["room_code"] == body["room_code"]
+        assert meta["kind"] == "group"
+        # 한글 주석: cycle 149 — users.last_activity_at UPDATE 의 동반 emit 정합.
+        assert any(
+            "UPDATE users SET last_activity_at" in c[0] for c in sql_calls
+        )
+
+    @pytest.mark.asyncio
+    async def test_create_room_pool_none_skip_audit(
+        self, monkeypatch
+    ) -> None:
+        # 한글 주석: cycle 149 — pool 부재 시 endpoint 실패 (500) — audit graceful skip 의 경계 조건.
+        req = _make_request(db_pool=None, user_id=42, body={"kind": "group"})
+        with pytest.raises(web.HTTPInternalServerError, match="db_pool"):
+            await handle_create_room(req)
 
     @pytest.mark.asyncio
     async def test_create_room_invalid_kind_400(self) -> None:

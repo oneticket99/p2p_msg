@@ -153,7 +153,7 @@ class TestHandleJoinRoomsIntegration:
 
     @pytest.mark.asyncio
     async def test_new_room_creates_rooms_row(self) -> None:
-        """rooms row 부재 시 — INSERT INTO rooms 호출 + peer.db_room_id 갱신."""
+        """rooms row 부재 시 — INSERT INTO rooms 호출 + peer.db_room_id 갱신 + ROOM_CREATE audit metadata 정합."""
         registry = RoomRegistry()
         pool, cursor = _mock_pool_with_fetchone(
             # 한글 주석: 1st SELECT rooms = None (부재) → INSERT → lastrowid=7
@@ -175,9 +175,26 @@ class TestHandleJoinRoomsIntegration:
         # 한글 주석: peers INSERT 의 호출
         assert any("INSERT INTO peers" in s for s in sql_calls)
 
+        # 한글 주석: cycle 149 — ROOM_CREATE audit row 의 metadata 안 room_id (room_code) + peer_id 정합 검증.
+        import json as _json
+        room_create_meta = None
+        for call in cursor.execute.call_args_list:
+            if "INSERT INTO user_activity_log" in call.args[0]:
+                params = call.args[1]
+                if params[1] == "room_create":
+                    room_create_meta = _json.loads(params[5])
+                    # 한글 주석: target_id = peer.db_room_id (7)
+                    assert params[2] == 7
+                    # 한글 주석: user_id = JOIN payload user_id (42)
+                    assert params[0] == 42
+                    break
+        assert room_create_meta is not None
+        assert room_create_meta["room_id"] == "room-2"
+        assert room_create_meta["peer_id"] == "p1"
+
     @pytest.mark.asyncio
     async def test_first_peer_role_owner(self) -> None:
-        """첫 peer 합류 (room_size == 1) = role=owner 의 INSERT peers."""
+        """첫 peer 합류 (room_size == 1) = role=owner 의 INSERT peers + ROOM_CREATE audit 의 actual emit."""
         registry = RoomRegistry()
         pool, cursor = _mock_pool_with_fetchone(
             fetchone_sequence=[None, None],
@@ -199,6 +216,16 @@ class TestHandleJoinRoomsIntegration:
                 break
         else:
             pytest.fail("peers INSERT 호출 부재")
+
+        # 한글 주석: cycle 149 — 신규 room (room_size==1) 의 ROOM_CREATE audit 의 actual emit 정합.
+        # signaling.py _handle_join 안 230~247 라인 chain (persist_room_create 직후 log_activity ROOM_CREATE).
+        action_params: list[str] = []
+        for call in cursor.execute.call_args_list:
+            if "INSERT INTO user_activity_log" in call.args[0]:
+                params = call.args[1]
+                action_params.append(params[1])
+        assert "room_create" in action_params
+        assert "room_join" in action_params
 
     @pytest.mark.asyncio
     async def test_second_peer_role_member(self) -> None:

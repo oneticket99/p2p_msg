@@ -1,5 +1,14 @@
+---
+title: Mobile Flutter Setup — Phase 5 Item 2 본격 진입 prerequisite
+owner: oneticket99
+last_verified: 2026-05-19T21:30:00+09:00
+status: active
+phase: Phase 5 — Item 2 mobile (가장 마지막 cycle 181~200)
+cycle: 147
+---
+
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- TooTalk Phase 5 Item 2 mobile Flutter setup 운영 가이드 — cycle 147 신설 -->
+<!-- TooTalk Phase 5 Item 2 mobile Flutter setup 운영 가이드 — cycle 147 신설, cycle 149 frontmatter 회수 -->
 
 # Mobile Flutter Setup — Phase 5 Item 2 본격 진입 prerequisite
 

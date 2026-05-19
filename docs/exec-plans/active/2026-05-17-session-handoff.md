@@ -169,6 +169,62 @@ status: active
 
 ---
 
+## 8.65 사이클 142~148 Phase 5 본격 chain 누계 — wine 영구 폐기 + windows-native SUCCESS + i18n + friends + signaling rooms + emoji moderation + streaming 4 platform + mobile Flutter base + OBS v5 + remote coord + 사용자 WAV + 평가 6 영역 전면 rewrite + token trigger hook + sub-agent 누계 48종 + pytest 1693 (2026-05-19 신설)
+
+### 8.65.1 7 cycle chain 누계 (cycle 142~148)
+
+| cycle | 영역 | 산출물 + commit |
+|---|---|---|
+| 142 | sub-agent 3종 — wine 폐기 + windows-latest + messages REST | `.github/workflows/build.yml` cdrx 영구 제거 + windows-latest job 신설 + `docs/operations/windows-native-build.md` + `app/net/messages_client.py` 4 endpoint + test PASS (commit 4affe41 + 2cfdfff) |
+| 143 | windows-native verify SUCCESS | wine fail 4회 끝 PR build job GREEN 도달 (run 26082111613 macOS + Windows native PASS) + Python 3.13.2 PyInstaller 6.x native + SHA-256 + 30일 retention (commit bc413e5) |
+| 144 | sub-agent 4종 — i18n tr wrap + friends + signaling rooms + emoji moderation | 4 file 24 tr() wrap + 5 locale .ts skeleton + `server/api/friends_handlers.py` 5 endpoint + `server/db/repositories/friends.py` 8 SQL + 0007_friends.sql + `server/signaling/rooms.py` REST + WebSocket + `server/api/emoji_handlers.py` admin moderation + OCR + DMCA + test PASS chain + ENUM 23 → 28 회수 (commit ddda9c4 + ba25c74) |
+| 145 | 마무리 doc sweep + .qm compile | README/History/handoff §8.64 + 평가 snapshot + lrelease + .qm runtime 검증 |
+| 146 | sub-agent 7종 — streaming 4 platform + test fail 회수 + UI binding | `app/bot/streaming_helper.py` YouTube/Twitch/CHZZK/Kick dispatcher + cycle 145 test fail 회수 + .qm compile + 31 신규 PASS (commit 1c967c8 — cycle 145~147 누계) |
+| 147 | rooms invite + emoji list_pending + mobile Flutter base | `server/api/rooms_handlers.py` invite endpoint + `server/api/emoji_handlers.py` list_pending admin + `mobile/` Flutter base skeleton ([[project-phase5-mobile-last]] 정합 마지막 진입) + PASS |
+| 148 | sub-agent 6종 + trigger 신설 — OBS v5 + emoji menu + messages dual + signaling e2e + remote coord + token trigger | `app/bot/obs_websocket_client.py` v5 protocol hello/identified handshake + emoji UI menu integration + messages dual storage (REST + SQLite cache) + signaling e2e test + remote coord skeleton + token usage trigger hook + 57 신규 PASS (commit cdacb92 + 84e664b WAV + 7ad4a4a token usage + 72eb629 평가 sweep) |
+
+### 8.65.2 pytest + drift
+
+- 전체 pytest = 1693 passed (1605 baseline → 1636 cycle 146 7종 31 신규 → 1693 cycle 148 6종 57 신규 누계 88)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0 + 3회 반복 0
+- drift 0건 91 연속 사이클 37~148
+
+### 8.65.3 sub-agent 누계 48종 병렬 (feature-dev:code-architect 1 + general-purpose 47)
+
+- cycle 132 9 + cycle 133 3 + cycle 134~138 6 + cycle 139~141 9 + cycle 142 3 + cycle 144 4 + cycle 145~147 7 + cycle 148 6 = 47 + feature-dev:code-architect 1
+- [[feedback-parallel-execution-mandatory]] + [[feedback-workflow-preferences]] 정합
+
+### 8.65.4 사용자 directive 영구 확정 누계
+
+- **wine cdrx 영구 폐기** — cycle 142~143 windows-latest 마이그레이션 SUCCESS run 26082111613 (cycle 140~141 wine fail 4회 끝 마이그레이션 의무 영구 확정)
+- **WAV binary commit** — cycle 148 사용자 ppyong WAV 갱신 02_ppyo_tiny.wav (gitignore 미적용 영구, commit 84e664b)
+- **평가 전면 rewrite §1+§2+§3+§5+§6+§8 6 영역 sweep** — cycle 148 사용자 비판 "매번 전면 재작성 하고 있지 않는다는 말" 직접 회수 ([[feedback-assessment-full-section-sweep]] 정합, commit 72eb629) — 부분 갱신/prepend/append 패턴 절대 금지
+- **token usage trigger hook 신설** — cycle 148 30일 Claude Code 토큰 사용량 자동 산출 hook (cycle 131 baseline → cycle 148 trigger, commit 7ad4a4a)
+- **mobile Flutter base 진입** — Phase 5 마지막 진입 directive ([[project-phase5-mobile-last]]) 정합, cycle 147 skeleton
+
+### 8.65.5 DB audit endpoint coverage 28 ActivityAction (cycle 144 9 신규 누계)
+
+cycle 144 9 신규 (FRIEND_REQUEST + FRIEND_ACCEPT + FRIEND_REMOVE + EMOJI_PACK_SUBMIT + EMOJI_ITEM_SUBMIT + EMOJI_MODERATION_APPROVE + EMOJI_MODERATION_REJECT + EMOJI_MODERATION_DMCA + SIGNALING_ROOM_OWNER) — cycle 145~148 신규 audit action 0건 (REMOTE_GRANT/REVOKE 잔여 Phase 5 Item 5 본격 cycle 166~180).
+
+### 8.65.6 Phase 5 5 Item 모두 진입
+
+- Item 1 i18n — 5 locale .qm runtime + 24 call site tr() wrap + .ts skeleton 100 entry
+- Item 2 emoji pack — admin moderation + OCR + DMCA + list_pending + menu integration
+- Item 3 bot 마무리 — OBS WebSocket v5 + Toonation REST + streaming 4 platform (YouTube/Twitch/CHZZK/Kick)
+- Item 4 messages — REST 4 endpoint + dual storage (server REST + local SQLite cache) + signaling rooms invite
+- Item 5 원격 제어 — remote coord skeleton (sub-agent OO 진행 중)
+- mobile Flutter base — Phase 5 마지막 진입 ([[project-phase5-mobile-last]] 정합)
+
+### 8.65.7 다음 세션 첫 액션 우선순위
+
+1. Phase 5 Item 5 원격 제어 본격 GO directive 대기 (remote coord sub-agent OO 진행 중)
+2. mobile Flutter 본격 진입 (가장 마지막 사용자 directive 정합 [[project-phase5-mobile-last]])
+3. KT (tongkni.co.kr) PTR + mail-tester 최후 ([[project-dopa-demo-only]] — 데모 도메인 의 제품화 부재)
+4. emoji pack share 본문 추가 ([[project-emoji-pack-share]]) + bot framework Phase 3+ 마무리 ([[project-bot-framework]])
+5. 30일 Claude Code token usage 재 산출 정기 (cycle 148 trigger hook 활성)
+
+---
+
 ## 8.64 사이클 142~145 Phase 5 본격 chain — wine 영구 폐기 + windows-native verify SUCCESS + i18n tr wrap + friends + signaling rooms + emoji moderation + DB audit 28 ActivityAction (2026-05-19 신설)
 
 ### 8.64.1 cycle 142 sub-agent 3종 병렬 — wine 영구 폐기 + windows-latest 마이그레이션 + messages REST 통합

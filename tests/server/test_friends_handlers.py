@@ -162,6 +162,11 @@ class TestRequestFriend:
         assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_REQUEST.value
         assert params[2] == 99
+        # 한글 주석: metadata JSON 정합 — friend_id + nickname 보존.
+        assert params[5] is not None
+        meta = json.loads(params[5])
+        assert meta["friend_id"] == 77
+        assert "nickname" in meta
 
     @pytest.mark.asyncio
     async def test_request_friend_self_blocked_400(self) -> None:
@@ -326,6 +331,8 @@ class TestAcceptFriend:
         assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_ACCEPT.value
         assert params[2] == 99
+        # 한글 주석: FRIEND_ACCEPT metadata=None 정합 — JSON null serialize 회피.
+        assert params[5] is None
 
     @pytest.mark.asyncio
     async def test_accept_friend_pending_not_found_404(
@@ -375,7 +382,10 @@ class TestRejectFriend:
         )
         assert insert_call is not None
         params = insert_call[1]
+        assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_REJECT.value
+        assert params[2] == 99
+        assert params[5] is None
 
 
 # ─── 7. POST /api/friends/{user_id}/block ───────────────────────────────────
@@ -413,7 +423,10 @@ class TestBlockFriend:
         )
         assert insert_call is not None
         params = insert_call[1]
+        assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_BLOCK.value
+        assert params[2] == 99
+        assert params[5] is None
 
 
 # ─── 8. DELETE /api/friends/{user_id} ───────────────────────────────────────
@@ -448,4 +461,29 @@ class TestRemoveFriend:
         )
         assert insert_call is not None
         params = insert_call[1]
+        assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_REMOVE.value
+        assert params[2] == 99
+        assert params[5] is None
+
+
+# ─── 9. 5 ENUM 정합 sweep ───────────────────────────────────────────────────
+
+
+class TestFriendEnumSweep:
+    @pytest.mark.asyncio
+    async def test_all_five_friend_enums_distinct_values(self) -> None:
+        # 한글 주석: 5 ENUM string value 정합 + 중복 부재.
+        values = {
+            ActivityAction.FRIEND_REQUEST.value,
+            ActivityAction.FRIEND_ACCEPT.value,
+            ActivityAction.FRIEND_REJECT.value,
+            ActivityAction.FRIEND_BLOCK.value,
+            ActivityAction.FRIEND_REMOVE.value,
+        }
+        assert len(values) == 5
+        assert ActivityAction.FRIEND_REQUEST.value == "friend_request"
+        assert ActivityAction.FRIEND_ACCEPT.value == "friend_accept"
+        assert ActivityAction.FRIEND_REJECT.value == "friend_reject"
+        assert ActivityAction.FRIEND_BLOCK.value == "friend_block"
+        assert ActivityAction.FRIEND_REMOVE.value == "friend_remove"
