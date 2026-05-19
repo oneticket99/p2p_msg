@@ -59,6 +59,7 @@ flowchart LR
 | `@doc-gardener-agent` | ④ + 주 1회 | 머지 직후 정합 보정 + cron `doc-gardener.yml` | `Read`·`Grep`·`Glob`·`Bash`·`Edit` | 정책 본문 의미 변경·루트 신규 마크다운 생성 |
 | `@history-agent` | ④ | `@release-agent` 머지 직후 | `Read`·`Edit`·`Bash`(read-only) | `Write` 도구·append·Phase 헤더 신설·기존 행 삭제 |
 | `@ssh-deploy-agent` | ⑤ 후속 | `@release-agent` 머지 + push 직후 deploy/ + server/ 변경 detect 시 | `Read`·`Bash`(`ssh`·`scp`·`rsync`)·`Grep`·`Glob` | 서버 secret 외부 송출·`rm -rf /`·DB 직접 삭제·force push 원격·다른 sub-agent spawn |
+| `@dereliction-detector-agent` | 매 N cycle | 5+ cycle 누적 시점 자동 + 사용자 명시 spawn (cycle 168 신설) | `Read`·`Bash`(`git log`·`grep`)·`Grep`·`Glob` | 직접 회수 chain 실행·정책 본문 수정·hook 강제 활성·다른 sub-agent spawn |
 
 > 문서 담당 보조 에이전트 4종 (`@spec-agent`·`@structure-agent`·`@checklist-agent`·`@history-agent`) 매핑은 [정본 §D](CLAUDE_HARNESS_IMPORTANT.md). 본 표에는 위 7 프로세스 에이전트 + cycle 152 신설 `@ssh-deploy-agent` (데모 서버 자동 deploy chain) 등재.
 
