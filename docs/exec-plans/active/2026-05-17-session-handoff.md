@@ -169,6 +169,57 @@ status: active
 
 ---
 
+## 8.76 사이클 167~168.3 — aiortc PeerConnectionWrapper + mesh_manager 통합 + dereliction-detector-agent 신설 + M2 README/M3 History prepend 회수 (2026-05-20 신설)
+
+### 8.76.1 4 commit 산출
+
+| commit | 영역 |
+|---|---|
+| `7be4647` | cycle 167 — aiortc PeerConnectionWrapper skeleton + 5 pytest PASS + server 0008 manual SOURCE apply |
+| `63767f0` | cycle 168 — mesh_manager.add_peer_with_connection — PeerConnectionWrapper 통합 actual chain |
+| `613438a` | cycle 168.2 — dereliction-detector-agent.md 신설 (detect-only) + CLAUDE.md §3 + AGENTS.md §6 동기 |
+| `47bc4ec` | cycle 168.3 — dereliction-detector 권한 확장 + Stop hook 8번째 entry + 8 작업 에이전트 cross-check matrix + hook_dereliction_check.sh |
+| `(본 commit)` | cycle 168.4 — M2 README + M3 History prepend 회수 + 평가 freshness + handoff §8.76 |
+
+### 8.76.2 직무유기 회수 chain (사용자 directive 2026-05-20 cycle 168)
+
+- detect 결과 7 영역 검증
+- 1 HIGH (manual test trigger 부재) — 사용자 ack 의무 잔존
+- 2 HIGH (M2 README + M3 History) — 본 commit 회수 PASS
+- 1 HIGH (M7 telegram) — hook script 보유 + 송신 history 부재 잔존
+- 2 MEDIUM (M6 WBS + BPE) — cycle 169+ 회수 의무
+- 1 MEDIUM (평가 §3.1 sub-section) — cycle 169+ 회수 의무
+
+### 8.76.3 dereliction-detector-agent 본격 권한
+
+| 영역 | 본문 |
+|---|---|
+| trigger | Stop hook 8번째 entry — 매 cycle commit 직후 자동 fire |
+| 검증 7 영역 | manual test + M2 + M3 + M6 + M7 + BPE + 평가 §3.1 |
+| 작업 에이전트 cross-check | 8 agent (planning + reviewer + qa + observability + release + history + doc-gardener + ssh-deploy) |
+| 회수 chain | detect + 지시 (직접 회수 권한 부재) |
+
+### 8.76.4 cycle 169+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | 사용자 manual test trigger ack 의무 (HIGH 잔존) |
+| 2 | M7 텔레그램 송신 hook fire 검증 + 활성 |
+| 3 | 평가 §2.51~§2.55 본격 sub-section 본문 채워 넣기 |
+| 4 | M6 wbs_tasks INSERT chain |
+| 5 | BPE PreToolUse response filter hook 강제 활성 의무 |
+
+### 8.76.5 cycle 153~168 16 cycle 누계
+
+- 57 file 신설/edit
+- pytest 1767 PASS
+- drift 0건 105 연속 사이클 37~168
+- dereliction-detector 자동 fire 1회 PASS — 1건 detect
+- 사용자 비판 verbatim 회수 8건
+- 평가 freshness hook fire 9회 + 회수 9회
+
+---
+
 ## 8.75 사이클 166 — server reactions endpoint actual 검증 PASS — 데모 서버 cycle 155 chain 본격 binding (2026-05-20 신설)
 
 ### 8.75.1 SSH deploy chain
