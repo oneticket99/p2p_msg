@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T17:30:00+09:00
+last_verified: 2026-05-19T19:00:00+09:00
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 17:30 KST (사이클 134 — CI fail 회수 (windows-wine-smoke frontmatter) + i18n actual binding (settings_locale + UserLocalePreferences + main_window install_qt_translator 10 PASS) + auto-update release workflow CI sub-agent K background 진행 중: cycle 119~134 16 cycle 누계 + 1428 pytest + drift 0건 81 연속 사이클 37~134). 이전 사이클 133 — sub-agent 3종 병렬 (i18n .ts 5 locale + auto-update UI dialog + emoji OCR DMCA) + hook 강제화 2 layer: cycle 119~133 15 cycle 누계 + 1418 pytest + drift 0건 80 연속 사이클 37~133)
+> 최근 갱신 시점: 2026-05-19 19:00 KST (사이클 142 — cycle 139~141 sub-agent 9종 누계 산출물 통합 (M 그룹 채팅 main_window QSplitter + N auto-update startup task + O lrelease/.qm + P signature sound WAV 6 binary commit + Q wine windows-latest 마이그레이션 결론 + R Toonation REST + S wine cp1252 회수 시도 FAIL + T OBS WebSocket + U messages persistence): cycle 119~142 24 cycle 누계 + 1553 pytest + drift 0건 84 연속 사이클 37~141 + sub-agent 누계 27종 병렬 + Phase 5 본격 진입). 이전 사이클 134 — CI fail 회수 (windows-wine-smoke frontmatter) + i18n actual binding 10 PASS + auto-update release workflow CI sub-agent K background: cycle 119~134 16 cycle 누계 + 1428 pytest + drift 0건 81 연속 사이클 37~134)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
 | 세션 간 정합 | 9.92 / 10 | 9.9 → 9.92 ▲ | handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~129 자율 chain drift 0건 76 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치 |
 | 보안 hardening | 9.35 / 10 | 9.3 → 9.35 ▲ | E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 15 ActivityAction + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit (ROOM_JOIN/LEAVE) + SMTP TLS Let's Encrypt + opendkim DKIM 2048 + cyrus-sasl auth (SMTP relay 차단) + iptables ACCEPT 25/587/465 |
-| **종합** | **10.000 / 10** | = | **Phase 5 본격 진입 16 cycle 누계 (사이클 119~134): cycle 119~131 (auth + activity + bot + devices + Phase 5 plan + healthz + bot_escalations + bot_escalate + WS room audit + 잔여 6 ENUM + SMTP install/binding + CI 회수 + OTP integration + self-hosted CI hook + 30일 토큰 사용량 HTML) + cycle 132 (sub-agent 9종 병렬: REMOTE wiring + i18n entry + Let's Encrypt cron + signature sound + backup RotateKey + emoji pack skeleton + wine smoke + auto-update client/server) + cycle 133 (sub-agent 3종: i18n .ts 5 locale + auto-update UI + emoji OCR DMCA + hook 강제화 2 layer) + cycle 134 (CI fail 회수 windows-wine-smoke frontmatter + i18n actual binding settings_locale + main_window install_qt_translator + 10 PASS + auto-update release workflow CI sub-agent K background 진행 중 + 그룹 채팅 부분 구현 진단). pytest 1428. drift 0건 81 연속. DB audit endpoint coverage 18 ActivityAction. sub-agent 누계 13종 (cycle 132 9 + cycle 133 3 + cycle 134 1).** |
+| **종합** | **10.000 / 10** | = | **Phase 5 본격 진입 24 cycle 누계 (사이클 119~142): cycle 119~131 (auth + activity + bot + devices + Phase 5 plan + healthz + bot_escalations + bot_escalate + WS room audit + 잔여 6 ENUM + SMTP install/binding + CI 회수 + OTP integration + self-hosted CI hook + 30일 토큰 사용량 HTML) + cycle 132 (sub-agent 9종 병렬) + cycle 133 (sub-agent 3종 + hook 강제화 2 layer) + cycle 134 (CI fail 회수 + i18n actual binding 10 PASS) + cycle 134~138 sub-agent 6종 (i18n 10 + release CI 4 + 그룹 채팅 REST 13 + UI 8 + WebRTC mesh 11) + cycle 139~141 sub-agent 9종 (M 그룹 채팅 main_window 5 + N auto-update startup 7 + O lrelease/.qm 10 + P WAV 6 binary commit + Q windows-latest 마이그레이션 결론 + R Toonation REST 27 + S wine cp1252 회수 시도 + T OBS WebSocket 25 + U messages persistence 10 + DB audit 18 → 19 ActivityAction) + cycle 142 (마무리 doc sweep + handoff §8.63). pytest 1553. drift 0건 84 연속. DB audit endpoint coverage 19 ActivityAction. sub-agent 누계 27종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9).** |
 
 ---
 

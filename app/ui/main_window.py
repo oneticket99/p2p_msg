@@ -23,18 +23,22 @@ cycle 139 변경 요점:
 - 기존 ChatView (1:1) 는 QStackedWidget 의 첫 페이지 로 보존 — 사용자 가
   "직접 메시지" 액션 으로 회귀 가능 (backward compat).
 - GroupChatView 는 ``room_entered`` 시 lazy create + StackedWidget 의
-  swap. ``message_send_requested`` 시그널 은 REST + WebRTC mesh broadcast
-  의 stub (cycle 138 ``GroupMessageClient`` 의 향후 binding).
+  swap. ``message_send_requested`` 시그널 은 REST POST `/api/rooms/{id}/messages`
+  (cycle 141 ``MessagesRestClient``) + WebRTC mesh broadcast (cycle 138
+  ``GroupMessageClient.send_message``) 의 dual chain (cycle 142 의 actual
+  binding 도달).
 - ``members_panel_requested`` 시그널 은 MemberListWidget toggle 진입점.
 - RoomsClient (``app.net.rooms_client``) 의 ``list_rooms`` / ``get_room`` 의
   의 호출 wrapper 보유 — main entry 점 에서 주입 (test 의 mock 호환).
 
 본 cycle 의 범위 외 (별개 cycle):
 
-- 실 WebRTC mesh peer connection 의 binding (GroupMessageClient.send_message)
+- 실 WebRTC mesh peer connection 의 PeerConnection 의 setup (MeshManager)
 - 친구 목록 dropdown 의 InviteDialog 의 main_window 통합
 - 메시지 history lazy load (cycle 60 messages_client wrapper) 의 GroupChatView
   pre-fill
+- REST POST 의 ack 대기 + retry chain (cycle 142 는 fire-and-forget background
+  task 만 — ack chain 은 별개 cycle 의 책임)
 """
 
 from __future__ import annotations
@@ -113,6 +117,8 @@ class MainWindow(QMainWindow):
         *,
         auth_client: Optional[AuthClient] = None,
         rooms_client: Optional[object] = None,
+        messages_client: Optional[object] = None,
+        group_message_client: Optional[object] = None,
     ) -> None:
         """초기 위젯 트리 + sidebar + Stacked + 메뉴/StatusBar 배치.
 
@@ -128,6 +134,15 @@ class MainWindow(QMainWindow):
             cycle 139 신설 — ``app.net.rooms_client.RoomsClient`` 의 주입.
             None 일 시 RoomList sidebar 의 list_rooms 호출 skip + 빈 placeholder
             행 만 표시 (test 격리 + 인증 미완료 단계 graceful).
+        messages_client : MessagesRestClient | None
+            cycle 142 신설 — ``app.net.messages_client.MessagesRestClient`` 의 주입.
+            그룹 메시지 송신 시 REST POST `/api/rooms/{room_id}/messages` 호출 +
+            server 영속화 + audit log 트리거. None 또는 호출 실패 시 mesh-only
+            모드 (graceful) — UI 흐름 차단 없음.
+        group_message_client : GroupMessageClient | None
+            cycle 142 신설 — ``app.net.group_message_client.GroupMessageClient`` 의
+            주입 (WebRTC mesh broadcast fan-out). None 일 시 mesh broadcast skip
+            (UI echo 만). 정상 환경 의 main 진입점 의 의무 주입.
         """
 
         super().__init__(parent)
@@ -137,11 +152,16 @@ class MainWindow(QMainWindow):
         self._state: AppState = AppState.instance()
         self._auth_client: Optional[AuthClient] = auth_client
         self._rooms_client = rooms_client  # cycle 139 RoomsClient (lazy 의존)
+        # cycle 142 — messages REST + WebRTC mesh 의 dual chain 의무 의존성
+        self._messages_client = messages_client
+        self._group_message_client = group_message_client
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
         # cycle 139 — 현재 활성 그룹 채팅 방 의 GroupChatView (방 전환 시 swap)
         self._group_chat_view: Optional[GroupChatView] = None
         self._current_room_id: Optional[int] = None
+        # cycle 142 — 가장 최근 REST POST 응답 의 message_id capture (UI / 추후 ack chain)
+        self._last_message_id: Optional[int] = None
 
         # 0-1) 시그니처 사운드 player — Config 의 sound_* 3 필드 기반 init
         self._sound_player: SoundPlayer = SoundPlayer(config)
@@ -563,20 +583,54 @@ class MainWindow(QMainWindow):
         # 5) AppState 갱신
         self._state.set_identity(room_id=str(room_id), peer_id=self_username)
 
-    def _on_group_message_send(self, room_id: int, body: str) -> None:
-        """GroupChatView 의 message_send_requested 핸들러 (cycle 139 stub).
+    # 한글 주석: 메시지 body 의 client-side 상한 — server _MAX_BODY_LEN (65535) 와 정합.
+    _MAX_MESSAGE_BODY_LEN: int = 65535
 
-        본 슬롯 은 REST POST + WebRTC mesh broadcast 의 stub. cycle 138 의
-        ``GroupMessageClient.send_message`` 의 실 binding 은 별개 cycle.
-        현재 는 echo + log 만 수행 — UI 흐름 검증 의 의무.
+    def _on_group_message_send(self, room_id: int, body: str) -> None:
+        """GroupChatView 의 message_send_requested 핸들러 (cycle 142 actual chain).
+
+        cycle 142 의 dual chain — REST POST + WebRTC mesh broadcast:
+
+        1. body 검증 (빈 / max length cap / room_id 의 활성 검증)
+        2. UI append (local echo) — caller 의 즉각 피드백 의무
+        3. REST POST `/api/rooms/{room_id}/messages` — server 영속화 + audit
+           (graceful fail = mesh-only 모드 진입 + warning log)
+        4. WebRTC mesh broadcast — ``GroupMessageClient.send_message``
+           (graceful fail = REST 의 의 fallback 유지)
+
+        Notes
+        -----
+        - REST + mesh 둘 다 fail → UI append 는 보존 (사용자 가 작성 흔적 유지).
+        - REST 성공 시 message_id 의 capture → ``self._last_message_id`` 보관
+          (ack chain / 삭제 / 추적 의무).
+        - asyncio running loop 부재 (test 환경 등) 시 background task 등록 skip
+          + graceful log.debug.
         """
+
+        # 1) body 검증 — 빈 / 상한 초과 / 활성 룸 부재
+        if not body or not body.strip():
+            log.debug("[main_window] group_message_send 빈 body — skip")
+            return
+        if len(body) > self._MAX_MESSAGE_BODY_LEN:
+            log.warning(
+                "[main_window] group_message_send body 길이 %d > %d — truncate",
+                len(body),
+                self._MAX_MESSAGE_BODY_LEN,
+            )
+            body = body[: self._MAX_MESSAGE_BODY_LEN]
+        if room_id <= 0:
+            log.warning(
+                "[main_window] group_message_send room_id 무효 — %s", room_id
+            )
+            return
 
         log.debug(
             "[main_window] group_message_send room=%s body_len=%d",
             room_id,
             len(body),
         )
-        # echo (local) — GroupChatView 의 append_message 호출 + sender label
+
+        # 2) UI append — local echo (REST/mesh 결과 무관 의 즉각 피드백)
         if self._group_chat_view is not None:
             self._group_chat_view.append_message(
                 sender=self._config.user_nickname,
@@ -584,7 +638,93 @@ class MainWindow(QMainWindow):
                 ts=datetime.now(),
                 is_self=True,
             )
-        # TODO(cycle 140+): GroupMessageClient.send_message + REST POST /api/messages
+
+        # 3) REST POST + 4) mesh broadcast — async 의무, background task 의무
+        loop: Optional[asyncio.AbstractEventLoop] = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop is None:
+            # 한글 주석: pytest 등 의 running loop 부재 환경 — graceful skip.
+            log.debug(
+                "[main_window] asyncio running loop 부재 — REST/mesh chain skip"
+            )
+            return
+
+        asyncio.ensure_future(
+            self._dispatch_message_chain(room_id=room_id, body=body), loop=loop
+        )
+
+    async def _dispatch_message_chain(self, *, room_id: int, body: str) -> None:
+        """REST POST + mesh broadcast 의 async chain (cycle 142 신설).
+
+        Parameters
+        ----------
+        room_id : int
+            대상 room.id.
+        body : str
+            text 본문 — caller 영역 정규화 완료 의 의무.
+
+        흐름
+        ----
+        1. REST POST `/api/rooms/{room_id}/messages` — server 영속화 + audit.
+           응답 의 ``message_id`` 의 capture → ``self._last_message_id``.
+        2. WebRTC mesh broadcast — GroupMessageClient.send_message.
+        3. REST fail 시 mesh-only 모드 (warning log + mesh 계속 진행).
+        4. mesh fail 시 REST 의 성공 보존 — server 영속화 만으로 chain 종료.
+        5. 둘 다 fail = warning log + UI 의 local echo 만 보존 (직전 단계).
+        """
+
+        rest_ok = False
+        # 한글 주석: REST POST chain — graceful fail = mesh-only fallback
+        if self._messages_client is not None:
+            try:
+                resp = await self._messages_client.post_message(room_id, body)
+                if isinstance(resp, dict):
+                    msg_id = resp.get("message_id")
+                    if isinstance(msg_id, int):
+                        self._last_message_id = msg_id
+                        log.info(
+                            "[main_window] REST POST PASS room=%s message_id=%s",
+                            room_id,
+                            msg_id,
+                        )
+                rest_ok = True
+            except Exception as exc:  # noqa: BLE001
+                # 한글 주석: REST 401/403/500/network 모두 mesh-only fallback
+                log.warning(
+                    "[main_window] REST POST FAIL room=%s — mesh-only 모드 진입 (%r)",
+                    room_id,
+                    exc,
+                )
+        else:
+            log.debug(
+                "[main_window] messages_client 미주입 — REST skip + mesh-only"
+            )
+
+        # 한글 주석: WebRTC mesh broadcast — GroupMessageClient.send_message
+        if self._group_message_client is not None:
+            try:
+                sender_id = self._current_user_id or 0
+                await self._group_message_client.send_message(body, sender_id)
+                log.debug(
+                    "[main_window] mesh broadcast PASS room=%s rest_ok=%s",
+                    room_id,
+                    rest_ok,
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning(
+                    "[main_window] mesh broadcast FAIL room=%s rest_ok=%s — %r",
+                    room_id,
+                    rest_ok,
+                    exc,
+                )
+        else:
+            log.debug(
+                "[main_window] group_message_client 미주입 — mesh broadcast skip"
+            )
 
     @pyqtSlot()
     def _on_open_members_panel(self) -> None:

@@ -1,10 +1,10 @@
 ---
-title: Windows wine cross-compile smoke (cycle 132 → 141)
+title: Windows build smoke (cycle 132 → 142) — wine 영구 폐기 + windows-latest native 마이그레이션
 owner: oneticket99
-last_verified: 2026-05-19T15:55:00+09:00
+last_verified: 2026-05-19T16:05:00+09:00
 status: active
 phase: Phase 1 — 빌드 인프라
-cycle: 141
+cycle: 142
 date: 2026-05-19
 artifact_target: dist-windows/TooTalk-windows-x64.zip
 related:
@@ -13,17 +13,18 @@ related:
   - app/requirements.txt
 ---
 
-# Windows wine cross-compile smoke 회수 보고서
+# Windows 빌드 smoke 보고서 — wine 폐기 + windows-latest native 마이그레이션
 
 ## 1. 개요
 
-cycle 132 directive 가 지정한 `.github/workflows/build.yml` 안 `build-windows-wine` job (ubuntu-latest GitHub-hosted runner + `cdrx/pyinstaller-windows:python3` docker image) 에 대한 actual `workflow_dispatch` 실행 smoke 검증.
+cycle 132 → 140 → 141 → 142 의 누적 smoke 보고서. cycle 132 directive 안 wine cross-compile (`cdrx/pyinstaller-windows:python3` docker image) 의 3 회 연속 fail 후 cycle 142 안 **cdrx wine image 영구 폐기 + `windows-latest` GitHub-hosted runner native 마이그레이션** 적용.
 
-본 cycle 이전 까지 build workflow 는 **tag push (`v*`) trigger 만 활성** 상태로 3 회 실패 누적 (run id 26041524530 · 26036513764 · 26017115282). 본 cycle 에서 workflow_dispatch trigger 명령 + run id capture + 실패 원인 정밀 분석 + build.yml 회수 patch 적용 까지 수행한다.
+본 문서는 본 의사결정 chain (cycle 별 root cause + 회수 patch + 다음 단계) 을 누적 기록한다.
 
-- runner: `ubuntu-24.04` GitHub-hosted (quota 회피 정합, 사용자 visibility public directive)
-- image: `cdrx/pyinstaller-windows:python3` (digest `sha256:7d7bcb510a2e785f4936a2a61989fa93ff1eeba3b80571fbba919c23e52a0a63`)
-- 빌드 entry: `app/main.py` → `build/tootalk.spec` → `dist-windows/TooTalk/` 산출 목표
+- 현행 (cycle 142 이후): `runs-on: windows-latest` + `actions/setup-python@v5` + Python 3.13 + `pyinstaller>=6.0` native + `Compress-Archive` cmdlet.
+- 폐기 (cycle 132 ~ 141): `runs-on: ubuntu-latest` + `cdrx/pyinstaller-windows:python3` docker (Python 3.7 + pip 19.3.1 + PyQt5 era).
+- 빌드 entry: `app/main.py` → `build/tootalk.spec` → `dist-windows/TooTalk/` 산출 목표 (변경 부재).
+- 산출 artifact: `dist-windows/TooTalk-windows-x64.zip` (30일 retention, 변경 부재).
 
 ## 2. workflow_dispatch trigger 명령
 
@@ -49,11 +50,57 @@ gh run view <run-id> --log-failed
 
 ### 3-0. cycle 별 누계 (최신 상단)
 
-| cycle | run id | 시작 (KST) | macOS | Windows wine | 실패 단계 | 실패 root cause |
+| cycle | run id | 시작 (KST) | macOS | Windows | 실패 단계 | 실패 root cause |
 | :---: | --- | --- | :---: | :---: | --- | --- |
+| 142 | 26081701640 | 2026-05-19 16:01:37 | PASS (1m17s) | **FAIL** (32s) | PyInstaller wine cross-compile (origin/main 부재 — 로컬 stage 미반영) | **결정적 evidence — wine Python 3.7 + PyQt6 6.7+ 호환 부재 확정**: `ERROR: Could not find a version that satisfies the requirement PyQt6>=6.7 (from versions: ..., 6.5.3, 6.6.0, 6.6.1)` + `No matching distribution found for PyQt6>=6.7`. PyQt6 6.7+ 는 Python ≥ 3.9 의무 → wine image 의 Python 3.7 영구 호환 부재. **cycle 142 회수 결정**: `.github/workflows/build.yml` 안 `build-windows-wine` job 완전 삭제 + `build-windows-native` (windows-latest + Python 3.13 + PyInstaller native) 신설 적용 완료. 다음 push 후 재 trigger 의무 |
 | 141 | 26081251136 | 2026-05-19 15:50:52 | PASS (1m15s) | **FAIL** (29s) | PyInstaller wine cross-compile | cycle 140 동일 — `UnicodeDecodeError 'charmap' byte 0x90 @ pos 123` 재현. **트리거 시점 origin/main = 회수 patch 부재** (사용자 manual commit/push ack 대기 의무). 로컬 stage = `app/requirements.txt` ASCII 변환 + `build.yml` `PYTHONIOENCODING=utf-8 + PYTHONUTF8=1 + LANG=C.UTF-8 + LC_ALL=C.UTF-8` env 4종 정합. push 후 cycle 142 재 trigger 의무 |
 | 140 | 26081012261 | 2026-05-19 15:44:57 | PASS (1m29s) | **FAIL** (37s) | PyInstaller wine cross-compile | wine image Python 3.7 + pip 19.3.1 → `requirements.txt` UTF-8 한글 주석 `cp1252` codec decode 실패 (byte 0x90 @ pos 123) |
 | 132 | 26077734815 | 2026-05-19 14:15:12 | PASS (1m27s) | FAIL (27s) | Zip artifact step (silent PyInstaller skip) | docker `cdrx/pyinstaller-windows:python3` default entrypoint `/entrypoint.sh` → CMD arg 무시 → `dist-windows/` 디렉토리 생성 부재 |
+
+### 3-1z. cycle 142 — wine 영구 폐기 결정 + `windows-latest` 마이그레이션 patch 적용 (origin/main 회수 push 대기 trigger FAIL)
+
+cycle 132 + 140 + 141 의 3 회 연속 wine fail 후 **cdrx wine image 영구 폐기 결정**을 본 cycle 142 안 실 적용한다.
+
+**본 cycle 변경**:
+
+1. `.github/workflows/build.yml` 안 `build-windows-wine` job 완전 삭제 + `build-windows-native` job 신설:
+   - `runs-on: windows-latest` (GitHub-hosted Windows Server 2022).
+   - `actions/setup-python@v5` + Python 3.13.
+   - `pwsh` shell + `$env:PYTHONIOENCODING=utf-8` + `$env:PYTHONUTF8=1` (defensive 한글 주석 정합).
+   - `pyinstaller build/tootalk.spec --clean --noconfirm --distpath dist-windows --workpath build/work-win` native 실행.
+   - `Compress-Archive` cmdlet 의 `dist-windows/TooTalk-windows-x64.zip` 산출.
+   - `Test-Path dist-windows/TooTalk` fail-fast verify step 추가.
+2. 가드레일 갱신:
+   - `~/.claude/projects/.../memory/project_windows_build_via_wine.md` 영구 삭제.
+   - `~/.claude/projects/.../memory/project_windows_build_native.md` 신설 (windows-latest + Python 3.13 + native PyInstaller 명문).
+   - `MEMORY.md` 인덱스 entry 추가.
+
+| 항목 | 값 |
+| --- | --- |
+| run id | 26081701640 |
+| trigger event | `workflow_dispatch` (input `tag=cycle142-windows-native`) |
+| ref | main (origin/main = 회수 patch 부재 + 로컬 stage = wine 삭제 + native 신설 + memory 갱신, 사용자 manual push ack 대기) |
+| 시작 | 2026-05-19T07:01:37Z (KST 16:01:37) |
+| 종료 | 2026-05-19T07:04:16Z |
+| `build-macos` | PASS — 1m17s (artifact `tootalk-macos-arm64`, 30일 retention) |
+| `build-windows-wine` | **FAIL — 32s, exit 1** — origin/main 의 wine job 의 PyQt6 6.7+ 호환 부재 직접 evidence capture |
+
+**FAIL 원인 (결정적 evidence)**:
+
+```
+2026-05-19T07:02:13.4623737Z ERROR: Could not find a version that satisfies the requirement PyQt6>=6.7 (from -r app/requirements.txt (line 1)) (from versions: 6.0.0, 6.0.1, 6.0.2, 6.0.3, 6.1.0, 6.1.1, 6.2.0, 6.2.1, 6.2.2, 6.2.3, 6.3.0, 6.3.1, 6.4.0, 6.4.1, 6.4.2, 6.5.0, 6.5.1, 6.5.2, 6.5.3, 6.6.0, 6.6.1)
+2026-05-19T07:02:13.4646608Z ERROR: No matching distribution found for PyQt6>=6.7 (from -r app/requirements.txt (line 1))
+2026-05-19T07:02:13.7564695Z ##[error]Process completed with exit code 1.
+```
+
+본 evidence 는 cycle 140 §4-0 결론 (wine image Python 3.7 + PyQt6 6.7+ 호환 부재) 의 **PyPI level 결정적 증명** 이다. PyQt6 6.7+ wheel 의 의 Python 3.7 win_amd64 부재 (PyQt6 6.6.1 이 wine Python 3.7 호환 마지막 버전) → cdrx wine image 의 Python 3.7 fixed → 본 저장소 PyQt6 6.7+ 의무 → 영구 호환 부재 확정. cycle 132 (entrypoint 회수) + cycle 140-141 (cp1252 회수) 의 점진적 layer 회수 시도 의 무용 (PyQt6 6.7+ 호환 부재 가 root) → wine 영구 폐기 확정.
+
+**다음 cycle (143) 후속 의무**:
+
+1. 사용자 manual ack 의 `SKIP_PREPUSH=1 git push origin main` (현 branch `main` 의 로컬 stage 8 file → 본 cycle ack 대기).
+2. push 완료 직후 `gh workflow run build.yml --ref main -f tag=cycle143-windows-native-verify` 재 trigger.
+3. PASS 시 → §3-0 cycle 143 row prepend + 산출 artifact `tootalk-windows-x64.zip` SHA-256 + size capture + 본 문서 status = closed.
+4. FAIL 시 → root cause 분석 + `build/tootalk.spec` 의 Windows-specific hidden imports 검토 + cycle 144 진입.
 
 ### 3-1a. cycle 141 — ASCII 변환 + UTF-8 env 회수 patch 적용 (push 대기 상태 trigger FAIL)
 

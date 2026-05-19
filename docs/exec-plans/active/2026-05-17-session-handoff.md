@@ -169,6 +169,60 @@ status: active
 
 ---
 
+## 8.63 사이클 139~142 Phase 5 본격 진입 chain — 그룹 채팅 main_window + auto-update startup + i18n .qm + WAV 6 binary + Toonation/OBS + messages persistence + wine 폐기 (2026-05-19 신설)
+
+### 8.63.1 9 sub-agent 병렬 누계 (cycle 139~141)
+
+| sub-agent | cycle | 작업 | 산출물 + PASS |
+|---|---|---|---|
+| M | 139 | 그룹 채팅 main_window 통합 | `app/net/rooms_client.py` 339 row + `app/ui/main_window.py` QSplitter sidebar + QStackedWidget 3 페이지 + signals chain + 5 PASS |
+| N | 139 | auto-update startup task | `app/ui/main_window.py` asyncio + periodic_check 24h + UpdateDialog modal + closeEvent cleanup + 7 PASS |
+| O | 139 | lrelease + .qm compile | `tests/app/test_i18n_runtime.py` 10 PASS + `.gitignore *.qm` + `docs/operations/i18n-compile.md` |
+| P | 140 | signature sound WAV 6 chiptune binary commit | `tools/generate_signature_sounds.py` Python stdlib synthesis + `app/sound/wav/tootalk_*.wav` 6 binary 140KB (gitignore 미적용 — 사용자 directive 영구 확정) + `_resolve_wav_path` fallback + 6 PASS |
+| Q | 140 | CI wine recovery 진단 | `docs/operations/windows-wine-smoke.md` cycle 140 row + cdrx Python 3.7 cp1252 분석 + windows-latest 마이그레이션 결론 (cdrx wine 영구 폐기 의무) |
+| R | 140 | Toonation REST client | `app/bot/toonation_client.py` 6 method + `app/bot/customer_service_bot.py` 8 dispatch keyword + `docs/operations/toonation-integration.md` 6 section + 27 PASS |
+| S | 141 | wine cp1252 회수 시도 FAIL | `app/requirements.txt` ASCII 변환 + `build.yml` UTF-8 env 4종 + run 26081251136 FAIL → cycle 142 windows-latest 마이그레이션 의무 |
+| T | 141 | OBS WebSocket skeleton | `app/bot/obs_websocket_client.py` 217 row 11 method + `streaming_helper.py` 4 platform dispatcher + `docs/operations/obs-integration.md` 6 section + 25 PASS |
+| U | 141 | messages persistence | `server/api/messages_handlers.py` 4 endpoint + `server/db/repositories/messages.py` 6 SQL + MESSAGE_SEND audit chain (DB audit 18 → 19 ActivityAction) + 10 PASS |
+
+### 8.63.2 cycle 142 마무리 doc sweep
+
+- README.md cycle 142 M2 prepend (30 cap 정합 — oldest cycle 97 보조 1개 제거)
+- History.md cycle 142 역순 prepend (9 영역 chain 본문)
+- `docs/assessments/productization.md` + `vibe-coding.md` frontmatter `last_verified` 19:00 KST + 사이클 142 + 24 cycle 누계 + 1553 pytest + 84 연속
+- `docs/html/productization.html` + `vibe-coding.html` sed bulk update
+- 본 handoff §8.63 신규 row prepend
+
+### 8.63.3 pytest + drift
+
+- 전체 pytest = 1553 passed (1418 baseline + 135 신규: cycle 134~138 46 + cycle 139~141 89)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0 + 3회 반복 0
+- drift 0건 84 연속 사이클 37~141
+
+### 8.63.4 sub-agent 누계 27종 병렬 (feature-dev:code-architect 1 + general-purpose 26)
+
+- cycle 132 9 + cycle 133 3 + cycle 134~138 6 + cycle 139~141 9
+- [[feedback-parallel-execution-mandatory]] + [[feedback-workflow-preferences]] 정합
+
+### 8.63.5 사용자 directive 영구 확정 — wine cdrx 폐기 + WAV binary commit
+
+- cdrx/pyinstaller-windows base image Python 3.7 cp1252 default codec 의 UTF-8 한글 주석 SyntaxError 회수 불가 → cycle 142 windows-latest GitHub-hosted runner 마이그레이션 의무
+- WAV 6 binary 140KB 합산 = source-of-truth 직접 commit (gitignore 미적용 — 사용자 directive "wav 는 gitignore 안시킬꺼야")
+
+### 8.63.6 DB audit endpoint coverage 19 ActivityAction (직전 18 → cycle 141 MESSAGE_SEND 추가)
+
+SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER + DEVICE_REVOKE + BOT_CHAT + BOT_ESCALATE + ROOM_JOIN + ROOM_LEAVE + ROOM_CREATE + ROOM_CLOSE + MESSAGE_SEND (cycle 141 신규) + FILE_SEND + FILE_RECEIVE + PROFILE_UPDATE + EMAIL_CHANGE + ACCOUNT_DELETE + PASSWORD_RESET_REQUEST. 잔여 = REMOTE_GRANT/REVOKE (Phase 5 Item 5 본격 cycle 166~180).
+
+### 8.63.7 다음 세션 첫 액션 우선순위
+
+1. cycle 142 본격 — `.github/workflows/build.yml` windows-latest runner 마이그레이션 (cdrx wine 영구 폐기) + Windows 빌드 smoke GREEN 회복
+2. Phase 5 본격 GO directive 대기 (i18n 우선 → emoji pack → bot 마무리 → 원격 제어 → mobile 가장 마지막)
+3. i18n + emoji pack share 동시 진행 가능 ([[feedback-parallel-execution-mandatory]])
+4. KT (tongkni.co.kr) PTR + mail-tester 최후 ([[project-dopa-demo-only]] — 데모 도메인 의 제품화 부재)
+5. Phase 5 Item 1 i18n 본격 binding (UI 컴포넌트 매핑 + OTP 이메일 본문 다국어)
+
+---
+
 ## 8.61 사이클 133 Phase 5 본격 진입 — i18n .ts 5 locale + auto-update UI + emoji OCR + hook 강제화 (2026-05-19 신설)
 
 ### 8.61.1 3 sub-agent 병렬

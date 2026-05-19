@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# TooTalk(p2p_msg) Phase 1 build workflow — macOS native + Windows wine cross-compile.
+# TooTalk(p2p_msg) Phase 1 build workflow — macOS self-hosted arm64 + Windows windows-latest native.
+# cycle 142 회수: cdrx wine image 영구 폐기 (Python 3.7 + cp1252 + PyQt6 6.7+ 호환 부재 3 cycle fail 누적) → windows-latest GitHub-hosted runner + native Python 3.13 + PyInstaller 마이그레이션.
 
 name: build
 
@@ -37,30 +38,42 @@ jobs:
           path: dist/TooTalk-macos-arm64.zip
           retention-days: 30
 
-  build-windows-wine:
-    name: Windows x64 via wine (.exe)
-    runs-on: ubuntu-latest
+  build-windows-native:
+    name: Windows x64 native (.exe)
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: PyInstaller wine cross-compile
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        shell: pwsh
         run: |
-          # cdrx/pyinstaller-windows:python3 default entrypoint = /entrypoint.sh — CMD args 무시 → --entrypoint /bin/sh override 의무 (cycle 132 회수)
-          # PYTHONIOENCODING + PYTHONUTF8 env — wine Python 3.7 default cp1252 locale → UTF-8 강제 (cycle 141 회수)
-          docker run --rm \
-            --entrypoint /bin/sh \
-            -e PYTHONIOENCODING=utf-8 \
-            -e PYTHONUTF8=1 \
-            -e LANG=C.UTF-8 \
-            -e LC_ALL=C.UTF-8 \
-            -v "$PWD:/src" \
-            -w /src \
-            cdrx/pyinstaller-windows:python3 \
-            -c "pip install -r app/requirements.txt && pyinstaller build/tootalk.spec --clean --noconfirm --distpath dist-windows --workpath build/work-win && ls -la dist-windows"
+          # UTF-8 강제 — Windows native console default cp949 회피 (한글 주석 포함 requirements.txt 정합)
+          $env:PYTHONIOENCODING = "utf-8"
+          $env:PYTHONUTF8 = "1"
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+          pip install "pyinstaller>=6.0"
+      - name: PyInstaller build
+        shell: pwsh
+        run: |
+          $env:PYTHONIOENCODING = "utf-8"
+          $env:PYTHONUTF8 = "1"
+          pyinstaller build/tootalk.spec --clean --noconfirm --distpath dist-windows --workpath build/work-win
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          # PyInstaller 산출 디렉토리 (또는 단일 exe) 존재 확인 — fail-fast
+          Get-ChildItem -Recurse dist-windows
+          if (-not (Test-Path "dist-windows/TooTalk")) {
+            throw "dist-windows/TooTalk 디렉토리 부재 — PyInstaller 산출 실패"
+          }
       - name: Zip artifact
+        shell: pwsh
         run: |
-          # PyInstaller 산출 디렉토리 명 정합 (TooTalk 또는 TooTalk.exe 단일 파일) — ls 로 확인 후 zip
-          ls -la dist-windows || (echo "dist-windows 부재 — PyInstaller 산출 실패" && exit 1)
-          cd dist-windows && zip -r "TooTalk-windows-x64.zip" .
+          Compress-Archive -Path "dist-windows/TooTalk" -DestinationPath "dist-windows/TooTalk-windows-x64.zip"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
