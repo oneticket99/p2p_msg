@@ -19,6 +19,7 @@ from aiohttp import web
 
 from server.auth import login as login_uc
 from server.auth import register as register_uc
+from server.auth import resend_signup_otp as resend_uc
 from server.auth import reset_password as reset_uc
 from server.auth import verify as verify_uc
 from server.auth.exceptions import AuthError
@@ -131,6 +132,32 @@ async def handle_register(request: web.Request) -> web.Response:
         {"ok": True, "user_id": user_id, "next": "verify_otp"},
         status=201,
     )
+
+
+async def handle_resend_otp(request: web.Request) -> web.Response:
+    """POST /api/auth/resend — 사용자 directive cycle 169.45 회수.
+
+    OTP 재 송신 — email 검증 + 60초 cooldown + invalidate prior + 신규 발송.
+    """
+
+    payload = await _read_json(request)
+    pool = request.app["db_pool"]
+    try:
+        user_id = await resend_uc.resend_signup_otp(
+            pool,
+            email=str(payload.get("email", "")),
+        )
+    except AuthError as exc:
+        return _json_error(exc)
+    except Exception as exc:  # noqa: BLE001 - SMTP 실패 graceful
+        log.warning("[resend] 실패 — %r", exc)
+        return web.json_response(
+            {"error": "SMTP_FAILURE", "message": "OTP 메일 발송 실패 — 잠시 후 재시도"},
+            status=503,
+        )
+
+    await _audit(request, user_id=user_id, action=ActivityAction.SIGNUP)
+    return web.json_response({"ok": True, "user_id": user_id}, status=200)
 
 
 async def handle_verify(request: web.Request) -> web.Response:
@@ -359,6 +386,7 @@ def register_auth_routes(app: web.Application) -> None:
     """auth route 등록 — server.main 에서 호출."""
 
     app.router.add_post("/api/auth/register", handle_register)
+    app.router.add_post("/api/auth/resend", handle_resend_otp)
     app.router.add_post("/api/auth/verify", handle_verify)
     app.router.add_post("/api/auth/login", handle_login)
     app.router.add_post("/api/auth/logout", handle_logout)
@@ -368,4 +396,4 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_put("/api/auth/profile", handle_profile_update)
     app.router.add_post("/api/auth/email/request", handle_email_change_request)
     app.router.add_delete("/api/auth/account", handle_account_delete)
-    log.info("[api] auth 9 endpoint 등록 완료")
+    log.info("[api] auth 10 endpoint 등록 완료")

@@ -58,3 +58,24 @@ class ResetTokenInvalid(AuthError):
 
     code = "RESET_TOKEN_INVALID"
     http_status = 400
+
+
+class UserNotFound(AuthError):
+    """사용자 부재 — resend OTP / 이메일 lookup 등."""
+
+    code = "USER_NOT_FOUND"
+    http_status = 404
+
+
+class RateLimitExceeded(AuthError):
+    """rate limit 위반 — OTP resend cooldown 등."""
+
+    code = "RATE_LIMIT"
+    http_status = 429
+
+
+class EmailAlreadyVerified(AuthError):
+    """이미 검증 완료된 이메일 — resend 불필요."""
+
+    code = "EMAIL_ALREADY_VERIFIED"
+    http_status = 409

@@ -99,6 +99,13 @@ class AuthClient:
             {"email": email, "code": code},
         )
 
+    async def resend_otp(self, email: str) -> AuthResult:
+        """OTP 재 송신 — 사용자 directive cycle 169.45 회수."""
+        return await self._post(
+            "/api/auth/resend",
+            {"email": email},
+        )
+
     async def login(self, email: str, password: str) -> AuthResult:
         return await self._post(
             "/api/auth/login",

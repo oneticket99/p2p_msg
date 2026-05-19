@@ -206,14 +206,29 @@ class TestOTPDialogFunctional:
         assert dialog._get_otp() == "012345"
 
     def test_resend_cap_decrement(self, qtbot, monkeypatch) -> None:
+        # 한글 주석 — cycle 169.45 회수 — resend = async resend_otp endpoint call chain
+        # _do_resend coroutine 직접 호출 안 result.ok=True 시 _resend_remaining decrement
+        import asyncio
         from app.ui.otp_dialog import OTPDialog
         from PyQt6.QtWidgets import QMessageBox
-        client = _AsyncAuthClient()
-        dialog = OTPDialog(auth_client=client, email="user@example.com")
+        from dataclasses import dataclass
+
+        @dataclass
+        class _Result:
+            ok: bool = True
+            error_code: str = ""
+            error_message: str = ""
+
+        class _Client:
+            async def resend_otp(self, email):  # type: ignore[no-untyped-def]
+                return _Result(ok=True)
+
+        dialog = OTPDialog(auth_client=_Client(), email="user@example.com")
         qtbot.addWidget(dialog)
+        monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
         monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
         initial = dialog._resend_remaining
-        dialog._on_resend_clicked()
+        asyncio.run(dialog._do_resend())
         assert dialog._resend_remaining == initial - 1
 
     def test_verify_async_chain(self, qtbot, monkeypatch) -> None:

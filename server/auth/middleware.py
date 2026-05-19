@@ -19,6 +19,7 @@ _PUBLIC_PATHS = frozenset({
     "/healthz",
     "/readyz",
     "/api/auth/register",
+    "/api/auth/resend",
     "/api/auth/verify",
     "/api/auth/login",
     "/api/auth/reset/request",

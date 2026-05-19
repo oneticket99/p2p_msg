@@ -282,20 +282,66 @@ class OTPDialog(QDialog):
             self._boxes[0].setFocus()
 
     def _on_resend_clicked(self) -> None:
-        """OTP 재 송신 + remaining cap 갱신."""
+        """OTP 재 송신 — 사용자 directive cycle 169.45 회수. actual endpoint call."""
         if self._resend_remaining <= 0:
-            QMessageBox.warning(self, "TooTalk", _tr("재 송신 cap 초과 (24h)"))
+            QMessageBox.warning(self, "TooTalk", _tr("재 송신 횟수 초과 (24시간)"))
             return
-        self._resend_remaining -= 1
-        self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
-        # 한글 주석 — 재 송신 시 countdown 180s reset + box re-enable + timer restart
-        self._remaining_seconds = OTP_VALID_SECONDS
-        for box in self._boxes:
-            box.setEnabled(True)
-            box.clear()
-        self._boxes[0].setFocus()
-        self._update_countdown_display()
-        if not self._countdown_timer.isActive():
-            self._countdown_timer.start()
-        # 한글 주석 — 실 송신 = auth_client.resend_otp endpoint actual binding cycle 154+ 의무
-        log.info("OTP 재 송신 trigger — email=%s remaining=%d", self._email, self._resend_remaining)
+
+        # 한글 주석 — qasync.QEventLoop active 안 ensure_future + callback chain
+        coro = self._do_resend()
+        try:
+            asyncio.get_running_loop()
+            future = asyncio.ensure_future(coro)
+            future.add_done_callback(self._on_resend_done)
+        except RuntimeError:
+            asyncio.run(coro)
+
+    async def _do_resend(self) -> None:
+        """auth_client.resend_otp endpoint 호출."""
+        try:
+            result = await self._client.resend_otp(self._email)  # type: ignore[attr-defined]
+        except AttributeError:
+            QMessageBox.warning(
+                self,
+                "TooTalk",
+                _tr("재 송신 endpoint 부재 — 서버 버전 mismatch"),
+            )
+            return
+
+        if getattr(result, "ok", False):
+            # 한글 주석 — 성공 시 cap -1 + countdown 180s reset + box re-enable + timer restart
+            self._resend_remaining -= 1
+            self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
+            self._remaining_seconds = OTP_VALID_SECONDS
+            for box in self._boxes:
+                box.setEnabled(True)
+                box.clear()
+            self._boxes[0].setFocus()
+            self._update_countdown_display()
+            if not self._countdown_timer.isActive():
+                self._countdown_timer.start()
+            log.info("[OTP resend] email=%s remaining=%d", self._email, self._resend_remaining)
+            QMessageBox.information(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
+        else:
+            # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
+            err_code = getattr(result, "error_code", "")
+            err_map = {
+                "RATE_LIMIT": "재 송신 cooldown — 60초 대기 의무",
+                "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
+                "EMAIL_ALREADY_VERIFIED": "이미 인증 완료 — 로그인 진입 의무",
+                "SMTP_FAILURE": "메일 발송 실패 — 잠시 후 재시도",
+            }
+            err_msg = err_map.get(err_code, getattr(result, "error_message", "재 송신 실패"))
+            QMessageBox.warning(self, "TooTalk", err_msg)
+
+    def _on_resend_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
+        """ensure_future done callback — exception graceful + 한글화."""
+        try:
+            future.result()
+        except Exception as exc:
+            log.warning("[OTP resend] 실패 — %r", exc)
+            QMessageBox.critical(
+                self,
+                "TooTalk",
+                f"{_tr('재 송신 실패')} — {translate_error(exc)}",
+            )
