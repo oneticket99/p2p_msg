@@ -83,7 +83,7 @@ async def create_pool() -> Any:
     host = _env_str("DB_HOST", "127.0.0.1")
     port = _env_int("DB_PORT", 3306, min_value=1)
     user = _env_str("DB_USER", "tootalk")
-    password = os.environ.get("DB_PASS", "")  # 빈 비번 허용 (로컬 dev)
+    password = os.environ.get("DB_PASSWORD", os.environ.get("DB_PASS", ""))  # 빈 비번 허용 (로컬 dev) + DB_PASSWORD env 정합
     db_name = _env_str("DB_NAME", "tootalk")
     pool_min = _env_int("DB_POOL_MIN", 1, min_value=1)
     pool_max = _env_int("DB_POOL_MAX", 10, min_value=1)
