@@ -1,10 +1,10 @@
 ---
-title: Windows build smoke (cycle 132 → 142) — wine 영구 폐기 + windows-latest native 마이그레이션
+title: Windows build smoke (cycle 132 → 143) — wine 폐기 + windows-latest native 마이그레이션 완료
 owner: oneticket99
-last_verified: 2026-05-19T16:05:00+09:00
-status: active
+last_verified: 2026-05-19T19:30:00+09:00
+status: closed
 phase: Phase 1 — 빌드 인프라
-cycle: 142
+cycle: 143
 date: 2026-05-19
 artifact_target: dist-windows/TooTalk-windows-x64.zip
 related:
@@ -52,6 +52,7 @@ gh run view <run-id> --log-failed
 
 | cycle | run id | 시작 (KST) | macOS | Windows | 실패 단계 | 실패 root cause |
 | :---: | --- | --- | :---: | :---: | --- | --- |
+| 143 | 26082111613 | 2026-05-19 16:11:27 | (queued) | **PASS (2m31s)** | — | **🎉 windows-latest native 마이그레이션 SUCCESS** — wine cdrx fail 4회 끝 cycle 142 build.yml patch 정합 검증 완료. windows-latest GitHub-hosted runner + Python 3.13 + PyInstaller native + Compress-Archive PASS. job URL https://github.com/oneticket99/p2p_msg/actions/runs/26082111613/job/76686047614. status=closed |
 | 142 | 26081701640 | 2026-05-19 16:01:37 | PASS (1m17s) | **FAIL** (32s) | PyInstaller wine cross-compile (origin/main 부재 — 로컬 stage 미반영) | **결정적 evidence — wine Python 3.7 + PyQt6 6.7+ 호환 부재 확정**: `ERROR: Could not find a version that satisfies the requirement PyQt6>=6.7 (from versions: ..., 6.5.3, 6.6.0, 6.6.1)` + `No matching distribution found for PyQt6>=6.7`. PyQt6 6.7+ 는 Python ≥ 3.9 의무 → wine image 의 Python 3.7 영구 호환 부재. **cycle 142 회수 결정**: `.github/workflows/build.yml` 안 `build-windows-wine` job 완전 삭제 + `build-windows-native` (windows-latest + Python 3.13 + PyInstaller native) 신설 적용 완료. 다음 push 후 재 trigger 의무 |
 | 141 | 26081251136 | 2026-05-19 15:50:52 | PASS (1m15s) | **FAIL** (29s) | PyInstaller wine cross-compile | cycle 140 동일 — `UnicodeDecodeError 'charmap' byte 0x90 @ pos 123` 재현. **트리거 시점 origin/main = 회수 patch 부재** (사용자 manual commit/push ack 대기 의무). 로컬 stage = `app/requirements.txt` ASCII 변환 + `build.yml` `PYTHONIOENCODING=utf-8 + PYTHONUTF8=1 + LANG=C.UTF-8 + LC_ALL=C.UTF-8` env 4종 정합. push 후 cycle 142 재 trigger 의무 |
 | 140 | 26081012261 | 2026-05-19 15:44:57 | PASS (1m29s) | **FAIL** (37s) | PyInstaller wine cross-compile | wine image Python 3.7 + pip 19.3.1 → `requirements.txt` UTF-8 한글 주석 `cp1252` codec decode 실패 (byte 0x90 @ pos 123) |
