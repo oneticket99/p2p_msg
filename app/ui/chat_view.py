@@ -108,6 +108,11 @@ class ChatView(QScrollArea):
         """bubble reply_requested 재발산 → main_window reply mode chain."""
         self.reply_to_message.emit(sender, text)
 
+    def resolve_last_message_id(self, message_id: int) -> None:
+        """server POST 응답 message_id resolve → 직전 bubble.set_message_id chain (cycle 162)."""
+        if self._last_bubble is not None:
+            self._last_bubble.set_message_id(message_id)
+
     def add_message_from_payload(self, payload) -> None:
         """MessagePayload (cycle 156) → add_message 변환 — DataChannel 수신 path.
 
@@ -158,6 +163,8 @@ class ChatView(QScrollArea):
         self._sound_player = sound_player
         # cycle 159 — reactions_client (app.net.reactions_client) 주입 — bubble 전달
         self._reactions_client = reactions_client
+        # cycle 162 — 마지막 bubble 참조 보관 (server message_id resolve 후 set_message_id chain)
+        self._last_bubble = None
 
         # 스크롤 영역 기본 설정 — 가로 스크롤은 비활성, 세로만 사용
         self.setWidgetResizable(True)
@@ -187,6 +194,7 @@ class ChatView(QScrollArea):
         *,
         reply_to: Optional["object"] = None,
         reactions: Optional[dict] = None,
+        message_id: Optional[int] = None,
     ) -> None:
         """신규 메시지를 리스트에 추가하고 하단으로 자동 스크롤.
 
@@ -219,6 +227,11 @@ class ChatView(QScrollArea):
         # 한글 주석 — cycle 159 reactions_client injection (REST persist chain)
         if self._reactions_client is not None:
             bubble.set_reactions_client(self._reactions_client)
+        # cycle 162 — message_id 주입 (server POST 응답 안 message_id 의무)
+        if message_id is not None:
+            bubble.set_message_id(message_id)
+        # cycle 162 — bubble dict 추적 (server message_id resolve 시점 lookup chain)
+        self._last_bubble = bubble
 
         # stretch 슬롯 직전 (count - 1 위치) 에 삽입
         insert_at = max(0, self._messages_layout.count() - 1)
