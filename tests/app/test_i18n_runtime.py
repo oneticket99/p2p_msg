@@ -1,16 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""TooTalk Phase 5 cycle 139 — i18n runtime switch + .qm load 5 PASS.
+"""TooTalk Phase 5 cycle 145 — i18n runtime switch + .qm load + cycle 144 11 string × 4 locale 매핑 검증.
 
-본 test 의 cycle 132 (i18n base) + cycle 133 (.ts 5 locale) + cycle 134
-(main_window binding) chain 직후 actual lrelease 의 산출 .qm 5 file 의
-QTranslator 실측 load + tr() lookup + 5 locale 의 reload 검증.
+본 test 의 cycle 132 (i18n base) + cycle 133 (.ts 5 locale × 20 entry) + cycle 134
+(main_window binding) + cycle 139 (.qm compile + runtime switch) + cycle 144
+(tr() wrap 24 call sites) chain 직후 actual lrelease 의 산출 .qm 5 file 의
+QTranslator 실측 load + tr() lookup + 5 locale 의 reload + cycle 144 신규 11 unique
+string 의 4 non-base locale (en/ja/zh-CN/zh-TW) 의 매핑 정합 검증.
 
-5 test 구성:
+test 구성:
 
-- TestInstallQtTranslator : 2 (PyQt6 graceful + .qm 부재 graceful False)
-- TestQTranslatorLoad     : 1 (5 locale × .qm load PASS)
-- TestTrLookup            : 1 (en locale 의 tr("로그인") → "Login" 검증)
-- TestReloadLocale        : 1 (en → ja switch 의 tr() 변경 검증)
+- TestInstallQtTranslator       : 2 (PyQt6 graceful + .qm 부재 graceful False)
+- TestQTranslatorLoad           : 1 (5 locale × .qm load PASS, parametrize 5)
+- TestTrLookup                  : 1 (en locale 의 tr("로그인") → "Login" 검증)
+- TestReloadLocale              : 1 (en → ja switch 의 tr() 변경 검증)
+- TestCycle144StringLookup      : 4 (cycle 144 11 unique string × 4 locale 의 .ts 매핑 정합)
+- test_supported_locales_match  : 1 (SUPPORTED_LOCALES sanity)
 
 PyQt6 부재 환경 시 module level skip — collection graceful.
 .qm artifact 부재 (lrelease 미실행) 시 load test skip — CI graceful.
@@ -30,7 +34,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 # 한글 주석 — PyQt6 부재 시 본 test 모듈 전체 skip
 pytest.importorskip("PyQt6")
 
-from PyQt6.QtCore import QTranslator  # noqa: E402 — importorskip 직후 의무
+from PyQt6.QtCore import QCoreApplication, QTranslator  # noqa: E402 — importorskip 직후 의무
 from PyQt6.QtWidgets import QApplication  # noqa: E402
 
 from app.i18n import (  # noqa: E402
@@ -170,6 +174,115 @@ class TestReloadLocale:
             )
         finally:
             qapp.removeTranslator(ja_translator)
+
+
+# ----------------------------------------------------------------------
+# TestCycle144StringLookup — 4 PASS (cycle 144 11 unique string × 4 locale 매핑 정합)
+# ----------------------------------------------------------------------
+
+
+# 한글 주석 — cycle 144 24 tr() call sites 의 11 unique 한글 source string + 4 locale 의 .ts 매핑.
+# `app/ui/{login_dialog,signup_dialog,main_window,settings_dialog,chat_view}.py` 의
+# `_tr("...")` / `QCoreApplication.translate("MainWindow", "...")` wrap source 의 lookup
+# 의 실측 .qm 매핑 정합 의 cycle 145 강화 검증.
+CYCLE_144_TR_SOURCES: tuple[str, ...] = (
+    "로그인",
+    "회원가입",
+    "비밀번호",
+    "확인",
+    "취소",
+    "보내기",
+    "설정",
+    "메시지",
+    "온라인",
+    "오프라인",
+    "연결 중",
+)
+
+# 한글 주석 — locale → {korean_source: expected_translation} 매핑 정본 (cycle 133 .ts 정합).
+CYCLE_144_EXPECTED: dict[str, dict[str, str]] = {
+    "en": {
+        "로그인": "Login",
+        "회원가입": "Sign up",
+        "비밀번호": "Password",
+        "확인": "OK",
+        "취소": "Cancel",
+        "보내기": "Send",
+        "설정": "Settings",
+        "메시지": "Message",
+        "온라인": "Online",
+        "오프라인": "Offline",
+        "연결 중": "Connecting",
+    },
+    "ja": {
+        "로그인": "ログイン",
+        "회원가입": "サインアップ",
+        "비밀번호": "パスワード",
+        "확인": "確認",
+        "취소": "キャンセル",
+        "보내기": "送信",
+        "설정": "設定",
+        "메시지": "メッセージ",
+        "온라인": "オンライン",
+        "오프라인": "オフライン",
+        "연결 중": "接続中",
+    },
+    "zh-CN": {
+        "로그인": "登录",
+        "회원가입": "注册",
+        "비밀번호": "密码",
+        "확인": "确认",
+        "취소": "取消",
+        "보내기": "发送",
+        "설정": "设置",
+        "메시지": "消息",
+        "온라인": "在线",
+        "오프라인": "离线",
+        "연결 중": "连接中",
+    },
+    "zh-TW": {
+        "로그인": "登入",
+        "회원가입": "註冊",
+        "비밀번호": "密碼",
+        "확인": "確認",
+        "취소": "取消",
+        "보내기": "傳送",
+        "설정": "設定",
+        "메시지": "訊息",
+        "온라인": "上線",
+        "오프라인": "離線",
+        "연결 중": "連線中",
+    },
+}
+
+
+class TestCycle144StringLookup:
+    """cycle 144 의 11 unique tr() source × 4 non-base locale 의 .qm lookup 정합."""
+
+    @pytest.mark.parametrize("locale", ["en", "ja", "zh-CN", "zh-TW"])
+    def test_cycle144_strings_locale_lookup(self, qapp, locale: str) -> None:
+        # 한글 주석 — 4 non-base locale × 11 source string 의 QCoreApplication.translate 매핑 검증.
+        qm = _qm_path(locale)
+        if not qm.is_file():
+            pytest.skip(f"qm 부재 — {qm} (tools/i18n_compile.sh 실행 필요)")
+        translator = QTranslator()
+        assert translator.load(str(qm)), f"{locale} qm load FAIL"
+        qapp.installTranslator(translator)
+        try:
+            expected = CYCLE_144_EXPECTED[locale]
+            mismatches: list[str] = []
+            for source in CYCLE_144_TR_SOURCES:
+                got = QCoreApplication.translate("MainWindow", source)
+                want = expected[source]
+                if got != want:
+                    mismatches.append(f"{source!r} → got={got!r}, want={want!r}")
+            assert not mismatches, (
+                f"{locale} cycle 144 string lookup mismatch:\n  "
+                + "\n  ".join(mismatches)
+            )
+        finally:
+            # 한글 주석 — test 격리 의 translator remove (다음 parametrize 의 raw lookup 회피).
+            qapp.removeTranslator(translator)
 
 
 # ----------------------------------------------------------------------

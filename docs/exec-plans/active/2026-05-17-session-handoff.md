@@ -169,6 +169,65 @@ status: active
 
 ---
 
+## 8.64 사이클 142~145 Phase 5 본격 chain — wine 영구 폐기 + windows-native verify SUCCESS + i18n tr wrap + friends + signaling rooms + emoji moderation + DB audit 28 ActivityAction (2026-05-19 신설)
+
+### 8.64.1 cycle 142 sub-agent 3종 병렬 — wine 영구 폐기 + windows-latest 마이그레이션 + messages REST 통합
+
+| sub-agent | 영역 | 산출물 |
+|---|---|---|
+| W1 | wine 영구 폐기 + windows-latest 마이그레이션 | `.github/workflows/build.yml` cdrx/pyinstaller-windows docker entrypoint 영구 제거 + windows-latest GitHub-hosted runner job 신설 (PyInstaller native + Python 3.13.2 + UTF-8 sys default codec + 한글 주석 SyntaxError 회수) |
+| W2 | doc sweep + frontmatter 회수 | `docs/operations/windows-wine-smoke.md` deprecated 처리 + `docs/operations/windows-native-build.md` 신설 + frontmatter 회수 3 file (commit 2cfdfff) |
+| W3 | messages REST 통합 | `app/net/messages_client.py` REST `/api/messages` 4 endpoint client wrap + `app/ui/group_chat_view.py` messages_client 통합 + `tests/app/net/test_messages_client.py` 추가 PASS |
+
+### 8.64.2 cycle 143 windows-native verify SUCCESS (commit bc413e5)
+
+- wine fail 4회 끝 windows-latest 마이그레이션 PR build job GREEN 도달
+- Python 3.13.2 + pip install + PyInstaller 6.x native build + dist-windows artifact SHA-256 manifest + 30일 retention 모든 step PASS
+- cdrx wine 영구 폐기 commit bc413e5 확정
+
+### 8.64.3 cycle 144 sub-agent 4종 병렬 — i18n tr wrap + friends + signaling rooms + emoji moderation (commit ddda9c4)
+
+| sub-agent | 영역 | 산출물 |
+|---|---|---|
+| X1 | i18n tr wrap 24 call sites | `app/ui/main_window.py` + `group_chat_view.py` + `update_dialog.py` + `settings_dialog.py` 24 call site self.tr() wrap + 5 locale .ts 100 entry skeleton 갱신 + `tests/app/ui/test_i18n_tr_wrap.py` PASS |
+| X2 | friends chain | `server/api/friends_handlers.py` 5 endpoint + `server/db/repositories/friends.py` 8 SQL + `server/db/migrations/0007_friends.sql` 2 table + FRIEND_REQUEST/ACCEPT/REMOVE audit + `tests/server/test_friends_handlers.py` PASS |
+| X3 | signaling rooms | `server/signaling/rooms.py` REST + WebSocket room join/leave/list + room owner CRUD + `tests/server/test_signaling_rooms.py` PASS |
+| X4 | emoji moderation | `server/api/emoji_handlers.py` admin moderation endpoint 활성 + OCR jailbreak_detector_ocr Tesseract binding + DMCA check + `tests/server/test_emoji_moderation.py` PASS |
+
+추가 — test_user_activity ENUM count 23 → 28 회수 commit ba25c74 (FRIEND_REQUEST + FRIEND_ACCEPT + FRIEND_REMOVE + MESSAGE_SEND + cycle 144 신규 audit action 5종).
+
+### 8.64.4 cycle 145 마무리 doc sweep
+
+- README.md cycle 145 M2 prepend (30 cap 정합 — oldest cycle 97 보조2 제거)
+- History.md cycle 145 역순 prepend (3 영역 chain — cycle 142 + 143 + 144 본문)
+- `docs/assessments/productization.md` + `vibe-coding.md` frontmatter `last_verified` 20:00 KST + 사이클 145 + 27 cycle 누계 + 1605 pytest + 87 연속
+- `docs/html/productization.html` + `vibe-coding.html` sed bulk update
+- 본 handoff §8.64 신규 row prepend
+
+### 8.64.5 pytest + drift
+
+- 전체 pytest = 1605 passed (1553 baseline + 52 신규: cycle 144 sub-agent 4종 52)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0 + 3회 반복 0
+- drift 0건 87 연속 사이클 37~144
+
+### 8.64.6 sub-agent 누계 34종 병렬 (feature-dev:code-architect 1 + general-purpose 33)
+
+- cycle 132 9 + cycle 133 3 + cycle 134~138 6 + cycle 139~141 9 + cycle 142 3 + cycle 144 4
+- [[feedback-parallel-execution-mandatory]] + [[feedback-workflow-preferences]] 정합
+
+### 8.64.7 DB audit endpoint coverage 28 ActivityAction (직전 19 → cycle 144 9 신규)
+
+직전 19 + 9 신규 (FRIEND_REQUEST + FRIEND_ACCEPT + FRIEND_REMOVE + EMOJI_PACK_SUBMIT + EMOJI_ITEM_SUBMIT + EMOJI_MODERATION_APPROVE + EMOJI_MODERATION_REJECT + EMOJI_MODERATION_DMCA + SIGNALING_ROOM_OWNER). 잔여 = REMOTE_GRANT/REVOKE (Phase 5 Item 5 본격 cycle 166~180).
+
+### 8.64.8 다음 세션 첫 액션 우선순위
+
+1. Phase 5 본격 GO directive 대기 (i18n 우선 → emoji pack → bot 마무리 → 원격 제어 → mobile 가장 마지막)
+2. i18n + emoji pack share 동시 진행 가능 ([[feedback-parallel-execution-mandatory]])
+3. KT (tongkni.co.kr) PTR + mail-tester 최후 ([[project-dopa-demo-only]] — 데모 도메인 의 제품화 부재)
+4. Phase 5 Item 1 i18n 본격 binding 추가 — runtime locale switch UI + 5 locale .ts entry 본문 작성
+
+---
+
 ## 8.63 사이클 139~142 Phase 5 본격 진입 chain — 그룹 채팅 main_window + auto-update startup + i18n .qm + WAV 6 binary + Toonation/OBS + messages persistence + wine 폐기 (2026-05-19 신설)
 
 ### 8.63.1 9 sub-agent 병렬 누계 (cycle 139~141)

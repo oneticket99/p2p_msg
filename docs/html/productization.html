@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 142)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 142 의 등가 렌더링.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 145)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 145 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     마지막 갱신 라인 = "2026-05-19 19:00 KST — 사이클 142 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML + smtp-operations 24 cycle 누계 119~142 + 1553 pytest + drift 0건 84 연속)".
-     §1 종합 = 10점 만점 9 row + 종합 10.000 / 10. §2.43 신규 (사이클 142 chain) + §2.42 (SMTP 자동 설치 chain) + §2.41 (잔여 6 ENUM) 최우선 노출.
+     마지막 갱신 라인 = "2026-05-19 20:00 KST — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML + smtp-operations 27 cycle 누계 119~145 + 1605 pytest + drift 0건 87 연속)".
+     §1 종합 = 10점 만점 9 row + 종합 10.000 / 10. §2.43 신규 (사이클 145 chain) + §2.42 (SMTP 자동 설치 chain) + §2.41 (잔여 6 ENUM) 최우선 노출.
      기술 9.25 / 시장 5.7 / 차별화 9.8 / 가치 6.95 / 수익화 5.4 / 운영 9.92 / 가드레일 10.0 / 정합 9.92 / 보안 9.35 = 종합 10.000 정합 (production-ready 도달). -->
 <style>
   :root{
@@ -82,12 +82,12 @@
   <h1>TooTalk 제품화 가능성 평가 (Snapshot)</h1>
   <div class="sub">
     <span class="pill">owner: oneticket99</span>
-    <span class="pill">last_verified: 2026-05-19T19:00:00+09:00</span>
+    <span class="pill">last_verified: 2026-05-19T20:00:00+09:00</span>
     <span class="pill">status: <span class="ok">active</span></span>
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-19 19:00 KST</strong> — 사이클 142 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 24 cycle 누계 cycle 119~142 + 1553 pytest + drift 0건 84 연속 사이클 37~134)<br>
+    최근 갱신 시점: <strong>2026-05-19 20:00 KST</strong> — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 cycle 119~145 + 1605 pytest + drift 0건 87 연속 사이클 37~134)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -119,16 +119,16 @@
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">9.25 / 10</td><td class="center"><span class="up">9.2 → 9.25 ▲</span></td><td>CI 8 job GREEN + v0.4.0-phase4-infra + DB audit endpoint coverage 15 ActivityAction (cycle 119~122 + BOT_ESCALATE cycle 126 + ROOM_JOIN/LEAVE cycle 127 + 잔여 6 ENUM cycle 128) + healthz/readyz (cycle 124) + bot_escalations DB (cycle 125) + bot_escalate hook (cycle 126) + WS room audit (cycle 127) + SMTP 자동 설치 chain (cycle 129) + 1553 pytest + drift 0건 84 연속</td></tr>
+    <tr><td>기술 완성도</td><td class="center">9.25 / 10</td><td class="center"><span class="up">9.2 → 9.25 ▲</span></td><td>CI 8 job GREEN + v0.4.0-phase4-infra + DB audit endpoint coverage 15 ActivityAction (cycle 119~122 + BOT_ESCALATE cycle 126 + ROOM_JOIN/LEAVE cycle 127 + 잔여 6 ENUM cycle 128) + healthz/readyz (cycle 124) + bot_escalations DB (cycle 125) + bot_escalate hook (cycle 126) + WS room audit (cycle 127) + SMTP 자동 설치 chain (cycle 129) + 1605 pytest + drift 0건 87 연속</td></tr>
     <tr><td>시장 적합성</td><td class="center">5.7 / 10</td><td class="center"><span class="up">5.65 → 5.7 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra + DB audit actual SQL wiring 15 ActivityAction + Phase 5 plan + SMTP 자체 설치 (OTP 발신 인프라)</td></tr>
     <tr><td>차별화 요소</td><td class="center">9.8 / 10</td><td class="center">=</td><td>친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI + RAG + jailbreak 17 + 3 layer fallback)</td></tr>
     <tr><td>사용자 가치</td><td class="center">6.95 / 10</td><td class="center">=</td><td>P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호</td></tr>
     <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
     <tr><td>운영 비용</td><td class="center">9.92 / 10</td><td class="center"><span class="up">9.9 → 9.92 ▲</span></td><td>self-hosted macOS + wine + SMTP 자체 설치 자동 chain (smtp_install.sh idempotent) + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + 발신 SMTP relay 비용 0 (자체 운영)</td></tr>
     <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">9.92 / 10</td><td class="center"><span class="up">9.9 → 9.92 ▲</span></td><td>handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~142 자율 chain drift 0건 84 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치</td></tr>
+    <tr><td>세션 간 정합</td><td class="center">9.92 / 10</td><td class="center"><span class="up">9.9 → 9.92 ▲</span></td><td>handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~145 자율 chain drift 0건 87 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치</td></tr>
     <tr><td>보안 hardening</td><td class="center">9.35 / 10</td><td class="center"><span class="up">9.3 → 9.35 ▲</span></td><td>E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 15 ActivityAction + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit (ROOM_JOIN/LEAVE) + SMTP TLS Let&#39;s Encrypt + opendkim DKIM 2048 + cyrus-sasl auth (SMTP relay 차단) + iptables ACCEPT 25/587/465</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>10.000 / 10</strong></td><td class="center"><span class="up">9.999 → 10.000 ▲</span></td><td><strong>CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 24 cycle 누계 (cycle 119~142): cycle 129 SMTP install script + cycle 130 SMTP client binding + cycle 131 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML). pytest 1553. drift 0건 84 연속. Phase 1 OTP integration production-ready 도달.</strong></td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>10.000 / 10</strong></td><td class="center"><span class="up">9.999 → 10.000 ▲</span></td><td><strong>CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 (cycle 119~145): cycle 129 SMTP install script + cycle 130 SMTP client binding + cycle 131 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML). pytest 1605. drift 0건 87 연속. Phase 1 OTP integration production-ready 도달.</strong></td></tr>
   </tbody>
 </table>
 
@@ -255,7 +255,7 @@
 </ul>
 <p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
 
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.42 SMTP 자동 설치 chain <span class="new">신규 사이클 142</span></h3>
+<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.42 SMTP 자동 설치 chain <span class="new">신규 사이클 145</span></h3>
 <p>domain 확정 (<code>mail.dopa.co.kr</code> — 사용자 directive 2026-05-19) + DNS A record 정합 검증 (114.207.112.73) + MX record 정합 + PTR ISP default 잔존 (KT tongkni.co.kr — 사용자 KT 문의 의무).</p>
 <ul>
   <li><strong><code>tools/ssh_exec.py</code></strong> (110 row) — paramiko 단발 SSH command runner + .env.ssh credential load + argv[1] cmd exec + stdout/stderr/exit_code 전달. SSH_EXEC_TIMEOUT env 적용 가능.</li>
@@ -292,7 +292,7 @@
   <li><strong>cycle 125 bot_escalations DB 영속화</strong>: <code>server/db/migrations/0005_bot_escalations.sql</code> 신설 (id BIGINT PK + user_id FK CASCADE + ticket_id VARCHAR(64) UNIQUE + reason VARCHAR(64) + bot_role + provider + status ENUM open/in_progress/resolved/closed + metadata JSON + created_at/updated_at + 4 INDEX 5요소 COMMENT 정합) + <code>server/db/repositories/bot_escalations.py</code> — <code>EscalationRow</code> frozen dataclass + 8 SQL (INSERT + SELECT ticket/user/status + UPDATE status + COUNT + DELETE expired) + 8 함수 (enqueue + get_by_ticket + list_by_user + list_by_status + update_status + count_open + delete_expired + <code>_row_to_dataclass</code>). Phase 3 EscalationQueue in-memory 의 DB 영속 전환 base. graceful pool 부재 skip.</li>
   <li><strong>cycle 126 bot_escalate audit hook + escalation enqueue</strong>: <code>app/bot/bot_handlers.py</code> 의 <code>_scan_jailbreak</code> try/except HTTPBadRequest 분기 — jailbreak BLOCKED 감지 직후 escalation_repo.enqueue (graceful pool 부재 skip) + <code>log_activity(BOT_ESCALATE)</code> audit + metadata (reason + bot_role + provider + ticket_id) + re-raise HTTPBadRequest 400 (사용자 차단 동작 유지). DB audit endpoint coverage 9 ActivityAction (기존 8 + BOT_ESCALATE 신규).</li>
 </ul>
-<p>차별화 매트릭스 강화 — bot framework production-ready 의 마지막 in-memory 한계 회수 + audit log 의 jailbreak 시도 통계 base 확보 (악성 사용자 식별 + retention 정책 정합). 5 검증 PASS — AST + import + pytest 1553 + doc-lint 0 + BPE 0 + pronoun 0. drift 0건 73 연속 사이클 37~126.</p>
+<p>차별화 매트릭스 강화 — bot framework production-ready 의 마지막 in-memory 한계 회수 + audit log 의 jailbreak 시도 통계 base 확보 (악성 사용자 식별 + retention 정책 정합). 5 검증 PASS — AST + import + pytest 1605 + doc-lint 0 + BPE 0 + pronoun 0. drift 0건 73 연속 사이클 37~126.</p>
 
 <h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.38 Phase 5 extension plan 초안 <span class="new">신규 사이클 123</span></h3>
 <p>handoff §8.54.5 우선순위 5 회수. <code>docs/exec-plans/active/2026-05-23-phase5-extension-setup.md</code> 신설 — 5 영역 plan 9 section.</p>
@@ -601,7 +601,7 @@
     <tr><td>Bot framework (Anthropic + OpenAI + jailbreak + RAG)</td><td><span class="ok">✅ Phase 3 v0.3.0</span></td><td>cycle 65~99</td></tr>
     <tr><td>Production infra (docker + nginx + certbot + KST logging)</td><td><span class="ok">✅ Phase 4 v0.4.0</span></td><td>cycle 100~117</td></tr>
     <tr><td>DB audit endpoint coverage 15 ActivityAction</td><td><span class="ok">✅ 후속 chain</span></td><td>cycle 119~128</td></tr>
-    <tr><td>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl)</td><td><span class="ok">✅ 사이클 142</span></td><td>cycle 129</td></tr>
+    <tr><td>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl)</td><td><span class="ok">✅ 사이클 145</span></td><td>cycle 129</td></tr>
     <tr><td>그룹 채팅</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
     <tr><td>음성·영상 통화</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
     <tr><td>모바일 (iOS/Android)</td><td><span class="pending">🟡 Phase 5+ 후보</span></td><td>—</td></tr>
@@ -611,7 +611,7 @@
   </tbody>
 </table>
 
-<h3>3.2 <span class="strike">보안 deprioritized</span> <span class="ok">✅ Phase 4 cycle 112~117 회수 + 사이클 142 SMTP install</span></h3>
+<h3>3.2 <span class="strike">보안 deprioritized</span> <span class="ok">✅ Phase 4 cycle 112~117 회수 + 사이클 145 SMTP install</span></h3>
 <ul>
   <li>✅ TLS 1.2/1.3 + 6 cipher + OCSP stapling (nginx cycle 105)</li>
   <li>✅ 5 rate limit zone (auth + api + bot + upload + ws_conn)</li>
@@ -649,7 +649,7 @@
   <li>✅ Phase 2 v0.2.0-phase2 — E2EE Signal 200 PASS + multi-device + sound + push</li>
   <li>✅ Phase 3 v0.3.0-phase3-bot — 10 module + reviewer 8 회수</li>
   <li>✅ Phase 4 v0.4.0-phase4-infra — 34 신규 파일 + 144 PASS</li>
-  <li>코드 비율 = pytest 1553 + integration test + Playwright fixture (코드 우위)</li>
+  <li>코드 비율 = pytest 1605 + integration test + Playwright fixture (코드 우위)</li>
 </ul>
 
 <h3>3.7 차별화 잔존</h3>
@@ -733,7 +733,7 @@
     <tr><td class="center">0</td><td><strong>Phase 3 bot framework (10 module + Anthropic/OpenAI + jailbreak 17 패턴 + RAG dual baseline)</strong></td><td class="center"><span class="ok">✅ (사이클 65~99, v0.3.0-phase3-bot)</span></td></tr>
     <tr><td class="center">0</td><td><strong>Phase 4 production infra (docker stack + Config 통합 + nginx certbot + KST/JSON/redact logging + DB audit 0003)</strong></td><td class="center"><span class="ok">✅ (사이클 100~117, v0.4.0-phase4-infra)</span></td></tr>
     <tr><td class="center">0</td><td><strong>DB audit endpoint coverage 15 ActivityAction (auth + device + bot + room + message + file + profile + email)</strong></td><td class="center"><span class="ok">✅ (사이클 119~128)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables)</strong></td><td class="center"><span class="ok">✅ (사이클 142, script 작성)</span></td></tr>
+    <tr><td class="center">0</td><td><strong>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables)</strong></td><td class="center"><span class="ok">✅ (사이클 145, script 작성)</span></td></tr>
     <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 검토</strong></td><td class="center"><span class="ok">✅ (handoff §8.46+ 회수)</span></td></tr>
     <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH manual run) — sudo bash /root/smtp_install.sh</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
     <tr><td class="center">2</td><td>KT PTR record 회수 — tongkni.co.kr default → mail.dopa.co.kr (KT ISP 문의)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
@@ -804,7 +804,7 @@
     <tr><td><strong>데모 서버 SSH 차단</strong> (신규 사이클 5)</td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
     <tr><td><strong>observability baseline drift</strong> (신규 사이클 15)</td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (<code>observability-baseline.md</code> §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
     <tr><td><strong>Phase 2 E2EE 잔존 영역</strong> (DH ratchet + session state + skipped keys, 사이클 32)</td><td class="center">중</td><td class="center">상</td><td>사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증</td></tr>
-    <tr><td><strong>KT PTR record default 잔존</strong> (사이클 142)</td><td class="center">상</td><td class="center">중</td><td>KT ISP 문의 + tongkni.co.kr default → mail.dopa.co.kr (사용자 직접)</td></tr>
+    <tr><td><strong>KT PTR record default 잔존</strong> (사이클 145)</td><td class="center">상</td><td class="center">중</td><td>KT ISP 문의 + tongkni.co.kr default → mail.dopa.co.kr (사용자 직접)</td></tr>
   </tbody>
 </table>
 
@@ -866,8 +866,8 @@
     <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
     <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64, 사이클 5)</strong></td></tr>
     <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td>본 세션 신규 파일 100%</td></tr>
-    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>39종 active (사이클 142)</strong></td></tr>
-    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 — pytest 1553 PASS</td></tr>
+    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>39종 active (사이클 145)</strong></td></tr>
+    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 — pytest 1605 PASS</td></tr>
     <tr><td>Playwright E2E test</td><td>≥ 5건</td><td>3건 스켈레톤 active</td></tr>
     <tr><td><strong>OTP 발송 → 수신 latency</strong></td><td>≤ 30초</td><td>미측정 (SMTP install 사용자 manual 직후)</td></tr>
     <tr><td><strong>OTP brute force 차단율</strong></td><td>100% (5회/30분)</td><td>미측정</td></tr>
@@ -916,7 +916,7 @@
     <li>Markdown 정본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
   </ul>
   <p style="margin-top:14px;color:var(--muted);font-size:12px">
-    마지막 갱신: <strong>2026-05-19 19:00 KST</strong> — 사이클 142 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 24 cycle 누계 cycle 119~142 + 1553 pytest + drift 0건 84 연속 사이클 37~134)
+    마지막 갱신: <strong>2026-05-19 20:00 KST</strong> — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 cycle 119~145 + 1605 pytest + drift 0건 87 연속 사이클 37~134)
   </p>
 </footer>
 

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# TooTalk Phase 5 Item 2 mobile Flutter manifest — cycle 147 skeleton.
+# 본격 binding (libsignal-dart + flutter-webrtc + FCM) = cycle 181~200 본격 진입.
+
+name: tootalk_mobile
+description: TooTalk Phase 5 mobile client (Flutter + flutter-webrtc + libsignal-dart)
+publish_to: 'none'
+version: 0.5.0-phase5
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # WebRTC DataChannel binding — desktop aiortc 와 동등한 P2P channel
+  flutter_webrtc: ^0.11.0
+  # signaling WebSocket client — aiohttp WS 서버 와 호환
+  web_socket_channel: ^3.0.0
+  # REST API client — signup + login + OTP 호출
+  http: ^1.2.0
+  # FCM push notification — iOS APNs + Android FCM 통합
+  firebase_messaging: ^15.0.0
+  firebase_core: ^3.0.0
+  # iOS Cupertino icon set
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+# Flutter 설정 — Material Design 기본 ON
+flutter:
+  uses-material-design: true

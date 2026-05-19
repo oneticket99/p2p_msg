@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""emoji pack moderation admin endpoint — Phase 5 Item 3 cycle 144.
+"""emoji pack moderation admin endpoint — Phase 5 Item 3 cycle 144 + 147.
 
 cycle 132 의 `emoji_handlers.py` 5 endpoint 의 후속 — admin moderation
-4 endpoint 신설. owner role (admin Bearer token) 만 access 의 의무.
+4 endpoint 신설 (cycle 144) + cycle 147 의 list_pending actual binding.
+owner role (admin Bearer token) 만 access 의 의무.
 
-엔드포인트 4종 (cycle 144 skeleton + repository binding):
-- GET  /api/emoji/moderation/queue    — pending 팩 list (admin only)
+엔드포인트 4종 (cycle 147 — queue 의 실 list_pending 연결 완료):
+- GET  /api/emoji/moderation/queue    — pending 팩 list (admin only, pagination)
 - POST /api/emoji/moderation/approve  — pack 승인 (admin only)
 - POST /api/emoji/moderation/reject   — pack 거부 (admin only)
 - POST /api/emoji/moderation/dmca     — pack DMCA takedown (admin only)
@@ -14,12 +15,12 @@ cycle 132 의 `emoji_handlers.py` 5 endpoint 의 후속 — admin moderation
 ---------
 - admin Bearer = EMOJI_MODERATION_ADMIN_TOKEN env 의 strict 일치 의무.
   (version_handlers.py 의 VERSION_ADMIN_TOKEN 패턴 정합.)
-- repository binding = emoji_packs.update_moderation_status 의 직접 호출.
+- repository binding = emoji_packs.update_moderation_status + list_pending.
 - pool 부재 graceful 503 (DB_ENABLED=0 dev 정합).
 - audit log = log.info 의 line (별개 cycle 의 DB 영속 audit table).
+- queue 의 pagination = limit + offset query string (1~200 cap, 음수 차단).
 
-본 cycle 의 범위 외 (별개 cycle 145+):
-- 실 pending list SELECT (repository 의 list_pending 함수 신설 의무)
+본 cycle 의 범위 외 (별개 cycle 148+):
 - audit log DB 영속 (admin_actions 테이블)
 - bulk approve/reject batch endpoint
 - pagination cursor-based (cycle 132 skeleton 정합)
@@ -36,6 +37,7 @@ from aiohttp import web
 
 from server.db.repositories.emoji_packs import (
     ModerationStatus,
+    list_pending,
     update_moderation_status,
 )
 
@@ -109,15 +111,58 @@ async def _parse_pack_id(req: web.Request) -> tuple[Optional[int], Optional[web.
     return pack_id, None
 
 
-async def handle_queue(req: web.Request) -> web.Response:
-    """GET /api/emoji/moderation/queue — pending 팩 list (admin only skeleton).
+def _parse_pagination(req: web.Request) -> tuple[int, int, Optional[web.Response]]:
+    """query string limit/offset 추출 + 검증 — (limit, offset, error) 반환.
 
-    Phase 5 본격 cycle: emoji_packs.list_pending 신설 + pagination.
+    Returns
+    -------
+    tuple
+        (limit, offset, None) = 통과, (-, -, web.Response) = 400 즉시 반환.
+
+    Notes
+    -----
+    - limit default 50 / 1~200 cap.
+    - offset default 0 / 음수 차단.
+    """
+
+    # 한글 주석: query string default — limit 50 + offset 0 + cap 200
+    try:
+        limit = int(req.query.get("limit", "50"))
+        offset = int(req.query.get("offset", "0"))
+    except (TypeError, ValueError):
+        return 0, 0, web.json_response(
+            {"error": "limit/offset 정수 의무"}, status=400
+        )
+    if limit <= 0 or limit > 200:
+        return 0, 0, web.json_response(
+            {"error": "limit 1~200 의무"}, status=400
+        )
+    if offset < 0:
+        return 0, 0, web.json_response(
+            {"error": "offset 음수 차단"}, status=400
+        )
+    return limit, offset, None
+
+
+async def handle_queue(req: web.Request) -> web.Response:
+    """GET /api/emoji/moderation/queue — pending 팩 list (admin only).
+
+    cycle 147 — list_pending repository 호출 + pagination + JSON serialize.
+
+    Query parameters
+    ----------------
+    limit : int = 50
+        page size (1~200 cap).
+    offset : int = 0
+        page offset (음수 차단).
 
     응답:
-        200: {"queue": [{"pack_id", "name", "slug", "owner_user_id", ...}, ...]}
+        200: {"queue": [{"pack_id", "name", "slug", "owner_user_id", "created_at"}, ...],
+              "limit", "offset", "count"}
+        400: {"error": "limit/offset 무효"} — pagination 범위 위반
         401: {"error": "admin only"} — Bearer 부재 또는 불일치
         503: {"error": "db unavailable"} — pool 부재 graceful
+        500: {"error": "internal"} — repository 예외
     """
 
     # 한글 주석: admin Bearer 검증 — 실패 시 즉시 401
@@ -125,15 +170,51 @@ async def handle_queue(req: web.Request) -> web.Response:
     if auth_err is not None:
         return auth_err
 
+    # 한글 주석: pagination query 추출 + 검증
+    limit, offset, pag_err = _parse_pagination(req)
+    if pag_err is not None:
+        return pag_err
+
     pool = req.app.get("db_pool")
     if pool is None:
         # 한글 주석: dev 환경 의 DB_ENABLED=0 graceful 503
         return web.json_response({"error": "db unavailable"}, status=503)
 
-    # 한글 주석: skeleton — list_pending 함수 부재 의 빈 list 응답
-    # Phase 5 본격 cycle 의 emoji_packs.list_pending(pool) 호출
-    log.info("[emoji-moderation] GET /queue skeleton 호출")
-    return web.json_response({"queue": [], "skeleton": True}, status=200)
+    try:
+        # 한글 주석: cycle 147 — list_pending repository 의 직접 binding
+        rows = await list_pending(pool, limit=limit, offset=offset)
+    except ValueError as exc:
+        return web.json_response({"error": str(exc)}, status=400)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("[emoji-moderation] GET /queue 실패 — %r", exc)
+        return web.json_response({"error": "internal"}, status=500)
+
+    # 한글 주석: PendingPackRow → JSON dict 변환 (admin UI populate 의 의무 5 field)
+    queue_payload = [
+        {
+            "pack_id": r.id,
+            "name": r.name,
+            "slug": r.slug,
+            "owner_user_id": r.owner_user_id,
+            "created_at": r.created_at,
+        }
+        for r in rows
+    ]
+    log.info(
+        "[emoji-moderation] GET /queue limit=%d offset=%d count=%d",
+        limit,
+        offset,
+        len(queue_payload),
+    )
+    return web.json_response(
+        {
+            "queue": queue_payload,
+            "limit": limit,
+            "offset": offset,
+            "count": len(queue_payload),
+        },
+        status=200,
+    )
 
 
 async def _handle_decision(

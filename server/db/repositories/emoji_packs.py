@@ -8,10 +8,11 @@ DDL 정합 = `server/db/migrations/0004_emoji_packs.sql`.
 ---------
 - ModerationStatus + ItemModerationStatus ENUM = DDL 정합 의 enum dataclass.
 - EmojiPackRow + EmojiPackItemRow = frozen dataclass slots — 메모리 효율 + 불변.
-- 6 SQL: insert_pack / get_pack_by_slug / list_public_approved / insert_item /
-  list_items / update_moderation_status. Phase 5 본격 cycle 의 actual binding.
-- skeleton 단계 — 실 SQL 정의 + repository 함수 만 제공. REST endpoint binding
-  은 cycle 141~150 본격 진입 시점 placeholder.
+- 7 SQL: insert_pack / get_pack_by_slug / list_public_approved / insert_item /
+  list_items / update_moderation_status / list_pending. Phase 5 본격 cycle 의
+  actual binding (cycle 147 의 list_pending 신설 + moderation admin queue 정합).
+- skeleton 단계 — 실 SQL 정의 + repository 함수 제공. REST endpoint binding
+  은 cycle 141~150 본격 진입 시점 의 emoji_moderation_handlers 직접 호출.
 """
 
 from __future__ import annotations
@@ -54,6 +55,31 @@ class EmojiPackRow:
     is_public: bool
     moderation_status: ModerationStatus
     download_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class PendingPackRow:
+    """moderation queue pending 행 — cycle 147 신설.
+
+    Attributes
+    ----------
+    id : int
+        emoji_packs.id PK.
+    slug : str
+        URL slug.
+    name : str
+        팩 표시 이름.
+    owner_user_id : int
+        owner FK.
+    created_at : Optional[str]
+        ISO timestamp 문자열 (asyncmy datetime → str 변환). None graceful.
+    """
+
+    id: int
+    slug: str
+    name: str
+    owner_user_id: int
+    created_at: Optional[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +140,14 @@ _UPDATE_MODERATION_STATUS = """
 UPDATE emoji_packs
     SET moderation_status = %s
     WHERE id = %s
+"""
+
+_SELECT_PENDING = """
+SELECT id, slug, name, owner_user_id, created_at
+    FROM emoji_packs
+    WHERE moderation_status = 'pending'
+    ORDER BY created_at ASC, id ASC
+    LIMIT %s OFFSET %s
 """
 
 
@@ -297,3 +331,65 @@ async def update_moderation_status(
             )
             await conn.commit()
             return int(cur.rowcount or 0)
+
+
+async def list_pending(
+    pool: Any, *, limit: int = 50, offset: int = 0
+) -> List[PendingPackRow]:
+    """moderation queue pending list — cycle 147 신설.
+
+    moderation_status = 'pending' 의 팩 5 field SELECT + pagination.
+    admin moderation queue endpoint 의 의무 source.
+
+    Parameters
+    ----------
+    pool : Any
+        asyncmy pool DI (None = ValueError).
+    limit : int
+        page size — 1~200 cap (default 50).
+    offset : int
+        page offset — 음수 차단 (default 0).
+
+    Returns
+    -------
+    List[PendingPackRow]
+        created_at ASC + id ASC 정렬 의 pending 팩 list.
+
+    Raises
+    ------
+    ValueError
+        pool 부재 + limit/offset 범위 위반.
+    """
+
+    if pool is None:
+        raise ValueError("pool 의무")
+    if limit <= 0 or limit > 200:
+        raise ValueError(f"limit 1~200 의무 — {limit}")
+    if offset < 0:
+        raise ValueError(f"offset 음수 차단 — {offset}")
+
+    # 한글 주석: pending row 5 field 만 SELECT — admin queue 최소 필드 의무
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(_SELECT_PENDING, (limit, offset))
+            rows = await cur.fetchall()
+            result: List[PendingPackRow] = []
+            for r in rows:
+                # 한글 주석: created_at 의 datetime → ISO str 변환 graceful
+                created_at_val = r[4]
+                if created_at_val is None:
+                    created_str: Optional[str] = None
+                elif hasattr(created_at_val, "isoformat"):
+                    created_str = created_at_val.isoformat()
+                else:
+                    created_str = str(created_at_val)
+                result.append(
+                    PendingPackRow(
+                        id=int(r[0]),
+                        slug=str(r[1]),
+                        name=str(r[2]),
+                        owner_user_id=int(r[3]),
+                        created_at=created_str,
+                    )
+                )
+            return result

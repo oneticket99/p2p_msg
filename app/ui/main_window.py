@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
         rooms_client: Optional[object] = None,
         messages_client: Optional[object] = None,
         group_message_client: Optional[object] = None,
+        friends_client: Optional[object] = None,
     ) -> None:
         """초기 위젯 트리 + sidebar + Stacked + 메뉴/StatusBar 배치.
 
@@ -152,6 +153,11 @@ class MainWindow(QMainWindow):
             cycle 142 신설 — ``app.net.group_message_client.GroupMessageClient`` 의
             주입 (WebRTC mesh broadcast fan-out). None 일 시 mesh broadcast skip
             (UI echo 만). 정상 환경 의 main 진입점 의 의무 주입.
+        friends_client : FriendsClient | None
+            cycle 147 신설 — ``app.net.friends_client.FriendsClient`` 의 주입.
+            InviteDialog dropdown populate (``list_friends(status="accepted")``)
+            + 향후 friend_list page 의 REST 갱신 source. None = manual
+            ``set_friends`` 의무 (test 격리 mock 호환).
         """
 
         super().__init__(parent)
@@ -164,6 +170,8 @@ class MainWindow(QMainWindow):
         # cycle 142 — messages REST + WebRTC mesh 의 dual chain 의무 의존성
         self._messages_client = messages_client
         self._group_message_client = group_message_client
+        # cycle 147 — friends REST client (InviteDialog dropdown populate source)
+        self._friends_client = friends_client
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
         # cycle 139 — 현재 활성 그룹 채팅 방 의 GroupChatView (방 전환 시 swap)
@@ -820,6 +828,211 @@ class MainWindow(QMainWindow):
         # cycle 139 stub — 빈 멤버 목록 으로 swap (RoomsClient.get_room binding 별개 cycle)
         self._member_list.set_members([], viewer_role="member")
         self._stacked.setCurrentIndex(self._STACK_MEMBERS)
+
+    # ------------------------------------------------------------------
+    # cycle 147 — InviteDialog 의 host + invite_requested signal handler
+    # ------------------------------------------------------------------
+
+    def open_invite_dialog(self, room_id: Optional[int] = None) -> Optional[object]:
+        """InviteDialog 의 instantiation + friends_client populate chain.
+
+        Parameters
+        ----------
+        room_id : int | None
+            초대 대상 room. None = ``self._current_room_id`` 폴백. 부재 시 noop.
+
+        Returns
+        -------
+        InviteDialog | None
+            인스턴스 (caller 의 exec 의무 — test 가시성 확보).
+            ``self._current_room_id`` 부재 시 None.
+
+        Notes
+        -----
+        - friends_client 주입 부재 시 = dialog instantiation 만 (빈 dropdown).
+        - rooms_client 부재 시 = invite_requested 시그널 발생 후 graceful skip.
+        - 실 exec() 은 caller 책임 — test 의 modal 차단 회피.
+        """
+
+        from app.ui.invite_dialog import InviteDialog  # 한글 주석: lazy import (graceful)
+
+        target_room_id = room_id if room_id is not None else self._current_room_id
+        if target_room_id is None or target_room_id <= 0:
+            QMessageBox.warning(self, "TooTalk", "초대 = 그룹 방 진입 의무")
+            return None
+
+        dialog = InviteDialog(
+            room_id=target_room_id,
+            friends_client=self._friends_client,
+            room_title=f"Room #{target_room_id}",
+            parent=self,
+        )
+        # 한글 주석: invite_requested → rooms_client.invite_user REST chain
+        dialog.invite_requested.connect(self._on_invite_requested)
+        dialog.invite_failed.connect(self._on_invite_failed)
+
+        # 한글 주석: friends_client 가용 시 async populate task 등록 (graceful skip)
+        if self._friends_client is not None:
+            loop: Optional[asyncio.AbstractEventLoop] = None
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            if loop is not None:
+                asyncio.ensure_future(
+                    dialog.populate_friends_async(), loop=loop
+                )
+            else:
+                log.debug(
+                    "[main_window] asyncio running loop 부재 — populate skip"
+                )
+
+        log.info(
+            "[main_window] invite_dialog 인스턴스화 room_id=%s friends_client=%s",
+            target_room_id,
+            bool(self._friends_client),
+        )
+        return dialog
+
+    @pyqtSlot(int, int)
+    def _on_invite_requested(self, room_id: int, friend_user_id: int) -> None:
+        """InviteDialog 의 invite_requested 시그널 핸들러 — REST POST chain.
+
+        Parameters
+        ----------
+        room_id : int
+            초대 대상 room.id.
+        friend_user_id : int
+            초대 대상 users.id (dropdown 선택).
+
+        흐름
+        ----
+        1. rooms_client 주입 검증 — 부재 시 warning + status bar feedback.
+        2. asyncio running loop 가용 시 ``invite_user`` background task 등록.
+        3. 성공 시 ``_on_invite_complete`` → MemberList 갱신 (get_room 재호출).
+        """
+
+        log.info(
+            "[main_window] invite_requested room=%s friend_user_id=%s",
+            room_id,
+            friend_user_id,
+        )
+
+        if self._rooms_client is None:
+            QMessageBox.warning(
+                self, "TooTalk", "rooms_client 미주입 — 초대 차단"
+            )
+            return
+
+        loop: Optional[asyncio.AbstractEventLoop] = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop is None:
+            log.debug(
+                "[main_window] asyncio running loop 부재 — invite REST skip"
+            )
+            return
+
+        asyncio.ensure_future(
+            self._dispatch_invite_chain(
+                room_id=room_id, friend_user_id=friend_user_id
+            ),
+            loop=loop,
+        )
+
+    async def _dispatch_invite_chain(
+        self, *, room_id: int, friend_user_id: int
+    ) -> None:
+        """invite_user REST + MemberList 갱신 의 async chain.
+
+        Parameters
+        ----------
+        room_id : int
+            초대 대상 room.id.
+        friend_user_id : int
+            초대 대상 users.id.
+
+        흐름
+        ----
+        1. ``RoomsClient.invite_user`` 호출 — 성공 시 peer_id 응답.
+        2. 성공 시 ``RoomsClient.get_room`` 재호출 — 멤버 list 갱신.
+        3. MemberList 의 ``set_members`` 호출 (viewer_role 추적).
+        4. 403 (owner 만 가능) / 409 (이미 참여) / network err 의 graceful catch.
+        """
+
+        try:
+            peer_id = await self._rooms_client.invite_user(
+                room_id, friend_user_id
+            )
+            log.info(
+                "[main_window] invite_user PASS room=%s friend=%s peer_id=%s",
+                room_id,
+                friend_user_id,
+                peer_id,
+            )
+            self._status_bar.showMessage(
+                f"초대 완료 — friend_id={friend_user_id} peer_id={peer_id}",
+                3000,
+            )
+        except Exception as exc:  # noqa: BLE001
+            # 한글 주석: 403/409/network 의 통합 graceful catch + 사용자 통보.
+            msg = f"초대 실패 — {exc}"
+            log.warning(
+                "[main_window] invite_user FAIL room=%s friend=%s: %r",
+                room_id,
+                friend_user_id,
+                exc,
+            )
+            self._status_bar.showMessage(msg, 4000)
+            return
+
+        # 한글 주석: MemberList 갱신 — get_room 재호출 + set_members.
+        try:
+            _room, members = await self._rooms_client.get_room(room_id)
+            from app.ui.member_list import MemberItem  # lazy import (graceful)
+
+            member_items = [
+                MemberItem(
+                    user_id=int(m.user_id),
+                    username=f"user_{m.user_id}",
+                    role=str(getattr(m, "role", "member")),
+                    is_online=False,
+                )
+                for m in members
+            ]
+            viewer_role = "member"
+            if self._current_user_id is not None:
+                for m in members:
+                    if int(m.user_id) == int(self._current_user_id):
+                        viewer_role = str(getattr(m, "role", "member"))
+                        break
+            self._member_list.set_members(
+                member_items, viewer_role=viewer_role
+            )
+            log.debug(
+                "[main_window] MemberList refresh room=%s count=%d viewer_role=%s",
+                room_id,
+                len(member_items),
+                viewer_role,
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "[main_window] get_room 재호출 FAIL room=%s — MemberList skip (%r)",
+                room_id,
+                exc,
+            )
+
+    @pyqtSlot(str)
+    def _on_invite_failed(self, message: str) -> None:
+        """InviteDialog 의 invite_failed 시그널 핸들러 — status bar feedback.
+
+        populate 단계 (friends_client.list_friends FAIL) 의 message 전달.
+        """
+
+        log.warning("[main_window] invite_failed — %s", message)
+        self._status_bar.showMessage(message, 4000)
 
     @pyqtSlot()
     def _on_open_direct_chat(self) -> None:

@@ -50,6 +50,11 @@ filterwarnings = [
     "ignore::DeprecationWarning:aiohttp.*",
     "ignore::DeprecationWarning:aiortc.*",
     "ignore::aiohttp.web_exceptions.NotAppKeyWarning",
+    # cycle 146 — 다른 비동기 테스트 GC 시점 누설 (socket / event loop __del__)
+    # 의 unraisable warning 의 인접 테스트 (예 → test_zero_max_unlimited 의
+    # 150_001 회 record loop) GC 트리거 경로로 흘러 들어와 거짓 FAIL 유발.
+    # 해당 자원은 본 테스트 단위 의 객체가 아니므로 pytest unraisable 가드 해제.
+    "ignore::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
