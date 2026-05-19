@@ -161,7 +161,11 @@ async def handle_resend_otp(request: web.Request) -> web.Response:
 
 
 async def handle_verify(request: web.Request) -> web.Response:
-    """POST /api/auth/verify"""
+    """POST /api/auth/verify — cycle 169.54 회수.
+
+    사용자 directive verbatim — "회원가입이 완료되면 당연히 로그인된상태로 메인ui가 떠야".
+    OTP 검증 PASS 시점 자동 세션 토큰 발급 + session_store 등록 + LOGIN audit chain.
+    """
 
     payload = await _read_json(request)
     pool = request.app["db_pool"]
@@ -174,8 +178,15 @@ async def handle_verify(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
+    # 한글 주석 — OTP 검증 PASS = 자동 로그인 chain (회원가입 직후 main UI 진입 정합)
+    from app.core.security import generate_session_token
+    token = generate_session_token()
+    request.app["session_store"][token] = user_id
+    await _create_session_row(request, user_id=user_id, token=token)
     await _audit(request, user_id=user_id, action=ActivityAction.SIGNUP_OTP_VERIFY)
-    return web.json_response({"ok": True, "user_id": user_id})
+    await _audit(request, user_id=user_id, action=ActivityAction.LOGIN)
+
+    return web.json_response({"ok": True, "user_id": user_id, "token": token})
 
 
 async def handle_login(request: web.Request) -> web.Response:

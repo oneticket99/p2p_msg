@@ -19,6 +19,7 @@ import asyncio
 import logging
 import os
 import sys
+from typing import Optional
 
 import qasync
 from PyQt6.QtWidgets import QApplication
@@ -142,9 +143,10 @@ def main() -> int:
 
             # 5-2) LoginDialog ↔ SignupDialog switch chain (cycle 169.53 회수)
             # 한글 주석 — 무한 switch loop — login done(2) → signup, signup done(3) → login.
-            # 사용자 비판 "로그인 버튼 누르면 엡 종료" 회수 + cancel 만 종료.
             authenticated = False
             current_dialog = "login"
+            session_token: Optional[str] = None
+            session_user_id: Optional[int] = None
             while not authenticated:
                 if current_dialog == "login":
                     login = LoginDialog(auth_client=auth_client)
@@ -156,6 +158,8 @@ def main() -> int:
                         logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
                         loop.run_until_complete(auth_client.close())
                         return 0
+                    session_token = login.token
+                    session_user_id = login.user_id
                     authenticated = True
                 else:  # signup
                     signup = SignupDialog(auth_client=auth_client)
@@ -167,7 +171,14 @@ def main() -> int:
                         logging.getLogger(__name__).info("SignupDialog 취소 — 종료")
                         loop.run_until_complete(auth_client.close())
                         return 0
+                    # 한글 주석 — cycle 169.54 회수 — signup OTP PASS 직후 자동 로그인 session
+                    session_token = signup.token
+                    session_user_id = signup.user_id
                     authenticated = True
+
+            logging.getLogger(__name__).info(
+                "[auth] PASS user_id=%s token_set=%s", session_user_id, bool(session_token)
+            )
 
         # 6) MainWindow 표시
         window = MainWindow(
@@ -175,6 +186,11 @@ def main() -> int:
             auth_client=auth_client,
             reactions_client=reactions_client,
         )
+        # 한글 주석 — cycle 169.54 회수 — 인증 정보 propagate (MainWindow token + user_id)
+        if session_user_id is not None:
+            window._current_user_id = session_user_id
+        if session_token is not None:
+            window._auth_token = session_token  # type: ignore[attr-defined]
         window.show()
 
         # 7) qasync loop run_forever — Qt + asyncio 단일 thread 통합

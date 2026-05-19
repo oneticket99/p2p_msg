@@ -88,6 +88,9 @@ class OTPDialog(QDialog):
         self._client = auth_client
         self._email = email
         self._resend_remaining = RESEND_CAP
+        # 한글 주석 — cycle 169.54 회수 — verify PASS 응답 안 session token + user_id 보관
+        self._token: Optional[str] = None
+        self._user_id: Optional[int] = None
 
         self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')}")
         self.setMinimumWidth(420)
@@ -250,9 +253,14 @@ class OTPDialog(QDialog):
         self._verify_worker.start()
 
     def _on_verify_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """HttpJsonWorker finished slot — verify 응답 처리."""
+        """HttpJsonWorker finished slot — verify 응답 처리.
+
+        cycle 169.54 회수 — 응답 안 token + user_id store (회원가입 직후 자동 로그인).
+        """
         log.info("[OTP verify] finished ok=%s code=%s", ok, error_code)
         if ok:
+            self._token = data.get("token")
+            self._user_id = data.get("user_id")
             self.accept()
             return
         err_map = {

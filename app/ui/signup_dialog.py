@@ -49,6 +49,9 @@ class SignupDialog(QDialog):
         super().__init__(parent)
         self._client = auth_client
         self._email: Optional[str] = None
+        # 한글 주석 — cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
+        self._token: Optional[str] = None
+        self._user_id: Optional[int] = None
 
         self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
         self.setMinimumWidth(440)
@@ -152,6 +155,16 @@ class SignupDialog(QDialog):
     def email(self) -> Optional[str]:
         return self._email
 
+    @property
+    def token(self) -> Optional[str]:
+        """cycle 169.54 — OTP PASS 직후 자동 발급 session token."""
+        return self._token
+
+    @property
+    def user_id(self) -> Optional[int]:
+        """cycle 169.54 — OTP PASS 직후 user_id."""
+        return self._user_id
+
     def _on_signup_clicked(self) -> None:
         """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
         email = self._email_edit.text().strip()
@@ -196,7 +209,10 @@ class SignupDialog(QDialog):
             from app.ui.otp_dialog import OTPDialog
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
             if otp.exec() == otp.DialogCode.Accepted:
+                # 한글 주석 — cycle 169.54 회수 — OTP PASS 의 자동 발급 token + user_id propagate
                 self._email = email
+                self._token = otp._token
+                self._user_id = otp._user_id
                 self.accept()
             # 한글 주석 — OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
             return
