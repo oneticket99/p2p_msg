@@ -169,6 +169,78 @@ status: active
 
 ---
 
+## 8.72 사이클 155~157 — theme persist + reactions REST + DataChannel payload schema + ChatView 수신 path + 10 pytest PASS (2026-05-20 신설)
+
+### 8.72.1 cycle 155~157 3 commit + 1 통합 commit
+
+| commit | 영역 |
+|---|---|
+| `e237ecd` | cycle 155 — theme persist + reactions REST endpoint 3 + DB migration 0008 message_reactions table |
+| `26767f5` | cycle 156 — DataChannel payload schema MessagePayload + ReactionsClient 3 method |
+| `(본 commit)` | cycle 157 — ChatView.add_message_from_payload 수신 path + tests/app/net/test_message_protocol 10 PASS + 평가 freshness + handoff §8.72 |
+
+### 8.72.2 산출 8 file
+
+| file | 역할 |
+|---|---|
+| `app/config/user_preferences.py` | DEFAULT_THEME_PREF_PATH + SUPPORTED_THEMES + load/save_user_theme_preference |
+| `app/main.py` | qt_app 안 theme preference 우선 load chain |
+| `server/api/reactions_handlers.py` (신설) | 3 endpoint (add/list/remove) + UNIQUE constraint + graceful pool 부재 mock |
+| `server/main.py` | register_reactions_routes lazy import |
+| `server/db/migrations/0008_message_reactions.sql` (신설) | message_reactions table + UNIQUE (message_id, user_id, emoji) + 2 index |
+| `app/net/message_protocol.py` (신설) | MessagePayload + ReplyToField + SCHEMA_VERSION + to_json/from_json + build_text_payload |
+| `app/net/reactions_client.py` (신설) | httpx wrapper + Bearer + 3 method + 4 exception |
+| `app/ui/chat_view.py` | add_message_from_payload 수신 path — MessagePayload → ChatView render |
+| `tests/app/net/test_message_protocol.py` (신설) | 10 case (default factory + json roundtrip + reply_to cap + invalid fallback + helper) PASS |
+
+### 8.72.3 payload schema v1.0 정합
+
+```json
+{
+  "schema": "tootalk.msg.v1",
+  "type": "text",
+  "id": "uuid4-36char",
+  "sender": "user@example.com",
+  "text": "본문",
+  "ts": 1716169200000,
+  "reply_to": {"message_id": "uuid", "sender": "friend", "preview": "60자 cap"},
+  "reactions": {"👍": 3, "❤️": 1}
+}
+```
+
+### 8.72.4 수신 chain 완성
+
+```
+DataChannel raw json 수신
+  → MessagePayload.from_json(raw)
+  → ChatView.add_message_from_payload(payload)
+  → ReplyToField → ReplyContext 변환
+  → epoch millis → datetime 변환
+  → ChatView.add_message(sender, text, ts, reply_to, reactions, is_self=False)
+  → MessageBubble render (border-left reply + reaction pill + read receipt)
+```
+
+### 8.72.5 cycle 158+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | DataChannel actual binding — app/conn/datachannel.py 안 MessagePayload 송수신 chain |
+| 2 | reactions_client UI binding — message_bubble add_reaction → reactions_client.add_reaction async |
+| 3 | reactions server-side incoming → ChatView bubble 안 pill 실시간 갱신 (WebSocket push 또는 polling) |
+| 4 | DESIGN.md §11 brand color section 본격 add |
+| 5 | 사용자 manual test feedback 회수 (pending) |
+
+### 8.72.6 cycle 153~157 누계 metric
+
+- 32 file 신설/edit (cycle 153 22 + 154 5 + 155 5 + 156 2 + 157 2)
+- pytest 1747 PASS (baseline 1737 + message_protocol 10 신규)
+- drift 0건 96 연속 사이클 37~157
+- BPE WARN 회수 누계 12회
+- 사용자 비판 8건 verbatim 회수
+- 평가 freshness hook fire 7회 + 회수 7회
+
+---
+
 ## 8.71 사이클 154 — reply chain + reaction emoji picker + file_attached DataChannel + profile 4 button actual binding (2026-05-20 신설)
 
 ### 8.71.1 cycle 154 2 commit 산출

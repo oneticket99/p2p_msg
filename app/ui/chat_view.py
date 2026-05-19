@@ -108,6 +108,35 @@ class ChatView(QScrollArea):
         """bubble reply_requested 재발산 → main_window reply mode chain."""
         self.reply_to_message.emit(sender, text)
 
+    def add_message_from_payload(self, payload) -> None:
+        """MessagePayload (cycle 156) → add_message 변환 — DataChannel 수신 path.
+
+        Parameters
+        ----------
+        payload : MessagePayload
+            DataChannel.from_json 결과 model.
+        """
+        # 한글 주석 — ReplyToField → ReplyContext 변환 (message_bubble dataclass 정합)
+        from datetime import datetime
+        from app.ui.message_bubble import ReplyContext
+
+        reply_ctx = None
+        if payload.reply_to is not None:
+            reply_ctx = ReplyContext(
+                original_sender=payload.reply_to.sender,
+                original_text=payload.reply_to.preview,
+            )
+        # 한글 주석 — epoch millis → datetime 변환
+        ts = datetime.fromtimestamp(payload.ts / 1000.0) if payload.ts else datetime.now()
+        self.add_message(
+            sender=payload.sender,
+            text=payload.text,
+            ts=ts,
+            is_self=False,  # 수신 path = peer 발신
+            reply_to=reply_ctx,
+            reactions=payload.reactions,
+        )
+
     def __init__(
         self,
         parent: Optional[QWidget] = None,
