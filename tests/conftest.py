@@ -11,6 +11,10 @@ from pathlib import Path
 
 import pytest
 
+# 한글 주석 — pytest-qt PyQt6 binding 강제 (cycle 169.26 신설)
+# PyQt5/PyQt6 detect mismatch 차단 — pytest-qt 의 qtbot fixture 정합
+os.environ.setdefault("PYTEST_QT_API", "pyqt6")
+
 
 # 저장소 루트 경로 — 모든 테스트 의 공유 (.env 로딩 / 픽스처 경로 등)
 REPO_ROOT: Path = Path(__file__).resolve().parent.parent
