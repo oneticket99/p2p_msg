@@ -92,6 +92,12 @@ def load_env_files(project_root: Optional[Path] = None) -> str:
     if specific.is_file():
         load_dotenv(specific, override=False)
         log.info("env 파일 load: %s", specific)
+    # 3단계 — .env.smtp 자격 override (mail.dopa.co.kr 실 SMTP 자격)
+    # .env / .env.<ENV> 보다 우선순위 높음 — SMTP_HOST/PORT/USER/PASSWORD/FROM 갱신
+    smtp_env = root / ".env.smtp"
+    if smtp_env.is_file():
+        load_dotenv(smtp_env, override=True)
+        log.info("SMTP 자격 파일 load (override): %s", smtp_env)
     return env_name
 
 
@@ -122,26 +128,36 @@ class DBConfig:
 
 @dataclass(frozen=True)
 class SMTPConfig:
-    """OTP 발송 SMTP client 설정."""
+    """OTP 발송 SMTP client 설정 — mail.dopa.co.kr 실 서버 정합 (사이클 129)."""
 
-    host: str = "127.0.0.1"
-    port: int = 1587
+    host: str = "mail.dopa.co.kr"
+    port: int = 587
     user: str = ""
     password: str = ""
-    from_address: str = "noreply@tootalk.demo"
-    domain: str = "tootalk.demo"
-    dkim_selector: str = "tootalk"
+    from_address: str = "noreply@dopa.co.kr"
+    domain: str = "dopa.co.kr"
+    dkim_selector: str = "mail"
+    # TLS 모드 — STARTTLS (587) 또는 SMTPS (465) — .env.smtp SMTP_TLS 키 정합
+    tls_mode: str = "STARTTLS"
 
     @classmethod
     def from_env(cls) -> "SMTPConfig":
+        # SMTP_FROM_ADDRESS (config 신키) + SMTP_FROM (.env.smtp 구키) 양쪽 지원
+        from_addr = (
+            _str_env("SMTP_FROM_ADDRESS", "")
+            or _str_env("SMTP_FROM", "noreply@dopa.co.kr")
+        )
+        # SMTP_PASSWORD (신키) + SMTP_PASS (.env.smtp 구키) 양쪽 지원
+        pw = _str_env("SMTP_PASSWORD", "") or _str_env("SMTP_PASS", "")
         return cls(
-            host=_str_env("SMTP_HOST", "127.0.0.1"),
-            port=_int_env("SMTP_PORT", 1587),
+            host=_str_env("SMTP_HOST", "mail.dopa.co.kr"),
+            port=_int_env("SMTP_PORT", 587),
             user=_str_env("SMTP_USER"),
-            password=_str_env("SMTP_PASSWORD"),
-            from_address=_str_env("SMTP_FROM_ADDRESS", "noreply@tootalk.demo"),
-            domain=_str_env("SMTP_DOMAIN", "tootalk.demo"),
-            dkim_selector=_str_env("DKIM_SELECTOR", "tootalk"),
+            password=pw,
+            from_address=from_addr,
+            domain=_str_env("SMTP_DOMAIN", "dopa.co.kr"),
+            dkim_selector=_str_env("DKIM_SELECTOR", "mail"),
+            tls_mode=_str_env("SMTP_TLS", "STARTTLS").upper(),
         )
 
 
@@ -263,8 +279,8 @@ class Config:
         problems = []
         if not self.db.password:
             problems.append("DB_PASSWORD")
-        if not self.smtp.from_address or self.smtp.from_address == "noreply@tootalk.demo":
-            log.warning("SMTP_FROM_ADDRESS default 값 유지 — production 권장 별개 도메인")
+        if not self.smtp.from_address or self.smtp.from_address == "noreply@dopa.co.kr":
+            log.warning("SMTP_FROM_ADDRESS default 값 유지 — production 별개 도메인 권장")
         if self.bot.enabled and not (self.bot.anthropic_api_key or self.bot.openai_api_key):
             problems.append("ANTHROPIC_API_KEY 또는 OPENAI_API_KEY (BOT_ENABLED=1)")
         if not self.tls.acme_email:

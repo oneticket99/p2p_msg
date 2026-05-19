@@ -81,13 +81,18 @@ class TestDBConfig:
 
 class TestSMTPConfig:
     def test_defaults(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # 사이클 129 — mail.dopa.co.kr 실 서버 정합 default
         _clean_env(monkeypatch, ["SMTP_HOST", "SMTP_PORT", "SMTP_USER",
-                                  "SMTP_PASSWORD", "SMTP_FROM_ADDRESS",
-                                  "SMTP_DOMAIN", "DKIM_SELECTOR"])
+                                  "SMTP_PASSWORD", "SMTP_PASS",
+                                  "SMTP_FROM_ADDRESS", "SMTP_FROM",
+                                  "SMTP_DOMAIN", "DKIM_SELECTOR", "SMTP_TLS"])
         cfg = SMTPConfig.from_env()
-        assert cfg.host == "127.0.0.1"
-        assert cfg.port == 1587
-        assert cfg.from_address == "noreply@tootalk.demo"
+        assert cfg.host == "mail.dopa.co.kr"
+        assert cfg.port == 587
+        assert cfg.from_address == "noreply@dopa.co.kr"
+        assert cfg.tls_mode == "STARTTLS"
+        assert cfg.dkim_selector == "mail"
+        assert cfg.domain == "dopa.co.kr"
 
     def test_dkim_selector_override(
         self, monkeypatch: pytest.MonkeyPatch
@@ -95,6 +100,29 @@ class TestSMTPConfig:
         monkeypatch.setenv("DKIM_SELECTOR", "ts2026")
         cfg = SMTPConfig.from_env()
         assert cfg.dkim_selector == "ts2026"
+
+    def test_password_alias_smtp_pass(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """SMTP_PASS 구키 fallback 검증."""
+
+        _clean_env(monkeypatch, ["SMTP_PASSWORD"])
+        monkeypatch.setenv("SMTP_PASS", "legacy-pw-789")
+        cfg = SMTPConfig.from_env()
+        assert cfg.password == "legacy-pw-789"
+
+    def test_from_alias_smtp_from(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """SMTP_FROM 구키 fallback 검증."""
+
+        _clean_env(monkeypatch, ["SMTP_FROM_ADDRESS"])
+        monkeypatch.setenv("SMTP_FROM", "legacy@dopa.co.kr")
+        cfg = SMTPConfig.from_env()
+        assert cfg.from_address == "legacy@dopa.co.kr"
+
+    def test_tls_mode_smtps(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """SMTP_TLS=SMTPS upper case 정규화 검증."""
+
+        monkeypatch.setenv("SMTP_TLS", "smtps")
+        cfg = SMTPConfig.from_env()
+        assert cfg.tls_mode == "SMTPS"
 
 
 class TestSignalingConfig:
