@@ -19,7 +19,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
@@ -30,6 +30,34 @@ from app.ui.message_bubble import MessageBubble
 from app.ui.sound_player import SoundPlayer
 
 log = logging.getLogger(__name__)
+
+
+# 한글 주석 — cycle 144 i18n production binding helper. MainWindow context 정합.
+_tr = lambda src: QCoreApplication.translate("MainWindow", src)
+
+
+def connection_state_label(state: str) -> str:
+    """연결 상태 의 i18n 라벨 — "온라인" / "오프라인" / "연결 중" 의 .ts 매핑.
+
+    Parameters
+    ----------
+    state : str
+        ``"online"`` | ``"offline"`` | ``"connecting"`` 의 3 path.
+
+    Returns
+    -------
+    str
+        활성 locale 의 tr() lookup. unsupported state = raw `state` 반환.
+    """
+
+    # 한글 주석 — 3 .ts entry tr() lookup (en=Online/Offline/Connecting 등).
+    if state == "online":
+        return _tr("온라인")
+    if state == "offline":
+        return _tr("오프라인")
+    if state == "connecting":
+        return _tr("연결 중")
+    return state
 
 
 def should_play_on_message(

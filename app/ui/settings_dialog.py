@@ -35,7 +35,7 @@ try:
         QVBoxLayout,
         QWidget,
     )
-    from PyQt6.QtCore import Qt
+    from PyQt6.QtCore import QCoreApplication, Qt
     _QT_AVAILABLE = True
 except ImportError:  # pragma: no cover - PyQt6 미설치 환경 폴백
     QCheckBox = None  # type: ignore[assignment, misc]
@@ -47,7 +47,18 @@ except ImportError:  # pragma: no cover - PyQt6 미설치 환경 폴백
     QVBoxLayout = None  # type: ignore[assignment, misc]
     QWidget = None  # type: ignore[assignment, misc]
     Qt = None  # type: ignore[assignment, misc]
+    QCoreApplication = None  # type: ignore[assignment, misc]
     _QT_AVAILABLE = False
+
+
+# 한글 주석 — cycle 144 i18n production binding helper. PyQt6 부재 환경 의
+# graceful fallback (raw source 반환).
+def _tr(src: str) -> str:
+    """MainWindow context 의 QCoreApplication.translate wrap."""
+
+    if QCoreApplication is None:
+        return src
+    return QCoreApplication.translate("MainWindow", src)
 
 from app.ui.sound_player import SoundPlayer, _clamp_volume
 
@@ -172,7 +183,8 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
             raise RuntimeError("PyQt6 부재 — SettingsDialog 생성 불가")
         super().__init__(parent)
         self._sound_player = sound_player
-        self.setWindowTitle("TooTalk 설정")
+        # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
+        self.setWindowTitle(f"TooTalk · {_tr('설정')}")
         self.setMinimumWidth(360)
 
         initial = build_state_from_player(sound_player)
@@ -185,7 +197,8 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
 
         form = QFormLayout()
 
-        self._enabled_check = QCheckBox("메시지 수신 시 재생")
+        # 한글 주석 — "메시지" .ts entry tr() + " 수신 시 재생" suffix 결합.
+        self._enabled_check = QCheckBox(f"{_tr('메시지')} 수신 시 재생")
         self._enabled_check.setChecked(initial.sound_enabled)
         form.addRow("활성", self._enabled_check)
 

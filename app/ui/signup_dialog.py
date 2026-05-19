@@ -14,6 +14,7 @@ import asyncio
 import logging
 from typing import Optional
 
+from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtWidgets import (
     QDialog,
     QFormLayout,
@@ -30,6 +31,9 @@ from PyQt6.QtWidgets import (
 from app.net.auth_client import AuthClient
 
 log = logging.getLogger(__name__)
+
+# 한글 주석 — cycle 144 i18n production binding helper. MainWindow context 정합.
+_tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 
 class SignupDialog(QDialog):
@@ -48,7 +52,8 @@ class SignupDialog(QDialog):
         self._client = auth_client
         self._email: str = ""
 
-        self.setWindowTitle("TooTalk 회원가입")
+        # 한글 주석 — "회원가입" .ts entry tr() wrap (en=Sign up, ja=サインアップ 등).
+        self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
         self.setMinimumWidth(360)
 
         # 한글 주석: 2단계 stack — 0=회원가입 form, 1=OTP 입력
@@ -76,9 +81,11 @@ class SignupDialog(QDialog):
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
         self._password_edit.setPlaceholderText("8~128자")
-        form.addRow("비밀번호", self._password_edit)
+        # 한글 주석 — "비밀번호" .ts entry tr() (5 locale 매핑 의무).
+        form.addRow(_tr("비밀번호"), self._password_edit)
 
-        btn_signup = QPushButton("회원가입 + OTP 발송")
+        # 한글 주석 — "회원가입" .ts entry tr() + " + OTP 발송" suffix 결합.
+        btn_signup = QPushButton(f"{_tr('회원가입')} + OTP 발송")
         btn_signup.clicked.connect(self._on_signup_clicked)  # type: ignore[arg-type]
         form.addRow(btn_signup)
 
@@ -98,7 +105,8 @@ class SignupDialog(QDialog):
         layout.addWidget(self._otp_edit)
 
         row = QHBoxLayout()
-        btn_verify = QPushButton("인증 + 완료")
+        # 한글 주석 — "확인" .ts entry tr() + "인증 +" prefix 결합.
+        btn_verify = QPushButton(f"인증 + {_tr('확인')}")
         btn_verify.clicked.connect(self._on_verify_clicked)  # type: ignore[arg-type]
         btn_back = QPushButton("이전")
         btn_back.clicked.connect(lambda: self._stack.setCurrentIndex(0))  # type: ignore[arg-type]
@@ -128,9 +136,10 @@ class SignupDialog(QDialog):
             QMessageBox.information(self, "TooTalk", "OTP 발송. 이메일을 확인하세요.")
             self._stack.setCurrentIndex(1)
         else:
+            # 한글 주석 — "회원가입" tr() + 실패 suffix.
             QMessageBox.critical(
                 self,
-                "회원가입 실패",
+                f"{_tr('회원가입')} 실패",
                 f"{result.error_code}: {result.error_message}",
             )
 

@@ -37,9 +37,14 @@ from .protocol import (
     is_valid_client_type,
     wire_to_internal,
 )
+from .db.repositories import rooms as rooms_repo
 from .db.repositories.user_activity import ActivityAction, log_activity
 from .room import Peer, RoomRegistry
-from .signaling_persistence import persist_peer_join, persist_peer_leave
+from .signaling_persistence import (
+    persist_peer_join,
+    persist_peer_leave,
+    persist_room_create,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -179,10 +184,48 @@ async def _handle_join(
     # 인증된 user_id + db_room_id mapping 의 영속화 (Phase 1 = room 영속화 = 별도 cycle)
     app = ws._req.app if hasattr(ws, "_req") and ws._req else None
     db_pool = app.get("db_pool") if app else None
+
+    # 사이클 144 — rooms REST API integration:
+    # WS room_id (room_code) 의 rooms.id 의 resolve → 부재 시 신규 INSERT (첫 peer = owner)
+    # → peers row UPSERT. db_room_id 의 Peer 객체 안 cache.
+    if (
+        db_pool is not None
+        and new_peer.user_id is not None
+        and new_peer.db_room_id is None
+    ):
+        try:
+            existing_room = await rooms_repo.get_room_by_code(db_pool, room_id)
+            if existing_room is not None:
+                new_peer.db_room_id = existing_room.id
+            else:
+                # 한글 주석: 첫 peer 합류 시점 rooms row 신규 INSERT (owner=this user)
+                created_id = await persist_room_create(
+                    db_pool,
+                    room_code=room_id,
+                    owner_id=new_peer.user_id,
+                    kind="direct",
+                )
+                if created_id is not None:
+                    new_peer.db_room_id = created_id
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "rooms.id resolve 실패 room_code=%s: %s", room_id, exc
+            )
+
     if new_peer.user_id is not None and new_peer.db_room_id is not None:
-        await persist_peer_join(
-            db_pool, room_id=new_peer.db_room_id, user_id=new_peer.user_id
+        # 한글 주석: peers row UPSERT — 기존 활성 row 부재 시 INSERT, 존재 시 silent skip
+        existing_peer_row = await _safe_get_peer(
+            db_pool, new_peer.db_room_id, new_peer.user_id
         )
+        if existing_peer_row is None:
+            # 한글 주석: 첫 peer 합류 = role=owner, 그 외 = role=member
+            role = "owner" if registry.room_size(room_id) == 1 else "member"
+            await persist_peer_join(
+                db_pool,
+                room_id=new_peer.db_room_id,
+                user_id=new_peer.user_id,
+                role=role,
+            )
 
     # cycle 128 — ROOM_CREATE audit (첫 peer 합류 = 방 생성 의미)
     if (
@@ -245,6 +288,23 @@ async def _handle_leave(
     # 사이클 26 — DB peers.left_at 갱신 (인증 + DB 활성 시 만)
     app = ws._req.app if hasattr(ws, "_req") and ws._req else None
     db_pool = app.get("db_pool") if app else None
+
+    # 사이클 144 — rooms REST API integration:
+    # peer.db_room_id 부재 + db_pool 가용 시 room_code → rooms.id 의 fallback resolve
+    if (
+        db_pool is not None
+        and peer.user_id is not None
+        and peer.db_room_id is None
+    ):
+        try:
+            existing_room = await rooms_repo.get_room_by_code(db_pool, room_id)
+            if existing_room is not None:
+                peer.db_room_id = existing_room.id
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "LEAVE rooms.id resolve 실패 room_code=%s: %s", room_id, exc
+            )
+
     if peer.user_id is not None and peer.db_room_id is not None:
         await persist_peer_leave(
             db_pool, room_id=peer.db_room_id, user_id=peer.user_id
@@ -333,6 +393,30 @@ async def _handle_relay(
             "ROOM_NOT_FOUND": ERR_ROOM_NOT_FOUND,
         }.get(err_code or "", ERR_PEER_NOT_FOUND)
         await _send_error(ws, code, f"중계 실패: to={to_peer_id}")
+
+
+async def _safe_get_peer(
+    db_pool: Any, db_room_id: int, user_id: int
+) -> Any:
+    """peers.get_peer wrapper — DB 오류 silent swallow + None 반환.
+
+    사이클 144 의 _handle_join 안 UPSERT idempotency 가드. 기존 활성 row 가 있으면
+    재JOIN 시 신규 INSERT 의 PK 충돌·중복 row 누적을 차단한다.
+    """
+    if db_pool is None:
+        return None
+    try:
+        return await rooms_repo.get_peer(
+            db_pool, room_id=db_room_id, user_id=user_id
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "peers.get_peer 실패 room_id=%d user_id=%d: %s",
+            db_room_id,
+            user_id,
+            exc,
+        )
+        return None
 
 
 async def _send_error(

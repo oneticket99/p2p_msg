@@ -49,7 +49,7 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import QCoreApplication, Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
     QHBoxLayout,
@@ -67,7 +67,9 @@ from PyQt6.QtWidgets import (
 from app.core.app_state import AppState
 from app.core.config import Config
 from app.net.auth_client import AuthClient
+from app.ui.add_friend_dialog import AddFriendDialog
 from app.ui.chat_view import ChatView
+from app.ui.friend_list import FriendListWidget
 from app.ui.group_chat_view import GroupChatView
 from app.ui.login_dialog import LoginDialog
 from app.ui.member_list import MemberListWidget
@@ -91,6 +93,12 @@ log = logging.getLogger(__name__)
 _DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8080"
 
 
+# 한글 주석 — cycle 144 i18n production binding helper.
+# MainWindow context 의 20 .ts entry 와 정합 의무. 본 module 의 5 file 가
+# 동일 helper 패턴 의 의 QCoreApplication.translate 호출.
+_tr = lambda src: QCoreApplication.translate("MainWindow", src)
+
+
 class MainWindow(QMainWindow):
     """TooTalk 최상위 윈도우.
 
@@ -109,6 +117,7 @@ class MainWindow(QMainWindow):
     _STACK_DIRECT_CHAT: int = 0  # 1:1 ChatView
     _STACK_GROUP_CHAT: int = 1   # GroupChatView (cycle 139 신설)
     _STACK_MEMBERS: int = 2      # MemberListWidget (cycle 139 신설)
+    _STACK_FRIENDS: int = 3      # FriendListWidget (cycle 144 신설)
 
     def __init__(
         self,
@@ -205,6 +214,12 @@ class MainWindow(QMainWindow):
         self._member_list = MemberListWidget(parent=self._stacked)
         self._stacked.addWidget(self._member_list)  # idx 2
 
+        # 4-4) FriendListWidget — index 3 (cycle 144 신설)
+        # 한글 주석: 메뉴 "계정 → 친구 목록" 진입점 + 친구 추가 dialog 의 host.
+        self._friend_list = FriendListWidget(parent=self._stacked)
+        self._friend_list.set_friends([], viewer_id=0)  # 빈 placeholder
+        self._stacked.addWidget(self._friend_list)  # idx 3
+
         # 초기 페이지 = 1:1 직접 메시지 (기존 호환)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
 
@@ -220,10 +235,12 @@ class MainWindow(QMainWindow):
         self._attach_button.setEnabled(False)
 
         self._input_edit = QLineEdit(parent=right_panel)
-        self._input_edit.setPlaceholderText("메시지를 입력하세요…")
+        # 한글 주석 — "메시지" .ts entry tr() + 입력 안내 suffix 결합 패턴.
+        self._input_edit.setPlaceholderText(f"{_tr('메시지')}를 입력하세요…")
         self._input_edit.returnPressed.connect(self._on_send_clicked)
 
-        self._send_button = QPushButton("보내기", parent=right_panel)
+        # 한글 주석 — "보내기" .ts entry tr() wrap (en=Send, ja=送信 등 5 locale 매핑).
+        self._send_button = QPushButton(_tr("보내기"), parent=right_panel)
         self._send_button.clicked.connect(self._on_send_clicked)
 
         input_row.addWidget(self._attach_button)
@@ -381,8 +398,8 @@ class MainWindow(QMainWindow):
 
         menubar = self.menuBar()
 
-        # "설정" 메뉴
-        menu_settings = menubar.addMenu("설정")
+        # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
+        menu_settings = menubar.addMenu(_tr("설정"))
 
         act_room = QAction("방 입장…", self)
         act_room.setShortcut(QKeySequence("Ctrl+R"))
@@ -390,12 +407,14 @@ class MainWindow(QMainWindow):
         menu_settings.addAction(act_room)
 
         # cycle 139 — 1:1 직접 메시지 회귀 액션
-        act_direct = QAction("직접 메시지", self)
+        # 한글 주석 — "메시지" .ts entry tr() + "직접 " prefix 결합.
+        act_direct = QAction(f"직접 {_tr('메시지')}", self)
         act_direct.setShortcut(QKeySequence("Ctrl+D"))
         act_direct.triggered.connect(self._on_open_direct_chat)
         menu_settings.addAction(act_direct)
 
-        act_pref = QAction("환경설정…", self)
+        # 한글 주석 — "환경" + "설정" .ts entry 결합 (설정 tr() 의 매핑 활용).
+        act_pref = QAction(f"환경{_tr('설정')}…", self)
         act_pref.setShortcut(QKeySequence("Ctrl+,"))
         act_pref.triggered.connect(self._on_open_settings_dialog)
         menu_settings.addAction(act_pref)
@@ -410,18 +429,32 @@ class MainWindow(QMainWindow):
         # "계정" 메뉴
         menu_account = menubar.addMenu("계정")
 
-        act_signup = QAction("회원가입…", self)
+        # 한글 주석 — "회원가입" .ts entry tr() + "…" suffix.
+        act_signup = QAction(f"{_tr('회원가입')}…", self)
         act_signup.triggered.connect(self._on_open_signup)
         menu_account.addAction(act_signup)
 
-        act_login = QAction("로그인…", self)
+        # 한글 주석 — "로그인" .ts entry tr() + "…" suffix.
+        act_login = QAction(f"{_tr('로그인')}…", self)
         act_login.setShortcut(QKeySequence("Ctrl+L"))
         act_login.triggered.connect(self._on_open_login)
         menu_account.addAction(act_login)
 
-        act_reset = QAction("비밀번호 재설정…", self)
+        # 한글 주석 — "비밀번호" .ts entry tr() + " 재설정…" suffix.
+        act_reset = QAction(f"{_tr('비밀번호')} 재설정…", self)
         act_reset.triggered.connect(self._on_open_reset)
         menu_account.addAction(act_reset)
+
+        menu_account.addSeparator()
+
+        # cycle 144 — 친구 관리 진입점 2 actions (목록 + 추가).
+        act_friend_list = QAction("친구 목록", self)
+        act_friend_list.triggered.connect(self._on_open_friend_list)
+        menu_account.addAction(act_friend_list)
+
+        act_friend_add = QAction("친구 추가…", self)
+        act_friend_add.triggered.connect(self._on_open_add_friend)
+        menu_account.addAction(act_friend_add)
 
         menu_account.addSeparator()
 
@@ -492,6 +525,55 @@ class MainWindow(QMainWindow):
         self._session_token = None
         self._current_user_id = None
         QMessageBox.information(self, "TooTalk", "로그아웃 완료")
+
+    # ------------------------------------------------------------------
+    # cycle 144 — 친구 관리 슬롯
+    # ------------------------------------------------------------------
+
+    def _on_open_friend_list(self) -> None:
+        """"친구 목록" 메뉴 슬롯 — FriendListWidget page 활성.
+
+        REST 호출 chain (GET /api/friends) 의 actual binding = 별개 cycle 의 의무.
+        본 슬롯 = stacked page 의 토글 + viewer_id 갱신 만.
+        """
+
+        viewer_id = self._current_user_id or 0
+        self._friend_list.set_friends(
+            self._friend_list._friends, viewer_id=viewer_id
+        )
+        self._stacked.setCurrentIndex(self._STACK_FRIENDS)
+        log.info(
+            "[main_window] friend_list page 활성 viewer_id=%d", viewer_id
+        )
+
+    def _on_open_add_friend(self) -> None:
+        """"친구 추가" 메뉴 슬롯 — AddFriendDialog 의 모달 실행."""
+
+        if self._session_token is None:
+            QMessageBox.warning(
+                self, "TooTalk", "친구 추가 = 로그인 의무"
+            )
+            return
+
+        dlg = AddFriendDialog(parent=self)
+        dlg.friend_requested.connect(self._on_friend_requested)
+        dlg.exec()
+
+    def _on_friend_requested(self, user_id: int, nickname: str) -> None:
+        """AddFriendDialog 의 friend_requested 시그널 수신 — REST POST 호출 placeholder.
+
+        REST 호출 chain (POST /api/friends) 의 actual binding = 별개 cycle 의 의무.
+        본 슬롯 = log + status bar feedback 만.
+        """
+
+        log.info(
+            "[main_window] friend_requested user_id=%d nickname=%r",
+            user_id,
+            nickname,
+        )
+        self._status_bar.showMessage(
+            f"친구 요청 발신 — user_id={user_id}", 3000
+        )
 
     # ------------------------------------------------------------------
     # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가)

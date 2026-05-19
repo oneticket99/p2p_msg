@@ -56,6 +56,12 @@ class ActivityAction(str, Enum):
     PROFILE_UPDATE = "profile_update"
     EMAIL_CHANGE = "email_change"
     ACCOUNT_DELETE = "account_delete"
+    # 한글 주석: cycle 144 친구 관리 chain — DDL 0007 의 ENUM 확장 정합.
+    FRIEND_REQUEST = "friend_request"
+    FRIEND_ACCEPT = "friend_accept"
+    FRIEND_REJECT = "friend_reject"
+    FRIEND_BLOCK = "friend_block"
+    FRIEND_REMOVE = "friend_remove"
 
 
 class SessionEndReason(str, Enum):
