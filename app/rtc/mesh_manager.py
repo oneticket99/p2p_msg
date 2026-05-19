@@ -87,6 +87,47 @@ class MeshManager:
                 log.warning("[mesh] broadcast 실패 peer=%s err=%r", peer.peer_id, exc)
         return success
 
+    async def broadcast_payload(self, payload) -> int:
+        """MessagePayload (cycle 156) broadcast — schema v1.0 통합 (cycle 158 신설).
+
+        Parameters
+        ----------
+        payload : MessagePayload
+            app.net.message_protocol.MessagePayload instance.
+
+        Returns
+        -------
+        int
+            성공 송신 peer count.
+        """
+        success = 0
+        raw = payload.to_json()
+        for peer in self.peers.values():
+            if not peer.connected or peer.data_channel is None:
+                continue
+            try:
+                peer.data_channel.send(raw)
+                success += 1
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[mesh] payload broadcast 실패 peer=%s err=%r", peer.peer_id, exc)
+        return success
+
+    def dispatch_incoming(self, raw_json: str) -> None:
+        """DataChannel 수신 raw json → MessagePayload 파싱 + handler dispatch (cycle 158).
+
+        message_handler 부재 시 graceful skip.
+        """
+        if self._on_message is None:
+            return
+        try:
+            from app.net.message_protocol import MessagePayload
+            payload = MessagePayload.from_json(raw_json)
+            # 한글 주석 — handler signature = (sender_peer_id, payload_or_dict)
+            # 기존 호환 = dict, cycle 158 안 MessagePayload object 전달
+            self._on_message(payload.sender, payload)  # type: ignore[arg-type]
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[mesh] dispatch 실패 — %r", exc)
+
     def peer_count(self) -> int:
         # 한글 주석 — 등록된 전체 peer 수 반환
         return len(self.peers)

@@ -213,8 +213,19 @@ class MessageBubble(QFrame):
         if not is_self:
             outer.addStretch(1)
 
+    # cycle 158 — message_id 보관 (server-side reactions REST chain 의무)
+    _message_id: Optional[int] = None
+
+    def set_message_id(self, message_id: int) -> None:
+        """server-side message_id 등록 — reactions REST chain prereq."""
+        self._message_id = message_id
+
+    def message_id(self) -> Optional[int]:
+        """현 message_id snapshot."""
+        return self._message_id
+
     def add_reaction(self, emoji: str) -> None:
-        """reaction pill 추가 — count 증분 + signal emit."""
+        """reaction pill 추가 — count 증분 + signal emit + REST persist (cycle 158)."""
         self._reactions[emoji] = self._reactions.get(emoji, 0) + 1
         self.reaction_added.emit(emoji)
 
