@@ -156,10 +156,12 @@ class LoginDialog(QDialog):
         asyncio.ensure_future(self._do_login(email, password))
 
     def _on_signup_link_clicked(self) -> None:
-        """회원가입 link click — 본 dialog 종료 + 사용자 main flow 안 SignupDialog 분기."""
-        # 한글 주석 — reject + 별개 dialog code 의 signup 의도 명시 (main.py 안 분기 의무)
-        self.setResult(2)  # 한글 주석 — 2 = signup intent (cycle 154+ main.py 안 정합 의무)
-        self.reject()
+        """회원가입 link click — QDialog.done(2) signup intent code 반환 (cycle 169.25 fix).
+
+        직전 setResult(2) + reject() chain 안 reject() 호출 시 setResult(0) overwrite 회수.
+        QDialog.done(N) = setResult(N) + dialog close + exec() return N.
+        """
+        self.done(2)  # 한글 주석 — 2 = signup intent (main.py 분기 정합)
 
     async def _do_login(self, email: str, password: str) -> None:
         result = await self._client.login(email, password)

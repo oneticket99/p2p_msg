@@ -466,7 +466,12 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 - 라이선스 GPLv3 + 브랜드 정합 — 외부 fork distribution 시 Toonation 브랜드 사용 권한 별도 확인 의무 (TooTalk source code 라이선스 ≠ Toonation 브랜드 사용권)
 - 정식 Toonation 통합 옵션 B 진입 시 = 본 §15 의 공식 BI 가이드 의 자세한 인용 + 사용자 검토 의무 (Phase 2 이후)
 
-### 15.6 로고 구성 비율 박제 (사용자 directive 2026-05-20 cycle 169.13 영구화)
+### 15.6 로고 구성 비율 박제 (사용자 directive 2026-05-20 cycle 169.13~169.24 영구화)
+
+> ⚠️ **확정 비율 — 변경 절대 금지** (사용자 directive cycle 169.24 — "지금이 딱 맞는 비율이야 잘 저장해놔")
+>
+> symbol PNG height 50 + Talk font 55 = symbol:Talk ratio **50 : 55 ≈ 0.91** 확정.
+> cycle 169.17~169.23 동안 6회 reflow 끝 사용자 확정 ack. 향후 cycle 안 임의 변경 시 가드레일 위반 + 사용자 비판 회수 chain 강제.
 
 본 §15.6 = TooTalk dialog 안 logo composition 의 의무 비율 박제. WelcomeDialog 기준 + LoginDialog/SignupDialog 의 동일 비율 의무.
 
