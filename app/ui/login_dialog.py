@@ -12,6 +12,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import qasync
+
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QPainter, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
@@ -143,7 +145,9 @@ class LoginDialog(QDialog):
     def user_id(self) -> Optional[int]:
         return self._user_id
 
-    def _on_login_clicked(self) -> None:
+    @qasync.asyncSlot()
+    async def _on_login_clicked(self) -> None:
+        """cycle 169.33 회수 — qasync.asyncSlot decorator + 직접 async slot."""
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
         if not email or not password:
@@ -153,19 +157,7 @@ class LoginDialog(QDialog):
                 f"이메일 + {_tr('비밀번호')} 입력 의무",
             )
             return
-        # cycle 169.31 회수 — qasync loop run_forever 부재 fallback
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.ensure_future(self._do_login(email, password))
-                return
-        except RuntimeError:
-            pass
-        new_loop = asyncio.new_event_loop()
-        try:
-            new_loop.run_until_complete(self._do_login(email, password))
-        finally:
-            new_loop.close()
+        await self._do_login(email, password)
 
     def _on_signup_link_clicked(self) -> None:
         """회원가입 link click — QDialog.done(2) signup intent code 반환 (cycle 169.25 fix).

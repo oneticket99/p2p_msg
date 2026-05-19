@@ -50,9 +50,10 @@ async def handle_add_reaction(request: web.Request) -> web.Response:
     if not emoji:
         return web.json_response({"error": "emoji 부재"}, status=400)
 
-    # 한글 주석 — auth_middleware 의 user_id 의무 (Bearer 검증 정합)
-    user_id = getattr(request, "user_id", None) or request.headers.get("X-User-Id")
-    if user_id is None:
+    # 한글 주석 — cycle 169.33 보안 회수 — auth_middleware request["user_id"] 직접 + X-User-Id fallback 폐기
+    try:
+        user_id = request["user_id"]
+    except KeyError:
         return web.json_response({"error": "Authorization 부재"}, status=401)
 
     pool = request.app.get("db_pool")
@@ -115,8 +116,10 @@ async def handle_remove_reaction(request: web.Request) -> web.Response:
     """DELETE /api/messages/{message_id}/reactions/{emoji} — emoji 제거."""
     message_id = request.match_info.get("message_id")
     emoji = request.match_info.get("emoji")
-    user_id = getattr(request, "user_id", None) or request.headers.get("X-User-Id")
-    if user_id is None:
+    # cycle 169.33 보안 회수 — request["user_id"] 직접
+    try:
+        user_id = request["user_id"]
+    except KeyError:
         return web.json_response({"error": "Authorization 부재"}, status=401)
 
     pool = request.app.get("db_pool")

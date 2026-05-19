@@ -169,12 +169,14 @@ class WelcomeDialog(QDialog):
 
     def _on_locale_click(self, locale: str) -> None:
         """locale switch — UserLocalePreferences persist + 본 dialog 재 렌더."""
-        # 한글 주석 — graceful 부재 시 logger debug 만, 사용자 진행 차단 부재
+        # cycle 169.33 — signature mismatch 회수 (str → UserLocalePreferences instance)
         try:
-            from app.config.user_preferences import save_user_locale_preferences
-            save_user_locale_preferences(locale)
+            from app.config.user_preferences import (
+                UserLocalePreferences,
+                save_user_locale_preferences,
+            )
+            save_user_locale_preferences(UserLocalePreferences(locale=locale))
             log.info("locale switch persist — %s", locale)
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("locale persist 실패 graceful — %r", exc)
-        # 한글 주석 — 즉시 dialog 종료 + 사용자 재 실행 시 적용 (cycle 154 hot reload entry)
         self.accept()

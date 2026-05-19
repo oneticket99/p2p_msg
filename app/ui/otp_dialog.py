@@ -15,6 +15,8 @@ import asyncio
 import logging
 from typing import List, Optional
 
+import qasync
+
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import (
@@ -165,28 +167,18 @@ class OTPDialog(QDialog):
         if text and len(self._get_otp()) == OTP_LENGTH:
             self._on_verify_clicked()
 
-    def _on_verify_clicked(self) -> None:
+    @qasync.asyncSlot()
+    async def _on_verify_clicked(self) -> None:
+        """cycle 169.33 회수 — qasync.asyncSlot decorator + 직접 async slot."""
         otp = self._get_otp()
         if len(otp) != OTP_LENGTH or not otp.isdigit():
             QMessageBox.warning(
                 self,
                 "TooTalk",
-                _tr(f"6 digit OTP 입력 의무"),
+                _tr("6 digit OTP 입력 의무"),
             )
             return
-        # cycle 169.31 회수 — qasync loop run_forever 부재 fallback
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.ensure_future(self._do_verify(otp))
-                return
-        except RuntimeError:
-            pass
-        new_loop = asyncio.new_event_loop()
-        try:
-            new_loop.run_until_complete(self._do_verify(otp))
-        finally:
-            new_loop.close()
+        await self._do_verify(otp)
 
     async def _do_verify(self, otp: str) -> None:
         """auth_client 의 OTP verify endpoint 호출."""

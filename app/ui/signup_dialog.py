@@ -17,6 +17,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import qasync
+
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QPainter, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
@@ -147,7 +149,9 @@ class SignupDialog(QDialog):
     def email(self) -> Optional[str]:
         return self._email
 
-    def _on_signup_clicked(self) -> None:
+    @qasync.asyncSlot()
+    async def _on_signup_clicked(self) -> None:
+        """cycle 169.33 회수 — qasync.asyncSlot decorator + 직접 async slot."""
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()
         password = self._password_edit.text()
@@ -166,24 +170,7 @@ class SignupDialog(QDialog):
             QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
             return
 
-        # cycle 169.31 회수 — qasync loop 의 run_forever 진입 부재 + dialog.exec() nested Qt event loop
-        # asyncio.ensure_future = no running loop fail → 별개 loop 의 run_until_complete chain
-        self._run_async(self._do_signup(email, username, password))
-
-    def _run_async(self, coro) -> None:
-        """async coroutine sync 처리 — qasync loop 부재 graceful."""
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.ensure_future(coro)
-                return
-        except RuntimeError:
-            pass
-        new_loop = asyncio.new_event_loop()
-        try:
-            new_loop.run_until_complete(coro)
-        finally:
-            new_loop.close()
+        await self._do_signup(email, username, password)
 
     async def _do_signup(self, email: str, username: str, password: str) -> None:
         try:

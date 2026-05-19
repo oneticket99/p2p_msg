@@ -39,7 +39,7 @@ class BotEntry:
     emoji: str = "🤖"
     is_official: bool = False
     inline_enabled: bool = False
-    commands: list[str] = ()  # type: ignore[assignment]
+    commands: tuple[str, ...] = ()
 
 
 class BotPanel(QWidget):

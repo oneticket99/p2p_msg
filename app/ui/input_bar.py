@@ -22,8 +22,10 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QFrame,
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QTextEdit,
+    QVBoxLayout,
     QWidget,
 )
 

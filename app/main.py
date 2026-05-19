@@ -108,7 +108,8 @@ def main() -> int:
 
     # 4) AuthClient 초기화 — REST endpoint base URL
     # signaling_url ws → http 의
-    api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").rstrip("/ws")
+    # cycle 169.33 — rstrip("/ws") char-set 부작용 회수 → removesuffix
+    api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").removesuffix("/ws")
     auth_client = AuthClient(api_base)
 
     # cycle 160 — ReactionsClient instantiate (graceful httpx 부재)
