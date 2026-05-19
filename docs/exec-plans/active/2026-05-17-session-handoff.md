@@ -169,6 +169,77 @@ status: active
 
 ---
 
+## 8.78 사이클 169.6~169.12 — mascot 이미지 + 투턱 텍스트 + LoginDialog/SignupDialog logo 합성 정합 (2026-05-20 신설)
+
+### 8.78.1 7 commit 산출
+
+| commit | 영역 |
+|---|---|
+| `ce271cb` | cycle 169.6 — 평가 freshness + handoff §8.77 |
+| `e9bc48b` | cycle 169.7 — PNG logo 추가 10% 축소 (welcome 56→50, login/signup 45→40) |
+| `d11b6c5` | cycle 169.8 — WelcomeDialog logo_row spacing 0 + contentsMargins (PNG + Talk 딱붙임) |
+| `784e77d` | cycle 169.9 — title 'TooTalk' → toona_sakamoto.png mascot 이미지 대체 (scaledToHeight 160) |
+| `8424a55` | cycle 169.10 — mascot 직하 '투턱' 텍스트 24px bold |
+| `e6a19bc` | cycle 169.12 — LoginDialog/SignupDialog symbol + Talk QHBoxLayout 합성 + '투턱 로그인/회원가입' title |
+| `(본 commit)` | cycle 169.13 — 평가 freshness + handoff §8.78 |
+
+### 8.78.2 사용자 비판 회수 누계 (cycle 169.x)
+
+- "첨부한 이미지를 그대로 사용해야만해" (169.1) ✅
+- "완전히 똑같이 svg로 만들라는거야" (169.2) ✅
+- "그냥 png를 그대로 써" (169.3) ✅
+- "Talk는 어디갔어" (169.4) ✅
+- "배경이 black 이잖아" (169.5) ✅
+- "png 로고의 크기 비율을 30% 줄여" (169.5) ✅
+- "png 비율 10% 더줄여" (169.7) ✅
+- "png 이미지 옆의 Talk 글자를 png 바로 옆에 위치하도록 스페이스 없이 딱붙여" (169.8) ✅
+- "TooTalk라는 글자를 삭제하고 그위치에 toona_sakamoto.png 이미지를 축소해서 넣어" (169.9) ✅
+- "그 이미지 밑에 텍스트로 투턱 이라고 써줘" (169.10) ✅
+- "로고가 첫화면에서 수정한 형태와 달라" (169.12) ✅
+- "이미지+텍스트 아래에 투턱 로그인 이라고 쓰면 돼" (169.12) ✅
+
+누계 12건 (cycle 169 chain 만) + 152.4~168 8건 = **누계 20건 verbatim 회수**.
+
+### 8.78.3 WelcomeDialog 최종 layout
+
+```
+banner gradient (#0F172A → #0066FF)
+  └─ symbol PNG (50px) + Talk 흰색 28px bold (spacing 0 딱붙임)
+
+content area
+  ├─ toona_sakamoto.png mascot (160px height + transparent bg)
+  ├─ 투턱 (흰색 24px bold)
+  ├─ "친구와 직접 연결 P2P 메신저"
+  ├─ "원격 데스크탑 도움 + GPLv3 OSS"
+  ├─ 시작하기 CTA (primary)
+  └─ 4 locale switch (한국어/English/中文/日本語)
+```
+
+### 8.78.4 LoginDialog/SignupDialog 최종 layout
+
+```
+logo_row (QHBoxLayout, spacing 0)
+  └─ symbol PNG (40px) + Talk 흰색 28px bold
+
+title — 투턱 로그인 / 투턱 회원가입 (22px bold)
+sub — email + password 입력 / email + username + password 의무
+inputs — 4 field
+[primary CTA 로그인 / 가입 + OTP 송신]
+[ghost 취소] [ghost 회원가입/로그인]
+```
+
+### 8.78.5 다음 cycle 170+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | 사용자 manual test trigger ack 의무 (HIGH 잔존) |
+| 2 | 사용자 visual confirm — WelcomeDialog + LoginDialog + SignupDialog 모두 layout 정합 |
+| 3 | 평가 §2.51~§2.55 본격 sub-section 본문 채워 넣기 |
+| 4 | M7 텔레그램 송신 chain 활성 검증 |
+| 5 | dereliction-detector 추가 fire 회수 chain |
+
+---
+
 ## 8.77 사이클 169~169.5 — TooTalk logo PNG 원본 활용 + Talk 흰색 합성 + transparent bg + 30% 축소 (2026-05-20 신설)
 
 ### 8.77.1 5 commit 산출 (사용자 비판 5건 누계 회수)
