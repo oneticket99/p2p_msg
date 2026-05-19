@@ -1,4 +1,11 @@
-# OBS Integration — 방송 도우미 봇 prerequisite (cycle 141)
+---
+title: "OBS Integration — 방송 도우미 봇 prerequisite (cycle 141)"
+owner: oneticket99
+last_verified: 2026-05-19T19:30:00+09:00
+status: active
+cycle: 141
+---
+
 
 > TooTalk 방송 도우미 봇 (Phase 5 Item 4) prerequisite 문서.
 > 정합: `app/bot/obs_websocket_client.py` · `app/bot/streaming_helper.py` · memory `project_bot_framework.md` (B) 방송 도우미 봇 별개 API 의무.

@@ -1,4 +1,11 @@
-# i18n .qm 컴파일 운영 가이드 — cycle 139
+---
+title: "i18n .qm 컴파일 운영 가이드 — cycle 139"
+owner: oneticket99
+last_verified: 2026-05-19T19:30:00+09:00
+status: active
+cycle: 139
+---
+
 
 > Phase 5 cycle 139 — lrelease binary 의무 (macOS/Linux/Windows install 명령
 > 의 회수 chain 의 CI 통합 안내).

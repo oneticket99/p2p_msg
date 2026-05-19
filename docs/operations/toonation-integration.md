@@ -1,4 +1,11 @@
-# Toonation REST API 통합 운영서 — cycle 140
+---
+title: "Toonation REST API 통합 운영서 — cycle 140"
+owner: oneticket99
+last_verified: 2026-05-19T19:30:00+09:00
+status: active
+cycle: 140
+---
+
 
 > Phase 5 Item 4 bot framework 마무리 chain 의 prerequisite skeleton.
 > 본 문서 = Toonation REST API client + customer_service_bot dispatch chain
