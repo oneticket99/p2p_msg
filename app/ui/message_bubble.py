@@ -231,9 +231,11 @@ class MessageBubble(QFrame):
         return self._message_id
 
     def add_reaction(self, emoji: str) -> None:
-        """reaction pill 추가 — count 증분 + signal emit + REST persist (cycle 159)."""
+        """reaction pill 추가 — count 증분 + signal emit + REST persist + UI 즉시 갱신 (cycle 165)."""
         self._reactions[emoji] = self._reactions.get(emoji, 0) + 1
         self.reaction_added.emit(emoji)
+        # cycle 165 — pill UI 즉시 갱신
+        self.refresh_reactions_ui()
         # 한글 주석 — cycle 159 — server REST persist async chain (graceful 부재)
         if self._reactions_client is not None and self._message_id is not None:
             try:
@@ -244,6 +246,57 @@ class MessageBubble(QFrame):
             except Exception as exc:  # pragma: no cover - graceful
                 import logging
                 logging.getLogger(__name__).debug("reactions REST persist 실패 — %r", exc)
+
+    def update_reactions(self, reactions: dict) -> None:
+        """reactions dict 외부 갱신 — polling/WebSocket 수신 path (cycle 165 신설)."""
+        self._reactions = dict(reactions)
+        self.refresh_reactions_ui()
+
+    def refresh_reactions_ui(self) -> None:
+        """기존 reaction row 제거 + 신규 pill row rebuild (cycle 165 신설)."""
+        # 한글 주석 — bubble 내부 QFrame 안 ts_row 직전 의 reaction layout 재 build
+        # _reaction_row attribute 보관 + deleteLater + 재 생성 chain
+        existing = getattr(self, "_reaction_row_widget", None)
+        if existing is not None:
+            existing.deleteLater()
+            self._reaction_row_widget = None
+
+        if not self._reactions:
+            return
+
+        # 한글 주석 — bubble 안 child QFrame 의 layout lookup
+        bubble = self.findChild(QFrame, "messageBubble")
+        if bubble is None:
+            return
+        bubble_layout = bubble.layout()
+        if bubble_layout is None:
+            return
+
+        # 한글 주석 — 신규 reaction row container QWidget + HBoxLayout
+        from PyQt6.QtWidgets import QHBoxLayout as _H, QWidget as _W
+        row_widget = _W(bubble)
+        row_layout = _H(row_widget)
+        row_layout.setContentsMargins(0, 4, 0, 0)
+        row_layout.setSpacing(4)
+        row_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        for emoji, count in self._reactions.items():
+            pill = QLabel(f"{emoji} {count}", row_widget)
+            pill.setStyleSheet(
+                "QLabel {"
+                " background-color: rgba(34, 211, 238, 0.15);"
+                " border: 1px solid rgba(34, 211, 238, 0.3);"
+                " border-radius: 10px;"
+                " padding: 2px 8px;"
+                " font-size: 11px;"
+                " color: #67E8F9;"
+                "}"
+            )
+            row_layout.addWidget(pill)
+        row_layout.addStretch(1)
+        # 한글 주석 — ts_row 직전 insert (count - 1 위치) — bubble layout 안 마지막 직전
+        insert_at = max(0, bubble_layout.count() - 1)
+        bubble_layout.insertWidget(insert_at, row_widget)
+        self._reaction_row_widget = row_widget
 
     def _open_reaction_picker(self, global_pos: "QPoint") -> None:
         """EmojiPicker popup → 선택 시 add_reaction chain."""

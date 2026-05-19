@@ -83,14 +83,16 @@ class ReactionsPoller(QObject):
             await self._poll_single(widget, int(msg_id))
 
     async def _poll_single(self, bubble, message_id: int) -> None:
-        """단일 bubble polling — list_reactions + emit + bubble dict 갱신."""
+        """단일 bubble polling — list_reactions + emit + bubble.update_reactions chain (cycle 165)."""
         try:
             entries = await self._client.list_reactions(message_id)
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("poll list_reactions 실패 — message_id=%d %r", message_id, exc)
             return
         new_dict = {entry.emoji: entry.count for entry in entries}
-        # 한글 주석 — bubble._reactions 직접 갱신 (cycle 165+ render refresh signal 의무)
-        if hasattr(bubble, "_reactions"):
+        # cycle 165 — bubble.update_reactions 호출 (pill UI 즉시 갱신)
+        if hasattr(bubble, "update_reactions"):
+            bubble.update_reactions(new_dict)  # type: ignore[attr-defined]
+        elif hasattr(bubble, "_reactions"):
             bubble._reactions = new_dict  # type: ignore[attr-defined]
         self.reactions_updated.emit(message_id, new_dict)

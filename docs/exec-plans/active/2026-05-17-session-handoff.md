@@ -169,6 +169,84 @@ status: active
 
 ---
 
+## 8.74 사이클 162~165 — message_id resolve chain + uuid race 해소 + ReactionsPoller 30s + bubble UI refresh (2026-05-20 신설)
+
+### 8.74.1 cycle 162~165 4 commit
+
+| commit | 영역 |
+|---|---|
+| `334b420` | cycle 162 — ChatView `message_id` kwarg + `_last_bubble` + `resolve_last_message_id` |
+| `3146aff` | cycle 163 — uuid → bubble dict mapping + main_window `_post_and_resolve` coroutine |
+| `2229a40` | cycle 164 — ReactionsPoller 30s QTimer polling fallback chain |
+| `(본 commit)` | cycle 165 — message_bubble update_reactions + refresh_reactions_ui + ReactionsPoller bubble dispatch + 평가 freshness + handoff §8.74 |
+
+### 8.74.2 산출 5 file
+
+| file | 본문 |
+|---|---|
+| `app/ui/message_bubble.py` | `update_reactions(dict)` + `refresh_reactions_ui()` — 기존 pill row deleteLater + 신규 row rebuild + `_reaction_row_widget` 참조 보관 |
+| `app/ui/reactions_poller.py` | `_poll_single` 안 bubble.update_reactions 직접 호출 (cycle 165 actual binding) |
+| `app/ui/chat_view.py` (cycle 162~163) | `message_id` kwarg + `_last_bubble` + `_pending_bubbles` dict + `register_pending_bubble` + `resolve_pending_message_id` |
+| `app/ui/main_window.py` (cycle 163) | `_post_and_resolve` coroutine — `messages_client.post_message` → `resolve_pending_message_id` chain |
+| 평가 4 pair | 04:00 KST sweep |
+| handoff §8.74 | 본 sub-section prepend |
+
+### 8.74.3 reactions Flow 완성
+
+```
+사용자 bubble 우 click → 😀 반응 추가 → EmojiPicker
+  → emoji_selected
+  → bubble.add_reaction(emoji)
+  → _reactions 증분
+  → refresh_reactions_ui (즉시 pill 갱신)
+  → reactions_client.add_reaction(message_id, emoji) async
+
+ReactionsPoller QTimer 30s fire
+  → _poll_all_bubbles iterate ChatView._messages_layout
+  → message_id 보유 bubble 만 polling
+  → list_reactions REST
+  → bubble.update_reactions(new_dict)
+  → refresh_reactions_ui (pill 재 build)
+```
+
+### 8.74.4 send + resolve Flow 완성
+
+```
+사용자 InputBar Enter
+  → _on_send_clicked
+  → reply_ctx snapshot
+  → build_text_payload uuid 생성
+  → ChatView.add_message render (local echo)
+  → ChatView.register_pending_bubble(uuid)
+  → mesh.broadcast_payload async (DataChannel)
+  → _post_and_resolve coroutine
+    → messages_client.post_message
+    → server 응답 message_id
+    → ChatView.resolve_pending_message_id(uuid, message_id)
+    → bubble.set_message_id
+  → 사용자 reaction click → reactions_client.add_reaction(message_id, emoji)
+```
+
+### 8.74.5 cycle 166+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | reactions WebSocket push actual binding (poller stop chain) |
+| 2 | aiortc RTCPeerConnection + DataChannel actual — mesh placeholder peer 본격 |
+| 3 | tootalk_favicon.ico 신설 (SVG → ICO convert) |
+| 4 | server message_reactions 0008 migration apply 검증 |
+| 5 | 사용자 manual test feedback 회수 |
+
+### 8.74.6 cycle 153~165 13 cycle 누계
+
+- 53 file 신설/edit (cycle 153~165)
+- pytest 1750 PASS
+- drift 0건 104 연속 사이클 37~165
+- BPE WARN 회수 누계 16회
+- 사용자 비판 회수 8건 verbatim
+
+---
+
 ## 8.73 사이클 158~161 — mesh_manager broadcast_payload + reactions UI binding + DESIGN.md §11.9 brand color + base-light.qss + reply broadcast chain 통합 (2026-05-20 신설)
 
 ### 8.73.1 4 commit 산출
