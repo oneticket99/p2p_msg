@@ -325,7 +325,7 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
    - `dopa.co.kr` SPF: `v=spf1 mx a:mail.dopa.co.kr ~all`
    - `mail._domainkey.dopa.co.kr` DKIM: `v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsIre923TKdJdPgaIyMGmGcGEEUsXPuuFTwoKS9VHLkM1m/qgqyClRtl+LIeLcfnoe3dvN24xBLjcmM7+KpF/iJpWBXeNljII7nRoZhfjW5grCDMYDADFNrwaBIxacFN0ls3Qk/1kvEH16x3HcpBPZMknoVNIcoYlFr3Dw/q0Ur/qm2bLykSFmS8j+2lWrXJ+7RCvgJwDgY+7jZxJNzaKTv4/vJttfCG4Qpv3lMgahdDk0fuDZ1FxrvQf45gOZhQrnK5sJrHPSTbWmd6Uq3gIENst/f2DAG+lM7iG5Yp+xMvceNnKRqgde6FixNoZN5Ivff0QGyv9ctlNGuTePWCvkQIDAQAB`
    - `_dmarc.dopa.co.kr` DMARC: `v=DMARC1; p=quarantine; rua=mailto:postmaster@dopa.co.kr; ruf=mailto:postmaster@dopa.co.kr; sp=quarantine; adkim=r; aspf=r`
-2. **KT (ISP tongkni.co.kr) reverse DNS 갱신 요청** — PTR 114.207.112.73 → mail.dopa.co.kr (Gmail/Naver spam reject 방지)
+2. **KT (ISP tongkni.co.kr) reverse DNS 갱신 요청** — **최후 또는 skip** ([[project-dopa-demo-only]] 정합 — dopa.co.kr = 데몬스트레이션 전용, 제품화 도메인 별개 확정 시점 의 진행). PTR 114.207.112.73 → mail.dopa.co.kr (Gmail/Naver spam reject 방지) = nice-to-have. 현재 Gmail / Naver / Toonation Bizmeka 발신 PASS = sufficient
 3. **DNS propagation 대기 (5~30분) 후 swaks 발신 테스트**
 
    ```bash

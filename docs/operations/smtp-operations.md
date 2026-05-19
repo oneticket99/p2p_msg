@@ -187,13 +187,22 @@ Authentication-Results: mx.google.com;
 
 ---
 
-## 5. KT PTR reverse DNS 갱신 신청
+## 5. KT PTR reverse DNS 갱신 신청 — **최후 또는 skip** ([[project-dopa-demo-only]])
+
+### 5-0. 우선순위 directive (사용자 2026-05-19 cycle 132)
+
+본 section = **최후 또는 skip** 의 nice-to-have. 사유:
+
+- `dopa.co.kr` / `mail.dopa.co.kr` = **데몬스트레이션 전용 도메인** + 제품화 부재 ([[project-dopa-demo-only]]).
+- 실 제품 도메인 = 사용자 별개 확정 의무 (Phase 5 마무리 직전 또는 종료 후 사용자 명시 GO directive).
+- 현 spam reputation = Gmail / Naver / Toonation Bizmeka 발신 PASS 의 sufficient (Authentication-Results dkim/spf/dmarc pass).
+- PTR 갱신 = 제품 도메인 확정 시점 의 진행 의무. 데모 단계 의 진행 부재.
 
 ### 5-1. 현황
 
 - KT 회선 default PTR — `114.207.112.73` → `*.tongkni.co.kr` (가비아·DOPA 등 회선 기본값).
-- 목표 PTR — `114.207.112.73` → `mail.dopa.co.kr` (forward + reverse alignment).
-- 미갱신 시 — Gmail / Naver / mail-tester spam score 1~2점 감점.
+- 목표 PTR — `114.207.112.73` → `mail.dopa.co.kr` (forward + reverse alignment) — **데모 단계 진행 부재**.
+- 미갱신 시 — Gmail / Naver / mail-tester spam score 1~2점 감점 (현재 spam reputation = sufficient 의 acceptable cost).
 
 ### 5-2. 신청 channel
 
