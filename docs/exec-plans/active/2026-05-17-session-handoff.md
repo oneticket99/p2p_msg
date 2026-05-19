@@ -169,6 +169,60 @@ status: active
 
 ---
 
+## 8.75 사이클 166 — server reactions endpoint actual 검증 PASS — 데모 서버 cycle 155 chain 본격 binding (2026-05-20 신설)
+
+### 8.75.1 SSH deploy chain
+
+```bash
+ssh root@114.207.112.73
+  cd ~/p2p_msg && git fetch origin main && git reset --hard origin/main  # 92dc463 → 81c5ced
+  cd deploy && docker compose -f docker-compose.yml build web
+  docker compose -f docker-compose.yml up -d --force-recreate web ws
+```
+
+### 8.75.2 검증 log + endpoint actual
+
+```text
+[KST] INFO __main__ [-]: [api] reactions 3 endpoint 등록 완료 (cycle 155)
+[KST] INFO server.api.rooms_handlers: [api] rooms 7 endpoint
+[KST] INFO server.api.friends_handlers: [api] friends 8 endpoint
+[KST] INFO server.db.connection: [DB] asyncmy pool 생성 host=mariadb pool=1~10
+[KST] INFO __main__: 시그널링 서버 시작 host=0.0.0.0 port=8080 scheme=ws
+
+direct POST /api/messages/42/reactions
+  → 401 Authorization Bearer 헤더 부재 (정상 auth_middleware chain)
+```
+
+### 8.75.3 서버 stack 최종 상태 (cycle 166)
+
+| service | 상태 | 본문 |
+|---|---|---|
+| tootalk-mariadb | ✅ healthy | 0001~0007 migration 적용. 0008 message_reactions = web container restart 시점 init script 미적용 (volume 보존) — cycle 167+ manual ALTER 의무 |
+| tootalk-web | ✅ healthy 36s | reactions + rooms + friends + version + remote + messages + auth endpoint 본격 binding 등록 PASS |
+| tootalk-ws | ✅ Up | signaling port 8080 |
+| tootalk-nginx | ✅ Up 2h | upstream web:8080 정합 |
+| tootalk-postfix | profile separation | host postfix 운영 |
+
+### 8.75.4 cycle 167+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | server 안 0008 message_reactions table manual ALTER apply (사용자 ack 시 docker exec mariadb chain) |
+| 2 | aiortc RTCPeerConnection + DataChannel actual — mesh placeholder 본격 |
+| 3 | reactions WebSocket push (poller stop chain) |
+| 4 | tootalk_favicon.ico 신설 (SVG → ICO convert) |
+| 5 | 사용자 manual test feedback 회수 |
+
+### 8.75.5 cycle 153~166 14 cycle 누계
+
+- 53 file 신설/edit (cycle 153~165)
+- pytest 1750 PASS
+- drift 0건 105 연속 사이클 37~166
+- 서버 docker stack actual binding 검증 — reactions endpoint 등록 + auth chain PASS
+- SSH deploy chain 6 commit 누계 (cycle 152 본격 + cycle 166 reactions)
+
+---
+
 ## 8.74 사이클 162~165 — message_id resolve chain + uuid race 해소 + ReactionsPoller 30s + bubble UI refresh (2026-05-20 신설)
 
 ### 8.74.1 cycle 162~165 4 commit
