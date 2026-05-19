@@ -51,15 +51,21 @@ def _mock_pool(*, lastrowid: int = 42, rowcount: int = 1) -> Any:
 
 
 class TestActivityAction:
-    def test_23_actions_defined(self) -> None:
-        # 한글 주석: DDL 0003_user_activity.sql 의 23 ENUM 정합
+    def test_28_actions_defined(self) -> None:
+        # 한글 주석: cycle 128 + 132 + 141 ENUM 추가 (ROOM_CREATE/CLOSE + MESSAGE_SEND + FILE_SEND/RECEIVE + PROFILE_UPDATE + EMAIL_CHANGE + BOT_ESCALATE + REMOTE_GRANT/REVOKE) → 23 base + 5 신규 누계 = 28
         actions = [a.value for a in ActivityAction]
-        assert len(actions) == 23
+        assert len(actions) == 28, f"ENUM count = {len(actions)}, expect 28 (cycle 144 정합)"
         assert "signup" in actions
         assert "login" in actions
         assert "bot_chat" in actions
         assert "remote_request" in actions
+        assert "remote_grant" in actions
+        assert "remote_revoke" in actions
         assert "account_delete" in actions
+        assert "bot_escalate" in actions
+        assert "room_create" in actions
+        assert "room_close" in actions
+        assert "message_send" in actions
 
 
 class TestSessionEndReason:
