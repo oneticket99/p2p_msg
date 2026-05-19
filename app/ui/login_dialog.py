@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.error_messages import translate_error
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -145,7 +146,7 @@ class LoginDialog(QDialog):
         return self._user_id
 
     def _on_login_clicked(self) -> None:
-        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
+        """cycle 169.43+ 회수 — qasync loop active 안 ensure_future + callback fire."""
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
         if not email or not password:
@@ -155,10 +156,26 @@ class LoginDialog(QDialog):
                 f"이메일 + {_tr('비밀번호')} 입력 의무",
             )
             return
+        # 한글 주석 — qasync.QEventLoop active 안 asyncio.run() reject. running loop detect.
+        coro = self._do_login(email, password)
         try:
-            asyncio.run(self._do_login(email, password))
+            asyncio.get_running_loop()
+            future = asyncio.ensure_future(coro)
+            future.add_done_callback(self._on_login_done)
+        except RuntimeError:
+            asyncio.run(coro)
+
+    def _on_login_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
+        """ensure_future done callback — exception graceful + 한글화."""
+        try:
+            future.result()
         except Exception as exc:
-            QMessageBox.critical(self, "TooTalk", f"{_tr('로그인')} 실패: {exc}")
+            log.warning("[로그인] 실패 — %r", exc)
+            QMessageBox.critical(
+                self,
+                "TooTalk",
+                f"{_tr('로그인 실패')} — {translate_error(exc)}",
+            )
 
     def _on_signup_link_clicked(self) -> None:
         """회원가입 link click — QDialog.done(2) signup intent code 반환 (cycle 169.25 fix).
@@ -175,8 +192,17 @@ class LoginDialog(QDialog):
             self._user_id = result.user_id
             self.accept()
         else:
+            # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
+            err_map = {
+                "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
+                "INVALID_PASSWORD": "비밀번호 부재 또는 오류",
+                "EMAIL_NOT_VERIFIED": "이메일 미인증 — OTP 검증 의무",
+                "ACCOUNT_LOCKED": "계정 잠김 — 운영자 문의 의무",
+                "RATE_LIMIT": "로그인 시도 제한 — 잠시 후 재시도",
+            }
+            err_msg = err_map.get(result.error_code, result.error_message or "자격 정보 부재")
             QMessageBox.critical(
                 self,
-                f"{_tr('로그인')} 실패",
-                f"{result.error_code}: {result.error_message}",
+                f"{_tr('로그인 실패')}",
+                err_msg,
             )

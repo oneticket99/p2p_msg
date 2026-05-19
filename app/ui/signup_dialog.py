@@ -33,6 +33,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.error_messages import translate_error
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -156,23 +157,38 @@ class SignupDialog(QDialog):
         confirm = self._password_confirm_edit.text()
 
         if not email or not username or not password:
-            QMessageBox.warning(self, "TooTalk", _tr("4 field 모두 입력 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("4 항목 모두 입력 의무"))
             return
         if password != confirm:
-            QMessageBox.warning(self, "TooTalk", _tr("password 확인 mismatch"))
+            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 확인 불일치"))
             return
         if len(password) < 8 or len(password) > 32:
-            QMessageBox.warning(self, "TooTalk", _tr("password 8~32자 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 8~32자 의무"))
             return
         if len(username) < 3 or len(username) > 16:
-            QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("사용자명 3~16자 의무"))
             return
 
-        # cycle 169.34 — asyncio.run() 격리 loop + ClientSession 사후 close (AuthClient.py 정합)
+        # cycle 169.43+ 회수 — qasync.QEventLoop active 안 running loop detect chain
+        coro = self._do_signup(email, username, password)
         try:
-            asyncio.run(self._do_signup(email, username, password))
+            asyncio.get_running_loop()
+            future = asyncio.ensure_future(coro)
+            future.add_done_callback(self._on_signup_done)
+        except RuntimeError:
+            asyncio.run(coro)
+
+    def _on_signup_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
+        """ensure_future done callback — exception graceful + 한글화."""
+        try:
+            future.result()
         except Exception as exc:
-            QMessageBox.critical(self, "TooTalk", f"{_tr('회원가입')} 실패: {exc}")
+            log.warning("[회원가입] 실패 — %r", exc)
+            QMessageBox.critical(
+                self,
+                "TooTalk",
+                f"{_tr('회원가입 실패')} — {translate_error(exc)}",
+            )
 
     async def _do_signup(self, email: str, username: str, password: str) -> None:
         try:
@@ -181,7 +197,7 @@ class SignupDialog(QDialog):
             QMessageBox.information(
                 self,
                 "TooTalk",
-                _tr("회원가입 endpoint 미진입 — Phase 1 actual binding 의무"),
+                _tr("회원가입 endpoint 부재 — 서버 버전 mismatch"),
             )
             self._email = email
             self.accept()
@@ -197,5 +213,15 @@ class SignupDialog(QDialog):
                 QMessageBox.information(self, "TooTalk", _tr("OTP 미인증 — 다음 진입 시 재시도"))
                 self.reject()
         else:
-            err_msg = getattr(result, "error_message", _tr("가입 실패"))
-            QMessageBox.critical(self, f"{_tr('회원가입')} 실패", str(err_msg))
+            # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
+            err_code = getattr(result, "error_code", "")
+            err_map = {
+                "EMAIL_DUPLICATE": "이미 가입된 이메일 — 로그인 진입 의무",
+                "USERNAME_TAKEN": "이미 사용 중인 사용자명",
+                "INVALID_EMAIL": "이메일 형식 오류",
+                "INVALID_USERNAME": "사용자명 형식 오류",
+                "WEAK_PASSWORD": "비밀번호 형식 부재 (8자 이상 + 영문 + 숫자 권장)",
+                "RATE_LIMIT": "회원가입 시도 제한 — 잠시 후 재시도",
+            }
+            err_msg = err_map.get(err_code, getattr(result, "error_message", "가입 실패"))
+            QMessageBox.critical(self, _tr("회원가입 실패"), str(err_msg))

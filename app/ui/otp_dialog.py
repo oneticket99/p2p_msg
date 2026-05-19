@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.error_messages import translate_error
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -217,7 +218,7 @@ class OTPDialog(QDialog):
             self._on_verify_clicked()
 
     def _on_verify_clicked(self) -> None:
-        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
+        """cycle 169.43+ 회수 — qasync loop active 안 ensure_future + callback fire."""
         otp = self._get_otp()
         if len(otp) != OTP_LENGTH or not otp.isdigit():
             QMessageBox.warning(
@@ -226,10 +227,27 @@ class OTPDialog(QDialog):
                 _tr("6 digit OTP 입력 의무"),
             )
             return
+        # 한글 주석 — qasync.QEventLoop active 안 asyncio.run() reject. running loop detect.
+        coro = self._do_verify(otp)
         try:
-            asyncio.run(self._do_verify(otp))
+            asyncio.get_running_loop()
+            future = asyncio.ensure_future(coro)
+            future.add_done_callback(self._on_verify_done)
+        except RuntimeError:
+            # 한글 주석 — loop 부재 (test 환경 등) fallback
+            asyncio.run(coro)
+
+    def _on_verify_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
+        """ensure_future done callback — exception graceful + 한글화."""
+        try:
+            future.result()
         except Exception as exc:
-            QMessageBox.critical(self, "TooTalk", f"{_tr('OTP')} 실패: {exc}")
+            log.warning("[OTP] verify 실패 — %r", exc)
+            QMessageBox.critical(
+                self,
+                "TooTalk",
+                f"{_tr('OTP 인증 실패')} — {translate_error(exc)}",
+            )
 
     async def _do_verify(self, otp: str) -> None:
         """auth_client 의 OTP verify endpoint 호출."""
@@ -248,8 +266,16 @@ class OTPDialog(QDialog):
         if getattr(result, "ok", False):
             self.accept()
         else:
-            err_msg = getattr(result, "error_message", "검증 실패")
-            QMessageBox.critical(self, "TooTalk", f"{_tr('OTP')} 실패: {err_msg}")
+            # 한글 주석 — 서버 응답 error_code → 한국어 메시지 mapping
+            err_code = getattr(result, "error_code", "")
+            err_map = {
+                "INVALID_OTP": "OTP 코드 부재 또는 형식 오류",
+                "OTP_EXPIRED": "OTP 만료 — 재 송신 의무",
+                "OTP_ATTEMPT_EXCEEDED": "시도 횟수 초과 — 재 송신 의무",
+                "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
+            }
+            err_msg = err_map.get(err_code, getattr(result, "error_message", "검증 실패"))
+            QMessageBox.critical(self, "TooTalk", f"{_tr('OTP 인증 실패')} — {err_msg}")
             # 한글 주석 — 실패 시 box clear + 첫 box focus
             for box in self._boxes:
                 box.clear()
