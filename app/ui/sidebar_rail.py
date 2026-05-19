@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QFrame,
@@ -21,6 +21,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.ui._icons import load_icon
+
 
 class SidebarRail(QFrame):
     """좌측 64px vertical tab column — 4 tab + brand 통합 highlight."""
@@ -28,10 +30,10 @@ class SidebarRail(QFrame):
     tab_clicked = pyqtSignal(str)
 
     TAB_DEFS = [
-        ("friends", "친구", "👥"),
-        ("rooms", "방", "🏠"),
-        ("bots", "봇", "🤖"),
-        ("settings", "설정", "⚙️"),
+        ("friends", "친구", "friends"),
+        ("rooms", "방", "home"),
+        ("bots", "봇", "bot"),
+        ("settings", "설정", "settings"),
     ]
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
@@ -49,17 +51,17 @@ class SidebarRail(QFrame):
         self._button_group.setExclusive(True)
 
         self._buttons: dict[str, QToolButton] = {}
-        for i, (tab_key, label, emoji) in enumerate(self.TAB_DEFS):
+        for i, (tab_key, label, icon_name) in enumerate(self.TAB_DEFS):
             btn = QToolButton()
             btn.setObjectName("sidebarTab")
             btn.setCheckable(True)
-            btn.setText(emoji)
+            # 한글 주석 — cycle 169.51 회수 — SVG icon (gray default + cyan checked)
+            btn.setIcon(load_icon(icon_name, size=28, color="#9ca3af"))
+            btn.setIconSize(QSize(28, 28))
             btn.setToolTip(label)
             btn.setFixedSize(56, 56)
-            # 한글 주석 — 별개 stylesheet inline (font-size 의 emoji rendering)
             btn.setStyleSheet(
                 "QToolButton#sidebarTab {"
-                " font-size: 24px;"
                 " background-color: transparent;"
                 " border: none;"
                 " border-radius: 6px;"

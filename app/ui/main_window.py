@@ -1054,18 +1054,30 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_header_search(self) -> None:
-        """ChatHeader 검색 button — cycle 154+ entry."""
-        log.info("ChatHeader 검색 click — cycle 154+ entry")
+        """ChatHeader 검색 button — cycle 169.51 visible feedback."""
+        log.info("ChatHeader 검색 click")
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.information(self, "TooTalk", "메시지 검색 — 준비 중 (다음 cycle 진입)")
 
     @pyqtSlot()
     def _on_header_call(self) -> None:
-        """ChatHeader 통화 button — cycle 200+ entry (WebRTC SDP)."""
-        log.info("ChatHeader 통화 click — cycle 200+ entry")
+        """ChatHeader 통화 button — cycle 169.51 visible feedback."""
+        log.info("ChatHeader 통화 click")
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.information(self, "TooTalk", "음성/영상 통화 — 준비 중 (Phase 5 cycle 200+)")
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:
-        """ChatHeader 메뉴 button — context menu (cycle 153.5+ entry)."""
-        log.info("ChatHeader 메뉴 click — cycle 153.5+ entry")
+        """ChatHeader 메뉴 button — context menu popup."""
+        log.info("ChatHeader 메뉴 click")
+        from PyQt6.QtWidgets import QMenu
+        from PyQt6.QtGui import QCursor
+        menu = QMenu(self)
+        menu.addAction("채팅 정보")
+        menu.addAction("알림 끄기")
+        menu.addSeparator()
+        menu.addAction("채팅 나가기")
+        menu.exec(QCursor.pos())
 
     @pyqtSlot()
     def _on_send_clicked(self) -> None:
