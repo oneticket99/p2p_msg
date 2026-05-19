@@ -119,50 +119,51 @@ def main() -> int:
     except (ImportError, RuntimeError) as exc:  # pragma: no cover - graceful
         logging.getLogger(__name__).debug("ReactionsClient 부재 graceful — %r", exc)
 
-    # 5) AUTH_REQUIRED=1 시 Welcome → Login 강제 chain — Phase 1 회원가입 + 이메일 OTP 의무
-    # default = 1 (사용자 directive 2026-05-19 cycle 152 회수)
+    # 한글 주석 — cycle 169.28 회수 — qasync loop context 안 모든 dialog + MainWindow 의무
+    # 직전 chain 안 dialog.exec() 호출 시점 = loop not running →
+    # asyncio.get_running_loop() RuntimeError 'no running event loop' (aiohttp ClientSession.__init__ fail)
+    # `with loop:` block 안 dialog.exec() = qasync 의 nested Qt + asyncio loop 동시 활성
     auth_required = os.environ.get("AUTH_REQUIRED", "1") == "1"
     skip_welcome = os.environ.get("SKIP_WELCOME", "0") == "1"
-    if auth_required:
-        # 5-1) WelcomeDialog 진입 (cycle 153 phase 2 신설)
-        # 한글 주석 — SKIP_WELCOME=1 시 welcome skip + LoginDialog 직접 진입 (dev mode 옵션)
-        if not skip_welcome:
-            from app.ui.welcome_dialog import WelcomeDialog
-            welcome = WelcomeDialog()
-            if welcome.exec() != welcome.DialogCode.Accepted:
-                logging.getLogger(__name__).info("WelcomeDialog 취소 — 종료")
-                loop.run_until_complete(auth_client.close())
-                return 0
 
-        # 5-2) LoginDialog 진입
-        login = LoginDialog(auth_client=auth_client)
-        login_result = login.exec()
-        if login_result == 2:
-            # 한글 주석 — code 2 = signup intent (LoginDialog._on_signup_link_clicked)
-            signup = SignupDialog(auth_client=auth_client)
-            if signup.exec() != signup.DialogCode.Accepted:
-                logging.getLogger(__name__).info("SignupDialog 취소 — 종료")
-                loop.run_until_complete(auth_client.close())
-                return 0
-        elif login_result != login.DialogCode.Accepted:
-            logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
-            loop.run_until_complete(auth_client.close())
-            return 0
-
-    # 6) 메인 윈도우 표시
-    window = MainWindow(
-        config=config,
-        auth_client=auth_client,
-        reactions_client=reactions_client,
-    )
-    window.show()
-
-    # 6) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리
     with loop:
+        if auth_required:
+            # 5-1) WelcomeDialog 진입
+            if not skip_welcome:
+                from app.ui.welcome_dialog import WelcomeDialog
+                welcome = WelcomeDialog()
+                if welcome.exec() != welcome.DialogCode.Accepted:
+                    logging.getLogger(__name__).info("WelcomeDialog 취소 — 종료")
+                    loop.run_until_complete(auth_client.close())
+                    return 0
+
+            # 5-2) LoginDialog 진입
+            login = LoginDialog(auth_client=auth_client)
+            login_result = login.exec()
+            if login_result == 2:
+                # signup intent (LoginDialog._on_signup_link_clicked)
+                signup = SignupDialog(auth_client=auth_client)
+                if signup.exec() != signup.DialogCode.Accepted:
+                    logging.getLogger(__name__).info("SignupDialog 취소 — 종료")
+                    loop.run_until_complete(auth_client.close())
+                    return 0
+            elif login_result != login.DialogCode.Accepted:
+                logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
+                loop.run_until_complete(auth_client.close())
+                return 0
+
+        # 6) MainWindow 표시
+        window = MainWindow(
+            config=config,
+            auth_client=auth_client,
+            reactions_client=reactions_client,
+        )
+        window.show()
+
+        # 7) qasync loop run_forever — Qt + asyncio 단일 thread 통합
         try:
             loop.run_forever()
         finally:
-            # auth_client close graceful
             loop.run_until_complete(auth_client.close())
     return 0
 
