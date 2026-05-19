@@ -16,7 +16,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from PyQt6.QtCore import QCoreApplication, Qt, pyqtSignal
+from PyQt6.QtCore import QCoreApplication, Qt, QSize, pyqtSignal
+from app.ui._icons import load_icon
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QKeyEvent
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -59,18 +60,23 @@ class InputBar(QFrame):
         layout.setSpacing(6)
         layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
 
-        # 한글 주석 — 첨부 button
-        self._attach_btn = QPushButton("📎")
+        # 한글 주석 — cycle 169.52 회수 — SVG icon 변환 (첨부 + emoji)
+        self._attach_btn = QPushButton()
         self._attach_btn.setProperty("variant", "ghost")
         self._attach_btn.setFixedSize(36, 36)
+        self._attach_btn.setIcon(load_icon("attach", size=20, color="#9ca3af"))
+        self._attach_btn.setIconSize(QSize(20, 20))
+        self._attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._attach_btn.setToolTip(_tr("파일 첨부"))
         self._attach_btn.clicked.connect(self._on_attach_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._attach_btn)
 
-        # 한글 주석 — emoji button — EmojiPicker popup
-        self._emoji_btn = QPushButton("😀")
+        self._emoji_btn = QPushButton()
         self._emoji_btn.setProperty("variant", "ghost")
         self._emoji_btn.setFixedSize(36, 36)
+        self._emoji_btn.setIcon(load_icon("emoji", size=20, color="#9ca3af"))
+        self._emoji_btn.setIconSize(QSize(20, 20))
+        self._emoji_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._emoji_btn.setToolTip(_tr("emoji 선택"))
         self._emoji_btn.clicked.connect(self._on_emoji_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._emoji_btn)

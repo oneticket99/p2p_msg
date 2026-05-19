@@ -189,27 +189,33 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
 
         initial = build_state_from_player(sound_player)
 
-        # 한글 주석 — cycle 153.5 본격 redesign — QTabWidget 10 section
-        # 기존 sound binding 보존 (알림 tab 안 inline 통합) + 9 추가 section
+        # 한글 주석 — cycle 169.52 회수 — SVG icon 변환 + tab West + label 한글 short
+        from PyQt6.QtCore import QSize
         from PyQt6.QtWidgets import QTabWidget
+        from app.ui._icons import load_icon
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
 
         self._tabs = QTabWidget(self)
         self._tabs.setTabPosition(QTabWidget.TabPosition.West)
+        self._tabs.setIconSize(QSize(20, 20))
         outer.addWidget(self._tabs, stretch=1)
 
-        # 10 section build
-        self._tabs.addTab(self._build_account_tab(), f"👤  {_tr('계정')}")
-        self._tabs.addTab(self._build_privacy_tab(), f"🔒  {_tr('보안')}")
-        self._tabs.addTab(self._build_notification_tab(initial), f"🔔  {_tr('알림')}")
-        self._tabs.addTab(self._build_data_tab(), f"💾  {_tr('데이터')}")
-        self._tabs.addTab(self._build_theme_tab(), f"🎨  {_tr('테마')}")
-        self._tabs.addTab(self._build_locale_tab(), f"🌐  {_tr('언어')}")
-        self._tabs.addTab(self._build_device_tab(), f"📱  {_tr('디바이스')}")
-        self._tabs.addTab(self._build_folder_tab(), f"📁  {_tr('폴더')}")
-        self._tabs.addTab(self._build_advanced_tab(), f"⚙️  {_tr('고급')}")
-        self._tabs.addTab(self._build_about_tab(), f"ℹ️  {_tr('정보')}")
+        # 10 section build + SVG icon 변환
+        tab_defs = [
+            (self._build_account_tab(), "account", _tr("계정")),
+            (self._build_privacy_tab(), "privacy", _tr("보안")),
+            (self._build_notification_tab(initial), "notification", _tr("알림")),
+            (self._build_data_tab(), "data", _tr("데이터")),
+            (self._build_theme_tab(), "theme", _tr("테마")),
+            (self._build_locale_tab(), "locale", _tr("언어")),
+            (self._build_device_tab(), "device", _tr("디바이스")),
+            (self._build_folder_tab(), "folder", _tr("폴더")),
+            (self._build_advanced_tab(), "settings", _tr("고급")),
+            (self._build_about_tab(), "info", _tr("정보")),
+        ]
+        for widget, icon_name, label in tab_defs:
+            self._tabs.addTab(widget, load_icon(icon_name, size=20, color="#9ca3af"), label)
 
         # OK / 취소 버튼 (기존 sound binding 보존 — _on_accept 호출 chain)
         buttons = QDialogButtonBox(

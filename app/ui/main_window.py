@@ -200,6 +200,12 @@ class MainWindow(QMainWindow):
         # cycle 153.4 phase 3 통합 — SidebarRail (64px) + RoomListWidget (220~320px) + ChatHeader + stacked
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
         splitter.setContentsMargins(0, 0, 0, 0)
+        # 한글 주석 — cycle 169.52 회수 — splitter handle visible (사용자 directive "구분선 안보여")
+        splitter.setHandleWidth(2)
+        splitter.setStyleSheet(
+            "QSplitter::handle { background-color: #1F2937; }"
+            " QSplitter::handle:hover { background-color: #374151; }"
+        )
 
         # 3-1) 좌측 rail — SidebarRail (cycle 153 phase 3 신설)
         # 한글 주석 — 4 tab (👥 친구 + 🏠 방 + 🤖 봇 + ⚙️ 설정) + tab_clicked signal
@@ -214,8 +220,13 @@ class MainWindow(QMainWindow):
         self._room_list.room_entered.connect(self._on_room_entered)
         self._room_list.set_rooms([])
 
-        # 4) 우측 — ChatHeader (cycle 153 phase 3 신설) + QStackedWidget + 입력 영역 컨테이너
+        # 4) 우측 — ChatHeader + QStackedWidget + 입력 영역
+        # 한글 주석 — cycle 169.52 회수 — right panel 배경 sidebar 보다 밝게 (사용자 directive)
         right_panel = QWidget(splitter)
+        right_panel.setObjectName("rightPanel")
+        right_panel.setStyleSheet(
+            "QWidget#rightPanel { background-color: #131C30; }"
+        )
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)

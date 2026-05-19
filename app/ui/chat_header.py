@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -23,6 +23,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from app.ui._icons import load_icon, load_pixmap
 
 
 class ChatHeader(QFrame):
@@ -42,16 +44,15 @@ class ChatHeader(QFrame):
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        # 한글 주석 — avatar circle placeholder (cycle 154 actual SVG/QPixmap 의무)
-        self._avatar_label = QLabel("👤")
+        # 한글 주석 — cycle 169.52 회수 — SVG avatar placeholder (emoji 폐기)
+        self._avatar_label = QLabel()
         self._avatar_label.setFixedSize(40, 40)
         self._avatar_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._avatar_label.setStyleSheet(
             "background-color: #1F2937;"
             " border-radius: 20px;"
-            " font-size: 20px;"
-            " color: #67E8F9;"
         )
+        self._avatar_label.setPixmap(load_pixmap("avatar", size=24, color="#67E8F9"))
         layout.addWidget(self._avatar_label)
 
         # 한글 주석 — name + status vbox
@@ -71,41 +72,39 @@ class ChatHeader(QFrame):
 
         layout.addLayout(info_layout, stretch=1)
 
-        # 한글 주석 — 3 control button (검색 + 통화 + 메뉴)
-        for icon, signal_attr in [
-            ("🔍", "search_clicked"),
-            ("📞", "call_clicked"),
-            ("⋯", "menu_clicked"),
+        # 한글 주석 — cycle 169.52 회수 — 3 control SVG icon button
+        for icon_name, signal_attr in [
+            ("search", "search_clicked"),
+            ("phone", "call_clicked"),
+            ("more", "menu_clicked"),
         ]:
-            btn = QPushButton(icon)
+            btn = QPushButton()
             btn.setProperty("variant", "ghost")
             btn.setFlat(True)
             btn.setFixedSize(36, 36)
+            btn.setIcon(load_icon(icon_name, size=20, color="#9ca3af"))
+            btn.setIconSize(QSize(20, 20))
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setStyleSheet(
                 "QPushButton {"
-                " font-size: 18px;"
                 " background-color: transparent;"
                 " border: none;"
                 " border-radius: 18px;"
-                " color: #9ca3af;"
                 "}"
                 "QPushButton:hover {"
                 " background-color: rgba(0, 102, 255, 0.1);"
-                " color: #67E8F9;"
                 "}"
             )
             sig = getattr(self, signal_attr)
             btn.clicked.connect(lambda _c=False, s=sig: s.emit())  # type: ignore[arg-type]
             layout.addWidget(btn)
 
-    def set_chat(self, name: str, status: str = "", avatar_emoji: str = "👤") -> None:
-        """현 활성 chat 정보 갱신."""
+    def set_chat(self, name: str, status: str = "", avatar_emoji: str = "") -> None:
+        """현 활성 chat 정보 갱신. avatar_emoji arg = legacy compat (무시)."""
         self._name_label.setText(name)
         self._status_label.setText(status)
-        self._avatar_label.setText(avatar_emoji)
 
     def clear_chat(self) -> None:
         """chat 선택 해제 — placeholder text."""
         self._name_label.setText("chat 선택 부재")
         self._status_label.setText("")
-        self._avatar_label.setText("👤")
