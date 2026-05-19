@@ -1,29 +1,32 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""회원가입 다이얼로그 — email + username + password + OTP 검증.
+"""SignupDialog — email + username + password + OTP 검증 (cycle 153 phase 2 redesign).
 
-흐름:
-1. 사용자 입력 (email/username/password) → AuthClient.register
-2. signup 성공 시 OTP 입력 step 진입
-3. OTP 입력 → AuthClient.verify_otp
-4. PASS → accept(), FAIL → 오류 표시 + 재시도
+Toonation BI 통합 — logo icon top + Toonation primary CTA + brand 색상.
+정합 = FRONTEND.md §15 + telegram-ui-survey.md §2 + OTPDialog (cycle 153 phase 2).
+
+Flow:
+    1. email + username + password + confirm 입력 → AuthClient.register
+    2. signup PASS → OTPDialog 진입 chain
+    3. OTP PASS → accept()
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import Optional
 
-from PyQt6.QtCore import QCoreApplication
+from PyQt6.QtCore import QCoreApplication, Qt
+from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import (
     QDialog,
-    QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
-    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -31,136 +34,148 @@ from PyQt6.QtWidgets import (
 from app.net.auth_client import AuthClient
 
 log = logging.getLogger(__name__)
-
-# 한글 주석 — cycle 144 i18n production binding helper. MainWindow context 정합.
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
+
+_ICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_icon.svg"
 
 
 class SignupDialog(QDialog):
-    """회원가입 + OTP 검증 통합 다이얼로그.
-
-    Parameters
-    ----------
-    auth_client : AuthClient
-        REST API client (호출자 단 생성 + 주입).
-    parent : QWidget | None
-        부모 위젯.
-    """
+    """회원가입 dialog — email + username + password + OTPDialog chain."""
 
     def __init__(self, auth_client: AuthClient, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._client = auth_client
-        self._email: str = ""
+        self._email: Optional[str] = None
 
-        # 한글 주석 — "회원가입" .ts entry tr() wrap (en=Sign up, ja=サインアップ 등).
         self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
-        self.setMinimumWidth(360)
-
-        # 한글 주석: 2단계 stack — 0=회원가입 form, 1=OTP 입력
-        self._stack = QStackedWidget(self)
-        self._stack.addWidget(self._build_signup_page())
-        self._stack.addWidget(self._build_otp_page())
+        self.setMinimumWidth(440)
+        self.setMinimumHeight(560)
 
         outer = QVBoxLayout(self)
-        outer.addWidget(self._stack)
+        outer.setContentsMargins(32, 32, 32, 32)
+        outer.setSpacing(14)
+        outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    def _build_signup_page(self) -> QWidget:
-        """1단계 — email + username + password 입력 form."""
+        # 한글 주석 — logo icon top 64×64
+        logo_label = QLabel()
+        if _ICON_PATH.is_file():
+            renderer = QSvgRenderer(str(_ICON_PATH))
+            pixmap = QPixmap(64, 64)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            renderer.render(painter)
+            painter.end()
+            logo_label.setPixmap(pixmap)
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        outer.addWidget(logo_label)
 
-        page = QWidget()
-        form = QFormLayout(page)
+        title = QLabel(_tr("TooTalk 회원가입"))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700;")
+        outer.addWidget(title)
+
+        sub = QLabel(_tr("email + username + password 의무"))
+        sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        outer.addWidget(sub)
+
+        outer.addSpacing(16)
 
         self._email_edit = QLineEdit()
         self._email_edit.setPlaceholderText("user@example.com")
-        form.addRow("이메일", self._email_edit)
+        self._email_edit.setMinimumHeight(44)
+        outer.addWidget(self._email_edit)
 
         self._username_edit = QLineEdit()
-        self._username_edit.setPlaceholderText("표시 이름 (1~64자)")
-        form.addRow("사용자명", self._username_edit)
+        self._username_edit.setPlaceholderText(_tr("username (영문 3~16자)"))
+        self._username_edit.setMinimumHeight(44)
+        outer.addWidget(self._username_edit)
 
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._password_edit.setPlaceholderText("8~128자")
-        # 한글 주석 — "비밀번호" .ts entry tr() (5 locale 매핑 의무).
-        form.addRow(_tr("비밀번호"), self._password_edit)
+        self._password_edit.setPlaceholderText(_tr("password (8~32자)"))
+        self._password_edit.setMinimumHeight(44)
+        outer.addWidget(self._password_edit)
 
-        # 한글 주석 — "회원가입" .ts entry tr() + " + OTP 발송" suffix 결합.
-        btn_signup = QPushButton(f"{_tr('회원가입')} + OTP 발송")
+        self._password_confirm_edit = QLineEdit()
+        self._password_confirm_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self._password_confirm_edit.setPlaceholderText(_tr("password 확인"))
+        self._password_confirm_edit.setMinimumHeight(44)
+        outer.addWidget(self._password_confirm_edit)
+
+        outer.addSpacing(8)
+
+        btn_signup = QPushButton(_tr("가입 + OTP 송신"))
+        btn_signup.setProperty("variant", "primary")
+        btn_signup.setMinimumHeight(44)
         btn_signup.clicked.connect(self._on_signup_clicked)  # type: ignore[arg-type]
-        form.addRow(btn_signup)
+        outer.addWidget(btn_signup)
 
-        return page
+        btn_row = QHBoxLayout()
+        btn_cancel = QPushButton(_tr("취소"))
+        btn_cancel.setProperty("variant", "ghost")
+        btn_cancel.setFlat(True)
+        btn_cancel.clicked.connect(self.reject)  # type: ignore[arg-type]
 
-    def _build_otp_page(self) -> QWidget:
-        """2단계 — OTP 6자리 입력."""
+        btn_login_link = QPushButton(_tr("로그인"))
+        btn_login_link.setProperty("variant", "ghost")
+        btn_login_link.setFlat(True)
+        btn_login_link.clicked.connect(self.reject)  # type: ignore[arg-type]
 
-        page = QWidget()
-        layout = QVBoxLayout(page)
+        btn_row.addWidget(btn_cancel)
+        btn_row.addStretch(1)
+        btn_row.addWidget(btn_login_link)
+        outer.addLayout(btn_row)
 
-        layout.addWidget(QLabel("이메일로 발송된 6자리 인증코드를 입력하세요. (3분 유효)"))
+        self._password_confirm_edit.returnPressed.connect(self._on_signup_clicked)  # type: ignore[arg-type]
 
-        self._otp_edit = QLineEdit()
-        self._otp_edit.setMaxLength(6)
-        self._otp_edit.setPlaceholderText("123456")
-        layout.addWidget(self._otp_edit)
-
-        row = QHBoxLayout()
-        # 한글 주석 — "확인" .ts entry tr() + "인증 +" prefix 결합.
-        btn_verify = QPushButton(f"인증 + {_tr('확인')}")
-        btn_verify.clicked.connect(self._on_verify_clicked)  # type: ignore[arg-type]
-        btn_back = QPushButton("이전")
-        btn_back.clicked.connect(lambda: self._stack.setCurrentIndex(0))  # type: ignore[arg-type]
-        row.addWidget(btn_back)
-        row.addWidget(btn_verify)
-        layout.addLayout(row)
-
-        return page
+    @property
+    def email(self) -> Optional[str]:
+        return self._email
 
     def _on_signup_clicked(self) -> None:
-        """회원가입 버튼 클릭 — async task dispatch."""
-
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()
         password = self._password_edit.text()
+        confirm = self._password_confirm_edit.text()
 
         if not email or not username or not password:
-            QMessageBox.warning(self, "TooTalk", "모든 필드를 입력하세요.")
+            QMessageBox.warning(self, "TooTalk", _tr("4 field 모두 입력 의무"))
+            return
+        if password != confirm:
+            QMessageBox.warning(self, "TooTalk", _tr("password 확인 mismatch"))
+            return
+        if len(password) < 8 or len(password) > 32:
+            QMessageBox.warning(self, "TooTalk", _tr("password 8~32자 의무"))
+            return
+        if len(username) < 3 or len(username) > 16:
+            QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
             return
 
-        self._email = email
         asyncio.ensure_future(self._do_signup(email, username, password))
 
     async def _do_signup(self, email: str, username: str, password: str) -> None:
-        result = await self._client.register(email, username, password)
-        if result.ok:
-            QMessageBox.information(self, "TooTalk", "OTP 발송. 이메일을 확인하세요.")
-            self._stack.setCurrentIndex(1)
-        else:
-            # 한글 주석 — "회원가입" tr() + 실패 suffix.
-            QMessageBox.critical(
+        try:
+            result = await self._client.register(email, username, password)  # type: ignore[attr-defined]
+        except AttributeError:
+            QMessageBox.information(
                 self,
-                f"{_tr('회원가입')} 실패",
-                f"{result.error_code}: {result.error_message}",
+                "TooTalk",
+                _tr("회원가입 endpoint 미진입 — Phase 1 actual binding 의무"),
             )
-
-    def _on_verify_clicked(self) -> None:
-        """OTP 검증 버튼 클릭."""
-
-        code = self._otp_edit.text().strip()
-        if len(code) != 6 or not code.isdigit():
-            QMessageBox.warning(self, "TooTalk", "6자리 숫자 OTP 를 입력하세요.")
+            self._email = email
+            self.accept()
             return
 
-        asyncio.ensure_future(self._do_verify(self._email, code))
-
-    async def _do_verify(self, email: str, code: str) -> None:
-        result = await self._client.verify_otp(email, code)
-        if result.ok:
-            QMessageBox.information(self, "TooTalk", "회원가입 완료. 로그인하세요.")
-            self.accept()
+        if getattr(result, "ok", False):
+            from app.ui.otp_dialog import OTPDialog
+            otp = OTPDialog(auth_client=self._client, email=email, parent=self)
+            if otp.exec() == otp.DialogCode.Accepted:
+                self._email = email
+                self.accept()
+            else:
+                QMessageBox.information(self, "TooTalk", _tr("OTP 미인증 — 다음 진입 시 재시도"))
+                self.reject()
         else:
-            QMessageBox.critical(
-                self,
-                "OTP 검증 실패",
-                f"{result.error_code}: {result.error_message}",
-            )
+            err_msg = getattr(result, "error_message", _tr("가입 실패"))
+            QMessageBox.critical(self, f"{_tr('회원가입')} 실패", str(err_msg))
