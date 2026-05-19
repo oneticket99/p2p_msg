@@ -175,6 +175,8 @@ class MainWindow(QMainWindow):
         self._friends_client = friends_client
         # cycle 159 — reactions_client (app.net.reactions_client) 주입 — graceful 부재 None
         self._reactions_client = reactions_client
+        # cycle 164 — ReactionsPoller (30s interval polling fallback)
+        self._reactions_poller = None
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
         # cycle 148 — 현재 user 의 service-wide role (admin / owner / member).
@@ -235,6 +237,17 @@ class MainWindow(QMainWindow):
             sound_player=self._sound_player,
             reactions_client=self._reactions_client,
         )
+        # cycle 164 — ReactionsPoller 인스턴스 + 시작 (client 부재 시 graceful skip)
+        try:
+            from app.ui.reactions_poller import ReactionsPoller
+            self._reactions_poller = ReactionsPoller(
+                chat_view=self._chat_view,
+                reactions_client=self._reactions_client,
+                parent=self,
+            )
+            self._reactions_poller.start()
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("ReactionsPoller 초기화 실패 graceful — %r", exc)
         self._stacked.addWidget(self._chat_view)  # idx 0
         # cycle 154 — reply_to_message signal → InputBar reply mode chain
         try:
