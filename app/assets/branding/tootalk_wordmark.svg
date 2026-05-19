@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: GPL-3.0-or-later
+  TooTalk wordmark (text-only) — header 좁은 영역 + footer + about dialog.
+  cycle 153 phase 1 신설 — FRONTEND.md §15 BI 정합.
+
+  vertical 48 + horizontal 200 viewBox. TooTalk wordmark 단독.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" role="img" aria-label="TooTalk wordmark">
+  <title>TooTalk</title>
+  <desc>TooTalk wordmark — header 통합 용.</desc>
+  <text x="0" y="36" font-family="'Inter', 'SF Pro Display', 'Helvetica Neue', sans-serif"
+        font-size="32" font-weight="700" fill="#0066FF" letter-spacing="-1.5">Too</text>
+  <text x="78" y="36" font-family="'Inter', 'SF Pro Display', 'Helvetica Neue', sans-serif"
+        font-size="32" font-weight="700" fill="#0F172A" letter-spacing="-1.5">Talk</text>
+</svg>

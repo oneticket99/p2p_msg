@@ -78,6 +78,14 @@ def main() -> int:
     qt_app.setApplicationName("TooTalk")
     qt_app.setOrganizationName("TooTalk")
 
+    # 3-0) Toonation BI 통합 theme load — cycle 153 phase 1 (FRONTEND.md §15 정합)
+    # 한글 주석 — base-dark.qss 적용 + palette 기반 dark/light auto-detect
+    try:
+        from app.ui.theme import load_theme
+        load_theme(qt_app, theme="auto")
+    except Exception as theme_exc:  # pragma: no cover - graceful 부재
+        log.debug("theme load 실패 graceful — %r", theme_exc)
+
     # 3-1) i18n QTranslator 부착 — Phase 5 cycle 134 actual binding
     # 한글 주석 — UserLocalePreferences 의 persist locale 우선, 부재 시 env LOCALE/LANG → resolve_locale fallback
     try:

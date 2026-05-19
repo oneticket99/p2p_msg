@@ -1,0 +1,316 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+   TooTalk Toonation BI 통합 theme (dark mode) — cycle 153 phase 1 entry.
+   ground truth = FRONTEND.md §15 BI 가이드 + DESIGN.md §11 컴포넌트.
+
+   변수 정합 — FRONTEND.md §15:
+     --primary       #0066FF (Toonation Blue)
+     --primary-deep  #0052FF (Blue Deep)
+     --bg            #0F172A (Deep Navy)
+     --bg-elevated   #1F2937
+     --fg            #e5e7eb
+     --fg-muted      #9ca3af
+     --border        #374151
+     --cyan          #22D3EE (포인트 네온 cyan)
+     --cyan-light    #67E8F9
+*/
+
+QWidget {
+    background-color: #0F172A;
+    color: #e5e7eb;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    font-size: 13px;
+}
+
+QMainWindow,
+QDialog {
+    background-color: #0F172A;
+}
+
+/* Primary button — Toonation Blue */
+QPushButton[variant="primary"] {
+    background-color: #0066FF;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+QPushButton[variant="primary"]:hover {
+    background-color: #0052FF;
+}
+
+QPushButton[variant="primary"]:pressed {
+    background-color: #003ECC;
+}
+
+QPushButton[variant="primary"]:disabled {
+    background-color: #1F2937;
+    color: #6b7280;
+}
+
+/* Secondary button — outlined */
+QPushButton[variant="secondary"] {
+    background-color: transparent;
+    color: #0066FF;
+    border: 1px solid #0066FF;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+QPushButton[variant="secondary"]:hover {
+    background-color: rgba(0, 102, 255, 0.1);
+}
+
+/* Ghost button — text only */
+QPushButton[variant="ghost"] {
+    background-color: transparent;
+    color: #67E8F9;
+    border: none;
+    padding: 6px 12px;
+}
+
+QPushButton[variant="ghost"]:hover {
+    color: #22D3EE;
+    text-decoration: underline;
+}
+
+/* Danger button */
+QPushButton[variant="danger"] {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+QPushButton[variant="danger"]:hover {
+    background-color: #dc2626;
+}
+
+/* Default button (variant 부재) */
+QPushButton {
+    background-color: #1F2937;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+QPushButton:hover {
+    background-color: #374151;
+}
+
+/* Message bubble — self (Toonation Blue) */
+QFrame#messageBubbleSelf {
+    background-color: #0066FF;
+    border-radius: 12px;
+    padding: 8px 12px;
+}
+
+QFrame#messageBubbleSelf QLabel {
+    color: #ffffff;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+/* Message bubble — peer */
+QFrame#messageBubblePeer {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 8px 12px;
+}
+
+QFrame#messageBubblePeer QLabel {
+    color: #e5e7eb;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+/* Input + textarea */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e5e7eb;
+    selection-background-color: #0066FF;
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus {
+    border-color: #0066FF;
+}
+
+QLineEdit:disabled {
+    background-color: #0a0f1c;
+    color: #6b7280;
+}
+
+/* Sidebar rail — 메인 윈도우 좌측 64px */
+QFrame#sidebarRail {
+    background-color: #0a0f1c;
+    border-right: 1px solid #1f2937;
+    min-width: 64px;
+    max-width: 64px;
+}
+
+QToolButton#sidebarTab {
+    background-color: transparent;
+    border: none;
+    color: #9ca3af;
+    padding: 12px;
+}
+
+QToolButton#sidebarTab:hover {
+    background-color: rgba(0, 102, 255, 0.1);
+    color: #67E8F9;
+}
+
+QToolButton#sidebarTab:checked {
+    background-color: rgba(0, 102, 255, 0.2);
+    color: #0066FF;
+    border-left: 3px solid #0066FF;
+}
+
+/* Chat list panel — 중앙 280px */
+QListWidget#chatList {
+    background-color: #0F172A;
+    border-right: 1px solid #1f2937;
+    border: none;
+    min-width: 280px;
+}
+
+QListWidget#chatList::item {
+    padding: 10px 14px;
+    border-bottom: 1px solid #1f2937;
+    color: #e5e7eb;
+}
+
+QListWidget#chatList::item:selected {
+    background-color: #1F2937;
+    color: #67E8F9;
+}
+
+QListWidget#chatList::item:hover {
+    background-color: rgba(0, 102, 255, 0.1);
+}
+
+/* Chat header — 우측 상단 bar */
+QFrame#chatHeader {
+    background-color: #0F172A;
+    border-bottom: 1px solid #1f2937;
+    min-height: 56px;
+    padding: 8px 16px;
+}
+
+QLabel#chatHeaderName {
+    color: #e5e7eb;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QLabel#chatHeaderStatus {
+    color: #67E8F9;
+    font-size: 12px;
+}
+
+/* Scrollbar */
+QScrollBar:vertical {
+    background-color: #0F172A;
+    width: 8px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #374151;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #4b5563;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* StatusBar */
+QStatusBar {
+    background-color: #0a0f1c;
+    color: #9ca3af;
+    border-top: 1px solid #1f2937;
+}
+
+QStatusBar QLabel[status="connected"] {
+    color: #22D3EE;
+}
+
+QStatusBar QLabel[status="connecting"] {
+    color: #f59e0b;
+}
+
+QStatusBar QLabel[status="disconnected"] {
+    color: #ef4444;
+}
+
+/* Menu */
+QMenuBar {
+    background-color: #0F172A;
+    color: #e5e7eb;
+    border-bottom: 1px solid #1f2937;
+}
+
+QMenuBar::item:selected {
+    background-color: #1F2937;
+}
+
+QMenu {
+    background-color: #1F2937;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+}
+
+QMenu::item:selected {
+    background-color: #0066FF;
+    color: #ffffff;
+}
+
+/* ProgressBar — 양방향 ACK + inflight */
+QProgressBar {
+    background-color: #1F2937;
+    border-radius: 4px;
+    height: 8px;
+    text-align: center;
+    color: transparent;
+}
+
+QProgressBar::chunk[variant="acked"] {
+    background-color: #67E8F9;
+    border-radius: 4px;
+}
+
+QProgressBar::chunk[variant="inflight"] {
+    background-color: #1E293B;
+    border-radius: 4px;
+}
+
+/* Welcome dialog — banner */
+QFrame#welcomeBanner {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0F172A, stop:1 #0066FF);
+    min-height: 240px;
+    border-radius: 0;
+}
+
+QLabel#welcomeTitle {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+QLabel#welcomeSubtitle {
+    color: #67E8F9;
+    font-size: 14px;
+}
