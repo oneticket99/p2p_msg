@@ -191,6 +191,10 @@ def main() -> int:
             window._current_user_id = session_user_id
         if session_token is not None:
             window._auth_token = session_token  # type: ignore[attr-defined]
+        # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
+        # 사용자 verbatim "로그인 했는데 왜 disconnect?" 회수.
+        if authenticated:
+            window._status_bar.set_connection_state("CONNECTED")
         window.show()
 
         # 7) qasync loop run_forever — Qt + asyncio 단일 thread 통합

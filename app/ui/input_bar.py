@@ -89,18 +89,24 @@ class InputBar(QFrame):
         self._text_edit.installEventFilter(self)
         layout.addWidget(self._text_edit, stretch=1)
 
-        # 한글 주석 — voice mic button (cycle 154+ entry)
-        self._voice_btn = QPushButton("🎤")
+        # 한글 주석 — cycle 169.55 회수 — voice mic SVG button
+        self._voice_btn = QPushButton()
         self._voice_btn.setProperty("variant", "ghost")
         self._voice_btn.setFixedSize(36, 36)
+        self._voice_btn.setIcon(load_icon("mic", size=20, color="#9ca3af"))
+        self._voice_btn.setIconSize(QSize(20, 20))
+        self._voice_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._voice_btn.setToolTip(_tr("음성 메시지 (cycle 154+ entry)"))
         self._voice_btn.clicked.connect(self._on_voice_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._voice_btn)
 
-        # 한글 주석 — 보내기 button (primary)
-        self._send_btn = QPushButton("▶")
+        # 한글 주석 — cycle 169.55 회수 — 보내기 SVG button (primary)
+        self._send_btn = QPushButton()
         self._send_btn.setProperty("variant", "primary")
         self._send_btn.setFixedSize(48, 36)
+        self._send_btn.setIcon(load_icon("send", size=18, color="#ffffff"))
+        self._send_btn.setIconSize(QSize(18, 18))
+        self._send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._send_btn.setToolTip(_tr("보내기 (Enter)"))
         self._send_btn.clicked.connect(self._on_send_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._send_btn)
