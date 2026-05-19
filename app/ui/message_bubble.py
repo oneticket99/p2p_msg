@@ -13,18 +13,28 @@ Phase 후반의 통합 테마 시트(``app/ui/theme.qss``)에서 ``objectName`` 
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
+
+
+@dataclass(frozen=True)
+class ReplyContext:
+    """reply preview view model — bubble 안 border-left preview 표기."""
+    original_sender: str
+    original_text: str
+    original_ts: Optional[datetime] = None
 
 
 class MessageBubble(QFrame):
@@ -52,13 +62,17 @@ class MessageBubble(QFrame):
         상위 위젯.
     """
 
-    # 색상 클래스 상수 — 추후 ``app/ui/theme.qss`` 변수로 이관 예정
-    # (Phase 1 후반 테마 시스템 도입 시점에 setStyleSheet 호출 제거)
-    _COLOR_SELF_BG = "#dcf8c6"
-    _COLOR_PEER_BG = "#ffffff"
-    _COLOR_BORDER = "#dddddd"
-    _COLOR_TS = "#888888"
-    _COLOR_SENDER = "#555555"
+    # 색상 클래스 상수 — Toonation BI 정합 (cycle 153.6 회수)
+    # FRONTEND.md §15 + base-dark.qss QSS#messageBubbleSelf/#messageBubblePeer 정합
+    _COLOR_SELF_BG = "#0066FF"      # Toonation Blue primary
+    _COLOR_PEER_BG = "#1F2937"      # Deep Navy 변형
+    _COLOR_BORDER = "#374151"
+    _COLOR_TS = "#9ca3af"
+    _COLOR_SENDER = "#67E8F9"       # 포인트 cyan
+    _COLOR_REPLY_BORDER = "#22D3EE" # reply preview border-left
+
+    reply_requested = pyqtSignal(str, str)  # (sender, text) emit
+    reaction_added = pyqtSignal(str)         # emoji emit
 
     def __init__(
         self,
@@ -67,6 +81,9 @@ class MessageBubble(QFrame):
         ts: datetime,
         is_self: bool,
         parent: Optional[QWidget] = None,
+        *,
+        reply_to: Optional[ReplyContext] = None,
+        reactions: Optional[dict[str, int]] = None,
     ) -> None:
         super().__init__(parent)
 
@@ -74,6 +91,8 @@ class MessageBubble(QFrame):
         self._text = text
         self._ts = ts
         self._is_self = is_self
+        self._reply_to = reply_to
+        self._reactions: dict[str, int] = dict(reactions or {})
 
         # 본 위젯은 가로로 가득 차도록 두고, 내부 정렬을 통해 좌/우 분기
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
@@ -100,29 +119,79 @@ class MessageBubble(QFrame):
             )
             bubble_layout.addWidget(sender_label)
 
-        # 본문 텍스트 라벨 — 줄바꿈 허용 + 한글 글꼴 fallback + dark mode 안 text color 명시
+        # 한글 주석 — reply preview (border-left + 원본 sender + 첫 줄 preview, cycle 153.6 신설)
+        if reply_to is not None:
+            reply_frame = QFrame(bubble)
+            reply_frame.setStyleSheet(
+                "QFrame {"
+                f" border-left: 3px solid {self._COLOR_REPLY_BORDER};"
+                " background-color: rgba(34, 211, 238, 0.08);"
+                " padding: 4px 8px;"
+                " border-radius: 4px;"
+                "}"
+            )
+            reply_layout = QVBoxLayout(reply_frame)
+            reply_layout.setContentsMargins(8, 4, 4, 4)
+            reply_layout.setSpacing(2)
+            reply_sender = QLabel(f"↳ {reply_to.original_sender}", reply_frame)
+            reply_sender.setStyleSheet(f"color: {self._COLOR_REPLY_BORDER}; font-size: 11px; font-weight: 600;")
+            reply_layout.addWidget(reply_sender)
+            reply_text = QLabel(reply_to.original_text[:60], reply_frame)
+            reply_text.setStyleSheet("color: #9ca3af; font-size: 12px;")
+            reply_text.setWordWrap(True)
+            reply_layout.addWidget(reply_text)
+            bubble_layout.addWidget(reply_frame)
+
+        # 본문 텍스트 라벨 — Toonation BI 통합 + self/peer 색상 분기
         text_label = QLabel(text, bubble)
         text_label.setWordWrap(True)
         text_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
+        text_color = "#ffffff" if is_self else "#e5e7eb"
         text_label.setStyleSheet(
-            "color: #1a1a1a;"
+            f"color: {text_color};"
             " font-size: 13px;"
             " font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR',"
             " 'Malgun Gothic', sans-serif;"
         )
         bubble_layout.addWidget(text_label)
 
-        # 타임스탬프 — 우측 하단 회색 텍스트
+        # 한글 주석 — reaction pill row (cycle 153.6 신설) — emoji + count
+        if self._reactions:
+            reaction_row = QHBoxLayout()
+            reaction_row.setContentsMargins(0, 4, 0, 0)
+            reaction_row.setSpacing(4)
+            reaction_row.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            for emoji, count in self._reactions.items():
+                pill = QLabel(f"{emoji} {count}", bubble)
+                pill.setStyleSheet(
+                    "QLabel {"
+                    " background-color: rgba(34, 211, 238, 0.15);"
+                    " border: 1px solid rgba(34, 211, 238, 0.3);"
+                    " border-radius: 10px;"
+                    " padding: 2px 8px;"
+                    " font-size: 11px;"
+                    " color: #67E8F9;"
+                    "}"
+                )
+                reaction_row.addWidget(pill)
+            reaction_row.addStretch(1)
+            bubble_layout.addLayout(reaction_row)
+
+        # 타임스탬프 + read receipt ✓✓ — 우측 하단
+        ts_row = QHBoxLayout()
+        ts_row.setContentsMargins(0, 0, 0, 0)
+        ts_row.setSpacing(4)
+        ts_row.addStretch(1)
         ts_label = QLabel(self._format_ts(ts), bubble)
-        ts_label.setAlignment(
-            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom
-        )
-        ts_label.setStyleSheet(
-            f"color: {self._COLOR_TS}; font-size: 10px;"
-        )
-        bubble_layout.addWidget(ts_label)
+        ts_label.setStyleSheet(f"color: {self._COLOR_TS}; font-size: 10px;")
+        ts_row.addWidget(ts_label)
+        if is_self:
+            check_label = QLabel("✓✓", bubble)
+            check_label.setStyleSheet("color: #67E8F9; font-size: 10px;")
+            ts_row.addWidget(check_label)
+        bubble_layout.addLayout(ts_row)
 
         # 말풍선 스타일 — self/peer 색상 분기
         bg = self._COLOR_SELF_BG if is_self else self._COLOR_PEER_BG
@@ -140,6 +209,15 @@ class MessageBubble(QFrame):
         # peer 발신 — 우측 stretch 로 좌측 정렬
         if not is_self:
             outer.addStretch(1)
+
+    def add_reaction(self, emoji: str) -> None:
+        """reaction pill 추가 — count 증분 + signal emit."""
+        self._reactions[emoji] = self._reactions.get(emoji, 0) + 1
+        self.reaction_added.emit(emoji)
+
+    def reactions(self) -> dict[str, int]:
+        """현 reaction count snapshot."""
+        return dict(self._reactions)
 
     @staticmethod
     def _format_ts(ts: datetime) -> str:
