@@ -61,15 +61,27 @@ class CallDialog(QDialog):
         outer.setContentsMargins(24, 24, 24, 24)
         outer.setSpacing(16)
 
+        # 한글 주석 — cycle 169.58 회수 — video frame area (영상 통화 시 visible)
+        self._video_frame = QLabel()
+        self._video_frame.setFixedSize(360, 200)
+        self._video_frame.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._video_frame.setText("영상 부재" if not video_enabled else "영상 수신 대기…")
+        self._video_frame.setStyleSheet(
+            "background-color: #000000; color: #6b7280;"
+            " border-radius: 8px; font-size: 12px;"
+        )
+        self._video_frame.setVisible(video_enabled)
+        outer.addWidget(self._video_frame, alignment=Qt.AlignmentFlag.AlignCenter)
+
         # 한글 주석 — 큰 avatar placeholder
-        avatar = QLabel()
-        avatar.setFixedSize(160, 160)
-        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setPixmap(load_pixmap("avatar", size=120, color="#67E8F9"))
-        avatar.setStyleSheet(
+        self._avatar_widget = QLabel()
+        self._avatar_widget.setFixedSize(160, 160)
+        self._avatar_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._avatar_widget.setPixmap(load_pixmap("avatar", size=120, color="#67E8F9"))
+        self._avatar_widget.setStyleSheet(
             "background-color: #1F2937; border-radius: 80px;"
         )
-        outer.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
+        outer.addWidget(self._avatar_widget, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # 한글 주석 — peer 사용자명
         name_label = QLabel(peer_name)
@@ -213,8 +225,12 @@ class CallDialog(QDialog):
         self.mute_toggled.emit(checked)
 
     def _on_video_toggle(self, checked: bool) -> None:
-        """영상 toggle."""
+        """영상 toggle — video frame visible 동기."""
         self._video_enabled = checked
+        self._video_frame.setVisible(checked)
+        self._avatar_widget.setVisible(not checked)
+        if checked:
+            self._video_frame.setText("영상 수신 대기…")
         self.video_toggled.emit(checked)
 
     def _on_tick(self) -> None:

@@ -31,9 +31,13 @@ class CallClient:
         self,
         stun_url: str = "stun:stun.l.google.com:19302",
         on_state_change: Optional[Callable[[str], None]] = None,
+        signaling_client: Optional[Any] = None,
+        peer_id: Optional[str] = None,
     ) -> None:
         self._stun_url = stun_url
         self._on_state_change = on_state_change
+        self._signaling = signaling_client
+        self._peer_id = peer_id  # 한글 주석 — 상대 peer signaling id
         self._pc: Optional[Any] = None
         self._remote_track: Optional[Any] = None
         self._video_enabled = False
@@ -69,12 +73,46 @@ class CallClient:
             log.info("[CallClient] remote track 수신 kind=%s", track.kind)
             self._remote_track = track
 
-        # 한글 주석 — actual MediaPlayer device capture = OS-specific 별도 cycle.
-        # placeholder = silence track (audio) + black frame (video).
-        # 본 cycle scaffolding 한정. actual device binding 별도 cycle.
+        # 한글 주석 — cycle 169.58 회수 — MediaPlayer device capture chain
+        # macOS avfoundation / Linux pulse / Windows dshow. graceful fallback.
+        try:
+            import platform
+            player = None
+            if platform.system() == "Darwin":
+                player = MediaPlayer("none:0", format="avfoundation",
+                                     options={"audio_device_index": "0"})
+            elif platform.system() == "Linux":
+                player = MediaPlayer("default", format="pulse")
+            if player is not None and player.audio is not None:
+                self._pc.addTrack(player.audio)
+                log.info("[CallClient] audio track 추가 PASS")
+            else:
+                log.info("[CallClient] audio device 부재 — silence fallback")
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[CallClient] MediaPlayer capture 실패 — %r", exc)
+
+        @self._pc.on("icecandidate")
+        async def _on_ice(candidate):
+            if self._signaling is not None and self._peer_id and candidate is not None:
+                try:
+                    await self._signaling.send_ice(self._peer_id, {
+                        "candidate": candidate.candidate,
+                        "sdpMid": candidate.sdpMid,
+                        "sdpMLineIndex": candidate.sdpMLineIndex,
+                    })
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("[CallClient] ICE send fail — %r", exc)
 
         offer = await self._pc.createOffer()
         await self._pc.setLocalDescription(offer)
+
+        # 한글 주석 — signaling 의 SDP offer 전송 (peer_id + signaling_client inject 시점)
+        if self._signaling is not None and self._peer_id:
+            try:
+                await self._signaling.send_offer(self._peer_id, self._pc.localDescription.sdp)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[CallClient] offer send fail — %r", exc)
+
         return {"sdp": self._pc.localDescription.sdp, "type": "offer"}
 
     async def accept_offer(self, remote_sdp: str, video: bool = False) -> Optional[dict]:
@@ -88,6 +126,14 @@ class CallClient:
         await self._pc.setRemoteDescription(RTCSessionDescription(sdp=remote_sdp, type="offer"))
         answer = await self._pc.createAnswer()
         await self._pc.setLocalDescription(answer)
+
+        # 한글 주석 — signaling answer 전송
+        if self._signaling is not None and self._peer_id:
+            try:
+                await self._signaling.send_answer(self._peer_id, self._pc.localDescription.sdp)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[CallClient] answer send fail — %r", exc)
+
         return {"sdp": self._pc.localDescription.sdp, "type": "answer"}
 
     async def apply_answer(self, remote_sdp: str) -> None:

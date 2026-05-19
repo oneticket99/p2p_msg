@@ -196,8 +196,37 @@ def main() -> int:
             window._status_bar.set_connection_state("CONNECTED")
         window.show()
 
+        # 한글 주석 — cycle 169.58 회수 — RoomsClient instantiate + list_rooms background fire
+        if authenticated and session_token:
+            try:
+                from app.net.rooms_client import RoomsClient
+                rooms_client = RoomsClient(base_url=api_base, token=session_token)
+                window._rooms_client = rooms_client  # type: ignore[attr-defined]
+
+                async def _populate_rooms():
+                    try:
+                        payloads = await rooms_client.list_rooms(scope="all")
+                        from app.ui.room_list import RoomItem
+                        items = [
+                            RoomItem(
+                                room_id=p.id,
+                                room_code=p.room_code,
+                                title=getattr(p, "name", "") or p.room_code,
+                                role=getattr(p, "role", "member"),
+                                member_count=getattr(p, "member_count", 0),
+                                unread=0,
+                            )
+                            for p in payloads
+                        ]
+                        window._room_list.set_rooms(items)
+                        logging.getLogger(__name__).info("[rooms] list 갱신 — n=%d", len(items))
+                    except Exception as exc:
+                        logging.getLogger(__name__).warning("[rooms] list_rooms 실패 — %r", exc)
+                asyncio.ensure_future(_populate_rooms())
+            except Exception as r_exc:
+                logging.getLogger(__name__).warning("[rooms] instantiate 실패 — %r", r_exc)
+
         # 한글 주석 — cycle 169.56 회수 — signaling WebSocket actual connect background task
-        # SignalingClient.connection_state_changed signal → status bar binding chain
         if authenticated:
             try:
                 from app.net.signaling_client import SignalingClient

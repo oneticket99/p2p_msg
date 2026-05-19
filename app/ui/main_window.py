@@ -1161,12 +1161,21 @@ class MainWindow(QMainWindow):
         log.info("ChatHeader 통화 click — CallDialog 진입")
         from app.ui.call_dialog import CallDialog
         from app.net.call_client import CallClient
-        peer = "상대 사용자"  # 한글 주석 — 현 활성 chat peer 추출 별도 cycle
+        peer = "상대 사용자"
         dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
         stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
-        call_client = CallClient(stun_url=stun_url)
+        # 한글 주석 — cycle 169.58 회수 — signaling_client + peer_id inject (actual SDP exchange)
+        signaling = getattr(self, "_signaling_client", None)
+        peer_id = getattr(self, "_active_peer_id", None)
+        call_client = CallClient(stun_url=stun_url, signaling_client=signaling, peer_id=peer_id)
         dialog.attach_client(call_client)
-        self._active_call_client = call_client  # gc 회피
+        self._active_call_client = call_client
+        # 한글 주석 — 통화 시점 즉시 outgoing offer fire (peer_id 부재 시 placeholder mode)
+        import asyncio
+        try:
+            asyncio.ensure_future(call_client.create_offer(video=False))
+        except Exception as exc:
+            log.warning("[call] create_offer schedule fail — %r", exc)
         dialog.exec()
 
     @pyqtSlot()
