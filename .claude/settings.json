@@ -11,6 +11,15 @@
     "feedback_no_triple_particle_chat.md"
   ],
   "language": "korean",
+  "permissions": {
+    "allow": [
+      "Bash(ssh root@114.207.112.73 *)",
+      "Bash(scp * root@114.207.112.73:*)",
+      "Bash(rsync -e ssh * root@114.207.112.73:*)",
+      "Write(.claude/agents/ssh-deploy-agent.md)",
+      "Edit(.claude/agents/ssh-deploy-agent.md)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

@@ -108,7 +108,7 @@ flowchart TD
 
 ---
 
-## 6. 에이전트 7역할 (HARNESS 프로세스 에이전트)
+## 6. 에이전트 7역할 (HARNESS 프로세스 에이전트) + ssh-deploy-agent (cycle 152 신설)
 
 | 호출 | 역할 | 주요 산출물 |
 |---|---|---|
@@ -119,8 +119,9 @@ flowchart TD
 | `@release-agent` | PR 템플릿·머지 게이트·릴리즈 노트 | PR |
 | `@doc-gardener-agent` | 주간 drift 감지·자동 보정 | 보정 PR |
 | `@history-agent` | History.md 역순 기록 관리 | History.md 변경 |
+| `@ssh-deploy-agent` | 데모 서버 (114.207.112.73) 안 git pull + docker compose build + restart + healthz 검증 chain 자동 실행 (사이클 152 신설) | 서버 deploy log + image sha + healthz 200 응답 |
 
-문서 담당 4 에이전트 (`@spec-agent` · `@structure-agent` · `@checklist-agent` · `@history-agent`) 매핑은 [정본 §D](CLAUDE_HARNESS_IMPORTANT.md). 개별 사양은 [.claude/agents/](.claude/agents/) `<name>.md` 정독.
+문서 담당 4 에이전트 (`@spec-agent` · `@structure-agent` · `@checklist-agent` · `@history-agent`) 매핑은 [정본 §D](CLAUDE_HARNESS_IMPORTANT.md). 개별 사양은 [.claude/agents/](.claude/agents/) `<name>.md` 정독. `@ssh-deploy-agent` = 사용자 ack 2026-05-19 cycle 152 + `.claude/settings.json` Bash permission rule 5건 등록 정합.
 
 ---
 
