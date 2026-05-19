@@ -28,6 +28,7 @@ class SidebarRail(QFrame):
     """좌측 64px vertical tab column — 4 tab + brand 통합 highlight."""
 
     tab_clicked = pyqtSignal(str)
+    hamburger_clicked = pyqtSignal()
 
     TAB_DEFS = [
         ("friends", "친구", "friends"),
@@ -45,6 +46,24 @@ class SidebarRail(QFrame):
         layout.setContentsMargins(4, 12, 4, 12)
         layout.setSpacing(4)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # 한글 주석 — cycle 169.56 회수 — 좌상단 햄버거 menu button (drawer 진입)
+        hamburger_btn = QToolButton()
+        hamburger_btn.setIcon(load_icon("menu", size=24, color="#9ca3af"))
+        hamburger_btn.setIconSize(QSize(24, 24))
+        hamburger_btn.setFixedSize(56, 48)
+        hamburger_btn.setToolTip("메뉴")
+        hamburger_btn.setStyleSheet(
+            "QToolButton {"
+            " background-color: transparent;"
+            " border: none;"
+            " border-radius: 6px;"
+            "}"
+            " QToolButton:hover { background-color: rgba(0, 102, 255, 0.1); }"
+        )
+        hamburger_btn.clicked.connect(self.hamburger_clicked.emit)  # type: ignore[arg-type]
+        layout.addWidget(hamburger_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addSpacing(8)
 
         # 한글 주석 — QButtonGroup 의 mutually exclusive 토글 (one active 의 의무)
         self._button_group = QButtonGroup(self)

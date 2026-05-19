@@ -192,10 +192,23 @@ def main() -> int:
         if session_token is not None:
             window._auth_token = session_token  # type: ignore[attr-defined]
         # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
-        # 사용자 verbatim "로그인 했는데 왜 disconnect?" 회수.
         if authenticated:
             window._status_bar.set_connection_state("CONNECTED")
         window.show()
+
+        # 한글 주석 — cycle 169.56 회수 — signaling WebSocket actual connect background task
+        # SignalingClient.connection_state_changed signal → status bar binding chain
+        if authenticated:
+            try:
+                from app.net.signaling_client import SignalingClient
+                signaling_client = SignalingClient(config=config)
+                signaling_client.connection_state_changed.connect(  # type: ignore[attr-defined]
+                    window._status_bar.set_connection_state
+                )
+                window._signaling_client = signaling_client  # type: ignore[attr-defined]
+                asyncio.ensure_future(signaling_client.connect())
+            except Exception as sig_exc:
+                logging.getLogger(__name__).warning("[signaling] connect schedule 실패 — %r", sig_exc)
 
         # 7) qasync loop run_forever — Qt + asyncio 단일 thread 통합
         try:

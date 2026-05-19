@@ -212,6 +212,8 @@ class MainWindow(QMainWindow):
         from app.ui.sidebar_rail import SidebarRail
         self._sidebar_rail = SidebarRail(parent=splitter)
         self._sidebar_rail.tab_clicked.connect(self._on_sidebar_tab_clicked)  # type: ignore[arg-type]
+        # 한글 주석 — cycle 169.56 회수 — 햄버거 menu drawer signal
+        self._sidebar_rail.hamburger_clicked.connect(self._on_hamburger_clicked)  # type: ignore[arg-type]
 
         # 3-2) 중앙 sidebar — RoomListWidget (cycle 139 신설, 보존)
         self._room_list = RoomListWidget(parent=splitter)
@@ -1064,6 +1066,53 @@ class MainWindow(QMainWindow):
             modal.accept()
 
     @pyqtSlot()
+    def _on_hamburger_clicked(self) -> None:
+        """좌상단 햄버거 click → HamburgerDrawer modal (cycle 169.56)."""
+        from app.ui.hamburger_drawer import HamburgerDrawer
+        username = getattr(self._config, "user_nickname", "사용자")
+        drawer = HamburgerDrawer(username=username, parent=self)
+        drawer.profile_clicked.connect(self._on_drawer_profile)  # type: ignore[arg-type]
+        drawer.settings_clicked.connect(self._on_drawer_settings)  # type: ignore[arg-type]
+        drawer.calls_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
+        drawer.contacts_clicked.connect(self._on_drawer_contacts)  # type: ignore[arg-type]
+        drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
+        drawer.exec()
+
+    @pyqtSlot()
+    def _on_drawer_profile(self) -> None:
+        """내 프로필 dialog open."""
+        from app.ui.my_profile_dialog import MyProfileDialog
+        username = getattr(self._config, "user_nickname", "사용자")
+        dialog = MyProfileDialog(username=username, parent=self)
+        dialog.exec()
+
+    @pyqtSlot()
+    def _on_drawer_settings(self) -> None:
+        """설정 dialog open — 기존 settings_dialog 진입."""
+        try:
+            from app.ui.settings_dialog import SettingsDialog
+            dialog = SettingsDialog(parent=self)
+            dialog.exec()
+        except Exception as exc:
+            log.warning("SettingsDialog 진입 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_drawer_contacts(self) -> None:
+        """연락처 dialog open — 기존 friend_list 강제 active."""
+        self._sidebar_rail.set_active_tab("friends")
+
+    @pyqtSlot()
+    def _on_drawer_logout(self) -> None:
+        """로그아웃 — 사용자 confirm + app close."""
+        from PyQt6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self, "TooTalk", "로그아웃 의무 — 어플 종료 + 다음 진입 시 재 로그인",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.close()
+
+    @pyqtSlot()
     def _on_header_search(self) -> None:
         """ChatHeader 검색 button — cycle 169.51 visible feedback."""
         log.info("ChatHeader 검색 click")
@@ -1072,10 +1121,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_header_call(self) -> None:
-        """ChatHeader 통화 button — cycle 169.51 visible feedback."""
-        log.info("ChatHeader 통화 click")
-        from PyQt6.QtWidgets import QMessageBox
-        QMessageBox.information(self, "TooTalk", "음성/영상 통화 — 준비 중 (Phase 5 cycle 200+)")
+        """ChatHeader 통화 button — cycle 169.56 CallDialog 진입.
+
+        음성 통화 default. 영상 toggle 가능. WebRTC SDP + ICE = 별도 cycle 의무.
+        """
+        log.info("ChatHeader 통화 click — CallDialog 진입")
+        from app.ui.call_dialog import CallDialog
+        peer = "상대 사용자"  # 한글 주석 — 현 활성 chat peer 추출 별도 cycle
+        dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
+        dialog.exec()
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:

@@ -1,0 +1,164 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""MyAccountDialog — telegram desktop 내 계정 정보 modal (cycle 169.56 신설)."""
+
+from __future__ import annotations
+
+from typing import Optional
+
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PyQt6.QtWidgets import (
+    QDialog,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from app.ui._icons import load_icon, load_pixmap
+
+
+class MyAccountDialog(QDialog):
+    """내 계정 — 자기소개 + 이름 + 전화번호 + 사용자명 + 개인 채널 + 생년월일."""
+
+    save_requested = pyqtSignal(dict)
+
+    def __init__(
+        self,
+        email: str = "",
+        username: str = "",
+        phone: str = "",
+        bio: str = "",
+        parent: Optional[QWidget] = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("TooTalk · 내 계정")
+        self.setModal(True)
+        self.setFixedSize(420, 720)
+
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        # 한글 주석 — header (back + 정보 + QR + X)
+        header = QFrame()
+        header.setFixedHeight(56)
+        header.setStyleSheet("background-color: #1F2937;")
+        h_layout = QHBoxLayout(header)
+        h_layout.setContentsMargins(12, 8, 12, 8)
+        back_btn = QPushButton()
+        back_btn.setIcon(load_icon("more", size=20, color="#9ca3af"))
+        back_btn.setFixedSize(36, 36)
+        back_btn.setFlat(True)
+        back_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        h_layout.addWidget(back_btn)
+        title = QLabel("정보")
+        title.setStyleSheet("color: #e5e7eb; font-size: 16px; font-weight: 600;")
+        h_layout.addWidget(title)
+        h_layout.addStretch(1)
+        outer.addWidget(header)
+
+        # 한글 주석 — scroll area (content)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background-color: #131C30; }")
+        content = QWidget()
+        c_layout = QVBoxLayout(content)
+        c_layout.setContentsMargins(24, 24, 24, 24)
+        c_layout.setSpacing(12)
+
+        # 큰 avatar
+        avatar = QLabel()
+        avatar.setFixedSize(120, 120)
+        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar.setPixmap(load_pixmap("avatar", size=80, color="#67E8F9"))
+        avatar.setStyleSheet("background-color: #1F2937; border-radius: 60px;")
+        c_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        name_label = QLabel(username or "사용자")
+        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
+        c_layout.addWidget(name_label)
+
+        status_label = QLabel("온라인")
+        status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        status_label.setStyleSheet("color: #22D3EE; font-size: 13px;")
+        c_layout.addWidget(status_label)
+
+        c_layout.addSpacing(12)
+
+        # 자기소개 section
+        bio_label = QLabel("자기소개")
+        bio_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        c_layout.addWidget(bio_label)
+        self._bio_edit = QTextEdit()
+        self._bio_edit.setPlaceholderText("나이와 직업, 도시 따위를 자유롭게 소개하세요.")
+        self._bio_edit.setPlainText(bio)
+        self._bio_edit.setMaximumHeight(80)
+        c_layout.addWidget(self._bio_edit)
+
+        c_layout.addSpacing(12)
+
+        # 이름 + phone + username 3 row
+        self._name_edit = self._build_field_row(c_layout, "이름", username, "account")
+        self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
+        self._email_edit = self._build_field_row(c_layout, "이메일", email, "notification")
+
+        c_layout.addStretch(1)
+
+        # 저장 button
+        save_btn = QPushButton("저장")
+        save_btn.setFixedHeight(44)
+        save_btn.setStyleSheet(
+            "QPushButton {"
+            " background-color: #0066FF;"
+            " color: white;"
+            " border: none;"
+            " border-radius: 8px;"
+            " font-size: 14px;"
+            " font-weight: 600;"
+            "}"
+            " QPushButton:hover { background-color: #0052CC; }"
+        )
+        save_btn.clicked.connect(self._on_save)  # type: ignore[arg-type]
+        c_layout.addWidget(save_btn)
+
+        scroll.setWidget(content)
+        outer.addWidget(scroll, stretch=1)
+
+    def _build_field_row(self, layout: QVBoxLayout, label_text: str, value: str, icon_name: str) -> QLineEdit:
+        """단일 input row — icon + label + lineedit."""
+        row = QHBoxLayout()
+        icon = QLabel()
+        icon.setPixmap(load_pixmap(icon_name, size=20, color="#9ca3af"))
+        icon.setFixedWidth(24)
+        row.addWidget(icon)
+        col = QVBoxLayout()
+        lbl = QLabel(label_text)
+        lbl.setStyleSheet("color: #9ca3af; font-size: 11px;")
+        col.addWidget(lbl)
+        edit = QLineEdit(value)
+        edit.setStyleSheet(
+            "QLineEdit { background-color: transparent; border: none;"
+            " color: #e5e7eb; font-size: 14px; }"
+        )
+        col.addWidget(edit)
+        row.addLayout(col, stretch=1)
+        layout.addLayout(row)
+        return edit
+
+    def _on_save(self) -> None:
+        """저장 button — save_requested signal emit."""
+        self.save_requested.emit(
+            {
+                "name": self._name_edit.text(),
+                "phone": self._phone_edit.text(),
+                "email": self._email_edit.text(),
+                "bio": self._bio_edit.toPlainText(),
+            }
+        )
+        self.accept()
