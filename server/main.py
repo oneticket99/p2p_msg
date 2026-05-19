@@ -90,7 +90,7 @@ def configure_logging(log_level: str, log_format: str = "text") -> None:
     level = logging.getLevelName(log_level.upper())
     if not isinstance(level, int):
         level = logging.INFO
-    root.setLevel(level)
+    logging.getLogger().setLevel(level)
 
 
 def _read_int_env(key: str, default: int) -> int:
