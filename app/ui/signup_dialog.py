@@ -56,11 +56,12 @@ class SignupDialog(QDialog):
         outer.setSpacing(14)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — PNG 원본 그대로 (cycle 169.3) — QPixmap 직접 load + 64 height scale
+        # 한글 주석 — PNG 원본 그대로 (cycle 169.5) — QPixmap + transparent bg 명시
         logo_label = QLabel()
+        logo_label.setStyleSheet("background: transparent;")
         if _ICON_PATH.is_file():
             pixmap = QPixmap(str(_ICON_PATH))
-            scaled = pixmap.scaledToHeight(64, Qt.TransformationMode.SmoothTransformation)
+            scaled = pixmap.scaledToHeight(45, Qt.TransformationMode.SmoothTransformation)
             logo_label.setPixmap(scaled)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         outer.addWidget(logo_label)

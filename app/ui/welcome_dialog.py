@@ -67,18 +67,26 @@ class WelcomeDialog(QDialog):
         logo_row.setSpacing(12)
 
         symbol_label = QLabel()
+        symbol_label.setStyleSheet("background: transparent;")
+        symbol_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         if _LOGO_PATH.is_file():
             pixmap = QPixmap(str(_LOGO_PATH))
-            scaled = pixmap.scaledToHeight(80, Qt.TransformationMode.SmoothTransformation)
+            scaled = pixmap.scaledToHeight(56, Qt.TransformationMode.SmoothTransformation)
             symbol_label.setPixmap(scaled)
         else:
             symbol_label.setText("Too")
-            symbol_label.setStyleSheet("color: #ffffff; font-size: 48px; font-weight: 700;")
+            symbol_label.setStyleSheet(
+                "background: transparent;"
+                " color: #ffffff;"
+                " font-size: 48px;"
+                " font-weight: 700;"
+            )
         logo_row.addWidget(symbol_label)
 
         talk_label = QLabel("Talk")
         talk_label.setStyleSheet(
-            "color: #ffffff;"
+            "background: transparent;"
+            " color: #ffffff;"
             " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
             " font-size: 56px;"
             " font-weight: 700;"
