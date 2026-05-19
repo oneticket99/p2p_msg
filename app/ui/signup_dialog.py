@@ -17,7 +17,6 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-import qasync
 
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QPainter, QPixmap
@@ -149,9 +148,8 @@ class SignupDialog(QDialog):
     def email(self) -> Optional[str]:
         return self._email
 
-    @qasync.asyncSlot()
-    async def _on_signup_clicked(self) -> None:
-        """cycle 169.33 회수 — qasync.asyncSlot decorator + 직접 async slot."""
+    def _on_signup_clicked(self) -> None:
+        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()
         password = self._password_edit.text()
@@ -170,7 +168,11 @@ class SignupDialog(QDialog):
             QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
             return
 
-        await self._do_signup(email, username, password)
+        # cycle 169.34 — asyncio.run() 격리 loop + ClientSession 사후 close (AuthClient.py 정합)
+        try:
+            asyncio.run(self._do_signup(email, username, password))
+        except Exception as exc:
+            QMessageBox.critical(self, "TooTalk", f"{_tr('회원가입')} 실패: {exc}")
 
     async def _do_signup(self, email: str, username: str, password: str) -> None:
         try:

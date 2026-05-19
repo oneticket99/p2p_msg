@@ -50,28 +50,28 @@ class AuthClient:
             await self._session.close()
 
     async def _post(self, path: str, payload: dict) -> AuthResult:
-        """JSON POST + 응답 파싱 + AuthResult 변환."""
+        """JSON POST + 응답 파싱 + AuthResult 변환.
 
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-            self._owns_session = True
-
+        cycle 169.34 회수 — async with ClientSession 매 호출 새 신설 + close.
+        cross-loop ClientSession reuse 의 RuntimeError 차단 (qasync ↔ asyncio.run 호환).
+        """
         url = f"{self._base_url}{path}"
         try:
-            async with self._session.post(url, json=payload) as resp:
-                data = await resp.json(content_type=None)
-                if resp.status >= 400:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload) as resp:
+                    data = await resp.json(content_type=None)
+                    if resp.status >= 400:
+                        return AuthResult(
+                            ok=False,
+                            error_code=data.get("error", "HTTP_ERROR"),
+                            error_message=data.get("message", f"HTTP {resp.status}"),
+                        )
                     return AuthResult(
-                        ok=False,
-                        error_code=data.get("error", "HTTP_ERROR"),
-                        error_message=data.get("message", f"HTTP {resp.status}"),
+                        ok=bool(data.get("ok")),
+                        user_id=data.get("user_id"),
+                        token=data.get("token"),
+                        next_step=data.get("next"),
                     )
-                return AuthResult(
-                    ok=bool(data.get("ok")),
-                    user_id=data.get("user_id"),
-                    token=data.get("token"),
-                    next_step=data.get("next"),
-                )
         except aiohttp.ClientError as exc:
             log.error("[auth_client] network err url=%s err=%r", url, exc)
             return AuthResult(
