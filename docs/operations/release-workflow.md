@@ -11,6 +11,39 @@ TooTalk 메신저 (Phase 5 cycle 134) `.github/workflows/release.yml` 의 git ta
 
 ---
 
+## 0. 실 fire 이력 (cycle 150 ~)
+
+### 0-1. cycle 150 — `v0.5.0-pre1` first tag verify smoke (2026-05-19)
+
+| 항목 | 값 |
+| --- | --- |
+| tag | `v0.5.0-pre1` (annotated) |
+| trigger | `git push origin v0.5.0-pre1` |
+| run id | `26086071669` |
+| job id | `76699398517` (macOS arm64 release) |
+| 결과 | PASS (1분 45초) |
+| 7 step | checkout / Python 3.13 venv / PyInstaller build / Zip / SHA-256 + size / Create Release / POST DB — 전 step GREEN |
+| zip artifact | `TooTalk-macos-arm64.zip` |
+| SHA-256 | `b22b8ea62dbcb9bdac3bcb713b235bbb6902e76f2a78d6871adf4ffb6e57c0e8` |
+| file_size | `340376902` bytes (약 324.6 MiB) |
+| GitHub Release URL | https://github.com/oneticket99/p2p_msg/releases/tag/v0.5.0-pre1 |
+| release notes | `generate_release_notes: true` 의 자동 합성 — "Full Changelog" 단일 행 |
+| DB INSERT | graceful skip — `VERSION_ADMIN_TOKEN` secret 부재 의 workflow `exit 0` 분기 정상 동작 |
+| Windows native | 미실행 — 현 workflow = macOS arm64 single-platform 단일 build (후속 cycle 의 Windows step 추가 의무) |
+| prerelease flag | `false` (workflow 의 `prerelease: true` 옵션 부재 — `-pre1` suffix 의 자동 prerelease mark 미적용, 후속 cycle 의 강화 의무) |
+| Node.js 20 deprecation | `actions/checkout@v4` + `softprops/action-gh-release@v2` 의 warning (2026-06-02 의 Node.js 24 강제 의 사전 대응 의무) |
+| self-hosted runner | `tootalk-macos-arm64` (id=2, ARM64) — 단일 runner online 의 정상 |
+
+### 0-2. 후속 cycle 의 강화 chain (cycle 150 발견)
+
+1. **`VERSION_ADMIN_TOKEN` secret 등록 의무** — `python3.13 -c "import secrets; print(secrets.token_hex(32))"` 의 32-byte hex 생성 + `gh secret set VERSION_ADMIN_TOKEN` + 서버 `.env` 동기 갱신 (§5-2 정합).
+2. **`prerelease: true` 의 자동 mark** — `softprops/action-gh-release@v2` 의 `prerelease: ${{ contains(github.ref_name, '-pre') || contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') }}` 의 ternary 의 의무.
+3. **Windows native build job 추가** — `release-windows-x64` job 의 wine cross-compile 또는 Windows self-hosted runner 의 의무 (현 cycle = macOS single-platform).
+4. **Node.js 24 의 사전 대응** — 2026-06-02 의 강제 의 의무 시 `actions/checkout` + `softprops/action-gh-release` 의 최신 major 의 갱신 또는 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` 의 env 의 opt-in.
+5. **회수 chain 의 미 fire** — cycle 150 = PASS 의무 + cleanup 의 미 필요 의 정상. fail 의 의무 시 §6 회수 chain 의 의무.
+
+---
+
 ## 1. 개요
 
 ### 1-1. trigger + flow chain
@@ -242,4 +275,4 @@ DELETE FROM app_versions
 
 ---
 
-마지막 갱신: 2026-05-19 (cycle 134 신설).
+마지막 갱신: 2026-05-19 (cycle 150 — first tag verify smoke `v0.5.0-pre1` PASS row 추가).
