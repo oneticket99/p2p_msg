@@ -174,7 +174,19 @@ class OTPDialog(QDialog):
                 _tr(f"6 digit OTP 입력 의무"),
             )
             return
-        asyncio.ensure_future(self._do_verify(otp))
+        # cycle 169.31 회수 — qasync loop run_forever 부재 fallback
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(self._do_verify(otp))
+                return
+        except RuntimeError:
+            pass
+        new_loop = asyncio.new_event_loop()
+        try:
+            new_loop.run_until_complete(self._do_verify(otp))
+        finally:
+            new_loop.close()
 
     async def _do_verify(self, otp: str) -> None:
         """auth_client 의 OTP verify endpoint 호출."""

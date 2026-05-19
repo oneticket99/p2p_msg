@@ -166,7 +166,24 @@ class SignupDialog(QDialog):
             QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
             return
 
-        asyncio.ensure_future(self._do_signup(email, username, password))
+        # cycle 169.31 회수 — qasync loop 의 run_forever 진입 부재 + dialog.exec() nested Qt event loop
+        # asyncio.ensure_future = no running loop fail → 별개 loop 의 run_until_complete chain
+        self._run_async(self._do_signup(email, username, password))
+
+    def _run_async(self, coro) -> None:
+        """async coroutine sync 처리 — qasync loop 부재 graceful."""
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(coro)
+                return
+        except RuntimeError:
+            pass
+        new_loop = asyncio.new_event_loop()
+        try:
+            new_loop.run_until_complete(coro)
+        finally:
+            new_loop.close()
 
     async def _do_signup(self, email: str, username: str, password: str) -> None:
         try:

@@ -153,7 +153,19 @@ class LoginDialog(QDialog):
                 f"이메일 + {_tr('비밀번호')} 입력 의무",
             )
             return
-        asyncio.ensure_future(self._do_login(email, password))
+        # cycle 169.31 회수 — qasync loop run_forever 부재 fallback
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(self._do_login(email, password))
+                return
+        except RuntimeError:
+            pass
+        new_loop = asyncio.new_event_loop()
+        try:
+            new_loop.run_until_complete(self._do_login(email, password))
+        finally:
+            new_loop.close()
 
     def _on_signup_link_clicked(self) -> None:
         """회원가입 link click — QDialog.done(2) signup intent code 반환 (cycle 169.25 fix).
