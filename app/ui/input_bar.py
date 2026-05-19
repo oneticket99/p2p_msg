@@ -98,6 +98,61 @@ class InputBar(QFrame):
         layout.addWidget(self._send_btn)
 
         self._emoji_picker: Optional[QWidget] = None
+        # cycle 154 — reply mode state + preview bar
+        self._reply_context: Optional[tuple[str, str]] = None
+        self._reply_preview: Optional[QFrame] = None
+
+    def set_reply_to(self, sender: str, text: str) -> None:
+        """reply mode 활성 — input bar 상단 preview bar 표시."""
+        self._reply_context = (sender, text)
+        self._render_reply_preview()
+
+    def clear_reply_to(self) -> None:
+        """reply mode 해제 + preview bar 제거."""
+        self._reply_context = None
+        if self._reply_preview is not None:
+            self._reply_preview.deleteLater()
+            self._reply_preview = None
+
+    def reply_context(self) -> Optional[tuple[str, str]]:
+        """현 reply context (sender, text) snapshot."""
+        return self._reply_context
+
+    def _render_reply_preview(self) -> None:
+        """reply preview bar render — text_edit 직전 inject."""
+        if self._reply_context is None:
+            return
+        if self._reply_preview is not None:
+            self._reply_preview.deleteLater()
+        sender, text = self._reply_context
+        self._reply_preview = QFrame(self)
+        self._reply_preview.setStyleSheet(
+            "QFrame {"
+            " border-left: 3px solid #22D3EE;"
+            " background-color: rgba(34, 211, 238, 0.1);"
+            " border-radius: 4px;"
+            " padding: 4px 8px;"
+            "}"
+        )
+        from PyQt6.QtWidgets import QLabel
+        v = QVBoxLayout(self._reply_preview)
+        v.setContentsMargins(8, 4, 8, 4)
+        v.setSpacing(2)
+        sender_label = QLabel(f"↳ {sender} (답장 중)")
+        sender_label.setStyleSheet("color: #22D3EE; font-size: 11px; font-weight: 600;")
+        v.addWidget(sender_label)
+        preview_label = QLabel(text[:60])
+        preview_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        preview_label.setWordWrap(True)
+        v.addWidget(preview_label)
+        cancel_btn = QPushButton("✕ 취소")
+        cancel_btn.setProperty("variant", "ghost")
+        cancel_btn.setFlat(True)
+        cancel_btn.setMaximumWidth(80)
+        cancel_btn.clicked.connect(self.clear_reply_to)  # type: ignore[arg-type]
+        v.addWidget(cancel_btn)
+        # 한글 주석 — preview = inputbar 본 layout 첫 row inject
+        self.layout().insertWidget(0, self._reply_preview)  # type: ignore[union-attr]
 
     def eventFilter(self, obj, event):  # type: ignore[override]
         """text_edit 안 Enter = send + Shift+Enter = newline 분기."""

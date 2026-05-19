@@ -17,11 +17,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import QPoint, Qt, pyqtSignal
+from PyQt6.QtGui import QContextMenuEvent
 from PyQt6.QtWidgets import (
+    QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QMenu,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
@@ -218,6 +221,32 @@ class MessageBubble(QFrame):
     def reactions(self) -> dict[str, int]:
         """현 reaction count snapshot."""
         return dict(self._reactions)
+
+    def contextMenuEvent(self, event: Optional[QContextMenuEvent]) -> None:  # type: ignore[override]
+        """우 click context menu — 답장 / 반응 / 복사 / 전달 / 삭제 5 entry."""
+        if event is None:
+            return
+        menu = QMenu(self)
+        act_reply = menu.addAction("↳ 답장")
+        act_react = menu.addAction("😀 반응 추가")
+        act_copy = menu.addAction("📋 복사")
+        act_forward = menu.addAction("➡ 전달 (cycle 155+)")
+        menu.addSeparator()
+        act_delete = menu.addAction("🗑 삭제")
+
+        chosen = menu.exec(event.globalPos())
+        if chosen is None:
+            return
+        if chosen is act_reply:
+            self.reply_requested.emit(self._sender, self._text)
+        elif chosen is act_react:
+            self.add_reaction("👍")
+        elif chosen is act_copy:
+            app = QApplication.instance()
+            if app is not None:
+                clipboard = app.clipboard()  # type: ignore[attr-defined]
+                if clipboard is not None:
+                    clipboard.setText(self._text)
 
     @staticmethod
     def _format_ts(ts: datetime) -> str:

@@ -19,7 +19,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import QCoreApplication, Qt
+from PyQt6.QtCore import QCoreApplication, Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
@@ -101,6 +101,13 @@ class ChatView(QScrollArea):
     - 신규 버블은 ``_messages_layout`` 의 ``stretch`` 슬롯 직전에 삽입
     """
 
+    # cycle 154 — bubble reply_requested signal 재발산 → main_window reply mode set
+    reply_to_message = pyqtSignal(str, str)  # (sender, text)
+
+    def _on_bubble_reply_requested(self, sender: str, text: str) -> None:
+        """bubble reply_requested 재발산 → main_window reply mode chain."""
+        self.reply_to_message.emit(sender, text)
+
     def __init__(
         self,
         parent: Optional[QWidget] = None,
@@ -172,6 +179,11 @@ class ChatView(QScrollArea):
             reply_to=reply_to,  # type: ignore[arg-type]
             reactions=reactions,
         )
+        # 한글 주석 — cycle 154 reply_requested signal → parent main_window 안 reply mode set
+        try:
+            bubble.reply_requested.connect(self._on_bubble_reply_requested)  # type: ignore[arg-type]
+        except Exception:  # pragma: no cover - graceful
+            pass
 
         # stretch 슬롯 직전 (count - 1 위치) 에 삽입
         insert_at = max(0, self._messages_layout.count() - 1)

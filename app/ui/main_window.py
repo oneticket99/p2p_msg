@@ -229,6 +229,11 @@ class MainWindow(QMainWindow):
         # 4-1) ChatView (1:1) — index 0 (기존 호환 유지)
         self._chat_view = ChatView(parent=self._stacked, sound_player=self._sound_player)
         self._stacked.addWidget(self._chat_view)  # idx 0
+        # cycle 154 — reply_to_message signal → InputBar reply mode chain
+        try:
+            self._chat_view.reply_to_message.connect(self._on_chat_reply_requested)  # type: ignore[attr-defined]
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("reply_to_message binding 실패 — %r", exc)
 
         # 4-2) GroupChatView placeholder (lazy) — index 1 의 자리 holder
         # 실제 GroupChatView 는 _on_room_entered 시 신설 + 교체.
@@ -892,6 +897,12 @@ class MainWindow(QMainWindow):
     def _on_input_file_attached(self, paths: list) -> None:
         """InputBar file_attached → 파일 송신 chain (cycle 154+ entry)."""
         log.info("input file attached — %d file (cycle 154+ binding)", len(paths))
+
+    @pyqtSlot(str, str)
+    def _on_chat_reply_requested(self, sender: str, text: str) -> None:
+        """ChatView reply_to_message signal → InputBar reply mode set."""
+        if hasattr(self, "_input_bar"):
+            self._input_bar.set_reply_to(sender, text)
 
     @pyqtSlot(str, str)
     def _on_bot_command_invoked(self, bot_username: str, command: str) -> None:
