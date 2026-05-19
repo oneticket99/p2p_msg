@@ -55,6 +55,42 @@ class MeshManager:
         self.peers[peer_id] = MeshPeer(peer_id=peer_id, user_id=user_id)
         return True
 
+    async def add_peer_with_connection(
+        self,
+        peer_id: str,
+        user_id: int,
+        config: Optional[object] = None,
+    ) -> Optional[object]:
+        """PeerConnectionWrapper 통합 add_peer (cycle 168 신설).
+
+        Returns
+        -------
+        PeerConnectionWrapper | None
+            aiortc 부재 또는 cap 초과 시 None. caller = offer/answer chain 진행 의무.
+        """
+        added = await self.add_peer(peer_id, user_id)
+        if not added:
+            return None
+        try:
+            from app.rtc.peer_connection import (
+                PeerConnectionConfig,
+                PeerConnectionWrapper,
+            )
+            pc_config = config if config is not None else PeerConnectionConfig()
+            wrapper = PeerConnectionWrapper(
+                peer_id=peer_id,
+                config=pc_config,  # type: ignore[arg-type]
+                on_message=lambda pid, raw: self.dispatch_incoming(raw),
+            )
+            # 한글 주석 — MeshPeer 안 rtc_peer_connection + data_channel 직접 보관
+            self.peers[peer_id].rtc_peer_connection = wrapper
+            # data_channel attribute = wrapper.send 등가 — broadcast_payload chain 정합
+            self.peers[peer_id].data_channel = wrapper
+            return wrapper
+        except RuntimeError as exc:
+            log.warning("[mesh] aiortc 부재 — peer=%s graceful skip (%r)", peer_id, exc)
+            return None
+
     async def remove_peer(self, peer_id: str) -> None:
         # 한글 주석 — peer cleanup + DataChannel + RTCPeerConnection close
         peer = self.peers.pop(peer_id, None)
