@@ -84,22 +84,49 @@ async def register_user(
     _validate_username(username)
     _validate_password(password)
 
-    # 중복 사전 검증 — UNIQUE RACE INSERT 시점 의
+    password_hash = hash_password(password)
+
+    # 사용자 directive 회수 — email_verified flag 기반 reclaim chain.
+    # 1) verified=1 row → 재 가입 절대 차단 (EmailAlreadyRegistered).
+    # 2) verified=0 row → reclaim (UPDATE existing row) + prior OTP invalidate.
+    # 3) row 부재 → 신규 INSERT.
     existing_email = await users_repo.get_user_by_email(pool, email_norm)
-    if existing_email is not None:
+    if existing_email is not None and existing_email.email_verified:
         raise EmailAlreadyRegistered(f"email 중복 — {email_norm}")
 
-    existing_username = await users_repo.get_user_by_username(pool, username)
-    if existing_username is not None:
-        raise UsernameAlreadyTaken(f"username 중복 — {username}")
+    if existing_email is not None:
+        # 한글 주석 — unverified row reclaim path. username 중복 check 시 자기 id 제외 의무.
+        username_conflict = await users_repo.get_user_by_username_excluding(
+            pool, username, exclude_user_id=existing_email.id
+        )
+        if username_conflict is not None:
+            raise UsernameAlreadyTaken(f"username 중복 — {username}")
 
-    password_hash = hash_password(password)
-    user_id = await users_repo.insert_user(
-        pool,
-        email=email_norm,
-        username=username,
-        password_hash=password_hash,
-    )
+        ok = await users_repo.reclaim_unverified_user(
+            pool,
+            user_id=existing_email.id,
+            username=username,
+            password_hash=password_hash,
+        )
+        if not ok:
+            # 한글 주석 — race condition (다른 request 가 동시 verify 완료) → 재 차단.
+            raise EmailAlreadyRegistered(f"email 중복 — {email_norm}")
+
+        # 한글 주석 — prior pending OTP 강제 무효화 (attempt_count abuse + 만료 race 차단).
+        await otp_repo.invalidate_pending(pool, email=email_norm, purpose="signup")
+        user_id = existing_email.id
+        log.info("[register] reclaim user_id=%d email=%s username=%s", user_id, email_norm, username)
+    else:
+        existing_username = await users_repo.get_user_by_username(pool, username)
+        if existing_username is not None:
+            raise UsernameAlreadyTaken(f"username 중복 — {username}")
+
+        user_id = await users_repo.insert_user(
+            pool,
+            email=email_norm,
+            username=username,
+            password_hash=password_hash,
+        )
 
     # OTP 발급 + 이메일 발송
     otp_code = generate_otp_code()

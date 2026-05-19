@@ -41,7 +41,7 @@ async def insert_user(
     pool : asyncmy.Pool
         DB pool (server.db.connection.create_pool 산출).
     email : str
-        로그인 식별자 (UNIQUE 검증 의무 — caller 측 사전 lookup).
+        로그인 식별자 (UNIQUE 검증 의무 — caller 사전 lookup).
     username : str
         표시 이름 (UNIQUE).
     password_hash : str
@@ -128,6 +128,60 @@ async def update_last_login(pool: Any, user_id: int) -> None:
         async with conn.cursor() as cur:
             await cur.execute(sql, (user_id,))
         await conn.commit()
+
+
+async def get_user_by_username_excluding(
+    pool: Any,
+    username: str,
+    exclude_user_id: int,
+) -> Optional[UserRow]:
+    """username lookup — 특정 user_id 제외 (reclaim 의 의 self conflict 회피)."""
+
+    sql = (
+        "SELECT id, email, username, password_hash, email_verified, status, "
+        "       created_at, updated_at, last_login_at "
+        "FROM users WHERE username = %s AND id != %s"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (username, exclude_user_id))
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return UserRow(*row)
+
+
+async def reclaim_unverified_user(
+    pool: Any,
+    *,
+    user_id: int,
+    username: str,
+    password_hash: str,
+) -> bool:
+    """OTP 미검증 user row reclaim — username + password_hash + created_at 갱신.
+
+    사용자 directive 회수 — `email_verified=0` 인 row 가 회원가입 재 진입 시
+    기존 row 를 새 자격 정보로 덮어쓴다 (user_id 보존 → FK reference 안전).
+
+    Returns
+    -------
+    bool
+        UPDATE 성공 시 True (email_verified=0 AND id=user_id row 갱신).
+        verified 가 1 로 race 진입한 경우 0 row → False.
+    """
+
+    sql = (
+        "UPDATE users "
+        "SET username = %s, password_hash = %s, "
+        "    created_at = CURRENT_TIMESTAMP, "
+        "    updated_at = CURRENT_TIMESTAMP "
+        "WHERE id = %s AND email_verified = 0"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            affected = await cur.execute(sql, (username, password_hash, user_id))
+        await conn.commit()
+    return int(affected or 0) > 0
 
 
 async def update_password(pool: Any, user_id: int, new_hash: str) -> None:

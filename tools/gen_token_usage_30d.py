@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""token-usage-30d.json + html generator — cycle 169.42 신설.
+
+세션 jsonl 4 file aggregate + per_day + per_model + per_day_model + sessions_summary.
+docs/operations/token-usage-30d.{json,html} 두 file rewrite.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+KST = timezone(timedelta(hours=9))
+ROOT = Path(__file__).resolve().parent.parent
+SESSIONS_DIR = Path.home() / ".claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg"
+JSON_OUT = ROOT / "docs/operations/token-usage-30d.json"
+HTML_OUT = ROOT / "docs/operations/token-usage-30d.html"
+
+PRICING = {
+    "claude-opus-4-7": {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.5},
+    "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.3},
+    "claude-haiku-4-5": {"input": 1.0, "output": 5.0, "cache_write": 1.25, "cache_read": 0.1},
+}
+
+
+def cost_usd(model: str, usage: dict) -> float:
+    p = PRICING.get(model)
+    if not p:
+        return 0.0
+    return (
+        usage.get("input_tokens", 0) * p["input"]
+        + usage.get("output_tokens", 0) * p["output"]
+        + usage.get("cache_creation_input_tokens", 0) * p["cache_write"]
+        + usage.get("cache_read_input_tokens", 0) * p["cache_read"]
+    ) / 1_000_000
+
+
+def main() -> None:
+    now_kst = datetime.now(KST)
+    window_start = now_kst - timedelta(days=30)
+
+    totals = defaultdict(int)
+    per_day = defaultdict(lambda: defaultdict(int))
+    per_model = defaultdict(lambda: defaultdict(int))
+    per_day_model = defaultdict(lambda: defaultdict(int))
+    sessions_summary = {}
+    files_scanned = 0
+    files_with_usage = 0
+    parsed_messages = 0
+    skipped_lines = 0
+    total_cost = 0.0
+
+    for jsonl in sorted(SESSIONS_DIR.glob("*.jsonl")):
+        files_scanned += 1
+        session_id = jsonl.stem
+        session_data = {
+            "session_id": session_id,
+            "first_ts": None,
+            "last_ts": None,
+            "models": set(),
+            "messages": 0,
+            "total_tokens": 0,
+            "cost_usd": 0.0,
+        }
+        has_usage = False
+        with open(jsonl, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                try:
+                    d = json.loads(line)
+                except Exception:
+                    skipped_lines += 1
+                    continue
+                if d.get("type") != "assistant":
+                    continue
+                msg = d.get("message")
+                if not isinstance(msg, dict):
+                    continue
+                usage = msg.get("usage")
+                if not isinstance(usage, dict):
+                    continue
+                ts = d.get("timestamp")
+                if not ts:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(KST)
+                except Exception:
+                    skipped_lines += 1
+                    continue
+                if dt < window_start:
+                    continue
+                model = msg.get("model") or "<synthetic>"
+                date_key = dt.strftime("%Y-%m-%d")
+                has_usage = True
+                parsed_messages += 1
+                u_input = usage.get("input_tokens", 0) or 0
+                u_output = usage.get("output_tokens", 0) or 0
+                u_cwrite = usage.get("cache_creation_input_tokens", 0) or 0
+                u_cread = usage.get("cache_read_input_tokens", 0) or 0
+                u_total = u_input + u_output + u_cwrite + u_cread
+                c = cost_usd(model, usage)
+                total_cost += c
+
+                totals["input_tokens"] += u_input
+                totals["output_tokens"] += u_output
+                totals["cache_creation_input_tokens"] += u_cwrite
+                totals["cache_read_input_tokens"] += u_cread
+                totals["messages"] += 1
+                totals["total_tokens"] += u_total
+
+                for d_dict in (per_day[date_key], per_model[model], per_day_model[(date_key, model)]):
+                    d_dict["input_tokens"] += u_input
+                    d_dict["output_tokens"] += u_output
+                    d_dict["cache_creation_input_tokens"] += u_cwrite
+                    d_dict["cache_read_input_tokens"] += u_cread
+                    d_dict["messages"] += 1
+                    d_dict["total_tokens"] += u_total
+                    d_dict["cost_usd"] += c
+
+                session_data["models"].add(model)
+                session_data["messages"] += 1
+                session_data["total_tokens"] += u_total
+                session_data["cost_usd"] += c
+                if session_data["first_ts"] is None or dt < session_data["first_ts"]:
+                    session_data["first_ts"] = dt
+                if session_data["last_ts"] is None or dt > session_data["last_ts"]:
+                    session_data["last_ts"] = dt
+        if has_usage:
+            files_with_usage += 1
+            sessions_summary[session_id] = session_data
+
+    totals["cost_usd"] = round(total_cost, 4)
+    cache_total = totals["cache_creation_input_tokens"] + totals["cache_read_input_tokens"]
+    cache_hit = (
+        100.0 * totals["cache_read_input_tokens"] / cache_total if cache_total else 0.0
+    )
+
+    per_day_list = sorted(
+        [{"date": d, **{k: v for k, v in vals.items() if k != "cost_usd"}, "cost_usd": round(vals["cost_usd"], 4)} for d, vals in per_day.items()],
+        key=lambda r: r["date"],
+    )
+    per_model_list = [
+        {"model": m, **{k: v for k, v in vals.items() if k != "cost_usd"}, "cost_usd": round(vals["cost_usd"], 4)}
+        for m, vals in per_model.items()
+    ]
+    per_day_model_list = sorted(
+        [{"date": k[0], "model": k[1], **{kk: vv for kk, vv in v.items() if kk != "cost_usd"}, "cost_usd": round(v["cost_usd"], 4)}
+         for k, v in per_day_model.items()],
+        key=lambda r: (r["date"], r["model"]),
+    )
+    sessions_list = [
+        {
+            "session_id": s["session_id"],
+            "first_kst": s["first_ts"].strftime("%Y-%m-%d %H:%M") if s["first_ts"] else "",
+            "last_kst": s["last_ts"].strftime("%Y-%m-%d %H:%M") if s["last_ts"] else "",
+            "models": sorted(s["models"]),
+            "messages": s["messages"],
+            "total_tokens": s["total_tokens"],
+            "cost_usd": round(s["cost_usd"], 8),
+        }
+        for s in sessions_summary.values()
+    ]
+    sessions_list.sort(key=lambda r: r["first_kst"])
+
+    out = {
+        "generated_at_kst": now_kst.strftime("%Y-%m-%d %H:%M:%S KST"),
+        "window_start_kst": window_start.strftime("%Y-%m-%d %H:%M:%S"),
+        "window_end_kst": now_kst.strftime("%Y-%m-%d %H:%M:%S"),
+        "files_scanned": files_scanned,
+        "files_with_usage": files_with_usage,
+        "parsed_messages": parsed_messages,
+        "sessions": len(sessions_list),
+        "skipped_lines": skipped_lines,
+        "totals": dict(totals),
+        "cache_hit_rate_percent": round(cache_hit, 2),
+        "per_day": per_day_list,
+        "per_model": per_model_list,
+        "per_day_model": per_day_model_list,
+        "sessions_summary": sessions_list,
+        "pricing": PRICING,
+    }
+
+    JSON_OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"[token-usage] {JSON_OUT} 갱신 — sessions={len(sessions_list)} msgs={parsed_messages} cost=${out['totals']['cost_usd']:.2f}")
+
+    # 한글 주석 — HTML 안 timestamp + total token + session row 만 갱신 (template structure 보존)
+    if HTML_OUT.exists():
+        html = HTML_OUT.read_text(encoding="utf-8")
+        import re
+        html = re.sub(
+            r"생성 시각: [^·]+· 집계 윈도우: [^<]+",
+            f"생성 시각: {out['generated_at_kst']} · 집계 윈도우: {out['window_start_kst']} ~ {out['window_end_kst']}",
+            html,
+            count=1,
+        )
+        html = re.sub(
+            r"<th>집계 윈도우 \(KST\)</th><td>[^<]+</td>",
+            f"<th>집계 윈도우 (KST)</th><td>{out['window_start_kst']} ~ {out['window_end_kst']}</td>",
+            html,
+            count=1,
+        )
+        HTML_OUT.write_text(html, encoding="utf-8")
+        print(f"[token-usage] {HTML_OUT} timestamp 갱신")
+
+
+if __name__ == "__main__":
+    main()

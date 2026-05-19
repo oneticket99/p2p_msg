@@ -18,13 +18,17 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from server.auth.exceptions import EmailAlreadyRegistered, UsernameAlreadyTaken
 from server.auth.register import register_user
 
 # 한글 주석: register_user 가 import 한 의존성 5종 patch 경로 상수
 _P_EMAIL = "server.auth.register.users_repo.get_user_by_email"
 _P_UNAME = "server.auth.register.users_repo.get_user_by_username"
+_P_UNAME_EXCL = "server.auth.register.users_repo.get_user_by_username_excluding"
 _P_INS_USR = "server.auth.register.users_repo.insert_user"
+_P_RECLAIM = "server.auth.register.users_repo.reclaim_unverified_user"
 _P_INS_OTP = "server.auth.register.otp_repo.insert_otp"
+_P_OTP_INV = "server.auth.register.otp_repo.invalidate_pending"
 _P_SEND = "server.auth.register.send_otp_email"
 
 
@@ -244,3 +248,112 @@ class TestRegisterOtpInsertChain:
         assert kwargs.get("ttl_seconds") == 180
         assert kwargs.get("email") == "heidi@example.com"
         assert "code_hash" in kwargs
+
+
+class TestRegisterUnverifiedReclaim:
+    """OTP 미검증 row 재 가입 reclaim chain 검증 (사용자 directive 회수)."""
+
+    @pytest.mark.asyncio
+    async def test_verified_email_blocks_reregister(self) -> None:
+        # 한글 주석: email_verified=1 row → EmailAlreadyRegistered raise
+        verified_row = AsyncMock()
+        verified_row.id = 99
+        verified_row.email_verified = True
+        m_email = AsyncMock(return_value=verified_row)
+        m_send = AsyncMock()
+        with (
+            patch(_P_EMAIL, new=m_email),
+            patch(_P_SEND, new=m_send),
+        ):
+            with pytest.raises(EmailAlreadyRegistered):
+                await register_user(
+                    None,
+                    email="verified@example.com",
+                    username="newname",
+                    password="secret123",
+                )
+        m_send.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_unverified_email_triggers_reclaim_chain(self) -> None:
+        # 한글 주석: email_verified=0 row → reclaim chain PASS + OTP invalidate + 재 송신
+        unverified_row = AsyncMock()
+        unverified_row.id = 77
+        unverified_row.email_verified = False
+        m_email = AsyncMock(return_value=unverified_row)
+        m_uname_excl = AsyncMock(return_value=None)
+        m_reclaim = AsyncMock(return_value=True)
+        m_otp_inv = AsyncMock(return_value=1)
+        m_ins_otp = AsyncMock(return_value=1)
+        m_send = AsyncMock()
+        with (
+            patch(_P_EMAIL, new=m_email),
+            patch(_P_UNAME_EXCL, new=m_uname_excl),
+            patch(_P_RECLAIM, new=m_reclaim),
+            patch(_P_OTP_INV, new=m_otp_inv),
+            patch(_P_INS_OTP, new=m_ins_otp),
+            patch(_P_SEND, new=m_send),
+        ):
+            user_id = await register_user(
+                None,
+                email="unverified@example.com",
+                username="newcreds",
+                password="newsecret123",
+            )
+        assert user_id == 77
+        m_reclaim.assert_called_once()
+        m_otp_inv.assert_called_once()
+        m_send.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_reclaim_blocks_username_conflict_with_other_user(self) -> None:
+        # 한글 주석: reclaim 시 동일 username 의 다른 verified user 존재 → UsernameAlreadyTaken raise
+        unverified_row = AsyncMock()
+        unverified_row.id = 55
+        unverified_row.email_verified = False
+        conflict_row = AsyncMock()
+        conflict_row.id = 999
+        m_email = AsyncMock(return_value=unverified_row)
+        m_uname_excl = AsyncMock(return_value=conflict_row)
+        m_reclaim = AsyncMock()
+        m_send = AsyncMock()
+        with (
+            patch(_P_EMAIL, new=m_email),
+            patch(_P_UNAME_EXCL, new=m_uname_excl),
+            patch(_P_RECLAIM, new=m_reclaim),
+            patch(_P_SEND, new=m_send),
+        ):
+            with pytest.raises(UsernameAlreadyTaken):
+                await register_user(
+                    None,
+                    email="unverified2@example.com",
+                    username="taken_name",
+                    password="secret123",
+                )
+        m_reclaim.assert_not_called()
+        m_send.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_reclaim_race_to_verified_raises(self) -> None:
+        # 한글 주석: reclaim_unverified_user 가 False (race — 동시 verify 완료) → EmailAlreadyRegistered
+        unverified_row = AsyncMock()
+        unverified_row.id = 88
+        unverified_row.email_verified = False
+        m_email = AsyncMock(return_value=unverified_row)
+        m_uname_excl = AsyncMock(return_value=None)
+        m_reclaim = AsyncMock(return_value=False)
+        m_send = AsyncMock()
+        with (
+            patch(_P_EMAIL, new=m_email),
+            patch(_P_UNAME_EXCL, new=m_uname_excl),
+            patch(_P_RECLAIM, new=m_reclaim),
+            patch(_P_SEND, new=m_send),
+        ):
+            with pytest.raises(EmailAlreadyRegistered):
+                await register_user(
+                    None,
+                    email="racing@example.com",
+                    username="racer",
+                    password="secret123",
+                )
+        m_send.assert_not_called()

@@ -125,6 +125,31 @@ async def consume_otp(pool: Any, otp_id: int) -> None:
         await conn.commit()
 
 
+async def invalidate_pending(pool: Any, *, email: str, purpose: str) -> int:
+    """미사용 OTP row 모두 consumed_at=NOW() force — reclaim 시 prior OTP 무효화.
+
+    사용자 directive 회수 — OTP 입력 부재 종료 후 재 가입 진입 시
+    prior pending OTP 가 남아있어 attempt_count abuse + 만료 race 가 발생한다.
+    본 함수는 consumed_at 강제 set 으로 find_active_otp 검색에서 제외시킨다.
+
+    Returns
+    -------
+    int
+        무효화된 row 수.
+    """
+
+    sql = (
+        "UPDATE email_verification "
+        "SET consumed_at = CURRENT_TIMESTAMP "
+        "WHERE email = %s AND purpose = %s AND consumed_at IS NULL"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            affected = await cur.execute(sql, (email.lower(), purpose))
+        await conn.commit()
+    return int(affected or 0)
+
+
 async def cleanup_expired(pool: Any) -> int:
     """만료 + 사용 완료 + 24시간 경과 row 삭제 (cron 호출).
 
