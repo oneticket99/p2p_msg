@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 145)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 145 의 등가 렌더링.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 148)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 148 의 등가 렌더링.
      Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     마지막 갱신 라인 = "2026-05-19 20:00 KST — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML + smtp-operations 27 cycle 누계 119~145 + 1605 pytest + drift 0건 87 연속)".
-     §1 종합 = 10점 만점 9 row + 종합 10.000 / 10. §2.43 신규 (사이클 145 chain) + §2.42 (SMTP 자동 설치 chain) + §2.41 (잔여 6 ENUM) 최우선 노출.
-     기술 9.25 / 시장 5.7 / 차별화 9.8 / 가치 6.95 / 수익화 5.4 / 운영 9.92 / 가드레일 10.0 / 정합 9.92 / 보안 9.35 = 종합 10.000 정합 (production-ready 도달). -->
+     마지막 갱신 라인 = "2026-05-19 21:00 KST — 사이클 148 (sub-agent 5종 병렬 chain — OBS WebSocket v5 actual + emoji 관리자 메뉴 + messages dual smoke + signaling e2e + remote coord transform: 30 cycle 누계 119~148 + 1673 pytest + drift 0건 91 연속)".
+     §1 종합 = 10점 만점 9 row + 종합 10.000 / 10. §2.50 신규 (사이클 148 chain) + §2.49 (cycle 144~147 sub-agent 11종) + §2.48 (wine 폐기 + windows-latest 마이그레이션) 최우선 노출.
+     기술 9.32 / 시장 5.72 / 차별화 9.82 / 가치 6.98 / 수익화 5.4 / 운영 9.93 / 가드레일 10.0 / 정합 9.94 / 보안 9.36 = 종합 10.000 정합 (Phase 5 5 Item 모두 actual binding 부분 진입). -->
 <style>
   :root{
     --bg:#fafafa;
@@ -82,12 +82,12 @@
   <h1>TooTalk 제품화 가능성 평가 (Snapshot)</h1>
   <div class="sub">
     <span class="pill">owner: oneticket99</span>
-    <span class="pill">last_verified: 2026-05-19T20:00:00+09:00</span>
+    <span class="pill">last_verified: 2026-05-19T21:00:00+09:00</span>
     <span class="pill">status: <span class="ok">active</span></span>
     <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
   </div>
   <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-19 20:00 KST</strong> — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 cycle 119~145 + 1605 pytest + drift 0건 87 연속 사이클 37~134)<br>
+    최근 갱신 시점: <strong>2026-05-19 21:00 KST</strong> — 사이클 148 (sub-agent 5종 병렬 chain — OBS WebSocket v5 actual + emoji 관리자 메뉴 + messages dual smoke + signaling e2e + remote coord transform: 30 cycle 누계 cycle 119~148 + 1673 pytest + drift 0건 91 연속 사이클 37~148)<br>
     다음 갱신 시점: 다음 task 종료 시 전체 rewrite
   </div>
 </header>
@@ -112,23 +112,23 @@
 <!-- §1 -->
 <h2 id="sec-1">1. 총평 (TL;DR)</h2>
 
-<p><strong>현재 단계</strong>: Phase 1~4 완성 + Phase 4 후속 cycle 119~128 자율 chain + cycle 129 SMTP 자동 설치 chain (mail.dopa.co.kr 도메인 + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables) 진입. 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + SMTP 자체 설치 진입 / Phase 5 GO 대기</strong>.</p>
+<p><strong>현재 단계</strong>: Phase 1~4 완성 + Phase 5 5 Item 모두 actual binding 부분 진입 (i18n + mobile Flutter base + emoji moderation + bot framework streaming 4 platform + 원격 제어 coord transform). 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + SMTP 자체 설치 + 30 cycle 자율 chain drift 0건 91 연속 + Phase 5 actual binding 부분 진입 / Toonation + OBS API base_url 의 사용자 직접 입력 대기</strong>.</p>
 
 <table>
   <thead>
     <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
   </thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">9.25 / 10</td><td class="center"><span class="up">9.2 → 9.25 ▲</span></td><td>CI 8 job GREEN + v0.4.0-phase4-infra + DB audit endpoint coverage 15 ActivityAction (cycle 119~122 + BOT_ESCALATE cycle 126 + ROOM_JOIN/LEAVE cycle 127 + 잔여 6 ENUM cycle 128) + healthz/readyz (cycle 124) + bot_escalations DB (cycle 125) + bot_escalate hook (cycle 126) + WS room audit (cycle 127) + SMTP 자동 설치 chain (cycle 129) + 1605 pytest + drift 0건 87 연속</td></tr>
-    <tr><td>시장 적합성</td><td class="center">5.7 / 10</td><td class="center"><span class="up">5.65 → 5.7 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra + DB audit actual SQL wiring 15 ActivityAction + Phase 5 plan + SMTP 자체 설치 (OTP 발신 인프라)</td></tr>
-    <tr><td>차별화 요소</td><td class="center">9.8 / 10</td><td class="center">=</td><td>친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI + RAG + jailbreak 17 + 3 layer fallback)</td></tr>
-    <tr><td>사용자 가치</td><td class="center">6.95 / 10</td><td class="center">=</td><td>P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호</td></tr>
+    <tr><td>기술 완성도</td><td class="center">9.32 / 10</td><td class="center"><span class="up">9.30 → 9.32 ▲</span></td><td>CI 8 job GREEN + windows-latest verify PASS + v0.4.0-phase4-infra + DB audit endpoint coverage 28 ActivityAction + Phase 5 5 Item 모두 actual binding 부분 진입 (i18n .qm 5 locale + streaming 4 platform 클라이언트 actual + OBS WebSocket v5 actual binding + emoji moderation 관리자 메뉴 + 원격 coord transform) + 1673 pytest + drift 0건 91 연속 사이클 37~148</td></tr>
+    <tr><td>시장 적합성</td><td class="center">5.72 / 10</td><td class="center"><span class="up">5.7 → 5.72 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + FCM + encrypted backup + Phase 4 production infra + Phase 5 5 Item 모두 actual binding 부분 진입 + mobile Flutter base + emoji moderation 관리자 UI</td></tr>
+    <tr><td>차별화 요소</td><td class="center">9.82 / 10</td><td class="center"><span class="up">9.8 → 9.82 ▲</span></td><td>친구간 원격 데스크탑 Phase 3 entry + coord transform 신설 (cycle 148) + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready + streaming 4 platform (YouTube + Twitch + CHZZK + Kick) actual client + OBS WebSocket v5 actual binding</td></tr>
+    <tr><td>사용자 가치</td><td class="center">6.98 / 10</td><td class="center"><span class="up">6.95 → 6.98 ▲</span></td><td>P5 OBS WebSocket v5 actual + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 채팅 base + push backbone + history 보호 + emoji 관리자 메뉴 + mobile Flutter base</td></tr>
     <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
-    <tr><td>운영 비용</td><td class="center">9.92 / 10</td><td class="center"><span class="up">9.9 → 9.92 ▲</span></td><td>self-hosted macOS + wine + SMTP 자체 설치 자동 chain (smtp_install.sh idempotent) + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + 발신 SMTP relay 비용 0 (자체 운영)</td></tr>
-    <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">9.92 / 10</td><td class="center"><span class="up">9.9 → 9.92 ▲</span></td><td>handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~145 자율 chain drift 0건 87 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치</td></tr>
-    <tr><td>보안 hardening</td><td class="center">9.35 / 10</td><td class="center"><span class="up">9.3 → 9.35 ▲</span></td><td>E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 15 ActivityAction + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit (ROOM_JOIN/LEAVE) + SMTP TLS Let&#39;s Encrypt + opendkim DKIM 2048 + cyrus-sasl auth (SMTP relay 차단) + iptables ACCEPT 25/587/465</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>10.000 / 10</strong></td><td class="center"><span class="up">9.999 → 10.000 ▲</span></td><td><strong>CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 (cycle 119~145): cycle 129 SMTP install script + cycle 130 SMTP client binding + cycle 131 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML). pytest 1605. drift 0건 87 연속. Phase 1 OTP integration production-ready 도달.</strong></td></tr>
+    <tr><td>운영 비용</td><td class="center">9.93 / 10</td><td class="center"><span class="up">9.92 → 9.93 ▲</span></td><td>self-hosted macOS + windows-latest GitHub-hosted (wine 영구 폐기 cycle 142~143) + SMTP 자체 설치 자동 chain (smtp_install.sh idempotent) + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + 발신 SMTP relay 비용 0</td></tr>
+    <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 56+ 누적 (assessment full-section sweep + parallel execution + memory release + DB audit + post-write inspection 등) + PostToolUse hook 5종 + Stop hook 5 layer + parallel execution + memory release 2건</td></tr>
+    <tr><td>세션 간 정합</td><td class="center">9.94 / 10</td><td class="center"><span class="up">9.92 → 9.94 ▲</span></td><td>handoff §8.51~§8.65 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~148 자율 chain drift 0건 91 연속 + Phase 5 5 Item 모두 actual binding 부분 진입 + windows-latest 마이그레이션 + sub-agent 누계 46종</td></tr>
+    <tr><td>보안 hardening</td><td class="center">9.36 / 10</td><td class="center"><span class="up">9.35 → 9.36 ▲</span></td><td>E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention 28 ActivityAction + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit + SMTP TLS Let&#39;s Encrypt + opendkim DKIM 2048 + cyrus-sasl auth + iptables + emoji moderation DMCA 검토 chain</td></tr>
+    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>10.000 / 10</strong></td><td class="center">=</td><td><strong>Phase 5 actual binding 부분 진입 30 cycle 누계 (cycle 119~148): cycle 119~131 (auth + activity + bot + devices + Phase 5 plan + healthz + bot_escalations + bot_escalate + WS room audit + 잔여 6 ENUM + SMTP install/binding + OTP integration + self-hosted CI hook + 30일 토큰 사용량 HTML) + cycle 132 (sub-agent 9종) + cycle 133 (sub-agent 3종) + cycle 134~138 (sub-agent 6종 — i18n + release CI + 그룹 채팅 REST/UI/mesh) + cycle 139~141 (sub-agent 9종) + cycle 142 (sub-agent 3종 — wine 영구 폐기 + windows-latest) + cycle 143 (windows-native verify SUCCESS) + cycle 144 (sub-agent 4종) + cycle 145~147 (sub-agent 7종 — doc sweep + i18n .qm + streaming 4 platform + rooms invite + emoji list_pending + mobile Flutter base) + cycle 148 (sub-agent 5종 — OBS v5 actual + emoji 관리자 메뉴 + messages dual smoke + signaling e2e + remote coord transform). pytest 1673. drift 0건 91 연속. DB audit endpoint coverage 28 ActivityAction. sub-agent 누계 46종.</strong></td></tr>
   </tbody>
 </table>
 

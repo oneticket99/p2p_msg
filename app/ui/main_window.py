@@ -174,6 +174,10 @@ class MainWindow(QMainWindow):
         self._friends_client = friends_client
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
+        # cycle 148 — 현재 user 의 service-wide role (admin / owner / member).
+        # admin / owner 만 "관리자" 메뉴 가시 + emoji moderation dialog 진입 path.
+        # 로그인 응답 의 role 의 caller 의 set_user_role 갱신 의무 (별개 cycle 의 chain).
+        self._current_user_role: str = "member"
         # cycle 139 — 현재 활성 그룹 채팅 방 의 GroupChatView (방 전환 시 swap)
         self._group_chat_view: Optional[GroupChatView] = None
         self._current_room_id: Optional[int] = None
@@ -291,6 +295,8 @@ class MainWindow(QMainWindow):
         # asyncio loop 부재 환경 (일반 unittest 등) 의 graceful skip.
         self._update_task: Optional[asyncio.Task] = None
         self._current_update_dialog: Optional[UpdateDialog] = None
+        # cycle 148 — emoji moderation admin dialog 참조 보관 (gc 회피 + 테스트 가시성)
+        self._current_moderation_dialog: Optional[object] = None
         self._start_update_check_task()
 
     # ------------------------------------------------------------------
@@ -470,11 +476,253 @@ class MainWindow(QMainWindow):
         act_logout.triggered.connect(self._on_logout)
         menu_account.addAction(act_logout)
 
+        # cycle 148 — "관리자" 메뉴 (admin / owner role 만 가시).
+        # _current_user_role 의 admin/owner 일 때만 메뉴 신설 + emoji moderation 항목.
+        # 비-admin user 의 메뉴 의 외부 노출 차단 — UX 정합 + 보안 의 1차 차단.
+        self._menu_admin = None  # type: Optional[object]
+        self._act_emoji_moderation: Optional[QAction] = None
+        if self._is_admin_role():
+            self._menu_admin = menubar.addMenu("관리자")
+            self._act_emoji_moderation = QAction("Emoji moderation…", self)
+            self._act_emoji_moderation.triggered.connect(
+                self._on_open_emoji_moderation
+            )
+            self._menu_admin.addAction(self._act_emoji_moderation)
+
         # "도움말" 메뉴
         menu_help = menubar.addMenu("도움말")
         act_about = QAction("TooTalk 정보…", self)
         act_about.triggered.connect(self._on_show_about)
         menu_help.addAction(act_about)
+
+    def _is_admin_role(self) -> bool:
+        """현재 user 의 role 가 admin / owner 인지 검사 (cycle 148 신설).
+
+        Returns
+        -------
+        bool
+            True = admin / owner. False = member / guest / 부재 (default).
+        """
+
+        # 한글 주석: admin + owner 둘 다 관리 권한 — emoji moderation 진입 path 공유
+        return self._current_user_role in ("admin", "owner")
+
+    def set_user_role(self, role: str) -> None:
+        """로그인 응답 의 role 갱신 + 관리자 메뉴 가시성 재계산 (cycle 148).
+
+        Parameters
+        ----------
+        role : str
+            "admin" / "owner" / "member" / "guest" 중 하나. 빈 = member fallback.
+
+        Notes
+        -----
+        - 본 메서드 호출 직후 menubar 의 "관리자" 메뉴 추가 / 제거.
+        - role 갱신 = 로그인 다이얼로그 의 응답 / 세션 refresh chain 의 의무.
+        """
+
+        # 한글 주석: 빈 값 / None graceful — member fallback
+        normalized = (role or "member").strip()
+        if normalized not in ("admin", "owner", "member", "guest"):
+            log.warning("[main_window] set_user_role 무효 — %r → member fallback", role)
+            normalized = "member"
+        self._current_user_role = normalized
+        log.info("[main_window] user_role 갱신 — %s", normalized)
+        # 한글 주석: menubar 재구성 — "관리자" 메뉴 가시성 재계산
+        self._rebuild_admin_menu()
+
+    def _rebuild_admin_menu(self) -> None:
+        """admin 메뉴 의 가시성 재구성 — set_user_role 직후 호출 (cycle 148).
+
+        기존 admin 메뉴 가 있으면 제거 + admin role 일 때만 재추가.
+        """
+
+        # 한글 주석: 기존 admin 메뉴 제거 — menubar 의 removeAction 의무
+        menubar = self.menuBar()
+        if self._menu_admin is not None:
+            menubar.removeAction(self._menu_admin.menuAction())
+            self._menu_admin = None
+            self._act_emoji_moderation = None
+
+        # 한글 주석: admin / owner 일 때만 재추가
+        if self._is_admin_role():
+            self._menu_admin = menubar.addMenu("관리자")
+            self._act_emoji_moderation = QAction("Emoji moderation…", self)
+            self._act_emoji_moderation.triggered.connect(
+                self._on_open_emoji_moderation
+            )
+            self._menu_admin.addAction(self._act_emoji_moderation)
+
+    # ------------------------------------------------------------------
+    # cycle 148 — emoji moderation admin dialog 진입점
+    # ------------------------------------------------------------------
+
+    @pyqtSlot()
+    def _on_open_emoji_moderation(self) -> None:
+        """"Emoji moderation" 메뉴 슬롯 — admin dialog instantiation 진입점.
+
+        흐름
+        ----
+        1. admin role 재검증 — 메뉴 우회 시 차단 의무 (방어적 guard).
+        2. env ``EMOJI_MODERATION_ADMIN_TOKEN`` 조회 — 부재 시 graceful warning.
+        3. base_url = UPDATE_SERVER_URL env 또는 _DEFAULT_UPDATE_SERVER_URL 폴백.
+        4. asyncio loop 가용 시 fetch_pending_queue + dialog instantiation chain.
+           loop 부재 시 빈 queue dialog instantiation (test / unittest 환경 graceful).
+        5. dialog.decision_made signal → status bar feedback handler 의 wire.
+        """
+
+        # 한글 주석: 1차 admin role 재검증 — 메뉴 가시성 + 직접 호출 둘 다 차단
+        if not self._is_admin_role():
+            QMessageBox.warning(
+                self, "TooTalk", "Emoji moderation = admin 권한 의무"
+            )
+            log.warning(
+                "[main_window] emoji moderation 진입 차단 — role=%s",
+                self._current_user_role,
+            )
+            return
+
+        # 한글 주석: env token 의무 — 부재 시 graceful warning + return
+        admin_token = os.environ.get("EMOJI_MODERATION_ADMIN_TOKEN", "").strip()
+        if not admin_token:
+            QMessageBox.warning(
+                self,
+                "TooTalk",
+                "EMOJI_MODERATION_ADMIN_TOKEN env 미설정 — 진입 차단",
+            )
+            log.warning(
+                "[main_window] EMOJI_MODERATION_ADMIN_TOKEN 부재 — graceful skip"
+            )
+            return
+
+        # 한글 주석: base_url = UPDATE_SERVER_URL 재사용 (signaling 의 동일 호스트)
+        base_url = (
+            os.environ.get("UPDATE_SERVER_URL", "").strip()
+            or _DEFAULT_UPDATE_SERVER_URL
+        )
+
+        # 한글 주석: lazy import — admin dialog (PyQt6 graceful)
+        from app.ui.admin import open_emoji_moderation
+
+        dialog = open_emoji_moderation(
+            parent=self,
+            base_url=base_url,
+            admin_token=admin_token,
+        )
+        if dialog is None:
+            log.warning(
+                "[main_window] emoji moderation dialog 생성 실패 — graceful skip"
+            )
+            return
+
+        # 한글 주석: decision_made signal → status bar feedback handler wire
+        try:
+            dialog.decision_made.connect(self._on_moderation_decision)
+        except Exception as exc:  # noqa: BLE001
+            # 한글 주석: PyQt6 graceful stub 환경 의 signal 부재 graceful
+            log.debug(
+                "[main_window] decision_made signal wire 실패 (stub 환경 가능) — %r",
+                exc,
+            )
+
+        # 한글 주석: asyncio loop 가용 시 fetch_pending_queue background task 등록
+        loop: Optional[asyncio.AbstractEventLoop] = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop is not None:
+            asyncio.ensure_future(
+                self._dispatch_moderation_queue_fetch(
+                    dialog=dialog, base_url=base_url, admin_token=admin_token
+                ),
+                loop=loop,
+            )
+        else:
+            log.debug(
+                "[main_window] asyncio running loop 부재 — queue fetch skip"
+            )
+
+        # 한글 주석: dialog 참조 보관 — gc 회피 + 테스트 가시성
+        self._current_moderation_dialog = dialog
+        # 한글 주석: dialog 의 modal exec — caller 의 blocking 진입
+        try:
+            dialog.exec()
+        except Exception as exc:  # noqa: BLE001
+            # 한글 주석: PyQt6 stub 환경 graceful — exec 부재 시 skip
+            log.debug(
+                "[main_window] moderation dialog exec 실패 (stub 환경 가능) — %r",
+                exc,
+            )
+
+    async def _dispatch_moderation_queue_fetch(
+        self, *, dialog: object, base_url: str, admin_token: str
+    ) -> None:
+        """fetch_pending_queue + dialog.repopulate 의 async chain (cycle 148).
+
+        Parameters
+        ----------
+        dialog : EmojiModerationDialog
+            instantiation 직후 dialog. repopulate(items) 호출 의무.
+        base_url : str
+            signaling server base URL.
+        admin_token : str
+            admin Bearer token.
+
+        Notes
+        -----
+        - fetch_pending_queue RuntimeError graceful catch — 빈 queue 유지.
+        - 401/403/503 의 통합 graceful catch + status bar feedback.
+        """
+
+        from app.ui.admin.emoji_moderation_dialog import fetch_pending_queue
+
+        try:
+            items = await fetch_pending_queue(base_url, admin_token)
+            # 한글 주석: dialog.repopulate(items) — QListWidget 재구성
+            if hasattr(dialog, "repopulate"):
+                dialog.repopulate(items)
+            log.info(
+                "[main_window] emoji moderation queue fetch PASS count=%d",
+                len(items),
+            )
+        except Exception as exc:  # noqa: BLE001
+            # 한글 주석: httpx 부재 / 401 / 503 / JSON 무효 의 통합 graceful catch
+            log.warning(
+                "[main_window] emoji moderation queue fetch FAIL — graceful (%r)",
+                exc,
+            )
+            self._status_bar.showMessage(
+                f"moderation queue fetch 실패 — {exc}", 4000
+            )
+
+    @pyqtSlot(int, str)
+    def _on_moderation_decision(self, pack_id: int, decision: str) -> None:
+        """EmojiModerationDialog 의 decision_made 시그널 핸들러 (cycle 148).
+
+        Parameters
+        ----------
+        pack_id : int
+            결정 대상 pack.id.
+        decision : str
+            "approve" / "reject" / "dmca" 중 하나.
+
+        Notes
+        -----
+        - status bar feedback 의 즉각 표시.
+        - 실 REST POST chain (post_decision) = dialog 내부 의 외부 callback / 별개 cycle 의 의무.
+          본 슬롯 = UI feedback 만.
+        """
+
+        log.info(
+            "[main_window] moderation decision pack_id=%d decision=%s",
+            pack_id,
+            decision,
+        )
+        self._status_bar.showMessage(
+            f"moderation 결정 — pack_id={pack_id} decision={decision}", 3000
+        )
 
     # ------------------------------------------------------------------
     # 계정 슬롯
