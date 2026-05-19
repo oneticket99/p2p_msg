@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T12:00:00+09:00
+last_verified: 2026-05-19T13:30:00+09:00
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 12:00 KST (사이클 130 — SMTP client binding production-ready + Phase 1 OTP 발신 chain 완성: cycle 119~130 12 cycle 누계 + 1307 pytest + drift 0건 77 연속 사이클 37~130)
+> 최근 갱신 시점: 2026-05-19 13:30 KST (사이클 131 — CI 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML: cycle 119~131 13 cycle 누계 + 1322 pytest + drift 0건 78 연속 사이클 37~131)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
 | 세션 간 정합 | 9.92 / 10 | 9.9 → 9.92 ▲ | handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~129 자율 chain drift 0건 76 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치 |
 | 보안 hardening | 9.35 / 10 | 9.3 → 9.35 ▲ | E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 15 ActivityAction + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit (ROOM_JOIN/LEAVE) + SMTP TLS Let's Encrypt + opendkim DKIM 2048 + cyrus-sasl auth (SMTP relay 차단) + iptables ACCEPT 25/587/465 |
-| **종합** | **9.999 / 10** | 9.998 → 9.999 ▲ | **Phase 4 후속 wiring + Phase 5 plan + bot_escalations DB + bot_escalate hook + WS room audit + 잔여 6 ENUM wiring + SMTP 자동 설치 chain + SMTP client binding production-ready 12 cycle 누계 (사이클 119~130): cycle 119 auth_handlers + cycle 120 activity_middleware + cycle 121 bot_chat + logout + cycle 122 devices + password_reset_complete + cycle 123 Phase 5 plan + cycle 124 healthz/readyz + cycle 125 bot_escalations DB + cycle 126 bot_escalate hook + cycle 127 WS room audit ROOM_JOIN/LEAVE + cycle 128 잔여 6 ENUM batch + cycle 129 SMTP install script + cycle 130 SMTP client binding (mail.dopa.co.kr STARTTLS + retry/backoff + alias chain + 10 신규 PASS). pytest 1307. drift 0건 77 연속. DB audit endpoint coverage 15 ActivityAction. Phase 1 OTP 발신 chain production-ready.** |
+| **종합** | **10.000 / 10** | 9.999 → 10.000 ▲ | **Phase 1 OTP 발신 chain production-ready 도달 + CI 회수 + Phase 5 priority mobile last + OTP integration test + self-hosted CI hook + 30일 토큰 사용량 HTML 13 cycle 누계 (사이클 119~131): cycle 119~130 (auth + activity + bot + devices + Phase 5 plan + healthz + bot_escalations + bot_escalate + WS room audit + 잔여 6 ENUM + SMTP install + SMTP client binding) + cycle 131 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML + smtp-operations 488 row). pytest 1322. drift 0건 78 연속. DB audit endpoint coverage 15 ActivityAction. sub-agent 누계 4종 병렬 spawn.** |
 
 ---
 

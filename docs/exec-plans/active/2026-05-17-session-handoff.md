@@ -169,6 +169,59 @@ status: active
 
 ---
 
+## 8.59 사이클 131 CI 회수 + Phase 5 priority mobile last + OTP integration test + self-hosted CI hook + 30일 토큰 사용량 HTML (2026-05-19 신설)
+
+### 8.59.1 6 영역 chain
+
+| 영역 | 작업 | 산출물 |
+|---|---|---|
+| A | CI 깨진 링크 7건 회수 | doc-lint 49 파일 위반 0건 |
+| B | Phase 5 priority mobile last | `project_phase5_mobile_last.md` + MEMORY.md index + plan §7 진행 순서 |
+| C | smtp-operations.md 488 row | `docs/operations/smtp-operations.md` 9 section |
+| D | OTP integration test 15 PASS | `test_register_otp_integration.py` 8 + `test_reset_password_otp_integration.py` 7 |
+| E | self-hosted CI Stop hook | `tools/hook_self_hosted_ci_trigger.sh` + settings.json 6번째 entry |
+| F | 30일 토큰 사용량 HTML + JSON | `docs/operations/token-usage-30d.html` 463 row + `.json` |
+
+### 8.59.2 sub-agent 병렬 4종 활용
+
+- A: feature-dev:code-architect — OTP integration test blueprint
+- B: general-purpose — blueprint 직접 Write (2 file 15 test)
+- C: general-purpose — smtp-operations.md 488 row 9 section
+- D: general-purpose — 30일 토큰 사용량 HTML + JSON (Chart.js + KPI 6 + table 6)
+
+### 8.59.3 pytest + drift
+
+- 전체 pytest = 1322 passed (1307 + 15 신규)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0
+- drift 0건 78 연속 사이클 37~131
+
+### 8.59.4 30일 토큰 사용량 인사이트
+
+- 분석 jsonl 102건 + 파싱 message 11665건
+- 활성 일수 3일 (2026-05-17 / 18 / 19)
+- 총 토큰 4.5B + 추정 비용 9453.14 USD (일평균 ~3151)
+- 캐시 적중률 97.4% (cache_read 압도)
+- opus-4-7 99.88% 비중
+
+### 8.59.5 Phase 5 priority 재배치 (사용자 directive 2026-05-19)
+
+1. Item 1 i18n (cycle 131~140)
+2. Item 3 emoji pack share (cycle 141~150)
+3. Item 4 bot framework 마무리 (cycle 151~165)
+4. Item 5 원격 제어 본격 (cycle 166~180)
+5. **Item 2 mobile (가장 마지막)** (cycle 181~200)
+
+Phase 5 누계 70 cycle 추정. Item 2 mobile 의무 prerequisite = Item 1+3+4+5 완료 후 진입.
+
+### 8.59.6 다음 세션 첫 액션 우선순위
+
+1. Phase 5 사용자 GO directive 대기 (i18n 우선)
+2. REMOTE_GRANT/REVOKE 잔여 ActivityAction wiring (Phase 5 마무리 chain)
+3. KT (tongkni.co.kr) PTR reverse DNS 갱신 신청 (별개 cycle)
+4. mail-tester.com spam score 10/10 검증 (사용자 manual)
+
+---
+
 ## 8.58 사이클 130 SMTP client binding + Phase 1 OTP production-ready (2026-05-19 신설)
 
 ### 8.58.1 1 cycle chain

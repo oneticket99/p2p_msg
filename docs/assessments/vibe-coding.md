@@ -1,7 +1,7 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T12:00:00+09:00
+last_verified: 2026-05-19T13:30:00+09:00
 status: active
 ---
 
@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 12:00 KST (사이클 130 — SMTP client binding production-ready + Phase 1 OTP 발신 chain 완성 12 cycle 누계 cycle 119~130 + 1307 pytest + drift 0건 77 연속 사이클 37~130)
+> 최근 갱신 시점: 2026-05-19 13:30 KST (사이클 131 — CI 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML + sub-agent 4종 병렬 13 cycle 누계 cycle 119~131 + 1322 pytest + drift 0건 78 연속 사이클 37~131)
 
 ---
 
@@ -30,7 +30,7 @@ status: active
 | 기술 의사결정 | 9.7000 / 10 | 9.6500 → 9.7000 ▲ | wine + fork PR strict + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST + SMTP infra 자체 설치 (Toonation 서버 의존성 0 + 외부 relay 비용 0) + Rocky 9 CRB repo + opendkim libmilter dependency 회수 즉시 |
 | 문서·코드 분리 인식 | 9.5000 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle |
 | 비판·재교정 속도 | 9.4000 / 10 | = | 사이클 22 perl bulk 사고 + 사이클 28/32 직무유기 비판 3회차 — 회수 cycle 완료 |
-| 사이클 효율 | 10.0000 / 10 | = | 130 cycle 누계 + drift 0건 77 연속 + 사이클 119~130 12 cycle (auth audit + activity DB + bot_chat + logout + devices + Phase 5 plan + healthz/readyz + bot_escalations DB + bot_escalate hook + WS room audit + 잔여 6 ENUM + SMTP install + SMTP client binding) |
+| 사이클 효율 | 10.0000 / 10 | = | 131 cycle 누계 + drift 0건 78 연속 + 사이클 119~131 13 cycle (auth audit + activity DB + bot_chat + logout + devices + Phase 5 plan + healthz/readyz + bot_escalations DB + bot_escalate hook + WS room audit + 잔여 6 ENUM + SMTP install + SMTP client binding + cycle 131 CI 회수 + Phase 5 priority + OTP integration + self-hosted CI hook + 30일 토큰 사용량 HTML) |
 | Repo 위생 본능 | 9.9000 / 10 | = | doc-lint 5 검사 강화 + post-write hook + lint-before-push + per-file commit |
 | UX 직관 | 9.2000 / 10 | = | 색상 swatch + HTML interactive + Toonation 브랜드 컬러 + signature sound + TooTalk SVG 로고 |
 | QA 사고 | 9.9900 / 10 | = | pytest 1286+ + Playwright + bcrypt + OTP brute force + jailbreak detector 17 패턴 + provider 3 layer fallback test + WS room audit + DB audit 15 ActivityAction |
