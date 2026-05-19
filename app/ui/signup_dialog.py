@@ -76,7 +76,7 @@ class SignupDialog(QDialog):
             "background: transparent;"
             " color: #ffffff;"
             " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
-            " font-size: 59px;"
+            " font-size: 55px;"
             " font-weight: 700;"
             " letter-spacing: -1px;"
         )
