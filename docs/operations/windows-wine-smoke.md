@@ -1,6 +1,8 @@
 ---
 title: Windows wine cross-compile smoke (cycle 132)
-status: investigated
+owner: oneticket99
+last_verified: 2026-05-19T17:30:00+09:00
+status: active
 phase: Phase 1 — 빌드 인프라
 cycle: 132
 date: 2026-05-19
