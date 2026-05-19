@@ -55,20 +55,37 @@ class LoginDialog(QDialog):
         outer.setSpacing(16)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — PNG 원본 그대로 (cycle 169.5) — QPixmap + transparent bg 명시
-        logo_label = QLabel()
-        logo_label.setStyleSheet("background: transparent;")
+        # 한글 주석 — PNG symbol + Talk 흰색 합성 (cycle 169.11 — WelcomeDialog 등가)
+        logo_row = QHBoxLayout()
+        logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_row.setSpacing(0)
+        logo_row.setContentsMargins(0, 0, 0, 0)
+
+        symbol_label = QLabel()
+        symbol_label.setStyleSheet("background: transparent;")
+        symbol_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         if _ICON_PATH.is_file():
             pixmap = QPixmap(str(_ICON_PATH))
             scaled = pixmap.scaledToHeight(40, Qt.TransformationMode.SmoothTransformation)
-            logo_label.setPixmap(scaled)
-        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        outer.addWidget(logo_label)
+            symbol_label.setPixmap(scaled)
+        logo_row.addWidget(symbol_label)
 
-        # 한글 주석 — title + sub
-        title = QLabel(_tr("TooTalk 로그인"))
+        talk_label = QLabel("Talk")
+        talk_label.setStyleSheet(
+            "background: transparent;"
+            " color: #ffffff;"
+            " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
+            " font-size: 28px;"
+            " font-weight: 700;"
+            " letter-spacing: -1px;"
+        )
+        logo_row.addWidget(talk_label)
+        outer.addLayout(logo_row)
+
+        # 한글 주석 — "투턱 로그인" title (사용자 directive cycle 169.12 — TooTalk → 투턱)
+        title = QLabel(_tr("투턱 로그인"))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700;")
+        title.setStyleSheet("background: transparent; color: #e5e7eb; font-size: 22px; font-weight: 700;")
         outer.addWidget(title)
 
         sub = QLabel(_tr("email + password 입력"))
