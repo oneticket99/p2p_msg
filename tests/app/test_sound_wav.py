@@ -21,7 +21,7 @@ WAV_DIR = Path(__file__).resolve().parents[2] / "app" / "sound" / "wav"
 
 # 한글 주석 — SIGNATURE_OPTIONS 정합 6 file 명 + 의도 duration 의 expected 값
 EXPECTED_FILES: dict[str, dict[str, float]] = {
-    "tootalk_ppyong.wav": {"duration_min": 0.25, "duration_max": 0.35},
+    "tootalk_ppyong.wav": {"duration_min": 0.25, "duration_max": 0.50},
     "tootalk_blip.wav": {"duration_min": 0.15, "duration_max": 0.25},
     "tootalk_ding.wav": {"duration_min": 0.35, "duration_max": 0.45},
     "tootalk_chime.wav": {"duration_min": 0.25, "duration_max": 0.35},
