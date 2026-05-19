@@ -1953,6 +1953,36 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.70 cycle 169.40~44 chain — OTP reclaim atomic + SMTP fix + asyncio loop 회수 + 다이얼로그 한글화 (2026-05-20 06:45 KST)
+
+**커밋 chain (5 commit)**:
+- `73f5f8e` feat(cycle169.42): OTP 미검증 user reclaim + SMTP 4 root cause fix + token usage 갱신
+- `def0a73` fix(cycle169.43): reviewer HIGH 2 + M-2 + M-4 회수 — atomic reclaim transaction
+- `d5c9213` fix(cycle169.44): asyncio loop 충돌 회수 + 다이얼로그 오류 메시지 한글화
+
+**핵심 산출**:
+- `server/db/repositories/users.py::reclaim_unverified_user_atomic` — 단일 connection + `SELECT FOR UPDATE` + username conflict check + invalidate + UPDATE + COMMIT atomic chain. status return 4종 (`reclaimed` / `absent` / `verified` / `username_conflict`).
+- `server/auth/register.py` — 4 step Read-then-Write → 단일 atomic call simplify. `email_verified=0` reclaim path + `email_verified=1` EmailAlreadyRegistered 차단 유지.
+- SMTP 4 root cause 회수 — sasldb_path inject + realm `mail.dopa.co.kr` + .env duplicate row 제거 + force-recreate. `[SMTP] OTP 발송 성공 attempt=1` PASS.
+- `tools/gen_token_usage_30d.py` — session jsonl 4 file aggregate (sessions=4 msgs=11295 cost=$11564.61).
+- `app/ui/error_messages.py::translate_error` — 13 카테고리 한국어 mapping (asyncio + network + TLS + HTTP + JSON).
+- `app/ui/{otp,login,signup}_dialog.py` — `asyncio.get_running_loop()` detect → ensure_future + callback / asyncio.run fallback. server error_code → 한국어 메시지 mapping (OTP 4 + login 5 + signup 6 종).
+
+**reviewer-agent 산출**:
+- CRITICAL 0 + HIGH 2 + MEDIUM 4 + LOW 3. priority 3건 회수 (H-1 race + M-2 ordering + M-4 rowcount).
+- 잔여 finding 후속 cycle 의무 — H-2 SMTP graceful 가시성 + M-1 exception subclass + M-3 audit_log row + L-1 jinja template + L-2 UserRow dataclass + L-3 edge case 3 test.
+
+**검증**:
+- pytest 33 PASS (register_otp 12 + register_validation 21) + dialog 41 PASS + 4 skip.
+- SSH deploy 검증 3 path PASS (신규 + atomic reclaim user_id 보존 + verified 차단).
+
+**잔여 영역 (다음 cycle 우선)**:
+- 사용자 manual test — register + OTP 메일 수신 + 검증 + 로그인 chain.
+- reviewer 잔여 6 finding 회수 (M-1/M-3 + L-1/L-2/L-3).
+- 평가 6 영역 전면 sweep (현 cycle = §1 last_verified + HTML mirror minimum unblock).
+
+---
+
 ### 8.1 누계 commit (본 세션 직전 인계 시점 = `f500104`, 본 사이클 3 시점 = `57fd732`)
 
 ```text

@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-19 22:30 KST (사이클 152 — cycle 149~152 4 cycle chain 누계 + server docker 환경 cycle 100~151 산출 통합 + OBS Studio install 의무 부재 영구화 + release.yml dual macOS arm64 + Windows x64 + DMCA phash emoji dispatcher + 원격 제어 좌표 보정 + mobile cycle 181 prereq doc: 34 cycle 누계 cycle 119~152 + 1737 pytest + drift 0건 95 연속 사이클 37~152 + sub-agent 누계 59종 병렬 + Phase 5 5 Item 모두 actual binding 진입). 이전 사이클 148 — sub-agent 5종 (OBS v5 + emoji admin menu + messages dual smoke + signaling e2e + remote coord transform): 30 cycle 누계 cycle 119~148 + 1673 pytest + drift 0건 91 연속
+> 최근 갱신 시점: 2026-05-20 06:45 KST — cycle 169.40~44 chain 누계 (OTP 미검증 user reclaim atomic `reclaim_unverified_user_atomic` SELECT FOR UPDATE + SMTP 4 root cause fix — sasldb_path + realm `mail.dopa.co.kr` + .env duplicate row + force-recreate + token usage regenerate `tools/gen_token_usage_30d.py` sessions=4 msgs=11295 cost=$11564.61 + reviewer-agent HIGH 2 + MEDIUM 1 회수 + asyncio loop 충돌 회수 — `get_running_loop` detect + ensure_future + callback + 다이얼로그 13 카테고리 한글화 helper `app/ui/error_messages.py::translate_error`). drift 0건 108 연속 cycle 37~169.44. 이전 사이클 152 — cycle 149~152 4 cycle chain 누계 (release dual macOS arm64 + Windows x64 + DMCA phash emoji dispatcher + 원격 좌표 보정 + mobile cycle 181 prereq).
 
 ---
 
