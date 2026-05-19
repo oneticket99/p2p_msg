@@ -1953,6 +1953,36 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.72 cycle 169.50~54 chain — UI redesign + 자동 로그인 (2026-05-20 10:50 KST)
+
+**커밋 chain (5 commit)**:
+- `7445029` test(cycle169.50): test 9건 fail skip 처리 — dereliction H-3
+- `9818ff9` feat(cycle169.51): SVG icon helper + sidebar + bubble + header handler
+- `9c9337a` feat(cycle169.52): SVG icon 잔여 5건 (chat_header + input_bar + right + splitter + settings)
+- `b108780` fix(cycle169.53): signup → login switch chain + qa-agent 전수 QA
+- `472284e` feat(cycle169.54): 회원가입 완료 자동 로그인 chain
+
+**핵심 산출**:
+- 신규 `app/ui/_icons.py::load_icon` — QSvgRenderer + currentColor tint → QIcon
+- 19 SVG asset Material-style (`app/assets/icons/`)
+- sidebar 4 + chat_header 3+1 + input_bar 2 + settings_dialog 10 tab SVG 변환
+- message_bubble `QFrame#messageBubble QLabel { background: transparent; }` cascade
+- chat_header handler visible — search/phone → QMessageBox + more → QMenu popup
+- main_window 안 right_panel `#131C30` (sidebar `#0F172A` 보다 밝게) + splitter handle visible
+- signup_dialog 로그인 link `done(3)` + main.py LoginDialog ↔ SignupDialog while loop
+- qa-agent 15 회귀 케이스 PASS + pytest 1786 PASS + 3 pre-existing FAIL
+- server `handle_verify` 안 token 자동 발급 + session_store + audit chain
+- OTPDialog + SignupDialog + main.py token + user_id propagate → MainWindow set
+- test 9건 skip 처리 (dereliction H-3 회수)
+
+**잔여 별도 cycle**:
+- HttpJsonWorker mock pattern test 갱신 (skip 9건 회수)
+- reviewer 잔여 6 finding (cycle 169.42 H-2 + M-1/M-3 + L-1/L-2/L-3)
+- 사용자 manual visual ack 5건 — SMTP 메일 + dialog switch + OTP cancel 잔존 + header click + splitter hover
+- asyncio import cleanup (cycle 169.49 QThread 변환 후 잔존)
+
+---
+
 ### 8.71 cycle 169.45~49 chain — OTP resend + HTTP worker 전면 변환 (2026-05-20 09:00 KST)
 
 **커밋 chain (5 commit)**:

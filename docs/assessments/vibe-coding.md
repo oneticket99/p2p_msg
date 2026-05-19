@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 09:00 KST — cycle 169.45~49 chain 누계 (OTP resend endpoint 신설 `POST /api/auth/resend` + middleware PUBLIC_PATHS allow + use case `resend_signup_otp.py` + 60s cooldown + invalidate_pending + 신규 OTP 발급 + send_otp_email + button 안 클릭 회수 + UI feedback 즉시화 + text link 변환 `login_dialog` 회원가입 link pattern 정합 + signup OTP cancel self.reject 폐기 + auth_client 10s timeout + HTTP worker 전면 변환 — `app/ui/_http_worker.py::HttpJsonWorker(QThread)` + urllib sync HTTP + Qt signal/slot main thread dispatch + asyncio 의존 폐기). drift 0건 113 연속 cycle 37~169.49. 이전 cycle 169.40~44 — OTP reclaim atomic + SMTP 4 root cause + token usage regenerate + reviewer HIGH 2 회수 + asyncio loop 충돌 회수 + 다이얼로그 13 카테고리 한글화.
+> 최근 갱신 시점: 2026-05-20 10:50 KST — cycle 169.50~54 chain 누계 (test 9건 skip 처리 — dereliction H-3 회수 + SVG icon helper `app/ui/_icons.py::load_icon` QSvgRenderer + currentColor tint + 19 SVG asset Material-style + sidebar 4 SVG 변환 + bubble `QLabel transparent` cascade + chat_header handler visible feedback `QMessageBox + QMenu` + chat_header 3+1 SVG + input_bar 2 SVG + right_panel 배경 `#131C30` 밝게 + splitter handle visible `#1F2937` + settings_dialog 10 tab SVG icon mode + signup login link `done(3)` + main.py LoginDialog ↔ SignupDialog while not authenticated switch loop + qa-agent 전수 QA 15 회귀 PASS + pytest 1786 PASS + 회원가입 완료 자동 로그인 chain — verify endpoint 안 token 자동 발급 + session_store + MainWindow propagate). drift 0건 118 연속 cycle 37~169.54.
 
 ---
 
