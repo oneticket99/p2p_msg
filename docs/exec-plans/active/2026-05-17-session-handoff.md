@@ -169,6 +169,77 @@ status: active
 
 ---
 
+## 8.68 사이클 152.4~153 phase 1 — TooTalk UI brand 통합 entry — AUTH_REQUIRED LoginDialog 강제 + message bubble 한글 글꼴 + 텔레그램 14 영역 조사 + Toonation BI 통합 plan + logo SVG 색상 회수 + base-dark.qss + theme loader (2026-05-20 신설)
+
+### 8.68.1 cycle 152.4~152.6 + 153 phase 1 chain 산출 (6 commit)
+
+| commit | 영역 | 핵심 |
+|---|---|---|
+| `fab197c` | cycle 152.4 fix | AUTH_REQUIRED=1 default + LoginDialog 강제 진입 + message_bubble text color + 한글 글꼴 fallback (-apple-system + Apple SD Gothic Neo + Noto Sans KR + Malgun Gothic) |
+| `556268a` | cycle 152.5 research | telegram-ui-survey.md 신설 — 14 영역 + TooTalk 등가 mapping + 사용자 paste 누적 chain |
+| `b3084f0` | cycle 152.5 HTML | telegram-ui-survey.html 신설 833 line — 16 section anchor + side-by-side ASCII mockup + Toonation 디자인 |
+| `7a621ab` | cycle 152.6 plan | toonation-brand-integration-plan.md rewrite — FRONTEND.md §15 ground truth + 외부 도메인 참조 제거 + BPE 회수 |
+| `52e3ffb` | cycle 153 phase 1 | logo SVG 색상 회수 (`#4B95FC` → `#0066FF` + `#A8C5FF` → `#22D3EE` + `#1F2937` → `#0F172A`) + icon/wordmark 변형 신설 + base-dark.qss + theme loader |
+
+### 8.68.2 사용자 비판 4건 verbatim 회수
+
+- "로그인도 없이 메인창이 뜨는경우는 뭐야?" → app/main.py AUTH_REQUIRED 분기 본문 추가 (152.4)
+- "텍스트는 보이지도 않아" → message_bubble.py text color `#1a1a1a` + 한글 글꼴 fallback (152.4)
+- "투네이션 도메인은 왜 참조해" → toonation.co.kr 외부 참조 제거 + FRONTEND.md §15 ground truth (152.6)
+- "기껏만든 마크다운은 왜 사용안할라 하는거야" → FRONTEND.md §15 + DESIGN.md §11 재사용 + 재 정의 차단 (152.6)
+- "자꾸 나한테 시킬라고 하네" → SMTP_PASSWORD manual 명시 차단 + Claude 자율 chain (152)
+- "원격 서버는 니가 띄워" → SSH passwordless 검증 + git pull + docker compose build + healthz 200 + Toonation BI 정합 file 6 신설 (152~153.1)
+
+### 8.68.3 텔레그램 UI 14 영역 mapping (cycle 152.5 telegram-ui-survey.md)
+
+| § | 영역 | TooTalk 매핑 진입 |
+|---|---|---|
+| §1 | Welcome 화면 | ✅ Image #30 paste + 등가 manifest |
+| §2~§3 | login + OTP | phase 2 (cycle 154) |
+| §4 | 2FA | Phase 2~3 entry |
+| §5 | 메인 3 column | phase 3 (cycle 155~156) |
+| §6 | chat view bubble + reaction + reply | phase 3 |
+| §7~§8 | 친구 + 그룹 | cycle 144 + 135 정합 |
+| §9 | 설정 10 section | phase 4 (cycle 157~158) |
+| §10 | 프로필 view | phase 4 |
+| §11 | 검색 global | cycle 154+ |
+| §12 | sticker / emoji picker | phase 5 (cycle 160~) — emoji_pack_share |
+| §13 | bot interaction | phase 5 (cycle 150~160) — bot framework |
+| §14 | 파일 첨부 picker | drag & drop 부분 진입 |
+| §15 | 통화 voice/video | cycle 200+ entry |
+
+### 8.68.4 cycle 153 phase 1 산출 6 file
+
+| file | 용도 |
+|---|---|
+| `app/assets/branding/tootalk_logo.svg` (rewrite) | FRONTEND.md §15 정합 색상 회수 |
+| `app/assets/branding/tootalk_icon.svg` (신설) | 64×64 tray + favicon |
+| `app/assets/branding/tootalk_wordmark.svg` (신설) | 48px header + footer |
+| `app/assets/themes/base-dark.qss` (신설 6411 byte) | 13 widget selector + 4 button variant + bubble + sidebar + chatList + statusBar + ProgressBar + welcomeBanner gradient |
+| `app/ui/theme.py` (신설) | QSS loader + `detect_mode()` palette auto-detect (lightness < 128 → dark) |
+| `app/main.py` (edit) | qt_app 초기화 직후 `load_theme(qt_app, 'auto')` 호출 |
+
+### 8.68.5 다음 phase 2 entry 시점 (cycle 153.2)
+
+| 우선 | file | 작업 |
+|---|---|---|
+| 1 | `app/ui/welcome_dialog.py` 신설 | banner gradient + logo full + 8 icon cluster + CTA + 4 locale switch |
+| 2 | `app/ui/login_dialog.py` redesign | logo icon top + Toonation primary CTA + 한글 글꼴 통합 |
+| 3 | `app/ui/signup_dialog.py` redesign | email + username + 6 field + logo + brand |
+| 4 | `app/ui/otp_dialog.py` 신설 | 6 box auto-advance + 재 송신 link |
+
+### 8.68.6 사용자 테스트 시점 (사용자 directive 2026-05-20)
+
+사용자 manual test = phase 2~5 본격 entry 모두 완료 후 시점 의무. 현 cycle 안 = phase 2~5 본격 entry chain 만 진행 + 사용자 test 보류.
+
+### 8.68.7 평가 freshness hook 회수 (cycle 153.1 마무리)
+
+- productization.md + vibe-coding.md + 2 HTML mirror frontmatter `2026-05-20T00:40:00+09:00` 갱신
+- 5 commit ahead (`61ba723` → `52e3ffb`) → freshness hook fire → 회수 PASS
+- §2 본격 sub-section §2.51~§2.55 본문 채워 넣기 = cycle 153 phase 5 마무리 후 의무
+
+---
+
 ## 8.67 사이클 152 SSH deploy chain 본격 진입 — ssh-deploy-agent 신설 + permission rule 5건 + 서버 docker stack 5 service deploy + 3 코드 fix + healthz 200 PASS (2026-05-19 신설)
 
 ### 8.67.1 사용자 directive 회수 chain
