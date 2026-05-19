@@ -45,8 +45,13 @@ jobs:
       - name: PyInstaller wine cross-compile
         run: |
           # cdrx/pyinstaller-windows:python3 default entrypoint = /entrypoint.sh — CMD args 무시 → --entrypoint /bin/sh override 의무 (cycle 132 회수)
+          # PYTHONIOENCODING + PYTHONUTF8 env — wine Python 3.7 default cp1252 locale → UTF-8 강제 (cycle 141 회수)
           docker run --rm \
             --entrypoint /bin/sh \
+            -e PYTHONIOENCODING=utf-8 \
+            -e PYTHONUTF8=1 \
+            -e LANG=C.UTF-8 \
+            -e LC_ALL=C.UTF-8 \
             -v "$PWD:/src" \
             -w /src \
             cdrx/pyinstaller-windows:python3 \

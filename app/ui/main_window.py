@@ -1,35 +1,47 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""TooTalk 메인 윈도우 — QMainWindow 상속.
+"""TooTalk 메인 윈도우 — QMainWindow 상속 (cycle 139 그룹 채팅 통합).
 
-레이아웃:
+레이아웃 (cycle 139 갱신):
 
 ```
-+--------------------------------------------------+
-| 메뉴바: 설정 · About                              |
-+--------------------------------------------------+
-|                                                  |
-|   ChatView (QScrollArea + QVBoxLayout)           |
-|   ─ MessageBubble 가 차곡차곡 쌓이는 영역         |
-|                                                  |
-+--------------------------------------------------+
-| [📎]  [메시지 입력 QLineEdit            ] [보내기] |
-+--------------------------------------------------+
-| StatusBar: 연결 상태 · peer 수                    |
-+--------------------------------------------------+
++--------------------------------------------------------------+
+| 메뉴바: 설정 · 계정 · 도움말                                  |
++-------------+------------------------------------------------+
+| RoomList    | QStackedWidget                                 |
+| (sidebar)   |  ├─ [tab idx=0] 1:1 ChatView (직접 메시지)     |
+|             |  ├─ [tab idx=1] GroupChatView (현재 방)        |
+|             |  └─ [tab idx=2] MemberList (멤버 panel)        |
++-------------+------------------------------------------------+
+| StatusBar: 연결 상태 · peer 수                                 |
++--------------------------------------------------------------+
 ```
 
-- 메뉴바: 사용자가 room/peer_id 를 입력하는 "설정" 다이얼로그 진입점과
-  버전/저작권 정보 "About" 다이얼로그 진입점을 제공한다.
-- 첨부 버튼(📎): Phase 1 후반 (Task #16) 에서 이미지/파일 송신 다이얼로그를
-  열도록 활성화 예정. 본 스켈레톤에서는 placeholder 슬롯만 보유.
-- 보내기 버튼: 입력창 텍스트를 ChatView 에 echo 한다. 본 Phase 1 스켈레톤
-  단계에서는 실제 DataChannel 송신 코드가 없으므로 로컬 echo 로 동작하며,
-  Task #16 에서 WebRTC DataChannel send() 호출로 대체된다.
+cycle 139 변경 요점:
+
+- RoomListWidget 을 좌측 sidebar (QSplitter) 에 배치 + ``room_entered``
+  시그널 을 ``_on_room_entered(room_id)`` 슬롯 으로 연결.
+- 기존 ChatView (1:1) 는 QStackedWidget 의 첫 페이지 로 보존 — 사용자 가
+  "직접 메시지" 액션 으로 회귀 가능 (backward compat).
+- GroupChatView 는 ``room_entered`` 시 lazy create + StackedWidget 의
+  swap. ``message_send_requested`` 시그널 은 REST + WebRTC mesh broadcast
+  의 stub (cycle 138 ``GroupMessageClient`` 의 향후 binding).
+- ``members_panel_requested`` 시그널 은 MemberListWidget toggle 진입점.
+- RoomsClient (``app.net.rooms_client``) 의 ``list_rooms`` / ``get_room`` 의
+  의 호출 wrapper 보유 — main entry 점 에서 주입 (test 의 mock 호환).
+
+본 cycle 의 범위 외 (별개 cycle):
+
+- 실 WebRTC mesh peer connection 의 binding (GroupMessageClient.send_message)
+- 친구 목록 dropdown 의 InviteDialog 의 main_window 통합
+- 메시지 history lazy load (cycle 60 messages_client wrapper) 의 GroupChatView
+  pre-fill
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 from datetime import datetime
 from typing import Optional
 
@@ -42,6 +54,8 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSplitter,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -50,26 +64,47 @@ from app.core.app_state import AppState
 from app.core.config import Config
 from app.net.auth_client import AuthClient
 from app.ui.chat_view import ChatView
+from app.ui.group_chat_view import GroupChatView
 from app.ui.login_dialog import LoginDialog
+from app.ui.member_list import MemberListWidget
 from app.ui.password_reset_dialog import PasswordResetDialog
+from app.ui.room_list import RoomListWidget
 from app.ui.settings_dialog import SettingsDialog
 from app.ui.signup_dialog import SignupDialog
 from app.ui.sound_player import SoundPlayer
 from app.ui.status_bar import StatusBar
+from app.ui.update_checker import periodic_check
+from app.ui.update_dialog import UpdateDialog
+from app.updater.version_check import CURRENT_VERSION
+
+# RoomsClient 는 httpx 의존 — 본 module import 차단 회피 의무로 lazy import
+# (test collection 환경 의 httpx 부재 graceful — main 진입점 에서 주입)
 
 log = logging.getLogger(__name__)
+
+# 한글 주석: 업데이트 서버 base URL — `.env` 의 `UPDATE_SERVER_URL` override 가능.
+# 부재 시 데모 서버 (114.207.112.73:8080) 폴백 — cycle 132 server skeleton 정합.
+_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8080"
 
 
 class MainWindow(QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
-    연결 상태를 추적하고, ``app.ui.chat_view.ChatView`` 와 ``StatusBar`` 의
-    상위 컨테이너 역할을 한다.
+    연결 상태를 추적하고, ``app.ui.chat_view.ChatView`` (1:1) · ``GroupChatView``
+    (그룹) · ``MemberListWidget`` 의 상위 컨테이너 역할을 한다.
+
+    cycle 139 — QStackedWidget 의 3 페이지 토글 패턴 +
+    RoomListWidget sidebar (QSplitter 좌측 패널).
 
     Qt slot 내부 동기 코드만 사용하며, 시그널링 IO 는 ``asyncio.create_task``
     를 통해 ``app.net.signaling_client`` 의 코루틴을 예약한다 (정본 §E).
     """
+
+    # QStackedWidget index — 코드 가독성 목적 상수
+    _STACK_DIRECT_CHAT: int = 0  # 1:1 ChatView
+    _STACK_GROUP_CHAT: int = 1   # GroupChatView (cycle 139 신설)
+    _STACK_MEMBERS: int = 2      # MemberListWidget (cycle 139 신설)
 
     def __init__(
         self,
@@ -77,8 +112,9 @@ class MainWindow(QMainWindow):
         parent: Optional[QWidget] = None,
         *,
         auth_client: Optional[AuthClient] = None,
+        rooms_client: Optional[object] = None,
     ) -> None:
-        """초기 위젯 트리 구성 + 메뉴/StatusBar/입력 영역 배치.
+        """초기 위젯 트리 + sidebar + Stacked + 메뉴/StatusBar 배치.
 
         Parameters
         ----------
@@ -86,6 +122,12 @@ class MainWindow(QMainWindow):
             ``.env`` 로딩 결과. signaling_url/stun_url/user_nickname 등.
         parent : QWidget | None
             상위 위젯 (보통 None).
+        auth_client : AuthClient | None
+            회원가입/로그인 다이얼로그 의 의존성. 주입 의무 (main 진입점).
+        rooms_client : RoomsClient | None
+            cycle 139 신설 — ``app.net.rooms_client.RoomsClient`` 의 주입.
+            None 일 시 RoomList sidebar 의 list_rooms 호출 skip + 빈 placeholder
+            행 만 표시 (test 격리 + 인증 미완료 단계 graceful).
         """
 
         super().__init__(parent)
@@ -94,66 +136,102 @@ class MainWindow(QMainWindow):
         self._config: Config = config
         self._state: AppState = AppState.instance()
         self._auth_client: Optional[AuthClient] = auth_client
+        self._rooms_client = rooms_client  # cycle 139 RoomsClient (lazy 의존)
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
+        # cycle 139 — 현재 활성 그룹 채팅 방 의 GroupChatView (방 전환 시 swap)
+        self._group_chat_view: Optional[GroupChatView] = None
+        self._current_room_id: Optional[int] = None
 
         # 0-1) 시그니처 사운드 player — Config 의 sound_* 3 필드 기반 init
-        # (사이클 38~40 chain — wrapper + ChatView trigger + SettingsDialog)
         self._sound_player: SoundPlayer = SoundPlayer(config)
 
-        # 1) 윈도우 기본 속성 — 명명 규약 정합: UI 표기는 "TooTalk"
+        # 1) 윈도우 기본 속성
         self.setWindowTitle("TooTalk")
-        self.setMinimumSize(480, 640)
+        self.setMinimumSize(720, 640)  # cycle 139 sidebar 추가로 가로 확장
 
-        # 2) 중앙 위젯 + 수직 레이아웃
-        central = QWidget(self)
-        root_layout = QVBoxLayout(central)
-        root_layout.setContentsMargins(0, 0, 0, 0)
-        root_layout.setSpacing(0)
+        # 2) 중앙 위젯 — QSplitter (sidebar | stacked)
+        splitter = QSplitter(Qt.Orientation.Horizontal, self)
+        splitter.setContentsMargins(0, 0, 0, 0)
 
-        # 3) ChatView — 스크롤 가능한 메시지 리스트 + SoundPlayer 의 peer 수신 trigger inject
-        self._chat_view = ChatView(parent=central, sound_player=self._sound_player)
-        root_layout.addWidget(self._chat_view, stretch=1)
+        # 3) 좌측 sidebar — RoomListWidget (cycle 139 신설)
+        self._room_list = RoomListWidget(parent=splitter)
+        self._room_list.setMinimumWidth(180)
+        self._room_list.setMaximumWidth(320)
+        # 더블 클릭 → room_entered(room_id) 슬롯 wire
+        self._room_list.room_entered.connect(self._on_room_entered)
+        # 초기 빈 목록 — RoomsClient 주입 시 _refresh_rooms() 호출 (별개 cycle)
+        self._room_list.set_rooms([])
 
-        # 4) 입력 영역 (첨부 + 입력창 + 보내기)
+        # 4) 우측 — QStackedWidget (3 페이지) + 입력 영역 의 컨테이너
+        right_panel = QWidget(splitter)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(0)
+
+        self._stacked = QStackedWidget(right_panel)
+        right_layout.addWidget(self._stacked, stretch=1)
+
+        # 4-1) ChatView (1:1) — index 0 (기존 호환 유지)
+        self._chat_view = ChatView(parent=self._stacked, sound_player=self._sound_player)
+        self._stacked.addWidget(self._chat_view)  # idx 0
+
+        # 4-2) GroupChatView placeholder (lazy) — index 1 의 자리 holder
+        # 실제 GroupChatView 는 _on_room_entered 시 신설 + 교체.
+        self._group_placeholder = QWidget(self._stacked)
+        self._stacked.addWidget(self._group_placeholder)  # idx 1
+
+        # 4-3) MemberListWidget — index 2
+        self._member_list = MemberListWidget(parent=self._stacked)
+        self._stacked.addWidget(self._member_list)  # idx 2
+
+        # 초기 페이지 = 1:1 직접 메시지 (기존 호환)
+        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+
+        # 5) 입력 영역 (1:1 모드 의 의무 — group 모드 의 입력 은 GroupChatView 안 내장)
+        # cycle 139 — 본 입력 영역 은 ChatView (1:1) 페이지 가 active 일 때만 활성.
         input_row = QHBoxLayout()
         input_row.setContentsMargins(8, 8, 8, 8)
         input_row.setSpacing(8)
 
-        self._attach_button = QPushButton("📎", parent=central)
+        self._attach_button = QPushButton("📎", parent=right_panel)
         self._attach_button.setToolTip("이미지/파일 첨부 (Phase 1 후반 활성)")
         self._attach_button.setFixedWidth(36)
-        # Phase 1 스켈레톤 단계는 비활성 — Task #16 에서 활성화
         self._attach_button.setEnabled(False)
 
-        self._input_edit = QLineEdit(parent=central)
+        self._input_edit = QLineEdit(parent=right_panel)
         self._input_edit.setPlaceholderText("메시지를 입력하세요…")
-        # Enter 키로 송신 트리거 — returnPressed 시그널 사용
         self._input_edit.returnPressed.connect(self._on_send_clicked)
 
-        self._send_button = QPushButton("보내기", parent=central)
+        self._send_button = QPushButton("보내기", parent=right_panel)
         self._send_button.clicked.connect(self._on_send_clicked)
 
         input_row.addWidget(self._attach_button)
         input_row.addWidget(self._input_edit, stretch=1)
         input_row.addWidget(self._send_button)
 
-        input_container = QWidget(central)
-        input_container.setLayout(input_row)
-        root_layout.addWidget(input_container, stretch=0)
+        self._input_container = QWidget(right_panel)
+        self._input_container.setLayout(input_row)
+        right_layout.addWidget(self._input_container, stretch=0)
 
-        self.setCentralWidget(central)
+        # 6) Splitter 의 위젯 추가 + 비율 설정
+        splitter.addWidget(self._room_list)
+        splitter.addWidget(right_panel)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
 
-        # 5) StatusBar — 연결 상태 + peer 수
+        self.setCentralWidget(splitter)
+
+        # 7) StatusBar
         self._status_bar = StatusBar(parent=self)
         self.setStatusBar(self._status_bar)
         self._status_bar.set_connection_state("DISCONNECTED")
         self._status_bar.set_peer_count(0)
 
-        # 6) 메뉴바 (설정 / About)
+        # 8) 메뉴바 (설정 / 계정 / 도움말)
         self._build_menu_bar()
 
-        # 7) 초기 안내 메시지 한 줄
+        # 9) 초기 안내 메시지 한 줄 (1:1 ChatView)
         self._chat_view.add_message(
             sender="system",
             text=f"TooTalk 클라이언트 준비 완료 — 닉네임: {config.user_nickname}",
@@ -161,16 +239,129 @@ class MainWindow(QMainWindow):
             is_self=False,
         )
 
+        # 10) auto-update periodic_check 백그라운드 task 등록 (cycle 139)
+        # cycle 132 (server) + cycle 133 (UpdateDialog) + cycle 134 (release CI)
+        # chain 의 startup integration — 시작 시 1회 + 24시간 polling. 신 버전
+        # 검출 시 _on_new_version slot 호출 + UpdateDialog instantiation.
+        # asyncio loop 부재 환경 (일반 unittest 등) 의 graceful skip.
+        self._update_task: Optional[asyncio.Task] = None
+        self._current_update_dialog: Optional[UpdateDialog] = None
+        self._start_update_check_task()
+
+    # ------------------------------------------------------------------
+    # auto-update 백그라운드 task — cycle 139 startup integration
+    # ------------------------------------------------------------------
+
+    def _start_update_check_task(self) -> None:
+        """``periodic_check`` 코루틴 의 asyncio task 등록.
+
+        qasync 통합 환경 의 정상 경로 — 시작 시 1회 + 매 24시간 polling.
+        running loop 부재 환경 (pytest QApplication only / 순수 unittest) 의
+        graceful skip + log.debug. 정상 환경 에서는 task 가 background 살아 있다.
+        """
+
+        # 한글 주석: 환경변수 override — Phase 5 productization 시 .env 정합
+        server_url = (
+            os.environ.get("UPDATE_SERVER_URL", "").strip()
+            or _DEFAULT_UPDATE_SERVER_URL
+        )
+
+        # 한글 주석: running loop 우선 — qasync 통합 환경 의 정상 경로.
+        # 부재 시 graceful skip (running loop 부재 = pytest unittest 환경).
+        loop: Optional[asyncio.AbstractEventLoop] = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop is None:
+            log.debug(
+                "[main_window] asyncio running loop 부재 — auto-update task skip"
+            )
+            self._update_task = None
+            return
+
+        try:
+            self._update_task = asyncio.ensure_future(
+                periodic_check(server_url, self._on_new_version),
+                loop=loop,
+            )
+            log.info(
+                "[main_window] auto-update periodic_check task 등록 — server=%s",
+                server_url,
+            )
+        except RuntimeError as exc:
+            # 한글 주석: loop closed 등 의 graceful catch
+            log.warning(
+                "[main_window] auto-update task 등록 실패 — skip (%r)", exc
+            )
+            self._update_task = None
+
+    def _on_new_version(self, latest_info: dict) -> None:
+        """신 버전 검출 시 ``UpdateDialog`` instantiation + 사용자 GO 대기.
+
+        ``periodic_check`` callback 진입점. UpdateDialog 의 modal 호출 +
+        사용자 GO 시 download chain trigger (실 download = Phase 5 본격
+        cycle 위탁 — 본 cycle 의 skeleton dialog 표시 까지).
+
+        Parameters
+        ----------
+        latest_info : dict
+            ``check_latest_version`` 응답 — ``{"version": ..., "download_url":
+            ..., "sha256": ..., "release_notes": ...}`` 형태.
+        """
+
+        latest_version = latest_info.get("version", "(unknown)")
+        log.info(
+            "[main_window] 신 버전 검출 — current=%s latest=%s",
+            CURRENT_VERSION,
+            latest_version,
+        )
+        try:
+            dialog = UpdateDialog(
+                current_version=CURRENT_VERSION,
+                latest_info=latest_info,
+                parent=self,
+                on_user_go=None,  # 한글 주석: 실 download chain = Phase 5 본격 cycle
+            )
+            # 한글 주석: dialog 참조 보관 — gc 회피 + 테스트 가시성
+            self._current_update_dialog = dialog
+            dialog.exec()
+        except Exception as exc:  # noqa: BLE001
+            log.warning(
+                "[main_window] UpdateDialog instantiation 실패 — graceful skip (%r)",
+                exc,
+            )
+
+    def _cancel_update_task(self) -> None:
+        """shutdown chain 의 update task cancel + cleanup.
+
+        ``closeEvent`` 진입 시 호출. task 부재 / 이미 종료 시 noop.
+        CancelledError 는 정상 종료 신호이므로 swallow.
+        """
+
+        if self._update_task is None:
+            return
+        if self._update_task.done():
+            self._update_task = None
+            return
+        try:
+            self._update_task.cancel()
+            log.info("[main_window] auto-update task cancel 송신")
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[main_window] auto-update task cancel 실패 — %r", exc)
+        self._update_task = None
+
     # ------------------------------------------------------------------
     # 메뉴 구성
     # ------------------------------------------------------------------
 
     def _build_menu_bar(self) -> None:
-        """상단 메뉴바 구성 — "설정" 과 "About" 두 진입점."""
+        """상단 메뉴바 구성 — "설정" + "계정" + "도움말" 3 진입점."""
 
         menubar = self.menuBar()
 
-        # "설정" 메뉴 — room/peer_id 입력 다이얼로그 + 종료
+        # "설정" 메뉴
         menu_settings = menubar.addMenu("설정")
 
         act_room = QAction("방 입장…", self)
@@ -178,7 +369,12 @@ class MainWindow(QMainWindow):
         act_room.triggered.connect(self._on_open_room_dialog)
         menu_settings.addAction(act_room)
 
-        # 사운드/UI 의 사용자 control (사이클 40 신설, 41 wire)
+        # cycle 139 — 1:1 직접 메시지 회귀 액션
+        act_direct = QAction("직접 메시지", self)
+        act_direct.setShortcut(QKeySequence("Ctrl+D"))
+        act_direct.triggered.connect(self._on_open_direct_chat)
+        menu_settings.addAction(act_direct)
+
         act_pref = QAction("환경설정…", self)
         act_pref.setShortcut(QKeySequence("Ctrl+,"))
         act_pref.triggered.connect(self._on_open_settings_dialog)
@@ -191,7 +387,7 @@ class MainWindow(QMainWindow):
         act_quit.triggered.connect(self.close)
         menu_settings.addAction(act_quit)
 
-        # "계정" 메뉴 — 회원가입/로그인/비번 재설정/로그아웃 (사이클 23)
+        # "계정" 메뉴
         menu_account = menubar.addMenu("계정")
 
         act_signup = QAction("회원가입…", self)
@@ -213,14 +409,14 @@ class MainWindow(QMainWindow):
         act_logout.triggered.connect(self._on_logout)
         menu_account.addAction(act_logout)
 
-        # "도움말" 메뉴 — About
+        # "도움말" 메뉴
         menu_help = menubar.addMenu("도움말")
         act_about = QAction("TooTalk 정보…", self)
         act_about.triggered.connect(self._on_show_about)
         menu_help.addAction(act_about)
 
     # ------------------------------------------------------------------
-    # Qt slot — 사용자 입력 핸들러
+    # 계정 슬롯
     # ------------------------------------------------------------------
 
     def _require_auth_client(self) -> Optional[AuthClient]:
@@ -277,14 +473,21 @@ class MainWindow(QMainWindow):
         self._current_user_id = None
         QMessageBox.information(self, "TooTalk", "로그아웃 완료")
 
+    # ------------------------------------------------------------------
+    # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가)
+    # ------------------------------------------------------------------
+
     @pyqtSlot()
     def _on_send_clicked(self) -> None:
-        """보내기 버튼 / Enter 키 슬롯.
+        """보내기 버튼 / Enter 키 슬롯 — 1:1 ChatView 의 의무.
 
-        입력창 텍스트를 가져와 ChatView 에 self 발신으로 추가한다. 본 Phase
-        스켈레톤에서는 echo 처리만 수행하며, 실제 WebRTC DataChannel 송신은
-        Task #16 에서 활성화한다.
+        그룹 채팅 모드 (StackedWidget idx == GROUP) 일 때는 GroupChatView 의
+        내부 입력창 의 책임 — 본 슬롯 은 echo 차단.
         """
+
+        # cycle 139 — 그룹 모드 active 시 1:1 입력 차단
+        if self._stacked.currentIndex() != self._STACK_DIRECT_CHAT:
+            return
 
         text = self._input_edit.text().strip()
         if not text:
@@ -301,15 +504,116 @@ class MainWindow(QMainWindow):
         # TODO(Task #16): DataChannel 송신 코루틴 예약
         # asyncio.create_task(self._datachannel.send(text))
 
+    @pyqtSlot(int)
+    def _on_room_entered(self, room_id: int) -> None:
+        """RoomList sidebar 의 더블 클릭 → 그룹 채팅 진입 (cycle 139 신설).
+
+        Parameters
+        ----------
+        room_id : int
+            진입 대상 room. RoomItem.room_id payload 그대로.
+
+        흐름:
+
+        1. 기존 GroupChatView 인스턴스가 있으면 deleteLater + Stack 의 idx 1 의
+           placeholder 교체.
+        2. 신규 GroupChatView 인스턴스 생성 (room_id + self_username 주입) +
+           시그널 wire (message_send_requested / members_panel_requested).
+        3. StackedWidget idx = 1 swap + 1:1 입력 영역 비활성 (그룹 모드 의무).
+        4. AppState.set_identity 의 room_id 갱신.
+        """
+
+        log.info("[main_window] room_entered room_id=%s", room_id)
+
+        # 1) 기존 GroupChatView 의 cleanup
+        if self._group_chat_view is not None:
+            self._stacked.removeWidget(self._group_chat_view)
+            self._group_chat_view.deleteLater()
+            self._group_chat_view = None
+
+        # 2) 신규 GroupChatView
+        self_username = self._config.user_nickname
+        new_view = GroupChatView(
+            room_id=room_id,
+            room_title=f"Room #{room_id}",
+            member_count=0,
+            self_username=self_username,
+            parent=self._stacked,
+        )
+        new_view.message_send_requested.connect(
+            lambda body, rid=room_id: self._on_group_message_send(rid, body)
+        )
+        new_view.members_panel_requested.connect(self._on_open_members_panel)
+
+        # 3) StackedWidget 의 idx 1 위치 swap — placeholder 제거 + 신규 insert
+        self._stacked.insertWidget(self._STACK_GROUP_CHAT, new_view)
+        # placeholder 가 idx 2 로 밀려나 있으면 cleanup (최초 swap 1회)
+        if self._group_placeholder is not None:
+            self._stacked.removeWidget(self._group_placeholder)
+            self._group_placeholder.deleteLater()
+            self._group_placeholder = None
+
+        self._group_chat_view = new_view
+        self._current_room_id = room_id
+
+        # 4) StackedWidget swap + 1:1 입력 영역 비활성
+        self._stacked.setCurrentIndex(self._STACK_GROUP_CHAT)
+        self._input_container.setVisible(False)
+
+        # 5) AppState 갱신
+        self._state.set_identity(room_id=str(room_id), peer_id=self_username)
+
+    def _on_group_message_send(self, room_id: int, body: str) -> None:
+        """GroupChatView 의 message_send_requested 핸들러 (cycle 139 stub).
+
+        본 슬롯 은 REST POST + WebRTC mesh broadcast 의 stub. cycle 138 의
+        ``GroupMessageClient.send_message`` 의 실 binding 은 별개 cycle.
+        현재 는 echo + log 만 수행 — UI 흐름 검증 의 의무.
+        """
+
+        log.debug(
+            "[main_window] group_message_send room=%s body_len=%d",
+            room_id,
+            len(body),
+        )
+        # echo (local) — GroupChatView 의 append_message 호출 + sender label
+        if self._group_chat_view is not None:
+            self._group_chat_view.append_message(
+                sender=self._config.user_nickname,
+                text=body,
+                ts=datetime.now(),
+                is_self=True,
+            )
+        # TODO(cycle 140+): GroupMessageClient.send_message + REST POST /api/messages
+
+    @pyqtSlot()
+    def _on_open_members_panel(self) -> None:
+        """GroupChatView 의 members_panel_requested 핸들러 — MemberList toggle."""
+
+        if self._current_room_id is None:
+            return
+        log.debug(
+            "[main_window] open_members_panel room=%s", self._current_room_id
+        )
+        # cycle 139 stub — 빈 멤버 목록 으로 swap (RoomsClient.get_room binding 별개 cycle)
+        self._member_list.set_members([], viewer_role="member")
+        self._stacked.setCurrentIndex(self._STACK_MEMBERS)
+
+    @pyqtSlot()
+    def _on_open_direct_chat(self) -> None:
+        """1:1 직접 메시지 페이지 회귀 (cycle 139 신설)."""
+
+        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+        self._input_container.setVisible(True)
+        log.debug("[main_window] direct chat 페이지 진입")
+
+    # ------------------------------------------------------------------
+    # 설정/방 다이얼로그
+    # ------------------------------------------------------------------
+
     @pyqtSlot()
     def _on_open_settings_dialog(self) -> None:
-        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영.
-
-        ``SettingsDialog`` 의 accept() 안에서 ``apply_to_player`` 가
-        ``SoundPlayer.set_enabled`` + ``set_volume`` 을 호출하므로 본 메서드는
-        단순 modal 호출 + 결과 로깅만 수행. Phase 3 의 user_settings table
-        영속화 시 이 자리에서 DB 저장 코루틴 추가 예정.
-        """
+        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영."""
 
         dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
         result = dialog.exec()
@@ -317,12 +621,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_open_room_dialog(self) -> None:
-        """"방 입장" 다이얼로그 — room_id 와 peer_id 를 사용자에게 입력받는다.
-
-        본 Phase 스켈레톤에서는 입력값을 ``AppState`` 에 저장만 하고 시그널링
-        연결은 수행하지 않는다. 실제 ``SignalingClient.connect() + join()``
-        호출은 Task #16 에서 ``asyncio.create_task`` 로 예약한다.
-        """
+        """"방 입장" 다이얼로그 — room_id + peer_id 입력 (기존 호환)."""
 
         room_id, ok1 = QInputDialog.getText(
             self,
@@ -375,15 +674,16 @@ class MainWindow(QMainWindow):
         )
 
     # ------------------------------------------------------------------
-    # 윈도우 종료 훅 — 정상 종료 시 시그널링 LEAVE 송신 (Task #16)
+    # 윈도우 종료 훅
     # ------------------------------------------------------------------
 
     def closeEvent(self, event) -> None:  # noqa: N802 — Qt 규약
         """윈도우 종료 시점 훅.
 
-        Task #16 에서 ``SignalingClient.disconnect()`` 코루틴을 예약하고
-        이벤트 루프 종료 처리를 추가한다. 본 스켈레톤은 로그만 남긴다.
+        cycle 139 — auto-update background task 의 cancel + cleanup.
         """
 
         log.info("MainWindow 종료 — Qt 이벤트 루프 정리 단계 진입")
+        # 한글 주석: auto-update background task 정상 cancel (cycle 139)
+        self._cancel_update_task()
         super().closeEvent(event)

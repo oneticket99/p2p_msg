@@ -30,10 +30,15 @@ Twitch / CHZZK / Kick) + OBS WebSocket + Toonation API 직접 통합 (옵션 B).
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Final, List, Optional, Tuple
+from typing import Awaitable, Callable, Dict, Final, List, Optional, Tuple
+
+from app.bot.obs_websocket_client import ObsWebSocketClient, build_default_client
+
+log = logging.getLogger(__name__)
 
 # bot_user_id prefix — 방송 도우미 봇 의 별개 영역 (고객센터 봇 1_xxx_xxx 와 분리)
 _STREAMING_BOT_USER_ID_PREFIX: Final[int] = 2_000_000
@@ -279,6 +284,108 @@ class StreamingHelperBot:
         before = len(self._commands)
         self._commands = [c for c in self._commands if c.trigger != trigger]
         return len(self._commands) < before
+
+
+# 한글 주석 — chat event payload 의 type alias (platform → handler dispatch)
+ChatEventPayload = Dict[str, object]
+# 한글 주석 — platform chat handler callback signature
+ChatEventHandler = Callable[[ChatEventPayload], Awaitable[bool]]
+
+
+class StreamingHelperDispatcher:
+    """4 streaming platform (YouTube / Twitch / CHZZK / Kick) chat → OBS alert dispatch.
+
+    한글 주석 — cycle 141 skeleton — platform callback chain + trigger_alert
+    bridge. 실 platform API binding = 별개 cycle.
+
+    Parameters
+    ----------
+    obs_client : ObsWebSocketClient | None
+        OBS WebSocket client. None = build_default_client factory.
+    """
+
+    def __init__(self, obs_client: Optional[ObsWebSocketClient] = None) -> None:
+        self._obs = obs_client or build_default_client()
+        # platform → handler 의 registry
+        self._handlers: Dict[StreamingPlatform, ChatEventHandler] = {}
+
+    @property
+    def obs(self) -> ObsWebSocketClient:
+        return self._obs
+
+    def register_handler(
+        self,
+        platform: StreamingPlatform,
+        handler: ChatEventHandler,
+    ) -> None:
+        """platform 의 chat handler 등록.
+
+        Parameters
+        ----------
+        platform : StreamingPlatform
+            대상 platform.
+        handler : ChatEventHandler
+            chat event payload → bool awaitable. True = OBS dispatch 성공.
+        """
+
+        self._handlers[platform] = handler
+
+    async def youtube_chat_handler(self, payload: ChatEventPayload) -> bool:
+        """YouTube chat / Super Chat → OBS alert dispatch."""
+
+        return await self._obs.trigger_alert("youtube_chat", payload)
+
+    async def twitch_chat_handler(self, payload: ChatEventPayload) -> bool:
+        """Twitch chat / bits / sub → OBS alert dispatch."""
+
+        return await self._obs.trigger_alert("twitch_chat", payload)
+
+    async def chzzk_chat_handler(self, payload: ChatEventPayload) -> bool:
+        """CHZZK (네이버 치지직) chat / 후원 → OBS alert dispatch."""
+
+        return await self._obs.trigger_alert("chzzk_chat", payload)
+
+    async def kick_chat_handler(self, payload: ChatEventPayload) -> bool:
+        """Kick chat / sub → OBS alert dispatch."""
+
+        return await self._obs.trigger_alert("kick_chat", payload)
+
+    async def dispatch(
+        self,
+        platform: StreamingPlatform,
+        payload: ChatEventPayload,
+    ) -> bool:
+        """platform 별 default handler dispatch.
+
+        Parameters
+        ----------
+        platform : StreamingPlatform
+            대상 platform.
+        payload : ChatEventPayload
+            chat event 본문.
+
+        Returns
+        -------
+        bool
+            OBS alert dispatch 성공 여부.
+        """
+
+        # 한글 주석 — registered handler 우선 + default handler fallback
+        registered = self._handlers.get(platform)
+        if registered is not None:
+            return await registered(payload)
+        if platform == StreamingPlatform.YOUTUBE:
+            return await self.youtube_chat_handler(payload)
+        if platform == StreamingPlatform.TWITCH:
+            return await self.twitch_chat_handler(payload)
+        if platform == StreamingPlatform.CHZZK:
+            return await self.chzzk_chat_handler(payload)
+        if platform == StreamingPlatform.KICK:
+            return await self.kick_chat_handler(payload)
+        # OBS_LOCAL — 직접 alert
+        if platform == StreamingPlatform.OBS_LOCAL:
+            return await self._obs.trigger_alert("obs_local", payload)
+        raise ValueError(f"unknown platform — {platform}")
 
 
 def fetch_platform_callback(platform: StreamingPlatform) -> str:

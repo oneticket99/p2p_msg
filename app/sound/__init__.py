@@ -47,20 +47,35 @@ class SignatureSound:
         self._effect: Optional[object] = None
         self._init_qt_effect()
 
+    def _resolve_wav_path(self) -> Optional[Path]:
+        # 한글 주석 — WAV 경로 해석 + 부재 시 default ppyong 으로 폴백 (cycle 140)
+        wav_dir = Path(__file__).parent / "wav"
+        primary = wav_dir / SIGNATURE_OPTIONS[self.option]
+        if primary.is_file():
+            return primary
+        # 한글 주석 — 선택한 옵션 의 WAV 부재 시 default ppyong 으로 자동 폴백
+        fallback = wav_dir / SIGNATURE_OPTIONS[DEFAULT_OPTION]
+        if fallback.is_file():
+            log.warning(
+                "[sound] WAV 부재 — %s — default(%s) 폴백",
+                primary,
+                DEFAULT_OPTION,
+            )
+            return fallback
+        log.warning(
+            "[sound] WAV + default 동시 부재 — %s (tools/generate_signature_sounds.py 실행 의무)",
+            primary,
+        )
+        return None
+
     def _init_qt_effect(self) -> None:
         # 한글 주석 — PyQt6.QtMultimedia ImportError graceful + WAV 부재 graceful
         try:
             from PyQt6.QtCore import QUrl
             from PyQt6.QtMultimedia import QSoundEffect
 
-            wav_path = (
-                Path(__file__).parent / "wav" / SIGNATURE_OPTIONS[self.option]
-            )
-            if not wav_path.is_file():
-                log.warning(
-                    "[sound] WAV 부재 — %s (Phase 2 본격 생성 의무)",
-                    wav_path,
-                )
+            wav_path = self._resolve_wav_path()
+            if wav_path is None:
                 self._effect = None
                 return
             effect = QSoundEffect()

@@ -30,7 +30,9 @@ htmlcov/
 
 # PyQt / Qt 부산물
 *.pyc
+# 한글 주석 — cycle 139 — lrelease 산출 .qm 은 build artifact (commit 차단)
 *.qm
+app/i18n/translations/*.qm
 
 # OS
 .DS_Store

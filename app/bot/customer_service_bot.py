@@ -44,6 +44,7 @@ from app.bot.llm_proxy import (
     RateLimitGate,
 )
 from app.bot.rag_context import RAGStore, compose_rag_context
+from app.bot.toonation_client import ToonationClient
 
 # default history cap — 사용자 + assistant 의 round-trip 5 회 (10 message)
 _DEFAULT_MAX_HISTORY_TURNS: Final[int] = 5
@@ -53,6 +54,32 @@ _DEFAULT_RATE_PER_MINUTE: Final[int] = 20
 _BOT_USER_ID_PREFIX: Final[int] = 1_000_000
 # default RAG top-k — answer pipeline 의 retrieval 상한
 _DEFAULT_RAG_TOP_K: Final[int] = 3
+# Toonation dispatch keyword — cycle 140 의 의 customer_service_bot 의 dispatch trigger
+# user_message 의 의 하나 이상 키워드 의 match 시 ToonationClient 호출 chain 의 진입
+_TOONATION_DISPATCH_KEYWORDS: Final[tuple] = (
+    "도네이션",
+    "후원 통계",
+    "후원자 검색",
+    "오늘 누적",
+    "오늘 후원",
+    "누적 후원",
+    "donation",
+    "donor",
+)
+
+
+def _matches_toonation_dispatch(user_message: str) -> bool:
+    """user_message 의 의 ToonationClient dispatch keyword match 여부.
+
+    Notes
+    -----
+    case-insensitive match — keyword 의 lower 와 message 의 lower 의 substring.
+    """
+
+    if not user_message:
+        return False
+    msg_lower = user_message.lower()
+    return any(kw.lower() in msg_lower for kw in _TOONATION_DISPATCH_KEYWORDS)
 
 
 def default_system_prompt() -> str:
@@ -183,6 +210,9 @@ class CustomerServiceBot:
         rate limit gate. None = config 의 rate_limit_per_minute 으로 신규 생성.
     rag_store : RAGStore | None
         FAQ retrieval backend. None = RAG context 부재 (legacy 호환).
+    toonation_client : ToonationClient | None
+        cycle 140 — Toonation REST API client. None = dispatch chain 부재 (legacy
+        호환). user_message 의 의 dispatch keyword match 시 호출 chain 진입.
     """
 
     def __init__(
@@ -192,6 +222,7 @@ class CustomerServiceBot:
         *,
         gate: Optional[RateLimitGate] = None,
         rag_store: Optional[RAGStore] = None,
+        toonation_client: Optional[ToonationClient] = None,
     ) -> None:
         self._config = config
         self._provider = provider
@@ -199,6 +230,7 @@ class CustomerServiceBot:
             rate_per_minute=config.rate_limit_per_minute
         )
         self._rag_store = rag_store
+        self._toonation_client = toonation_client
 
     @property
     def config(self) -> CustomerServiceConfig:
@@ -278,6 +310,15 @@ class CustomerServiceBot:
             )
             if rag_block:
                 system_content = f"{system_content}\n\n{rag_block}"
+        # cycle 140 — Toonation dispatch chain: keyword match 시 ToonationClient
+        # 안내 block 의 system_content 의 append (graceful — 실 binding 부재 시
+        # 안내 문구 만 첨부).
+        if self._toonation_client is not None and _matches_toonation_dispatch(
+            user_message
+        ):
+            toonation_block = await self._compose_toonation_block(user_message)
+            if toonation_block:
+                system_content = f"{system_content}\n\n{toonation_block}"
         system_msg = BotMessage(
             role=BotRole.SYSTEM,
             content=system_content,
@@ -299,3 +340,47 @@ class CustomerServiceBot:
         """현 시점 의 잔여 호출 수."""
 
         return self._gate.remaining(user_id)
+
+    async def _compose_toonation_block(self, user_message: str) -> str:
+        """cycle 140 — Toonation dispatch context block 생성.
+
+        user_message 의 의 dispatch keyword match 직후 의 system_content 의
+        append block. 현 cycle = graceful (실 streamer_id binding 부재) — 안내
+        문구 의 base + ToonationClient 호출 graceful 결과 안내.
+
+        Returns
+        -------
+        str
+            markdown block — 빈 결과 = 빈 string (caller 의 append 차단).
+
+        Notes
+        -----
+        Phase 5 본격 cycle = 사용자 streamer_id session binding + 실
+        endpoint 호출 chain 진입. 본 cycle = skeleton 안내 block.
+        """
+
+        if self._toonation_client is None:
+            return ""
+        client = self._toonation_client
+        lines = [
+            "# Toonation 도네이션 데이터 참조",
+            "",
+            f"- API base: {client.base_url}",
+            f"- 실 endpoint binding: Phase 5 cycle 의 의무 (현 cycle = skeleton)",
+        ]
+        # graceful 호출 시도 — 실제 streamer_id 의 session 의 binding 부재 시
+        # placeholder streamer_id=1 의 의 graceful None / 0 결과 안내
+        try:
+            today_total = await client.get_total_donations_today(streamer_id=1)
+            lines.append(
+                f"- 오늘 누적 후원 (placeholder streamer_id=1): "
+                f"{today_total:,}원 (graceful = 0)"
+            )
+        except ValueError as exc:
+            log.warning("[toonation dispatch] graceful error: %s", exc)
+        lines.append("")
+        lines.append(
+            "사용자 의 streamer_id 의 의 session binding + 실 endpoint 의"
+            " 확정 = Phase 5 본격 cycle 의 의무."
+        )
+        return "\n".join(lines)
