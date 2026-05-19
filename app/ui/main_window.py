@@ -191,24 +191,37 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("TooTalk")
         self.setMinimumSize(720, 640)  # cycle 139 sidebar 추가로 가로 확장
 
-        # 2) 중앙 위젯 — QSplitter (sidebar | stacked)
+        # 2) 중앙 위젯 — QSplitter 3 column (rail | room_list | right_panel)
+        # cycle 153.4 phase 3 통합 — SidebarRail (64px) + RoomListWidget (220~320px) + ChatHeader + stacked
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
         splitter.setContentsMargins(0, 0, 0, 0)
 
-        # 3) 좌측 sidebar — RoomListWidget (cycle 139 신설)
+        # 3-1) 좌측 rail — SidebarRail (cycle 153 phase 3 신설)
+        # 한글 주석 — 4 tab (👥 친구 + 🏠 방 + 🤖 봇 + ⚙️ 설정) + tab_clicked signal
+        from app.ui.sidebar_rail import SidebarRail
+        self._sidebar_rail = SidebarRail(parent=splitter)
+        self._sidebar_rail.tab_clicked.connect(self._on_sidebar_tab_clicked)  # type: ignore[arg-type]
+
+        # 3-2) 중앙 sidebar — RoomListWidget (cycle 139 신설, 보존)
         self._room_list = RoomListWidget(parent=splitter)
-        self._room_list.setMinimumWidth(180)
+        self._room_list.setMinimumWidth(220)
         self._room_list.setMaximumWidth(320)
-        # 더블 클릭 → room_entered(room_id) 슬롯 wire
         self._room_list.room_entered.connect(self._on_room_entered)
-        # 초기 빈 목록 — RoomsClient 주입 시 _refresh_rooms() 호출 (별개 cycle)
         self._room_list.set_rooms([])
 
-        # 4) 우측 — QStackedWidget (3 페이지) + 입력 영역 의 컨테이너
+        # 4) 우측 — ChatHeader (cycle 153 phase 3 신설) + QStackedWidget + 입력 영역 컨테이너
         right_panel = QWidget(splitter)
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)
+
+        # 4-0) ChatHeader top bar (56px) — cycle 153 phase 3 신설
+        from app.ui.chat_header import ChatHeader
+        self._chat_header = ChatHeader(parent=right_panel)
+        self._chat_header.search_clicked.connect(self._on_header_search)  # type: ignore[arg-type]
+        self._chat_header.call_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
+        self._chat_header.menu_clicked.connect(self._on_header_menu)  # type: ignore[arg-type]
+        right_layout.addWidget(self._chat_header)
 
         self._stacked = QStackedWidget(right_panel)
         right_layout.addWidget(self._stacked, stretch=1)
@@ -263,11 +276,14 @@ class MainWindow(QMainWindow):
         self._input_container.setLayout(input_row)
         right_layout.addWidget(self._input_container, stretch=0)
 
-        # 6) Splitter 의 위젯 추가 + 비율 설정
+        # 6) Splitter 3 column 위젯 추가 + 비율 설정
+        # 한글 주석 — index 0 rail (fixed) + 1 room_list (resize) + 2 right_panel (flex)
+        splitter.addWidget(self._sidebar_rail)
         splitter.addWidget(self._room_list)
         splitter.addWidget(right_panel)
-        splitter.setStretchFactor(0, 0)
-        splitter.setStretchFactor(1, 1)
+        splitter.setStretchFactor(0, 0)  # rail fixed
+        splitter.setStretchFactor(1, 0)  # room_list resizable
+        splitter.setStretchFactor(2, 1)  # right_panel flex
 
         self.setCentralWidget(splitter)
 
@@ -832,8 +848,43 @@ class MainWindow(QMainWindow):
         )
 
     # ------------------------------------------------------------------
-    # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가)
+    # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가) + SidebarRail / ChatHeader (cycle 153.4 신설)
     # ------------------------------------------------------------------
+
+    @pyqtSlot(str)
+    def _on_sidebar_tab_clicked(self, tab_key: str) -> None:
+        """SidebarRail tab 변경 — stacked widget index 매핑.
+
+        tab_key ∈ {"friends", "rooms", "bots", "settings"}
+        """
+        # 한글 주석 — friends tab = FriendListWidget index 3 / rooms = direct chat default
+        if tab_key == "friends":
+            self._stacked.setCurrentIndex(self._STACK_FRIENDS)
+            self._chat_header.set_chat("친구 목록", "", "👥")
+        elif tab_key == "rooms":
+            self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+            self._chat_header.clear_chat()
+        elif tab_key == "bots":
+            # 한글 주석 — bots tab = 별개 panel 미진입 (cycle 153.5+ entry)
+            self._chat_header.set_chat("봇 (Phase 5 entry)", "cycle 150~160", "🤖")
+        elif tab_key == "settings":
+            # 한글 주석 — settings tab = SettingsDialog 진입 (cycle 153.5+ entry)
+            self._chat_header.set_chat("설정", "cycle 153.5+ entry", "⚙️")
+
+    @pyqtSlot()
+    def _on_header_search(self) -> None:
+        """ChatHeader 검색 button — cycle 154+ entry."""
+        log.info("ChatHeader 검색 click — cycle 154+ entry")
+
+    @pyqtSlot()
+    def _on_header_call(self) -> None:
+        """ChatHeader 통화 button — cycle 200+ entry (WebRTC SDP)."""
+        log.info("ChatHeader 통화 click — cycle 200+ entry")
+
+    @pyqtSlot()
+    def _on_header_menu(self) -> None:
+        """ChatHeader 메뉴 button — context menu (cycle 153.5+ entry)."""
+        log.info("ChatHeader 메뉴 click — cycle 153.5+ entry")
 
     @pyqtSlot()
     def _on_send_clicked(self) -> None:
