@@ -1057,16 +1057,28 @@ class MainWindow(QMainWindow):
         if not text:
             return
 
+        # cycle 154.3 — reply context snapshot + InputBar clear
+        reply_ctx = None
+        if hasattr(self, "_input_bar"):
+            ctx = self._input_bar.reply_context()
+            if ctx is not None:
+                # 한글 주석 — ReplyContext dataclass (message_bubble) 의 instance 생성
+                from app.ui.message_bubble import ReplyContext
+                reply_ctx = ReplyContext(original_sender=ctx[0], original_text=ctx[1])
+            self._input_bar.clear_reply_to()
+
         self._chat_view.add_message(
             sender=self._config.user_nickname,
             text=text,
             ts=datetime.now(),
             is_self=True,
+            reply_to=reply_ctx,
         )
         self._input_edit.clear()
 
-        # TODO(Task #16): DataChannel 송신 코루틴 예약
-        # asyncio.create_task(self._datachannel.send(text))
+        # cycle 154.3 — DataChannel payload 안 reply_to field 의무 (data_channel binding 시점)
+        # 한글 주석 — 본 chain = _datachannel.send(json) payload 안 reply_to 포함
+        # TODO(cycle 155+): payload schema {text, reply_to, reactions} json 송신
 
     @pyqtSlot(int)
     def _on_room_entered(self, room_id: int) -> None:

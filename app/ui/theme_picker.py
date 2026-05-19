@@ -61,7 +61,7 @@ class ThemePicker(QWidget):
         self._buttons["auto"].setChecked(True)
 
     def _on_clicked(self, mode: str) -> None:
-        """button click → theme reload + signal emit."""
+        """button click → theme reload + signal emit + UserLocalePreferences persist."""
         self.theme_changed.emit(mode)
         # 한글 주석 — 즉시 theme reload (graceful 부재 시 log debug)
         try:
@@ -73,6 +73,12 @@ class ThemePicker(QWidget):
                 log.info("theme switch — mode=%s", mode)
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("theme reload graceful 실패 — %r", exc)
+        # cycle 154.3 — persist theme preference (사용자 재실행 시점 복원 chain)
+        try:
+            from app.config.user_preferences import save_user_theme_preference
+            save_user_theme_preference(mode)  # type: ignore[attr-defined]
+        except (ImportError, AttributeError) as exc:  # pragma: no cover - graceful
+            log.debug("theme persist 부재 graceful — %r", exc)
 
     def set_active_mode(self, mode: str) -> None:
         """외부 단 active mode 설정 — programmatic switch."""
