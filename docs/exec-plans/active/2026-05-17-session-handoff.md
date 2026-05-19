@@ -169,6 +169,72 @@ status: active
 
 ---
 
+## 8.77 사이클 169~169.5 — TooTalk logo PNG 원본 활용 + Talk 흰색 합성 + transparent bg + 30% 축소 (2026-05-20 신설)
+
+### 8.77.1 5 commit 산출 (사용자 비판 5건 누계 회수)
+
+| commit | 영역 |
+|---|---|
+| `fe018a8` | cycle 169.1 — toonation-symbol.png base64 embed SVG (Talk text 부착) — 사용자 비판 "첨부 이미지 그대로 써" |
+| `6abd988` | cycle 169.2 — vector path SVG 회수 (plus + 2 ring + Talk) — 사용자 비판 "완전히 똑같이 svg로" |
+| `1aa9746` | cycle 169.3 — PNG 원본 그대로 copy + QPixmap 직접 load — 사용자 비판 "그냥 png를 그대로 써" |
+| `d13a288` | cycle 169.4 — WelcomeDialog QHBoxLayout symbol + Talk 흰색 합성 — 사용자 비판 "Talk는 어디갔어" |
+| `31fdc91` | cycle 169.5 — QLabel transparent bg 명시 + 30% 축소 — 사용자 비판 "배경이 black 이잖아" + "30% 줄여" |
+| `(본 commit)` | cycle 169.6 — 평가 freshness + handoff §8.77 |
+
+### 8.77.2 산출
+
+| 영역 | 본문 |
+|---|---|
+| `app/assets/branding/tootalk_symbol.png` (신설 337KB) | Toonation 공식 brand resource 원본 그대로 5000×1842 RGBA |
+| WelcomeDialog logo_row | QHBoxLayout (symbol PNG + Talk 흰색 QLabel) + transparent bg + scaledToHeight 56 |
+| LoginDialog/SignupDialog logo | symbol PNG only + transparent bg + scaledToHeight 45 |
+
+### 8.77.3 PIL bbox 검증 결과
+
+```
+PNG 5000×1842 RGBA
+  bbox = (5, 4, 4996, 1838)
+  (0,0) corner alpha=0 (transparent)
+  non-transparent pixel = 모두 (81, 156, 255) 근접 (Toonation blue)
+  alpha=0 ratio = 47.2%
+
+QLabel default bg (base-dark.qss 안 QWidget #0F172A inherit)
+  → setStyleSheet('background: transparent;') + WA_TranslucentBackground 명시 의무
+  → parent banner gradient 자연 노출
+```
+
+### 8.77.4 사용자 비판 회수 누계 (cycle 152.4~169.5)
+
+- "로그인도 없이 메인창" (cycle 152.4) ✅
+- "텍스트는 보이지도 않아" (cycle 152.4) ✅
+- "투네이션 도메인은 왜 참조해" (cycle 152.6) ✅
+- "기껏만든 마크다운 왜 사용안할라" (cycle 152.6) ✅
+- "자꾸 나한테 시킬라고" (cycle 152) ✅
+- "원격 서버는 니가 띄워" (cycle 152.7) ✅
+- "이거 업데이트 된거 맞아" (cycle 153.4) ✅
+- "테스트는 사용자 테스트야" (cycle 152.3) ✅
+- "첨부한 이미지를 그대로 사용해야만해" (cycle 169.1) ✅
+- "완전히 똑같이 svg로 만들라는거야" (cycle 169.2) ✅
+- "그냥 png를 그대로 써" (cycle 169.3) ✅
+- "Talk는 어디갔어" (cycle 169.4) ✅
+- "배경이 black 이잖아" (cycle 169.5) ✅
+- "png 로고의 크기 비율을 30% 줄여" (cycle 169.5) ✅
+
+누계 14건 verbatim 회수.
+
+### 8.77.5 다음 cycle 170+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | 사용자 manual test trigger ack 의무 (HIGH 잔존) |
+| 2 | 사용자 visual confirm — symbol + Talk 합성 + transparent + 30% 축소 결과 |
+| 3 | LoginDialog/SignupDialog 안 Talk wordmark 추가 여부 |
+| 4 | 평가 §2.51~§2.55 본격 sub-section 본문 채워 넣기 |
+| 5 | M7 텔레그램 송신 chain 활성 검증 |
+
+---
+
 ## 8.76 사이클 167~168.3 — aiortc PeerConnectionWrapper + mesh_manager 통합 + dereliction-detector-agent 신설 + M2 README/M3 History prepend 회수 (2026-05-20 신설)
 
 ### 8.76.1 4 commit 산출
