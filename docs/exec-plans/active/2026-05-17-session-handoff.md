@@ -169,6 +169,82 @@ status: active
 
 ---
 
+## 8.73 사이클 158~161 — mesh_manager broadcast_payload + reactions UI binding + DESIGN.md §11.9 brand color + base-light.qss + reply broadcast chain 통합 (2026-05-20 신설)
+
+### 8.73.1 4 commit 산출
+
+| commit | 영역 |
+|---|---|
+| `8c36a8e` | cycle 158 — mesh_manager.broadcast_payload + dispatch_incoming + message_bubble message_id + reactions handler 3 PASS |
+| `519c1ec` | cycle 159 — reactions_client UI binding chain (MessageBubble + ChatView + MainWindow) |
+| `b1d1f19` | cycle 160 — ReactionsClient instantiate (main.py) + DESIGN.md §11.9 brand color section + HTML mirror |
+| `(본 commit)` | cycle 161 — base-light.qss 신설 + theme.py light fallback chain + main_window reply broadcast chain 통합 + 평가 freshness + handoff §8.73 |
+
+### 8.73.2 산출 5 file (cycle 161 단독)
+
+| file | 본문 |
+|---|---|
+| `app/assets/themes/base-light.qss` (신설) | light mode QSS — 16 widget selector (button 4 variant + bubble self/peer + sidebar + chatList + chatHeader + lineedit + scrollbar + statusbar + menubar + progressbar + welcome banner) |
+| `app/ui/theme.py` | light fallback chain — light 부재 시 dark 자동 폴백 + invalid mode 차단 |
+| `app/ui/main_window.py` | `_on_send_clicked` 안 mesh_manager.broadcast_payload chain — MessagePayload v1.0 + ReplyToField + asyncio.ensure_future |
+| 평가 4 pair | 03:30 KST sweep |
+| handoff §8.73 | 본 sub-section prepend |
+
+### 8.73.3 cycle 158~161 누계 chain 완성도
+
+```
+사용자 InputBar 안 텍스트 + reply preview 활성
+  → Enter
+  → main_window._on_send_clicked
+  → reply_ctx snapshot (InputBar.reply_context)
+  → ReplyContext instance + ChatView.add_message render
+  → InputBar.clear_reply_to
+  → mesh_manager.broadcast_payload(MessagePayload v1.0)
+  → DataChannel fan-out (≤ 8 peer)
+
+peer DataChannel raw_json 수신
+  → mesh_manager.dispatch_incoming(raw)
+  → MessagePayload.from_json
+  → handler(sender, payload) dispatch
+  → ChatView.add_message_from_payload
+  → MessageBubble render (reply + reactions + read receipt)
+
+사용자 bubble 우 click → 😀 반응 추가
+  → EmojiPicker popup
+  → emoji_selected
+  → bubble.add_reaction(emoji)
+  → _reactions dict 증분
+  → asyncio.ensure_future(reactions_client.add_reaction(message_id, emoji))
+  → POST /api/messages/{id}/reactions
+  → INSERT IGNORE message_reactions
+
+사용자 SettingsDialog → 테마 → ThemePicker
+  → load_theme(qt_app, mode)
+  → base-{dark|light}.qss replace
+  → save_user_theme_preference persist
+  → 재실행 시점 자동 복원
+```
+
+### 8.73.4 cycle 162+ 진입 우선순위
+
+| 우선 | 작업 |
+|---|---|
+| 1 | server message_id 발급 chain — POST /api/rooms/{room_id}/messages 응답 message_id → bubble.set_message_id |
+| 2 | reactions incoming server push (WebSocket 또는 polling) → bubble pill 실시간 갱신 |
+| 3 | tootalk_favicon.ico 신설 (SVG → ICO convert) |
+| 4 | aiortc RTCPeerConnection + DataChannel actual binding — mesh_manager 의 placeholder peer 본격 chain |
+| 5 | 사용자 manual test feedback 회수 (pending) |
+
+### 8.73.5 cycle 153~161 9 cycle 누계
+
+- 47 file 신설/edit (153: 22 + 154: 5 + 155: 5 + 156: 2 + 157: 2 + 158: 3 + 159: 3 + 160: 3 + 161: 5 — overlap edit 제외 누계)
+- pytest 1750 PASS (baseline 1737 + message_protocol 10 + reactions_handlers 3)
+- drift 0건 100 연속 사이클 37~161
+- BPE WARN 회수 누계 14회
+- 사용자 비판 회수 8건 verbatim
+
+---
+
 ## 8.72 사이클 155~157 — theme persist + reactions REST + DataChannel payload schema + ChatView 수신 path + 10 pytest PASS (2026-05-20 신설)
 
 ### 8.72.1 cycle 155~157 3 commit + 1 통합 commit

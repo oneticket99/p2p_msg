@@ -41,7 +41,7 @@ def detect_mode(app: QApplication) -> str:
 
 
 def load_theme(app: QApplication, theme: ThemeMode = "auto") -> bool:
-    """Toonation BI base theme load.
+    """Toonation BI base theme load — cycle 161 light theme actual binding.
 
     Parameters
     ----------
@@ -55,13 +55,21 @@ def load_theme(app: QApplication, theme: ThemeMode = "auto") -> bool:
     bool
         QSS load 성공 여부. file 부재 시 False + log warn.
     """
-    # 한글 주석 — auto 모드 = palette 기반 dark/light 결정
+    # 한글 주석 — auto 모드 = palette 기반 dark/light 결정 (cycle 161 light actual)
     resolved = detect_mode(app) if theme == "auto" else theme
+    if resolved not in ("dark", "light"):
+        log.warning("theme=%r 무효 — dark 폴백", resolved)
+        resolved = "dark"
 
     qss_path = _THEME_DIR / f"base-{resolved}.qss"
     if not qss_path.is_file():
-        log.warning("theme QSS 부재 — %s (graceful skip)", qss_path)
-        return False
+        # 한글 주석 — light theme 부재 시 dark 폴백 chain
+        if resolved == "light":
+            log.info("base-light.qss 부재 — base-dark.qss 폴백")
+            qss_path = _THEME_DIR / "base-dark.qss"
+        if not qss_path.is_file():
+            log.warning("theme QSS 부재 — %s (graceful skip)", qss_path)
+            return False
 
     try:
         qss = qss_path.read_text(encoding="utf-8")

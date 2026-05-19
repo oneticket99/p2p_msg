@@ -1083,9 +1083,28 @@ class MainWindow(QMainWindow):
         )
         self._input_edit.clear()
 
-        # cycle 154.3 — DataChannel payload 안 reply_to field 의무 (data_channel binding 시점)
-        # 한글 주석 — 본 chain = _datachannel.send(json) payload 안 reply_to 포함
-        # TODO(cycle 155+): payload schema {text, reply_to, reactions} json 송신
+        # cycle 161 — mesh_manager broadcast_payload chain actual 통합
+        # 한글 주석 — MessagePayload v1.0 schema + ReplyToField + DataChannel fan-out
+        try:
+            mesh = getattr(self, "_mesh_manager", None)
+            if mesh is not None:
+                from app.net.message_protocol import ReplyToField, build_text_payload
+                proto_reply = None
+                if reply_ctx is not None:
+                    proto_reply = ReplyToField(
+                        message_id="",  # cycle 162+ server message_id 발급 후 정합
+                        sender=reply_ctx.original_sender,
+                        preview=reply_ctx.original_text[:60],
+                    )
+                payload = build_text_payload(
+                    sender=self._config.user_nickname,
+                    text=text,
+                    reply_to=proto_reply,
+                )
+                import asyncio
+                asyncio.ensure_future(mesh.broadcast_payload(payload))
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("mesh broadcast_payload 실패 graceful — %r", exc)
 
     @pyqtSlot(int)
     def _on_room_entered(self, room_id: int) -> None:
