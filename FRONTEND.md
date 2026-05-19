@@ -466,6 +466,43 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 - 라이선스 GPLv3 + 브랜드 정합 — 외부 fork distribution 시 Toonation 브랜드 사용 권한 별도 확인 의무 (TooTalk source code 라이선스 ≠ Toonation 브랜드 사용권)
 - 정식 Toonation 통합 옵션 B 진입 시 = 본 §15 의 공식 BI 가이드 의 자세한 인용 + 사용자 검토 의무 (Phase 2 이후)
 
+### 15.6 로고 구성 비율 박제 (사용자 directive 2026-05-20 cycle 169.13 영구화)
+
+본 §15.6 = TooTalk dialog 안 logo composition 의 의무 비율 박제. WelcomeDialog 기준 + LoginDialog/SignupDialog 의 동일 비율 의무.
+
+#### 15.6.1 logo composition 의무 (symbol PNG + Talk 흰색)
+
+| 영역 | 값 | 비고 |
+|---|---|---|
+| symbol PNG height | **50 px** | `app/assets/branding/tootalk_symbol.png` (Toonation 공식 brand resource) + `scaledToHeight(50, SmoothTransformation)` |
+| Talk QLabel font-size | **28 px** | font-weight 700 + letter-spacing -1px + family `-apple-system, 'SF Pro Display', 'Inter', sans-serif` |
+| symbol:Talk ratio | **50 : 28 ≈ 1.79** | 모든 dialog (Welcome + Login + Signup) 동일 의무 |
+| logo_row spacing | **0** | `setSpacing(0)` + `setContentsMargins(0, 0, 0, 0)` (symbol + Talk 딱붙임) |
+| symbol_label bg | **transparent** | `setStyleSheet("background: transparent;")` + `WA_TranslucentBackground` |
+| talk_label color | **#ffffff** | 흰색 (banner gradient 또는 dark dialog 위 노출) |
+
+#### 15.6.2 mascot 이미지 + "투턱" 텍스트 (WelcomeDialog 전용)
+
+| 영역 | 값 |
+|---|---|
+| mascot path | `app/assets/branding/toona_sakamoto.png` |
+| mascot height | **160 px** + transparent bg + center align |
+| "투턱" 텍스트 font-size | **24 px** font-weight 700 + letter-spacing -1px + 흰색 |
+
+#### 15.6.3 dialog 안 title 표기 의무
+
+| dialog | title 텍스트 |
+|---|---|
+| WelcomeDialog | (title 부재 — mascot + "투턱" 만) |
+| LoginDialog | "투턱 로그인" (22px bold, color `#e5e7eb`) |
+| SignupDialog | "투턱 회원가입" (22px bold, color `#e5e7eb`) |
+
+#### 15.6.4 비율 위반 차단
+
+- 사용자 비판 cycle 169.12 — "로고가 첫화면에서 수정한 형태와 달라"
+- 회수 cycle 169.13 — symbol 40→50 + Talk 22/28→28 통일
+- 본 §15.6 = WelcomeDialog 기준 비율 박제 — 다른 dialog 의 logo composition 의무 정합 + 비율 임의 변경 차단
+
 ---
 
 ## 16. 참조
