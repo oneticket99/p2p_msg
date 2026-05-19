@@ -156,6 +156,17 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     # health + readiness endpoint 등록 (cycle 124 — Docker HEALTHCHECK + nginx + k8s probe)
     register_health_routes(app)
 
+    # 자동 업데이트 endpoint 등록 (cycle 132 — Phase 5 GET latest + POST release skeleton)
+    # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
+    try:
+        from .api.version_handlers import register_version_routes
+
+        register_version_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "version_handlers 등록 실패 — skeleton skip (%s)", exc
+        )
+
     # remote control endpoint 등록 (cycle 132 — Phase 5 Item 5 진입 prerequisite skeleton)
     # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
     try:

@@ -169,6 +169,53 @@ status: active
 
 ---
 
+## 8.60 사이클 132 sub-agent 9종 병렬 spawn — REMOTE wiring + i18n + cron + sound + backup + emoji + wine smoke + auto-update (2026-05-19 신설)
+
+### 8.60.1 9 영역 chain
+
+| 영역 | 작업 | 산출물 + PASS |
+|---|---|---|
+| A | REMOTE 3 ENUM wiring | server/api/remote_handlers.py + 6 PASS (DB audit 15→18) |
+| B | Phase 5 Item 1 i18n entry | app/i18n/ + otp_templates + 7 PASS (locale 5종) |
+| C | Let's Encrypt cron + rotation 정책 | tools/cert_renew_check.sh + rotation-policy.md + crontab.txt |
+| D | signature sound 6 옵션 | app/sound/ + UserSoundPreferences + 8 PASS |
+| E | encrypted backup RotateKey | app/backup/rotate_key.py + 7 PASS + 180 day |
+| F | Phase 5 Item 3 emoji pack skeleton | 0004 migration + 5 endpoint + jailbreak_ocr + 16 PASS |
+| G | CI Windows wine 빌드 smoke | gh run id 26077734815 + macOS PASS + wine FAIL 회수 + build.yml patch |
+| H | auto-update updater client | app/updater/ 6 file + version_check + downloader + applier + 9 test (background 진행 중) |
+| I | auto-update server endpoint + DB | 0006 app_versions migration + version_handlers + 5 PASS |
+
+### 8.60.2 sub-agent 누계 9종 병렬
+
+- feature-dev:code-architect 1 + general-purpose 8
+- [[feedback-parallel-execution-mandatory]] + [[feedback-workflow-preferences]] 정합
+
+### 8.60.3 pytest + drift
+
+- 전체 pytest = 1366 passed + auto-update server 5 = 1371 (sub-agent H 완료 시 +9 = 1380 추정)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0
+- drift 0건 79 연속 사이클 37~132
+
+### 8.60.4 영구 가드레일 신규 2종
+
+- [[project-dopa-demo-only]] — dopa.co.kr 데모 전용 + 제품화 부재 (KT PTR 최후 또는 skip)
+- [[project-auto-update-feature]] — 자동 업데이트 신설 + Phase 5 동시 진행 가능
+
+### 8.60.5 사용자 manual 작업 완료
+
+- SKIP_PREPUSH push (cycle 131 chain)
+- scp tools/crontab.txt + cert_renew_check.sh + chmod +x + crontab 등록
+- backup_rotate_check.sh + /etc/tootalk/keys/ + active.json schema 초기
+
+### 8.60.6 다음 세션 첫 액션 우선순위
+
+1. auto-update sub-agent H 완료 통합 commit
+2. Phase 5 본격 GO directive 대기 (i18n 우선 → emoji pack → bot 마무리 → 원격 제어 → mobile 가장 마지막)
+3. auto-update + i18n 동시 진행 가능 (server endpoint + DB schema 독립)
+4. KT PTR + mail-tester 최후 ([[project-dopa-demo-only]])
+
+---
+
 ## 8.59 사이클 131 CI 회수 + Phase 5 priority mobile last + OTP integration test + self-hosted CI hook + 30일 토큰 사용량 HTML (2026-05-19 신설)
 
 ### 8.59.1 6 영역 chain
