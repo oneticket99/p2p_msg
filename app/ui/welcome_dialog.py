@@ -61,26 +61,32 @@ class WelcomeDialog(QDialog):
         banner_layout = QVBoxLayout(banner)
         banner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — cycle 169.14 단일 PNG composite — tootalk_logo_composite.png
-        # symbol + Talk 합성 단일 file (Welcome 기준 비율 50:28 박제, FRONTEND.md §15.6)
-        composite_path = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_logo_composite.png"
-        logo_label = QLabel()
-        logo_label.setStyleSheet("background: transparent;")
-        logo_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        if composite_path.is_file():
-            pixmap = QPixmap(str(composite_path))
+        # 한글 주석 — symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16 — composite PNG 폐기)
+        logo_row = QHBoxLayout()
+        logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_row.setSpacing(0)
+        logo_row.setContentsMargins(0, 0, 0, 0)
+
+        symbol_label = QLabel()
+        symbol_label.setStyleSheet("background: transparent;")
+        symbol_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        if _LOGO_PATH.is_file():
+            pixmap = QPixmap(str(_LOGO_PATH))
             scaled = pixmap.scaledToHeight(50, Qt.TransformationMode.SmoothTransformation)
-            logo_label.setPixmap(scaled)
-        else:
-            logo_label.setText("TooTalk")
-            logo_label.setStyleSheet(
-                "background: transparent;"
-                " color: #ffffff;"
-                " font-size: 32px;"
-                " font-weight: 700;"
-            )
-        banner_layout.addWidget(logo_label)
+            symbol_label.setPixmap(scaled)
+        logo_row.addWidget(symbol_label)
+
+        talk_label = QLabel("Talk")
+        talk_label.setStyleSheet(
+            "background: transparent;"
+            " color: #ffffff;"
+            " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
+            " font-size: 28px;"
+            " font-weight: 700;"
+            " letter-spacing: -1px;"
+        )
+        logo_row.addWidget(talk_label)
+        banner_layout.addLayout(logo_row)
 
         outer.addWidget(banner)
 

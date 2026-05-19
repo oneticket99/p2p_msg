@@ -55,17 +55,32 @@ class LoginDialog(QDialog):
         outer.setSpacing(16)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — cycle 169.14 단일 PNG composite (FRONTEND.md §15.6 박제)
-        composite_path = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_logo_composite.png"
-        logo_label = QLabel()
-        logo_label.setStyleSheet("background: transparent;")
-        logo_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        if composite_path.is_file():
-            pixmap = QPixmap(str(composite_path))
+        # 한글 주석 — symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16)
+        logo_row = QHBoxLayout()
+        logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_row.setSpacing(0)
+        logo_row.setContentsMargins(0, 0, 0, 0)
+
+        symbol_label = QLabel()
+        symbol_label.setStyleSheet("background: transparent;")
+        symbol_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        if _ICON_PATH.is_file():
+            pixmap = QPixmap(str(_ICON_PATH))
             scaled = pixmap.scaledToHeight(50, Qt.TransformationMode.SmoothTransformation)
-            logo_label.setPixmap(scaled)
-        outer.addWidget(logo_label)
+            symbol_label.setPixmap(scaled)
+        logo_row.addWidget(symbol_label)
+
+        talk_label = QLabel("Talk")
+        talk_label.setStyleSheet(
+            "background: transparent;"
+            " color: #ffffff;"
+            " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
+            " font-size: 28px;"
+            " font-weight: 700;"
+            " letter-spacing: -1px;"
+        )
+        logo_row.addWidget(talk_label)
+        outer.addLayout(logo_row)
 
         # 한글 주석 — "투턱 로그인" title (사용자 directive cycle 169.12 — TooTalk → 투턱)
         title = QLabel(_tr("투턱 로그인"))
