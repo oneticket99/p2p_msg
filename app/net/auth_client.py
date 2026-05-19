@@ -56,8 +56,15 @@ class AuthClient:
         cross-loop ClientSession reuse 의 RuntimeError 차단 (qasync ↔ asyncio.run 호환).
         """
         url = f"{self._base_url}{path}"
+        # cycle 169.35 — self-signed cert (tootalk.demo) verify 차단 (cycle 152 deploy 정합)
+        # TLS verify production 진입 시점 = TOOTALK_TLS_VERIFY=1 명시 의무 (cycle 170+ entry)
+        import ssl
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        connector = aiohttp.TCPConnector(ssl=ssl_ctx)
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.post(url, json=payload) as resp:
                     data = await resp.json(content_type=None)
                     if resp.status >= 400:

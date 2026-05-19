@@ -107,9 +107,11 @@ def main() -> int:
     asyncio.set_event_loop(loop)
 
     # 4) AuthClient 초기화 — REST endpoint base URL
-    # signaling_url ws → http 의
-    # cycle 169.33 — rstrip("/ws") char-set 부작용 회수 → removesuffix
-    api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").removesuffix("/ws")
+    # cycle 169.35 회수 — signaling_url (ws://:8765) ≠ REST endpoint (https://:443)
+    # TOOTALK_API_BASE env 우선 + 부재 시 signaling_url 변환 fallback (개발 환경 만)
+    api_base = os.environ.get("TOOTALK_API_BASE")
+    if not api_base:
+        api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").removesuffix("/ws")
     auth_client = AuthClient(api_base)
 
     # cycle 160 — ReactionsClient instantiate (graceful httpx 부재)
