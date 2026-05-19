@@ -137,7 +137,9 @@ class SignupDialog(QDialog):
         btn_login_link = QPushButton(_tr("로그인"))
         btn_login_link.setProperty("variant", "ghost")
         btn_login_link.setFlat(True)
-        btn_login_link.clicked.connect(self.reject)  # type: ignore[arg-type]
+        # 한글 주석 — cycle 169.53 회수 — login link click → done(3) (signup → login switch intent)
+        # main.py 안 reject 의 어플 종료 차단 + login_dialog 진입 chain 의무
+        btn_login_link.clicked.connect(lambda: self.done(3))  # type: ignore[arg-type]
 
         btn_row.addWidget(btn_cancel)
         btn_row.addStretch(1)

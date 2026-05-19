@@ -140,20 +140,34 @@ def main() -> int:
                     loop.run_until_complete(auth_client.close())
                     return 0
 
-            # 5-2) LoginDialog 진입
-            login = LoginDialog(auth_client=auth_client)
-            login_result = login.exec()
-            if login_result == 2:
-                # signup intent (LoginDialog._on_signup_link_clicked)
-                signup = SignupDialog(auth_client=auth_client)
-                if signup.exec() != signup.DialogCode.Accepted:
-                    logging.getLogger(__name__).info("SignupDialog 취소 — 종료")
-                    loop.run_until_complete(auth_client.close())
-                    return 0
-            elif login_result != login.DialogCode.Accepted:
-                logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
-                loop.run_until_complete(auth_client.close())
-                return 0
+            # 5-2) LoginDialog ↔ SignupDialog switch chain (cycle 169.53 회수)
+            # 한글 주석 — 무한 switch loop — login done(2) → signup, signup done(3) → login.
+            # 사용자 비판 "로그인 버튼 누르면 엡 종료" 회수 + cancel 만 종료.
+            authenticated = False
+            current_dialog = "login"
+            while not authenticated:
+                if current_dialog == "login":
+                    login = LoginDialog(auth_client=auth_client)
+                    login_result = login.exec()
+                    if login_result == 2:
+                        current_dialog = "signup"
+                        continue
+                    if login_result != login.DialogCode.Accepted:
+                        logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
+                        loop.run_until_complete(auth_client.close())
+                        return 0
+                    authenticated = True
+                else:  # signup
+                    signup = SignupDialog(auth_client=auth_client)
+                    signup_result = signup.exec()
+                    if signup_result == 3:
+                        current_dialog = "login"
+                        continue
+                    if signup_result != signup.DialogCode.Accepted:
+                        logging.getLogger(__name__).info("SignupDialog 취소 — 종료")
+                        loop.run_until_complete(auth_client.close())
+                        return 0
+                    authenticated = True
 
         # 6) MainWindow 표시
         window = MainWindow(
