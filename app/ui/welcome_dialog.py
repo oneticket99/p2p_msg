@@ -118,6 +118,18 @@ class WelcomeDialog(QDialog):
             mascot_label.setPixmap(mascot_scaled)
         content_layout.addWidget(mascot_label)
 
+        # 한글 주석 — mascot 직하 "투턱" 텍스트 (사용자 directive 2026-05-20 cycle 169.10)
+        mascot_name = QLabel("투턱")
+        mascot_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        mascot_name.setStyleSheet(
+            "background: transparent;"
+            " color: #ffffff;"
+            " font-size: 24px;"
+            " font-weight: 700;"
+            " letter-spacing: -1px;"
+        )
+        content_layout.addWidget(mascot_name)
+
         sub1 = QLabel(_tr("친구와 직접 연결 P2P 메신저"))
         sub1.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub1.setStyleSheet("color: #9ca3af; font-size: 14px;")
