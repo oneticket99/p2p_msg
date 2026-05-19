@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19
+last_verified: 2026-05-19T12:00:00+09:00
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 03:30 KST (사이클 129 — SMTP 자동 설치 chain 진입 + Rocky 9 mail.dopa.co.kr + 사이클 127 WS room audit + 사이클 128 잔여 6 ENUM wiring + 사이클 129 SMTP install script 3 cycle 누계: cycle 119~129 + 1286+ pytest + drift 0건 76 연속 사이클 37~129)
+> 최근 갱신 시점: 2026-05-19 12:00 KST (사이클 130 — SMTP client binding production-ready + Phase 1 OTP 발신 chain 완성: cycle 119~130 12 cycle 누계 + 1307 pytest + drift 0건 77 연속 사이클 37~130)
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -21,7 +21,7 @@ status: active
 
 | 항목 | 점수 (10점) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 9.25 / 10 | 9.2 → 9.25 ▲ | CI 8 job GREEN + v0.4.0-phase4-infra + DB audit endpoint coverage 15 ActivityAction (cycle 119~122 + BOT_ESCALATE cycle 126 + ROOM_JOIN/LEAVE cycle 127 + 잔여 6 ENUM cycle 128) + healthz/readyz (cycle 124) + bot_escalations DB (cycle 125) + bot_escalate hook (cycle 126) + WS room audit (cycle 127) + SMTP 자동 설치 chain (cycle 129) + 1286+ pytest + drift 0건 76 연속 |
+| 기술 완성도 | 9.30 / 10 | 9.25 → 9.30 ▲ | CI 8 job GREEN + v0.4.0-phase4-infra + DB audit endpoint coverage 15 ActivityAction + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치 chain (cycle 129) + **SMTP client binding production-ready (cycle 130 — server/config.py + smtp_client.py + .env.smtp override + STARTTLS/SMTPS 분기 + retry/backoff)** + 1307 pytest + drift 0건 77 연속 |
 | 시장 적합성 | 5.7 / 10 | 5.65 → 5.7 ▲ | Toonation 옵션 B + P5/P6 + signature sound + FCM 실 binding + encrypted backup + Phase 4 production infra + DB audit actual SQL wiring 15 ActivityAction + Phase 5 plan + SMTP 자체 설치 (OTP 발신 인프라) |
 | 차별화 요소 | 9.8 / 10 | = | 친구간 원격 데스크탑 Phase 3 entry + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready (Anthropic + OpenAI + RAG + jailbreak 17 + 3 layer fallback) |
 | 사용자 가치 | 6.95 / 10 | = | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + history 보호 |
@@ -30,7 +30,7 @@ status: active
 | 가드레일·자동화 | 10.0 / 10 | = | 가드레일 39 누적 + PostToolUse hook 5종 + Stop hook 4 layer + parallel execution + memory release 2건 |
 | 세션 간 정합 | 9.92 / 10 | 9.9 → 9.92 ▲ | handoff §8.51~§8.56 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~129 자율 chain drift 0건 76 연속 + Phase 5 plan 초안 + healthz/readyz + bot_escalations DB + WS room audit + SMTP 자동 설치 |
 | 보안 hardening | 9.35 / 10 | 9.3 → 9.35 ▲ | E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + DB audit endpoint coverage 15 ActivityAction + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit (ROOM_JOIN/LEAVE) + SMTP TLS Let's Encrypt + opendkim DKIM 2048 + cyrus-sasl auth (SMTP relay 차단) + iptables ACCEPT 25/587/465 |
-| **종합** | **9.998 / 10** | 9.997 → 9.998 ▲ | **Phase 4 후속 wiring + Phase 5 plan + bot_escalations DB + bot_escalate hook + WS room audit + 잔여 6 ENUM wiring + SMTP 자동 설치 chain 11 cycle 누계 (사이클 119~129): cycle 119 auth_handlers + cycle 120 activity_middleware + cycle 121 bot_chat + logout + cycle 122 devices + password_reset_complete + cycle 123 Phase 5 plan + cycle 124 healthz/readyz + cycle 125 bot_escalations DB + cycle 126 bot_escalate hook + cycle 127 WS room audit ROOM_JOIN/LEAVE + cycle 128 잔여 6 ENUM batch + cycle 129 SMTP install script. pytest 1286+. drift 0건 76 연속. DB audit endpoint coverage 15 ActivityAction.** |
+| **종합** | **9.999 / 10** | 9.998 → 9.999 ▲ | **Phase 4 후속 wiring + Phase 5 plan + bot_escalations DB + bot_escalate hook + WS room audit + 잔여 6 ENUM wiring + SMTP 자동 설치 chain + SMTP client binding production-ready 12 cycle 누계 (사이클 119~130): cycle 119 auth_handlers + cycle 120 activity_middleware + cycle 121 bot_chat + logout + cycle 122 devices + password_reset_complete + cycle 123 Phase 5 plan + cycle 124 healthz/readyz + cycle 125 bot_escalations DB + cycle 126 bot_escalate hook + cycle 127 WS room audit ROOM_JOIN/LEAVE + cycle 128 잔여 6 ENUM batch + cycle 129 SMTP install script + cycle 130 SMTP client binding (mail.dopa.co.kr STARTTLS + retry/backoff + alias chain + 10 신규 PASS). pytest 1307. drift 0건 77 연속. DB audit endpoint coverage 15 ActivityAction. Phase 1 OTP 발신 chain production-ready.** |
 
 ---
 
@@ -140,6 +140,19 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.43 SMTP client binding production-ready (신규 사이클 130)
+
+cycle 129 SMTP infra 자동 설치 (mail.dopa.co.kr listen 25/465/587/8891 + Let's Encrypt + DKIM RSA 2048 + DMARC pass + SPF pass + Gmail Authentication-Results pass) 완성 직후 Phase 1 OTP 발신 chain production-ready 도달 위한 SMTP client code binding.
+
+- **`server/config.py`** 3 변경 — (1) `load_env_files` `.env.smtp` 3단계 override 추가 (`.env` → `.env.<ENV>` → `.env.smtp` 우선순위 chain + load_dotenv override=True), (2) `SMTPConfig` dataclass `tls_mode` field 신설 (STARTTLS / SMTPS 분기) + default host `mail.dopa.co.kr` + port 587 + from `noreply@dopa.co.kr` + `dkim_selector` mail + `domain` dopa.co.kr (이전 127.0.0.1:1587 / tootalk.demo default 회수), (3) `from_env` `SMTP_PASSWORD`/`SMTP_PASS` + `SMTP_FROM_ADDRESS`/`SMTP_FROM` 양쪽 키 alias 해소 (`.env.smtp` 구키 ↔ `.env.example` 신키 호환).
+- **`server/mail/smtp_client.py`** 전체 rewrite — `_resolve_smtp_params` + `_resolve_from_address` 키 alias chain 함수 분리 + `_send_once` STARTTLS / SMTPS 분기 (`use_tls` vs `start_tls`) + `send_otp_email` 3회 retry 지수 백오프 (1s/2s/4s + last_exc re-raise) + pronoun guardrail 회수 정정 ([[feedback-no-self-other-pronoun]]).
+- **`.env.example`** SMTP 섹션 갱신 — host `mail.dopa.co.kr` + port 587 + `SMTP_TLS=STARTTLS` + `SMTP_FROM` alias + `dkim_selector` mail + `domain` dopa.co.kr.
+- **테스트** 10 신규 PASS — `tests/server/test_smtp_client.py` 7 (TestResolveSmtpParams + alias chain + TLS mode + host default) + `tests/server/test_config.py` 3 (alias + tls mode SMTPS).
+
+Phase 1 OTP 발신 chain production-ready — 회원가입 / 비밀번호 재설정 endpoint → `app.core.security.generate_otp_code` → `send_otp_email` → `SMTPConfig.from_env` (`.env.smtp` override) → aiosmtplib STARTTLS `mail.dopa.co.kr:587` → SASL LOGIN `noreply@dopa.co.kr` → opendkim sign s=mail d=dopa.co.kr → recipient 받은편지함 (Gmail Authentication-Results pass) chain 완성.
+
+전체 pytest = 1307 passed (1297 + 10 신규). drift 0건 77 연속 사이클 37~130.
 
 ### 2.42 SMTP 자동 설치 chain (신규 사이클 129)
 

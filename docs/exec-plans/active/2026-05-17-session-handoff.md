@@ -169,6 +169,50 @@ status: active
 
 ---
 
+## 8.58 사이클 130 SMTP client binding + Phase 1 OTP production-ready (2026-05-19 신설)
+
+### 8.58.1 1 cycle chain
+
+| cycle | 작업 | 신규 PASS |
+|---|---|---|
+| 130 | mail.dopa.co.kr SMTP client binding — `server/config.py` SMTPConfig + `server/mail/smtp_client.py` rewrite + .env.example + 테스트 | 10 |
+
+### 8.58.2 핵심 산출물
+
+- `server/config.py` — `load_env_files` `.env.smtp` 3단계 override (uvers=True) + SMTPConfig `tls_mode` field + STARTTLS / SMTPS 분기 + default `mail.dopa.co.kr` + 키 alias `SMTP_PASSWORD`/`SMTP_PASS` + `SMTP_FROM_ADDRESS`/`SMTP_FROM`
+- `server/mail/smtp_client.py` — 전체 rewrite + `_resolve_smtp_params` + `_resolve_from_address` + `_send_once` STARTTLS / SMTPS 분기 + `send_otp_email` 3회 retry 지수 백오프 (1s/2s/4s) + pronoun guardrail 정정
+- `.env.example` — SMTP 섹션 갱신 (host `mail.dopa.co.kr` + port 587 + `SMTP_TLS=STARTTLS` + `SMTP_FROM` alias)
+- `tests/server/test_smtp_client.py` — 7 신규 PASS (TestResolveSmtpParams + alias chain)
+- `tests/server/test_config.py` — 3 신규 + 1 갱신 (TestSMTPConfig default + alias + tls)
+
+### 8.58.3 Phase 1 OTP 발신 chain production-ready 완성
+
+```
+회원가입 / 비밀번호 재설정 endpoint
+  → app.core.security.generate_otp_code (6자리)
+  → server.mail.smtp_client.send_otp_email(to, code, purpose)
+  → SMTPConfig.from_env() (.env.smtp override)
+  → aiosmtplib STARTTLS mail.dopa.co.kr:587
+  → SASL LOGIN noreply@dopa.co.kr
+  → opendkim sign s=mail d=dopa.co.kr
+  → recipient 받은편지함 (Gmail Authentication-Results pass)
+```
+
+### 8.58.4 pytest + drift
+
+- 전체 pytest = 1307 passed (1297 + 10 신규)
+- 5 검증 PASS — AST + import + pytest + doc-lint 0 + BPE 0 + pronoun 0
+- drift 0건 77 연속 사이클 37~130
+
+### 8.58.5 다음 세션 첫 액션 우선순위
+
+1. Phase 5 사용자 GO directive 대기 (i18n + mobile + emoji pack + bot framework 마무리 + 원격 제어)
+2. REMOTE_GRANT/REVOKE 잔여 ActivityAction wiring (Phase 5 마무리 chain)
+3. KT (tongkni.co.kr) PTR reverse DNS 갱신 신청 (별개 cycle — Gmail spam reputation 추가 보강)
+4. mail-tester.com spam score 10/10 검증 (사용자 manual)
+
+---
+
 ## 8.57 사이클 127~129 WS room audit + 잔여 ENUM batch + SMTP 자동 설치 chain (2026-05-19 신설)
 
 ### 8.57.1 3 cycle chain
