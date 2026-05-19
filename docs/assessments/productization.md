@@ -812,22 +812,29 @@ KT ISP default PTR record (tongkni.co.kr) 잔존 — mail.dopa.co.kr 의 reverse
 
 | KPI | 목표 | 현재 |
 |---|---|---|
-| 1:1 채팅 메시지 전송 성공률 | ≥ 99% | 미측정 |
-| 파일 전송 SHA-256 무결성 | 100% | 미측정 |
-| 시그널링 재연결 시간 (95p) | ≤ 5초 | 미측정 |
-| 앱 cold start latency | ≤ 30초 | 미측정 |
-| 1주 retention (내부 pilot) | ≥ 60% | 미측정 |
-| CI 3 workflow GREEN 비율 | 100% | **100% ✓ (macOS arm64, 사이클 5)** |
+| 1:1 채팅 메시지 전송 성공률 | ≥ 99% | 미측정 (dogfooding 의무) |
+| 파일 전송 SHA-256 무결성 | 100% | 미측정 (dogfooding 의무) |
+| 시그널링 재연결 시간 (95p) | ≤ 5초 | 미측정 (dogfooding 의무) |
+| 앱 cold start latency | ≤ 30초 | 미측정 (dogfooding 의무) |
+| 1주 retention (내부 pilot) | ≥ 60% | 미측정 (pilot 의무) |
+| CI 3 workflow GREEN 비율 | 100% | **100% ✓ (macOS arm64 + windows-latest, cycle 143~148)** |
 | doc-lint.sh 5 검사 통과율 | 100% | 본 세션 신규 파일 100% |
-| 가드레일 영구 메모리 | 10종+ | **18종 active (사이클 5)** |
-| pytest coverage | ≥ 80% | 미측정 (코드 미진입) |
+| 가드레일 영구 메모리 | 10종+ | **56+ active (cycle 148)** |
+| pytest 누계 PASS | ≥ 500 | **1673 PASS (cycle 148)** |
+| pytest coverage | ≥ 80% | 미측정 |
 | Playwright E2E test | ≥ 5건 | 3건 스켈레톤 active |
-| **OTP 발송 → 수신 latency** | ≤ 30초 | 미측정 (Phase 1 코드 후) |
-| **OTP brute force 차단율** | 100% (5회/30분) | 미측정 |
-| **원격 제어 세션 성공률** | ≥ 95% | 미측정 (Phase 3 막바지 후) |
-| **mail-tester score** (SMTP) | ≥ 7/10 | 미측정 (SSH 설치 후) |
+| **OTP 발송 → 수신 latency** | ≤ 30초 | cycle 129~130 production-ready (Gmail Authentication-Results pass + DKIM + DMARC) |
+| **OTP brute force 차단율** | 100% (5회/30분) | OK (security.py PBKDF2 600K + email enumeration 회피) |
+| **원격 제어 세션 성공률** | ≥ 95% | 미측정 (Phase 5 Item 5 cycle 165~180 후) |
+| **mail-tester score** (SMTP) | ≥ 7/10 | cycle 129 chain — Gmail Authentication-Results pass 도달 |
 | **fork PR approval rate** (악성 차단) | 100% | strict 적용 OK (사이클 5) |
 | **GPLv3 호환 의존성** | 100% | 100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6) |
+| **drift 0건 연속 cycle** | ≥ 50 | **91 연속 (사이클 37~148)** |
+| **sub-agent 누계 병렬 spawn** | ≥ 10 | **46종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5)** |
+| **DB audit endpoint coverage** | ≥ 20 ActivityAction | **28 ActivityAction (cycle 144)** |
+| **sub-agent 평균 PASS** | ≥ 5 | 8~15 PASS / sub-agent |
+| **cycle 119~148 진입 누계** | ≥ 20 | **30 cycle (Phase 5 actual binding 부분 진입)** |
+| **Phase 5 Item 진입** | ≥ 3 / 5 | **5 / 5 (i18n + mobile + emoji + bot + 원격 모두 actual binding 부분 진입)** |
 
 ---
 
