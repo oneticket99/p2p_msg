@@ -71,7 +71,7 @@ class WelcomeDialog(QDialog):
         symbol_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         if _LOGO_PATH.is_file():
             pixmap = QPixmap(str(_LOGO_PATH))
-            scaled = pixmap.scaledToHeight(56, Qt.TransformationMode.SmoothTransformation)
+            scaled = pixmap.scaledToHeight(50, Qt.TransformationMode.SmoothTransformation)
             symbol_label.setPixmap(scaled)
         else:
             symbol_label.setText("Too")

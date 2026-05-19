@@ -61,7 +61,7 @@ class SignupDialog(QDialog):
         logo_label.setStyleSheet("background: transparent;")
         if _ICON_PATH.is_file():
             pixmap = QPixmap(str(_ICON_PATH))
-            scaled = pixmap.scaledToHeight(45, Qt.TransformationMode.SmoothTransformation)
+            scaled = pixmap.scaledToHeight(40, Qt.TransformationMode.SmoothTransformation)
             logo_label.setPixmap(scaled)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         outer.addWidget(logo_label)
