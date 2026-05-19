@@ -10,6 +10,7 @@
     "feedback_telegram_report_mandatory_m7.md",
     "feedback_no_triple_particle_chat.md"
   ],
+  "language": "korean",
   "hooks": {
     "PreToolUse": [
       {
@@ -56,6 +57,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_chat_bpe_check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_self_hosted_ci_trigger.sh"
           }
         ]
       }
