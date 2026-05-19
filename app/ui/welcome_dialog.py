@@ -64,7 +64,8 @@ class WelcomeDialog(QDialog):
         # Toonation 공식 symbol PNG (Too typography) + Talk 흰색 옆 부착
         logo_row = QHBoxLayout()
         logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        logo_row.setSpacing(12)
+        logo_row.setSpacing(0)
+        logo_row.setContentsMargins(0, 0, 0, 0)
 
         symbol_label = QLabel()
         symbol_label.setStyleSheet("background: transparent;")
