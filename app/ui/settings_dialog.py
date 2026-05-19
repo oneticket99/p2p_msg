@@ -186,6 +186,8 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
         self.setWindowTitle(f"TooTalk · {_tr('설정')}")
         self.setMinimumSize(720, 560)
+        # 한글 주석 — cycle 169.57 회수 — 모든 dialog modal 강제 (사용자 directive)
+        self.setModal(True)
 
         initial = build_state_from_player(sound_player)
 

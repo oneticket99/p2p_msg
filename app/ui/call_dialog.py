@@ -167,6 +167,34 @@ class CallDialog(QDialog):
         )
         return btn
 
+    def attach_client(self, call_client) -> None:  # type: ignore[no-untyped-def]
+        """CallClient 의 attach — accept/end/mute/video signal 의 binding chain.
+
+        cycle 169.57 회수 — actual WebRTC SDP/ICE fire 의 의 main_window 또는
+        signaling chain 안 외부 의 의 wire. 본 dialog = UI control 만 의 책임.
+        """
+        self._client = call_client
+        self.accepted_signal.connect(lambda: self._handle_accept_with_client())  # type: ignore[arg-type]
+        self.ended_signal.connect(lambda: self._handle_end_with_client())  # type: ignore[arg-type]
+        self.mute_toggled.connect(call_client.toggle_mute)  # type: ignore[arg-type]
+        self.video_toggled.connect(call_client.toggle_video)  # type: ignore[arg-type]
+
+    def _handle_accept_with_client(self) -> None:
+        """accept 직후 client offer/answer fire — 별도 cycle binding chain."""
+        # 한글 주석 — actual SDP offer/answer + ICE candidate exchange = signaling chain 별도 cycle
+        pass
+
+    def _handle_end_with_client(self) -> None:
+        """end 직후 client hangup."""
+        client = getattr(self, "_client", None)
+        if client is None:
+            return
+        import asyncio
+        try:
+            asyncio.ensure_future(client.hangup())
+        except Exception:
+            pass
+
     def _on_accept(self) -> None:
         """수신 통화 수락."""
         self._status_label.setText("연결됨")

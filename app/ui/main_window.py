@@ -1084,7 +1084,39 @@ class MainWindow(QMainWindow):
         from app.ui.my_profile_dialog import MyProfileDialog
         username = getattr(self._config, "user_nickname", "사용자")
         dialog = MyProfileDialog(username=username, parent=self)
+        dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
         dialog.exec()
+
+    @pyqtSlot()
+    def _on_profile_edit_requested(self) -> None:
+        """내 프로필 안 edit click → MyAccountDialog 진입 + save 시 PUT /api/auth/profile."""
+        from app.ui.my_account_dialog import MyAccountDialog
+        from app.net.account_client import ProfileUpdateWorker
+        username = getattr(self._config, "user_nickname", "사용자")
+        dialog = MyAccountDialog(username=username, parent=self)
+
+        def _on_save(payload: dict) -> None:
+            base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+            token = getattr(self, "_auth_token", None)
+            if not base_url or not token:
+                log.warning("[profile] base_url/token 부재 — PUT skip")
+                return
+            worker = ProfileUpdateWorker(base_url, token, payload, parent=self)
+            worker.finished_with_result.connect(self._on_profile_update_finished)  # type: ignore[arg-type]
+            worker.start()
+            self._profile_worker = worker  # gc 회피
+
+        dialog.save_requested.connect(_on_save)  # type: ignore[arg-type]
+        dialog.exec()
+
+    @pyqtSlot(bool, str, str, dict)
+    def _on_profile_update_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """ProfileUpdateWorker finished slot."""
+        from PyQt6.QtWidgets import QMessageBox
+        if ok:
+            QMessageBox.information(self, "TooTalk", "프로필 갱신 완료")
+        else:
+            QMessageBox.warning(self, "TooTalk", f"프로필 갱신 실패 — {error_message or error_code}")
 
     @pyqtSlot()
     def _on_drawer_settings(self) -> None:
@@ -1121,14 +1153,20 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_header_call(self) -> None:
-        """ChatHeader 통화 button — cycle 169.56 CallDialog 진입.
+        """ChatHeader 통화 button — cycle 169.57 CallDialog + CallClient binding.
 
-        음성 통화 default. 영상 toggle 가능. WebRTC SDP + ICE = 별도 cycle 의무.
+        음성 통화 default. 영상 toggle 가능. WebRTC SDP/ICE actual exchange =
+        signaling chain 안 fire (별도 cycle).
         """
         log.info("ChatHeader 통화 click — CallDialog 진입")
         from app.ui.call_dialog import CallDialog
+        from app.net.call_client import CallClient
         peer = "상대 사용자"  # 한글 주석 — 현 활성 chat peer 추출 별도 cycle
         dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
+        stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
+        call_client = CallClient(stun_url=stun_url)
+        dialog.attach_client(call_client)
+        self._active_call_client = call_client  # gc 회피
         dialog.exec()
 
     @pyqtSlot()
