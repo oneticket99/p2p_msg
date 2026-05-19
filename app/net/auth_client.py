@@ -63,8 +63,10 @@ class AuthClient:
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
         connector = aiohttp.TCPConnector(ssl=ssl_ctx)
+        # 한글 주석 — cycle 169.48 회수 — timeout 10초 (silent hang 차단)
+        timeout = aiohttp.ClientTimeout(total=10)
         try:
-            async with aiohttp.ClientSession(connector=connector) as session:
+            async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
                 async with session.post(url, json=payload) as resp:
                     data = await resp.json(content_type=None)
                     if resp.status >= 400:

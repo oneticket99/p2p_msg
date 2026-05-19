@@ -310,9 +310,9 @@ class OTPDialog(QDialog):
             return
 
         # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
+        # cycle 169.48 회수 — setEnabled(False) 폐기 (async fire 부재 시 button 영구 disable 차단)
         self._resend_remaining -= 1
         self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
-        self._resend_btn.setEnabled(False)  # 한글 주석 — async fire 중 double click 차단
         self._remaining_seconds = OTP_VALID_SECONDS
         for box in self._boxes:
             box.setEnabled(True)
@@ -325,13 +325,15 @@ class OTPDialog(QDialog):
         # 한글 주석 — async send fire (qasync loop active 안 ensure_future / 부재 시 asyncio.run)
         coro = self._do_resend()
         try:
-            asyncio.get_running_loop()
+            loop = asyncio.get_running_loop()
+            log.info("[OTP resend] running loop detect — %r", loop)
             future = asyncio.ensure_future(coro)
             future.add_done_callback(self._on_resend_done)
-        except RuntimeError:
+            log.info("[OTP resend] ensure_future scheduled — %r", future)
+        except RuntimeError as loop_exc:
+            log.info("[OTP resend] running loop 부재 — fallback asyncio.run (%r)", loop_exc)
             try:
                 asyncio.run(coro)
-                self._resend_btn.setEnabled(True)
             except Exception as exc:
                 log.warning("[OTP resend] sync fallback 실패 — %r", exc)
                 self._rollback_resend()

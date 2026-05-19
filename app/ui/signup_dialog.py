@@ -204,14 +204,15 @@ class SignupDialog(QDialog):
             return
 
         if getattr(result, "ok", False):
+            # 한글 주석 — cycle 169.48 회수 — OTP cancel 시 self.reject() 폐기.
+            # 사용자 directive verbatim: "otp 창만 닫혀야하고 회원 가입창은 계속 떠있어야함".
             from app.ui.otp_dialog import OTPDialog
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
             if otp.exec() == otp.DialogCode.Accepted:
                 self._email = email
                 self.accept()
-            else:
-                QMessageBox.information(self, "TooTalk", _tr("OTP 미인증 — 다음 진입 시 재시도"))
-                self.reject()
+            # 한글 주석 — OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
+            # else 분기 제거 — reject 부재 → signup dialog 잔존 유지
         else:
             # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
             err_code = getattr(result, "error_code", "")
