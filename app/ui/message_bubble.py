@@ -215,19 +215,35 @@ class MessageBubble(QFrame):
 
     # cycle 158 — message_id 보관 (server-side reactions REST chain 의무)
     _message_id: Optional[int] = None
+    # cycle 159 — reactions_client 의존성 (graceful 부재 시 local-only chain)
+    _reactions_client = None
 
     def set_message_id(self, message_id: int) -> None:
         """server-side message_id 등록 — reactions REST chain prereq."""
         self._message_id = message_id
+
+    def set_reactions_client(self, client) -> None:
+        """reactions_client (cycle 156) injection — REST persist chain (cycle 159 신설)."""
+        self._reactions_client = client
 
     def message_id(self) -> Optional[int]:
         """현 message_id snapshot."""
         return self._message_id
 
     def add_reaction(self, emoji: str) -> None:
-        """reaction pill 추가 — count 증분 + signal emit + REST persist (cycle 158)."""
+        """reaction pill 추가 — count 증분 + signal emit + REST persist (cycle 159)."""
         self._reactions[emoji] = self._reactions.get(emoji, 0) + 1
         self.reaction_added.emit(emoji)
+        # 한글 주석 — cycle 159 — server REST persist async chain (graceful 부재)
+        if self._reactions_client is not None and self._message_id is not None:
+            try:
+                import asyncio
+                asyncio.ensure_future(
+                    self._reactions_client.add_reaction(self._message_id, emoji)
+                )
+            except Exception as exc:  # pragma: no cover - graceful
+                import logging
+                logging.getLogger(__name__).debug("reactions REST persist 실패 — %r", exc)
 
     def _open_reaction_picker(self, global_pos: "QPoint") -> None:
         """EmojiPicker popup → 선택 시 add_reaction chain."""

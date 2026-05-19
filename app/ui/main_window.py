@@ -129,6 +129,7 @@ class MainWindow(QMainWindow):
         messages_client: Optional[object] = None,
         group_message_client: Optional[object] = None,
         friends_client: Optional[object] = None,
+        reactions_client: Optional[object] = None,
     ) -> None:
         """초기 위젯 트리 + sidebar + Stacked + 메뉴/StatusBar 배치.
 
@@ -172,6 +173,8 @@ class MainWindow(QMainWindow):
         self._group_message_client = group_message_client
         # cycle 147 — friends REST client (InviteDialog dropdown populate source)
         self._friends_client = friends_client
+        # cycle 159 — reactions_client (app.net.reactions_client) 주입 — graceful 부재 None
+        self._reactions_client = reactions_client
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
         # cycle 148 — 현재 user 의 service-wide role (admin / owner / member).
@@ -227,7 +230,11 @@ class MainWindow(QMainWindow):
         right_layout.addWidget(self._stacked, stretch=1)
 
         # 4-1) ChatView (1:1) — index 0 (기존 호환 유지)
-        self._chat_view = ChatView(parent=self._stacked, sound_player=self._sound_player)
+        self._chat_view = ChatView(
+            parent=self._stacked,
+            sound_player=self._sound_player,
+            reactions_client=self._reactions_client,
+        )
         self._stacked.addWidget(self._chat_view)  # idx 0
         # cycle 154 — reply_to_message signal → InputBar reply mode chain
         try:

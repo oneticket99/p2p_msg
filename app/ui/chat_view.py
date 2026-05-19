@@ -141,6 +141,7 @@ class ChatView(QScrollArea):
         self,
         parent: Optional[QWidget] = None,
         sound_player: Optional[SoundPlayer] = None,
+        reactions_client: Optional[object] = None,
     ) -> None:
         """ScrollArea + 내부 VBox 레이아웃 초기화.
 
@@ -155,6 +156,8 @@ class ChatView(QScrollArea):
 
         super().__init__(parent)
         self._sound_player = sound_player
+        # cycle 159 — reactions_client (app.net.reactions_client) 주입 — bubble 전달
+        self._reactions_client = reactions_client
 
         # 스크롤 영역 기본 설정 — 가로 스크롤은 비활성, 세로만 사용
         self.setWidgetResizable(True)
@@ -213,6 +216,9 @@ class ChatView(QScrollArea):
             bubble.reply_requested.connect(self._on_bubble_reply_requested)  # type: ignore[arg-type]
         except Exception:  # pragma: no cover - graceful
             pass
+        # 한글 주석 — cycle 159 reactions_client injection (REST persist chain)
+        if self._reactions_client is not None:
+            bubble.set_reactions_client(self._reactions_client)
 
         # stretch 슬롯 직전 (count - 1 위치) 에 삽입
         insert_at = max(0, self._messages_layout.count() - 1)
