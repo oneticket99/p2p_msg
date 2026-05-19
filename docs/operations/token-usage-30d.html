@@ -210,38 +210,38 @@
 <header>
   <h1>TooTalk · Claude Code 토큰 사용량 보고서 (최근 30일)</h1>
   <p>모델별 / 일별 / 캐시 적중률 / 비용 추정 — 데이터 출처는 로컬 session jsonl 누계 집계</p>
-  <p class="gen">생성 시각: 2026-05-19 13:20:57 KST · 집계 윈도우: 2026-04-19 13:20:57 ~ 2026-05-19 13:20:57</p>
+  <p class="gen">생성 시각: 2026-05-19 17:11:52 KST · 집계 윈도우: 2026-04-19 17:11:52 ~ 2026-05-19 17:11:52</p>
 </header>
 
 <div class="grid">
   <div class="kpi accent">
     <div class="label">총 토큰</div>
-    <div class="value">4,519,414,486</div>
+    <div class="value">5,059,218,353</div>
     <div class="sub">input + output + cache 합산</div>
   </div>
   <div class="kpi">
     <div class="label">총 assistant 메시지</div>
-    <div class="value">11,665</div>
+    <div class="value">14,618</div>
     <div class="sub">jsonl entry 의 usage 보유 행</div>
   </div>
   <div class="kpi">
     <div class="label">분석 session</div>
     <div class="value">4</div>
-    <div class="sub">main + subagent jsonl 102건 스캔</div>
+    <div class="sub">main + subagent jsonl 151건 스캔</div>
   </div>
   <div class="kpi">
     <div class="label">활성 일수</div>
     <div class="value">3</div>
-    <div class="sub">일평균 1,506,471,495 token</div>
+    <div class="sub">일평균 1,686,406,117 token</div>
   </div>
   <div class="kpi warn">
     <div class="label">추정 비용</div>
-    <div class="value">$9,453.14</div>
-    <div class="sub">일평균 $3,151.05</div>
+    <div class="value">$10,710.12</div>
+    <div class="sub">일평균 $3,570.04</div>
   </div>
   <div class="kpi ok">
     <div class="label">캐시 적중률</div>
-    <div class="value">97.7%</div>
+    <div class="value">97.6%</div>
     <div class="sub">cache_read / (cache_read + create + input)</div>
   </div>
 </div>
@@ -275,7 +275,7 @@
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
       <tbody>
-        <tr><td>2026-05-17</td><td class='num'>5,594</td><td class='num'>71,492</td><td class='num'>7,397,891</td><td class='num'>33,470,285</td><td class='num'>1,771,633,846</td><td class='num strong'>1,812,573,514</td><td class='num cost'>$3,840.93</td></tr><tr><td>2026-05-18</td><td class='num'>4,830</td><td class='num'>8,686</td><td class='num'>3,322,318</td><td class='num'>53,419,492</td><td class='num'>2,126,037,835</td><td class='num strong'>2,182,788,331</td><td class='num cost'>$4,439.98</td></tr><tr><td>2026-05-19</td><td class='num'>1,241</td><td class='num'>2,613</td><td class='num'>1,919,725</td><td class='num'>14,995,700</td><td class='num'>507,134,603</td><td class='num strong'>524,052,641</td><td class='num cost'>$1,172.23</td></tr>
+        <tr><td>2026-05-17</td><td class='num'>5,594</td><td class='num'>71,492</td><td class='num'>7,397,891</td><td class='num'>33,470,285</td><td class='num'>1,771,633,846</td><td class='num strong'>1,812,573,514</td><td class='num cost'>$3,840.93</td></tr><tr><td>2026-05-18</td><td class='num'>4,830</td><td class='num'>8,686</td><td class='num'>3,322,318</td><td class='num'>53,419,492</td><td class='num'>2,126,037,835</td><td class='num strong'>2,182,788,331</td><td class='num cost'>$4,439.98</td></tr><tr><td>2026-05-19</td><td class='num'>4,194</td><td class='num'>15,871</td><td class='num'>3,901,271</td><td class='num'>32,470,726</td><td class='num'>1,027,468,640</td><td class='num strong'>1,063,856,508</td><td class='num cost'>$2,429.21</td></tr>
       </tbody>
     </table>
   </div>
@@ -291,7 +291,7 @@
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>점유율</th><th>비용 (USD)</th>
       </tr></thead>
       <tbody>
-        <tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>11,536</td><td class='num'>82,648</td><td class='num'>12,593,486</td><td class='num'>101,556,144</td><td class='num'>4,399,867,727</td><td class='num strong'>4,514,100,005</td><td class='num'>99.88%</td><td class='num cost'>$9,449.73</td></tr><tr><td><span class='chip chip-claude-sonnet-4-6'>claude-sonnet-4-6</span></td><td class='num'>127</td><td class='num'>143</td><td class='num'>46,448</td><td class='num'>329,333</td><td class='num'>4,938,557</td><td class='num strong'>5,314,481</td><td class='num'>0.12%</td><td class='num cost'>$3.41</td></tr><tr><td><span class='chip chip-<synthetic>'><synthetic></span></td><td class='num'>2</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr>
+        <tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>14,486</td><td class='num'>95,906</td><td class='num'>14,575,032</td><td class='num'>119,031,170</td><td class='num'>4,920,201,764</td><td class='num strong'>5,053,903,872</td><td class='num'>99.89%</td><td class='num cost'>$10,706.70</td></tr><tr><td><span class='chip chip-claude-sonnet-4-6'>claude-sonnet-4-6</span></td><td class='num'>127</td><td class='num'>143</td><td class='num'>46,448</td><td class='num'>329,333</td><td class='num'>4,938,557</td><td class='num strong'>5,314,481</td><td class='num'>0.11%</td><td class='num cost'>$3.41</td></tr><tr><td><span class='chip chip-synthetic'><synthetic></span></td><td class='num'>5</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr>
       </tbody>
     </table>
   </div>
@@ -306,7 +306,7 @@
         <th>날짜 (KST)</th><th>모델</th><th>메시지</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
       <tbody>
-        <tr><td>2026-05-17</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>5,593</td><td class='num'>1,812,573,514</td><td class='num cost'>$3,840.93</td></tr><tr><td>2026-05-18</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,829</td><td class='num'>2,182,788,331</td><td class='num cost'>$4,439.98</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>1,114</td><td class='num'>518,738,160</td><td class='num cost'>$1,168.82</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-sonnet-4-6'>claude-sonnet-4-6</span></td><td class='num'>127</td><td class='num'>5,314,481</td><td class='num cost'>$3.41</td></tr>
+        <tr><td>2026-05-17</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>5,593</td><td class='num'>1,812,573,514</td><td class='num cost'>$3,840.93</td></tr><tr><td>2026-05-18</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,829</td><td class='num'>2,182,788,331</td><td class='num cost'>$4,439.98</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,064</td><td class='num'>1,058,542,027</td><td class='num cost'>$2,425.79</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-sonnet-4-6'>claude-sonnet-4-6</span></td><td class='num'>127</td><td class='num'>5,314,481</td><td class='num cost'>$3.41</td></tr>
       </tbody>
     </table>
   </div>
@@ -322,7 +322,7 @@
         <th>모델</th><th>메시지</th><th>총 토큰</th>
       </tr></thead>
       <tbody>
-        <tr><td><code>558cd683</code></td><td>2026-05-17 09:04</td><td>2026-05-17 11:42</td><td>claude-opus-4-7</td><td class='num'>1,419</td><td class='num'>247,588,187</td></tr><tr><td><code>7b82be3a</code></td><td>2026-05-17 11:42</td><td>2026-05-17 14:51</td><td>claude-opus-4-7</td><td class='num'>1,258</td><td class='num'>475,219,082</td></tr><tr><td><code>3b1201b7</code></td><td>2026-05-17 14:52</td><td>2026-05-18 13:40</td><td><synthetic>, claude-opus-4-7</td><td class='num'>4,043</td><td class='num'>1,577,225,437</td></tr><tr><td><code>553f4dc7</code></td><td>2026-05-18 13:40</td><td>2026-05-19 13:20</td><td>claude-opus-4-7, claude-sonnet-4-6</td><td class='num'>4,945</td><td class='num'>2,219,381,780</td></tr>
+        <tr><td><code>558cd683</code></td><td>2026-05-17 09:04</td><td>2026-05-17 11:42</td><td>claude-opus-4-7</td><td class='num'>1,419</td><td class='num'>247,588,187</td></tr><tr><td><code>7b82be3a</code></td><td>2026-05-17 11:42</td><td>2026-05-17 14:51</td><td>claude-opus-4-7</td><td class='num'>1,258</td><td class='num'>475,219,082</td></tr><tr><td><code>3b1201b7</code></td><td>2026-05-17 14:52</td><td>2026-05-18 13:40</td><td><synthetic>, claude-opus-4-7</td><td class='num'>4,043</td><td class='num'>1,577,225,437</td></tr><tr><td><code>553f4dc7</code></td><td>2026-05-18 13:40</td><td>2026-05-19 17:11</td><td><synthetic>, claude-opus-4-7, claude-sonnet-4-6</td><td class='num'>7,898</td><td class='num'>2,759,185,647</td></tr>
       </tbody>
     </table>
   </div>
@@ -349,13 +349,13 @@
   <h2>9. 메타데이터 + privacy</h2>
   <table>
     <tbody>
-      <tr><th>스캔 file</th><td>102 (jsonl 만)</td></tr>
-      <tr><th>usage 보유 file</th><td>102</td></tr>
-      <tr><th>파싱 assistant message</th><td>11,665</td></tr>
+      <tr><th>스캔 file</th><td>151 (jsonl 만)</td></tr>
+      <tr><th>usage 보유 file</th><td>151</td></tr>
+      <tr><th>파싱 assistant message</th><td>14,618</td></tr>
       <tr><th>스킵 라인</th><td>0</td></tr>
-      <tr><th>집계 윈도우 (KST)</th><td>2026-04-19 13:20:57 ~ 2026-05-19 13:20:57</td></tr>
+      <tr><th>집계 윈도우 (KST)</th><td>2026-04-19 17:11:52 ~ 2026-05-19 17:11:52</td></tr>
       <tr><th>privacy 보장</th><td>prompt 본문 / message text 노출 없음. token count + timestamp + model 만 추출.</td></tr>
-      <tr><th>raw json 출처</th><td><code>docs/operations/token-usage-30d.json</code> 동시 신설 (machine-readable mirror)</td></tr>
+      <tr><th>raw json 출처</th><td><code>docs/operations/token-usage-30d.json</code> 동시 재 산출 (machine-readable mirror)</td></tr>
     </tbody>
   </table>
 </section>
@@ -366,7 +366,7 @@
 
 <script>
 // 집계 데이터 inline — directive 외부 API 호출 금지 정합
-const D = {"dates": ["2026-05-17", "2026-05-18", "2026-05-19"], "total": [1812573514, 2182788331, 524052641], "input": [71492, 8686, 2613], "output": [7397891, 3322318, 1919725], "cache_create": [33470285, 53419492, 14995700], "cache_read": [1771633846, 2126037835, 507134603], "cost": [3840.9328, 4439.9764, 1172.235], "model_labels": ["claude-opus-4-7", "claude-sonnet-4-6", "<synthetic>"], "model_totals": [4514100005, 5314481, 0], "model_costs": [9449.7305, 3.4137, 0.0]};
+const D = {"dates": ["2026-05-17", "2026-05-18", "2026-05-19"], "total": [1812573514, 2182788331, 1063856508], "input": [71492, 8686, 15871], "output": [7397891, 3322318, 3901271], "cache_create": [33470285, 53419492, 32470726], "cache_read": [1771633846, 2126037835, 1027468640], "cost": [3840.9328, 4439.9764, 2429.2076], "model_labels": ["claude-opus-4-7", "claude-sonnet-4-6", "<synthetic>"], "model_totals": [5053903872, 5314481, 0], "model_costs": [10706.7031, 3.4137, 0.0]};
 
 // 색상 팔레트 — Toonation 브랜드 + 모델 식별
 const COLORS = {
@@ -399,12 +399,11 @@ new Chart(document.getElementById('chartDaily'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
     scales: {
       y: { stacked: true, ticks: { callback: v => v.toLocaleString() } },
-      x: { grid: { display: false } },
+      x: { stacked: true },
     },
-    plugins: { legend: { position: 'bottom' } },
   },
 });
 
@@ -413,24 +412,16 @@ new Chart(document.getElementById('chartCost'), {
   type: 'bar',
   data: {
     labels: D.dates,
-    datasets: [{
-      label: 'USD 추정',
-      data: D.cost,
-      backgroundColor: COLORS.cost,
-      borderRadius: 6,
-    }],
+    datasets: [{ label: '비용 (USD)', data: D.cost, backgroundColor: COLORS.cost, borderColor: COLORS.cost }],
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    scales: {
-      y: { ticks: { callback: v => '$' + v.toLocaleString() } },
-      x: { grid: { display: false } },
-    },
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } } },
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } },
   },
 });
 
-// 3. 모델 doughnut
+// 3. 모델별 doughnut
 new Chart(document.getElementById('chartModel'), {
   type: 'doughnut',
   data: {
@@ -438,23 +429,11 @@ new Chart(document.getElementById('chartModel'), {
     datasets: [{
       data: D.model_totals,
       backgroundColor: D.model_labels.map(m => MODEL_COLORS[m] || '#a0aec0'),
-      borderWidth: 2,
-      borderColor: '#fff',
     }],
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom' },
-      tooltip: { callbacks: {
-        label: ctx => {
-          const total = ctx.dataset.data.reduce((a,b)=>a+b, 0);
-          const pct = total ? (ctx.parsed / total * 100).toFixed(2) : 0;
-          return ` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${pct}%)`;
-        }
-      } },
-    },
-    cutout: '55%',
+    plugins: { legend: { position: 'bottom' } },
   },
 });
 </script>

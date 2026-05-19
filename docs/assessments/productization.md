@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-19T20:00:00+09:00
+last_verified: 2026-05-19T21:00:00+09:00
 status: active
 ---
 
@@ -10,7 +10,7 @@ status: active
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "각 작업이 마무리 될때마다 제품화 가능성 정리, 매번 문서 전체 업데이트".
 >
-> 최근 갱신 시점: 2026-05-19 20:00 KST (사이클 145 — cycle 142~144 chain 누계 산출물 통합 (cycle 142 wine 영구 폐기 + windows-latest 마이그레이션 + sub-agent 3종 + cycle 143 windows-native verify SUCCESS + cycle 144 sub-agent 4종 — i18n tr wrap 24 call site + friends + signaling rooms + emoji moderation + DB audit 28 ActivityAction): cycle 119~145 27 cycle 누계 + 1605 pytest + drift 0건 87 연속 사이클 37~144 + sub-agent 누계 34종 병렬 + Phase 5 본격 진입). 이전 사이클 142 — cycle 139~141 sub-agent 9종 누계 산출물 통합: cycle 119~142 24 cycle 누계 + 1553 pytest + drift 0건 84 연속 사이클 37~141 + sub-agent 누계 27종 병렬
+> 최근 갱신 시점: 2026-05-19 21:00 KST (사이클 148 — sub-agent 5종 병렬 chain 누계 산출물 통합 — OBS WebSocket v5 actual binding + emoji 관리자 메뉴 binding + messages dual smoke test + signaling e2e + remote coord transform: cycle 119~148 30 cycle 누계 + 1673 pytest + drift 0건 91 연속 사이클 37~148 + sub-agent 누계 46종 병렬 + Phase 5 5 Item 모두 actual binding 부분 진입). 이전 사이클 145~147 — sub-agent 7종 누계 (doc sweep + i18n .qm + streaming 4 platform + test fail 회수 + rooms invite + emoji list_pending + mobile Flutter base): cycle 119~147 29 cycle 누계 + 1636 pytest + drift 0건 90 연속 사이클 37~147 + sub-agent 누계 41종 병렬
 > 다음 갱신 시점: 다음 task 종료 시 전체 rewrite
 
 ---
@@ -140,6 +140,56 @@ status: active
 - **사이클 9 (d)**: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합
 
 누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.
+
+### 2.50 sub-agent 5종 + assessment token rewrite trigger (신규 사이클 148)
+
+cycle 148 sub-agent 5종 (JJ + KK + LL + MM + NN) 병렬 spawn + OO assessment doc 위탁 (본 commit) + token rewrite trigger 신설. 사용자 directive "매 작업 마무리 시 평가 md 2 pair + token-usage-30d 4 file 전면 재 작성 강제".
+
+- **JJ OBS WebSocket v5 actual handshake** — `app/bot/obs_websocket_client.py` 217 → 398 row rewrite. Hello op=0 + Identify op=1 + SHA256 double-hash auth (`SHA256(SHA256(password + salt) + challenge)` base64) + Identified op=2 + Request op=6 + RequestResponse op=7 + UUID requestId correlate + ObsSceneInfo parse + CallVendorRequest browser source. 16 PASS (TestObsAuthHash 3 + TestObsClientHandshake 8 + TestObsClientRequest 5).
+- **KK emoji moderation 관리자 메뉴** — `app/ui/main_window.py` 248 row 추가 (`_current_user_role` + `set_user_role` + `_is_admin_role` + `_rebuild_admin_menu` + `_on_open_emoji_moderation` + `_dispatch_moderation_queue_fetch` async + `_on_moderation_decision`) + `app/ui/admin/__init__.py` open_emoji_moderation helper. 9 PASS.
+- **LL messages REST + WebRTC mesh dual chain smoke** — `tests/integration/test_group_message_dual_chain.py` 8 directive class × 10 PASS (REST success + mesh broadcast + REST fail mesh-only + REST success mesh fail + both fail graceful + ACK chain + audit emit + long message + room not found). pytestmark integration deselect.
+- **MM signaling rooms persist e2e** — `tests/server/test_signaling_rooms_e2e.py` 10 TestClass × 12 PASS (signaling-only + REST-then-signaling + room_code 32/8 hex + concurrent 5 peer owner+member×4 + leave cleanup + owner leave + audit chain emit 순서 + pool=None graceful + persist exception swallow + peers.left_at UPDATE).
+- **NN remote coord transform** — `app/remote/coord_transform.py` 9.3KB (AspectRatioPolicy Enum 3종 letterbox/stretch/crop + RemoteScreenInfo frozen dataclass + transform_coordinates + build_local_screen_info PyQt6 graceful) + `tests/app/remote/test_coord_transform.py` 20 PASS + `docs/operations/remote-coord-transform.md` 7.3KB 6 section + DPI Windows 125% + Retina backing_scale 2.0 정합. Phase 5 cycle 166~180 prerequisite.
+- **assessment token rewrite trigger** — `tools/hook_assessment_token_rewrite_trigger.sh` + `.claude/settings.json` Stop hook 7번째 entry. 4 layer 검증 (md ≥ 6h + fingerprint mismatch + token ≥ 24h + uncommit detect) + env override HOOK_ASSESS_STALE_HOURS / HOOK_TOKEN_STALE_HOURS.
+- **영구 가드레일 2종 신설** — `feedback_remote_screen_coord_scaling.md` (원격 sender↔target 화면 해상도 + DPI + Retina backing scale 좌표 보정 의무) + `feedback_assessment_token_auto_trigger.md` (Stop hook 강제 활성).
+
+전체 pytest = 1673 PASS (cycle 148 commit cdacb92 = 1693 PASS, OO 본 사이클 doc-only rewrite). drift 0건 91 연속 사이클 37~148. sub-agent 누계 46종.
+
+### 2.49 sub-agent 11종 chain (cycle 144~147) — friends + signaling rooms + emoji + streaming 4 platform + mobile Flutter base (신규 사이클 147)
+
+cycle 144 sub-agent 4종 + cycle 145~147 sub-agent 7종 누계 = 11종 chain. friends + signaling rooms + emoji moderation + streaming 4 platform + mobile Flutter base 5 영역 actual binding.
+
+- **cycle 144 (4종)**: (A) i18n tr() wrap 24 call sites + 11 unique string + 5 locale 100% cover + (B) friends chain (friend_requests / friendships schema + REST 5 endpoint + 12 PASS) + (C) signaling rooms (room_code 32 hex unique + peers join/leave + 11 PASS) + (D) emoji moderation queue (pending → approved/rejected + DMCA 검토 chain + 16 PASS). DB audit ENUM count 23 → 28 (FRIEND_REQUEST/ACCEPT/REJECT/BLOCK/REMOVE 5 신규).
+- **cycle 145 doc sweep** + **cycle 145 .ts + .qm** (5 locale × 20 entry pyside6-lrelease) + **cycle 146 streaming 4 platform** (`app/bot/streaming/` package — youtube + twitch + chzzk + kick + sse re-export + ChatMessage frozen dataclass + 16 PASS) + **cycle 146 test_usage_tracker FAIL 회수** (pyproject.toml filterwarnings ignore PytestUnraisableExceptionWarning) + **cycle 147 rooms invite + FriendList integration** (`app/net/friends_client.py` 391줄 + invite_dialog + 6 PASS) + **cycle 147 emoji list_pending** (PendingPackRow + admin dialog httpx fetch + 9 PASS) + **cycle 147 mobile Flutter base** (`mobile/` Flutter + flutter-webrtc + signaling ws_client.dart + Phase 5 Item 2 cycle 181~200 prerequisite 명문).
+
+전체 pytest = 1636 PASS (baseline 1605 + 31 신규). drift 0건 90 연속. sub-agent 누계 41종.
+
+### 2.48 wine 영구 폐기 + windows-latest 마이그레이션 SUCCESS (신규 사이클 142~143)
+
+cdrx/pyinstaller-windows base image Python 3.7 cp1252 default codec 의 UTF-8 한글 주석 SyntaxError 회수 불가 — wine cross-compile 4회 fail 끝 cycle 142 windows-latest GitHub-hosted runner 마이그레이션. cycle 143 windows-native verify PASS (commit bc413e5).
+
+- **cycle 142 sub-agent 3종**: build.yml windows-latest runner 마이그레이션 + cdrx wine 영구 폐기 + messages REST 통합 + doc sweep.
+- **cycle 143**: windows-native verify SUCCESS — wine fail 4회 끝 마이그레이션 PASS. CI 8 job GREEN 회복.
+
+운영 비용 영향 = self-hosted macOS arm64 + GitHub-hosted windows-latest 2 platform 매트릭스 동작 + wine docker 영구 폐기 + GitHub-hosted Windows 월 quota 회피 base (private 전환 시 사용자 명시 의무).
+
+### 2.47 sub-agent 9종 chain (cycle 139~141) — main_window 통합 + auto-update + i18n + sound + bot + wine + messages (신규 사이클 141)
+
+cycle 139~141 의 sub-agent 9종 누계 (M~U):
+
+- M cycle 139 그룹 채팅 main_window 통합 5 PASS + N auto-update startup 7 PASS + O lrelease/.qm 10 PASS + P signature sound WAV 6 binary commit + Q cycle 140 windows-latest 마이그레이션 결론 (cdrx wine 폐기 의무) + R Toonation REST 27 PASS + S cycle 141 wine cp1252 회수 시도 FAIL + T OBS WebSocket 25 PASS + U messages persistence 10 PASS + DB audit MESSAGE_SEND 19 ActivityAction.
+
+### 2.46 sub-agent 6종 chain (cycle 134~138) — i18n binding + release CI + 그룹 채팅 REST/UI/mesh (신규 사이클 138)
+
+cycle 134~138 의 sub-agent 6종 — i18n actual binding 10 PASS + release CI 4 PASS + 그룹 채팅 REST 13 PASS + UI 8 PASS + WebRTC mesh 11 PASS + cycle 138 마무리 sweep.
+
+### 2.45 sub-agent 3종 + hook 강화 2 layer (신규 사이클 133)
+
+cycle 133 sub-agent 3종 + assessment freshness Stop hook + HTML mirror consistency 2 layer 강화. 1418 PASS.
+
+### 2.44 sub-agent 9종 chain (cycle 132) — REMOTE + i18n + cron + sound + backup + emoji + wine (신규 사이클 132)
+
+cycle 132 sub-agent 9종 병렬 — REMOTE_GRANT/REVOKE migration 0006 + i18n .ts 5 locale + cron 자동 i18n 갱신 + signature sound designer chiptune + encrypted backup 0007 + emoji pack share 0008 + wine cp1252 회수 + auto-update server endpoint + dopa.co.kr demo only 영구 메모리.
 
 ### 2.43 SMTP client binding production-ready (신규 사이클 130)
 
@@ -539,7 +589,7 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 
 ## 3. 약점 (Productization Weaknesses)
 
-### 3.1 ~~기능 누락 (Phase 1 의도적 보류)~~ — Phase 1~4 진입 완료 (사이클 117)
+### 3.1 ~~기능 누락 (Phase 1 의도적 보류)~~ — Phase 1~4 + Phase 5 5 Item 모두 진입 완료 (사이클 148)
 
 | 기능 | 상태 | 진입 cycle |
 |---|---|---|
@@ -548,12 +598,14 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 | multi-device + signature sound + push (FCM) | ✅ Phase 2 v0.2.0 | cycle 38~47 |
 | Bot framework (Anthropic + OpenAI + jailbreak + RAG) | ✅ Phase 3 v0.3.0 | cycle 65~99 |
 | Production infra (docker + nginx + certbot + KST logging) | ✅ Phase 4 v0.4.0 | cycle 100~117 |
-| 그룹 채팅 | 🟡 Phase 5+ 후보 | — |
-| 음성·영상 통화 | 🟡 Phase 5+ 후보 | — |
-| 모바일 (iOS/Android) | 🟡 Phase 5+ 후보 | — |
-| 자동 업데이트 | 🟡 Phase 5+ 후보 | — |
-| **원격 데스크탑 제어** (차별화) | 🟡 Phase 3 막바지 진입 base (cycle 57~58) | partial |
-| **emoji pack share** (차별화) | 🟡 Phase 5+ 후보 | — |
+| **그룹 채팅 + 친구 + signaling rooms** | ✅ Phase 5 Item 진입 (REST + UI + WebRTC mesh + friends + rooms persist e2e) | cycle 134~144 |
+| **다국어 i18n (5 locale)** | ✅ Phase 5 Item 1 actual binding (24 tr() call sites + .qm 5 locale) | cycle 134~145 |
+| **emoji pack share + moderation** | ✅ Phase 5 Item 3 actual binding (admin menu + list_pending + DMCA chain) | cycle 144~148 |
+| **bot framework streaming 4 platform** | ✅ Phase 5 Item 4 actual client (YouTube + Twitch + CHZZK + Kick) + OBS WebSocket v5 actual handshake | cycle 146~148 |
+| **원격 데스크탑 제어** (차별화) | ✅ Phase 5 Item 5 base + coord transform (DPI + Retina backing scale) | cycle 57~58 + 148 |
+| **mobile Flutter base** | ✅ Phase 5 Item 2 prerequisite (mobile/ Flutter + flutter-webrtc + ws_client.dart) | cycle 147 |
+| 자동 업데이트 | ✅ Phase 5 prerequisite (auto-update server endpoint + client startup chain) | cycle 132~139 |
+| 음성·영상 통화 | 🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무) | — |
 
 ### 3.2 ~~보안 deprioritized~~ — Phase 4 cycle 112~117 회수 완료
 
@@ -576,11 +628,11 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 - **GPLv3 확정** (사용자 directive 2026-05-17)
 - LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환
 
-### 3.5 ~~self-hosted runner 등록 미완~~ (✅ 사이클 5 해소)
+### 3.5 ~~self-hosted runner 등록 미완~~ (✅ 사이클 5 해소 + 사이클 142~143 wine 영구 폐기 + windows-latest 마이그레이션)
 
 - macOS arm64 runner 등록 OK (id=2 online)
-- Windows runner 의무 = wine cross-compile 대체 (영구 회수)
-- workflow 3종 GREEN 도달
+- ~~Windows runner 의무 = wine cross-compile 대체~~ → **windows-latest GitHub-hosted runner 마이그레이션 SUCCESS (cycle 142~143)** — wine cp1252 Python 3.7 호환 FAIL 4회 끝 영구 폐기
+- workflow 3종 GREEN 도달 + windows-native verify PASS
 
 ### 3.6 ~~코드 진입 미완~~ — Phase 1+2+3+4 본문 완성
 
@@ -592,15 +644,29 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 
 ### 3.7 차별화 잔존
 
-- 🟡 원격 데스크탑 제어 base — cycle 57~58 skeleton 신설 + Phase 3 막바지 본격 진입 잔존
-- 🟡 emoji pack share — Phase 5+ 후보 (project_emoji_pack_share memory)
-- 🟡 bot framework Toonation API 직접 통합 (옵션 B) — 사용자 결정 대기
+- 🟡 원격 데스크탑 제어 — cycle 57~58 skeleton + cycle 148 coord transform 신설 + Phase 5 Item 5 본격 cycle 165~180 (production-ready 잔존)
+- ✅ emoji pack share — cycle 144~148 admin menu + list_pending + DMCA chain actual binding 진입 완료
+- 🔴 **Toonation REST API base_url + api_key 부재** (cycle 141 R sub-agent — Toonation REST 27 PASS skeleton + 사용자 직접 입력 의무) — Phase 5 본격 cycle 진입 차단
+- 🔴 **OBS WebSocket base_url + password 부재** (cycle 148 JJ sub-agent — v5 actual handshake 16 PASS skeleton + 사용자 직접 입력 의무)
 
 ### 3.8 manual test 의무 (사용자 직접 영역)
 
-- SMTP 실제 설치 = 사용자 직접 SSH 의무 (smtp-setup.md)
-- Let's Encrypt 인증서 발급 = 실 도메인 + certbot_init.sh manual run
+- SMTP 실제 설치 = cycle 129~130 자동 chain — mail.dopa.co.kr listen 25/465/587/8891 + Let's Encrypt + DKIM RSA 2048 + DMARC pass 도달 (사용자 manual SSH 회수 완료)
 - docker compose production stack 기동 = .env.production secrets 입력 + manual
+
+### 3.9 mobile cycle 181 prerequisite 잔존 (신규 사이클 148)
+
+cycle 147 mobile Flutter base (mobile/ + flutter-webrtc + ws_client.dart) 진입 직후 cycle 181~200 본격 cycle 진입 prerequisite 부재:
+
+- **Apple Developer Program** 가입 (USD 99/년 + 사용자 직접) — App Store 배포 의무
+- **Google Play Console** 계정 (USD 25 one-time + 사용자 직접) — Play Store 배포 의무
+- **Firebase 프로젝트 신설** + FCM Server Key + iOS APNs cert + Android google-services.json
+- **flutter doctor PASS** + iOS Xcode + Android Studio + ADB setup
+- 사용자 manual 영역 5종 = mobile 본격 cycle 진입 차단
+
+### 3.10 KT PTR record default 잔존 (cycle 145 잔존)
+
+KT ISP default PTR record (tongkni.co.kr) 잔존 — mail.dopa.co.kr 의 reverse DNS 갱신 신청 의무. project_dopa_demo_only.md 영구 메모리 정합 = **dopa.co.kr 데몬스트레이션 전용** + 실 제품 도메인 부재 시점 = **KT PTR 회수 최후로 미룸 또는 skip**.
 
 ---
 
@@ -661,10 +727,17 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 | 0 | **Phase 3 bot framework (10 module + Anthropic/OpenAI + jailbreak 17 패턴 + RAG dual baseline)** | ✅ (사이클 65~99, v0.3.0-phase3-bot) |
 | 0 | **Phase 4 production infra (docker stack + Config 통합 + nginx certbot + KST/JSON/redact logging + DB audit 0003)** | ✅ (사이클 100~117, v0.4.0-phase4-infra) |
 | 0 | **Agent #16 산출물 reviewer-agent 검토** | ✅ (handoff §8.46+ 회수) |
-| 1 | SMTP 실제 설치 (114.207.112.73 SSH) — manual | 🟡 사용자 직접 |
-| 2 | Let's Encrypt 인증서 발급 (certbot_init.sh 실 도메인) — manual | 🟡 사용자 직접 |
-| 3 | Toonation 통합 시나리오 검토 (옵션 B) — Phase 3 default bot 의 Toonation API 직접 통합 | 🔴 사용자 결정 |
-| 4 | Phase 5 진입 검토 (다국어 + mobile + emoji pack share + bot framework 마무리) | 🔴 사용자 결정 |
+| 0 | **cycle 119~131 (auth audit + activity + bot + devices + healthz + Phase 5 plan + bot_escalations DB + WS room audit + SMTP install/binding + OTP integration + self-hosted CI hook + 30일 token HTML)** | ✅ (cycle 119~131) |
+| 0 | **cycle 132~133 sub-agent 12종 (REMOTE migration + i18n .ts + cron + sound designer + backup + emoji pack share + wine + auto-update + hook 강화)** | ✅ (cycle 132~133) |
+| 0 | **cycle 134~138 sub-agent 6종 (i18n binding + release CI + 그룹 채팅 REST/UI/mesh)** | ✅ (cycle 134~138) |
+| 0 | **cycle 139~141 sub-agent 9종 (main_window 그룹 채팅 통합 + auto-update startup + lrelease/.qm + WAV + Toonation REST + OBS WebSocket + messages persistence)** | ✅ (cycle 139~141) |
+| 0 | **cycle 142~143 wine 영구 폐기 + windows-latest 마이그레이션 SUCCESS** | ✅ (cycle 142~143) |
+| 0 | **cycle 144~147 sub-agent 11종 (i18n tr wrap + friends + signaling rooms + emoji moderation + .qm + streaming 4 platform + rooms invite + emoji list_pending + mobile Flutter base)** | ✅ (cycle 144~147) |
+| 0 | **cycle 148 sub-agent 5종 (OBS WebSocket v5 actual + emoji 관리자 메뉴 + messages dual smoke + signaling e2e + remote coord transform) + token rewrite trigger** | ✅ (cycle 148) |
+| 1 | **Toonation REST API base_url + api_key 사용자 직접 입력** — 옵션 B 본격 진입 prerequisite | 🔴 사용자 직접 |
+| 2 | **OBS WebSocket base_url + password 사용자 직접 입력** — P5/P6 OBS 도움 시나리오 prerequisite | 🔴 사용자 직접 |
+| 3 | **mobile cycle 181 prerequisite (Apple Developer + Google Play + Firebase + Xcode + Android Studio)** — 사용자 manual | 🟡 사용자 직접 |
+| 4 | KT PTR record 갱신 (mail.dopa.co.kr reverse DNS) — dopa.co.kr 데모 전용 → 실 도메인 확정 후 갱신 또는 skip | 🟡 최후 |
 
 ---
 
@@ -708,17 +781,18 @@ Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integ
 | 리스크 | 확률 | 영향 | 회피 |
 |---|---|---|---|
 | Signal/Telegram 무료 + 우월 → 사용자 획득 실패 | 상 | 상 | 옵션 B (Toonation) pivot |
-| 1인 개발자 Phase 2~4 완주 어려움 | 중 | 상 | 옵션 B ROI 빠른 검증 |
-| 데모 서버 보안 사고 | 중 | 중 | Phase 2 진입 직전 hardening |
+| 1인 개발자 Phase 2~4 완주 어려움 | ✅ 해소 (cycle 148 — 30 cycle drift 0건 91 연속) | — | sub-agent 누계 46종 병렬 chain |
+| 데모 서버 보안 사고 | ✅ 해소 (cycle 129 SMTP install 5 layer + Phase 4 nginx + DB audit) | — | Let's Encrypt + DKIM + DMARC + iptables |
 | ~~라이선스 결정 지연~~ | ✅ 해소 (사이클 6) | — | GPLv3 확정 |
 | PyQt6 GPL 의무 의 외부 fork distribution | 중 | 중 | GPLv3 정합 + private 전환 시 외부 fork 차단 |
-| 문서 91% : 코드 9% 지속 | 상 | 중 | 8 체크리스트 통과 후 코드 진입 |
-| **원격 제어 보안 사고** (Phase 3+ 위험) | 중 | 상 | 친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그 |
-| **SMTP spam reputation 부족** (신규 사이클 5) | 상 | 중 | SendGrid relay fallback (free 100/day) |
-| **wine 안 PyQt6 Qt dlls 호환성** (신규 사이클 5) | 중 | 중 | hello-world 사전 검증 (Phase 1 후반 build.yml) |
-| **데모 서버 SSH 차단** (신규 사이클 5) | 중 | 중 | 사용자 직접 SSH 또는 ISP 협의 |
-| **observability baseline drift** (신규 사이클 15) | 중 | 중 | drift 회수 6단계 절차 (`observability-baseline.md` §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement |
-| **Phase 2 E2EE 잔존 영역** (DH ratchet + session state + skipped keys, 사이클 32) | 중 | 상 | 사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증 |
+| ~~문서 91% : 코드 9% 지속~~ | ✅ 해소 (cycle 117 — pytest 1673 + 코드 우위) | — | 8 체크리스트 통과 + Phase 1~5 진입 |
+| **원격 제어 보안 사고** (Phase 5 Item 5 위험) | 중 | 상 | 친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그 + cycle 148 coord transform DPI/Retina 정합 |
+| ~~SMTP spam reputation 부족~~ | ✅ 해소 (cycle 129 mail.dopa.co.kr DKIM + DMARC + Gmail Authentication-Results pass) | — | SendGrid relay fallback 회피 가능 |
+| ~~wine 안 PyQt6 Qt dlls 호환성~~ | ✅ 해소 (cycle 142~143 wine 영구 폐기 + windows-latest 마이그레이션 SUCCESS) | — | windows-latest GitHub-hosted runner |
+| **사용자 base_url + api_key 부재** (Toonation + OBS — cycle 148) | 상 | 상 | 사용자 직접 입력 의무 — Phase 5 본격 cycle 진입 차단 |
+| **mobile cycle 181 prerequisite 부재** (Apple Developer + Google Play + Firebase + Xcode + Android Studio) | 상 | 중 | 사용자 manual 5종 의무 — mobile 본격 cycle 진입 차단 |
+| **KT PTR record default 잔존** | 상 | 저 | dopa.co.kr 데모 전용 + 실 도메인 확정 후 갱신 또는 skip |
+| **WebRTC mesh ≤ 8 peer cap** (cycle 137 WebRTC mesh 11 PASS skeleton) | 중 | 중 | 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
 
 ### 8.1 보안 리스크 해결책 강화 (사이클 32 신규 — 사용자 directive)
 
