@@ -27,6 +27,7 @@ _P_UNAME = "server.auth.register.users_repo.get_user_by_username"
 _P_UNAME_EXCL = "server.auth.register.users_repo.get_user_by_username_excluding"
 _P_INS_USR = "server.auth.register.users_repo.insert_user"
 _P_RECLAIM = "server.auth.register.users_repo.reclaim_unverified_user"
+_P_RECLAIM_ATOMIC = "server.auth.register.users_repo.reclaim_unverified_user_atomic"
 _P_INS_OTP = "server.auth.register.otp_repo.insert_otp"
 _P_OTP_INV = "server.auth.register.otp_repo.invalidate_pending"
 _P_SEND = "server.auth.register.send_otp_email"
@@ -48,6 +49,14 @@ def _repo_mocks(*, user_id: int = 42) -> tuple[AsyncMock, AsyncMock, AsyncMock, 
     )
 
 
+def _atomic_absent() -> AsyncMock:
+    """H-1 회수 — reclaim_unverified_user_atomic 안 absent return mock.
+
+    신규 INSERT path 진입 시 (status='absent', None) 반환.
+    """
+    return AsyncMock(return_value=("absent", None))
+
+
 class TestRegisterOtpCallArgs:
     """send_otp_email 호출 인자 정합 검증 (3 test)."""
 
@@ -58,6 +67,7 @@ class TestRegisterOtpCallArgs:
         m_send = AsyncMock()
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -81,6 +91,7 @@ class TestRegisterOtpCallArgs:
         m_send = AsyncMock()
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -104,6 +115,7 @@ class TestRegisterOtpCallArgs:
         m_send = AsyncMock()
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -129,6 +141,7 @@ class TestRegisterOtpSmtpFailure:
         m_send = AsyncMock(side_effect=RuntimeError("SMTP connection refused"))
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -152,6 +165,7 @@ class TestRegisterOtpSmtpFailure:
         caplog.set_level(logging.WARNING, logger="server.auth.register")
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -176,6 +190,7 @@ class TestRegisterOtpSmtpFailure:
         m_send = AsyncMock(side_effect=ConnectionError("network unreachable"))
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -211,6 +226,7 @@ class TestRegisterOtpInsertChain:
         m_send = AsyncMock()
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=_ins_usr),
             patch(_P_INS_OTP, new=_ins_otp),
@@ -231,6 +247,7 @@ class TestRegisterOtpInsertChain:
         m_send = AsyncMock()
         with (
             patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_absent()),
             patch(_P_UNAME, new=m_uname),
             patch(_P_INS_USR, new=m_ins_usr),
             patch(_P_INS_OTP, new=m_ins_otp),
@@ -256,13 +273,10 @@ class TestRegisterUnverifiedReclaim:
     @pytest.mark.asyncio
     async def test_verified_email_blocks_reregister(self) -> None:
         # 한글 주석: email_verified=1 row → EmailAlreadyRegistered raise
-        verified_row = AsyncMock()
-        verified_row.id = 99
-        verified_row.email_verified = True
-        m_email = AsyncMock(return_value=verified_row)
+        m_atomic = AsyncMock(return_value=("verified", None))
         m_send = AsyncMock()
         with (
-            patch(_P_EMAIL, new=m_email),
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
             patch(_P_SEND, new=m_send),
         ):
             with pytest.raises(EmailAlreadyRegistered):
@@ -273,24 +287,16 @@ class TestRegisterUnverifiedReclaim:
                     password="secret123",
                 )
         m_send.assert_not_called()
+        m_atomic.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_unverified_email_triggers_reclaim_chain(self) -> None:
         # 한글 주석: email_verified=0 row → reclaim chain PASS + OTP invalidate + 재 송신
-        unverified_row = AsyncMock()
-        unverified_row.id = 77
-        unverified_row.email_verified = False
-        m_email = AsyncMock(return_value=unverified_row)
-        m_uname_excl = AsyncMock(return_value=None)
-        m_reclaim = AsyncMock(return_value=True)
-        m_otp_inv = AsyncMock(return_value=1)
+        m_atomic = AsyncMock(return_value=("reclaimed", 77))
         m_ins_otp = AsyncMock(return_value=1)
         m_send = AsyncMock()
         with (
-            patch(_P_EMAIL, new=m_email),
-            patch(_P_UNAME_EXCL, new=m_uname_excl),
-            patch(_P_RECLAIM, new=m_reclaim),
-            patch(_P_OTP_INV, new=m_otp_inv),
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
             patch(_P_INS_OTP, new=m_ins_otp),
             patch(_P_SEND, new=m_send),
         ):
@@ -301,26 +307,16 @@ class TestRegisterUnverifiedReclaim:
                 password="newsecret123",
             )
         assert user_id == 77
-        m_reclaim.assert_called_once()
-        m_otp_inv.assert_called_once()
+        m_atomic.assert_called_once()
         m_send.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_reclaim_blocks_username_conflict_with_other_user(self) -> None:
         # 한글 주석: reclaim 시 동일 username 의 다른 verified user 존재 → UsernameAlreadyTaken raise
-        unverified_row = AsyncMock()
-        unverified_row.id = 55
-        unverified_row.email_verified = False
-        conflict_row = AsyncMock()
-        conflict_row.id = 999
-        m_email = AsyncMock(return_value=unverified_row)
-        m_uname_excl = AsyncMock(return_value=conflict_row)
-        m_reclaim = AsyncMock()
+        m_atomic = AsyncMock(return_value=("username_conflict", None))
         m_send = AsyncMock()
         with (
-            patch(_P_EMAIL, new=m_email),
-            patch(_P_UNAME_EXCL, new=m_uname_excl),
-            patch(_P_RECLAIM, new=m_reclaim),
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
             patch(_P_SEND, new=m_send),
         ):
             with pytest.raises(UsernameAlreadyTaken):
@@ -330,23 +326,17 @@ class TestRegisterUnverifiedReclaim:
                     username="taken_name",
                     password="secret123",
                 )
-        m_reclaim.assert_not_called()
+        m_atomic.assert_called_once()
         m_send.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_reclaim_race_to_verified_raises(self) -> None:
         # 한글 주석: reclaim_unverified_user 가 False (race — 동시 verify 완료) → EmailAlreadyRegistered
-        unverified_row = AsyncMock()
-        unverified_row.id = 88
-        unverified_row.email_verified = False
-        m_email = AsyncMock(return_value=unverified_row)
-        m_uname_excl = AsyncMock(return_value=None)
-        m_reclaim = AsyncMock(return_value=False)
+        # 한글 주석: H-1 회수 — atomic transaction 안 race window 차단. verified status 반환.
+        m_atomic = AsyncMock(return_value=("verified", None))
         m_send = AsyncMock()
         with (
-            patch(_P_EMAIL, new=m_email),
-            patch(_P_UNAME_EXCL, new=m_uname_excl),
-            patch(_P_RECLAIM, new=m_reclaim),
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
             patch(_P_SEND, new=m_send),
         ):
             with pytest.raises(EmailAlreadyRegistered):
