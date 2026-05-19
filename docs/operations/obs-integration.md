@@ -1,16 +1,17 @@
 ---
-title: "OBS Integration — 방송 도우미 봇 prerequisite (cycle 141)"
+title: "OBS Integration — optional binding (cycle 151 사용자 directive 회수)"
 owner: oneticket99
-last_verified: 2026-05-19T19:30:00+09:00
+last_verified: 2026-05-19T22:00:00+09:00
 status: active
-cycle: 141
+cycle: 151
 ---
 
 
-> TooTalk 방송 도우미 봇 (Phase 5 Item 4) prerequisite 문서.
-> 정합: `app/bot/obs_websocket_client.py` · `app/bot/streaming_helper.py` · memory `project_bot_framework.md` (B) 방송 도우미 봇 별개 API 의무.
+> TooTalk client/server 의 OBS Studio install 의무 부재 ([[feedback-obs-install-not-required]] 정합).
+> 본 문서 = OBS Studio active 사용자 환경 의 optional binding chain. 친구 A (OBS 사용자) ↔ 친구 B (도움 제공자) 원격 제어 chain prerequisite.
+> 정합: `app/bot/obs_websocket_client.py` · `app/bot/streaming_helper.py` · memory `project_bot_framework.md` · `project_phase2_remote_control_differentiator.md`.
 
-본 문서는 OBS Studio v28+ 의 obs-websocket v5 protocol 기반 chat overlay alert + scene 제어 통합 가이드이다. nightbot / StreamElements 등가 기능 + customer_service_bot 연동 패턴.
+본 문서 = OBS Studio v28+ 의 obs-websocket v5 protocol optional binding. TooTalk 자체 install 강제 부재 — 사용자 OBS 환경 active 시 chat overlay alert + scene 제어 통합 가능. 부재 시 graceful skip (chat 메신저 + 친구 + 그룹 + emoji + 자동 업데이트 chain 정상 활용).
 
 ---
 
