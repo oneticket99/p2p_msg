@@ -16,7 +16,7 @@ import logging
 from typing import List, Optional
 
 
-from PyQt6.QtCore import QCoreApplication, Qt
+from PyQt6.QtCore import QCoreApplication, Qt, QTimer
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import (
     QDialog,
@@ -37,6 +37,7 @@ _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 OTP_LENGTH = 6
 RESEND_CAP = 5
+OTP_VALID_SECONDS = 180  # 3분 유효 (server SMTP_OTP_TTL 정합)
 
 
 class OtpBox(QLineEdit):
@@ -99,10 +100,27 @@ class OTPDialog(QDialog):
         email_label.setStyleSheet("color: #67E8F9; font-size: 14px; font-weight: 600;")
         outer.addWidget(email_label)
 
-        info = QLabel(_tr("메일함 안 6 digit OTP 확인 (3분 유효)"))
+        info = QLabel(_tr("메일함 안 6 digit OTP 확인"))
         info.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info.setStyleSheet("color: #9ca3af; font-size: 13px;")
         outer.addWidget(info)
+
+        # 한글 주석 — 유효시간 countdown label (mm:ss decrement)
+        self._remaining_seconds: int = OTP_VALID_SECONDS
+        self._countdown_label = QLabel()
+        self._countdown_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._countdown_label.setStyleSheet(
+            "color: #22D3EE; font-size: 20px; font-weight: 700;"
+            " font-family: 'SF Mono', 'Menlo', monospace;"
+        )
+        outer.addWidget(self._countdown_label)
+
+        # 한글 주석 — 1초 tick QTimer + countdown decrement chain
+        self._countdown_timer = QTimer(self)
+        self._countdown_timer.setInterval(1000)
+        self._countdown_timer.timeout.connect(self._on_countdown_tick)  # type: ignore[arg-type]
+        self._update_countdown_display()
+        self._countdown_timer.start()
 
         outer.addSpacing(8)
 
@@ -161,6 +179,38 @@ class OTPDialog(QDialog):
         """6 box text concat → 6 digit string."""
         return "".join(box.text() for box in self._boxes)
 
+    def _update_countdown_display(self) -> None:
+        """remaining_seconds 의 mm:ss 변환 + 색상 갱신 (30s 이하 red)."""
+        m, s = divmod(max(self._remaining_seconds, 0), 60)
+        self._countdown_label.setText(f"{m}:{s:02d}")
+        # 한글 주석 — 30초 이하 시 red, expired (0) = gray
+        if self._remaining_seconds <= 0:
+            self._countdown_label.setStyleSheet(
+                "color: #6b7280; font-size: 20px; font-weight: 700;"
+                " font-family: 'SF Mono', 'Menlo', monospace;"
+            )
+        elif self._remaining_seconds <= 30:
+            self._countdown_label.setStyleSheet(
+                "color: #ef4444; font-size: 20px; font-weight: 700;"
+                " font-family: 'SF Mono', 'Menlo', monospace;"
+            )
+        else:
+            self._countdown_label.setStyleSheet(
+                "color: #22D3EE; font-size: 20px; font-weight: 700;"
+                " font-family: 'SF Mono', 'Menlo', monospace;"
+            )
+
+    def _on_countdown_tick(self) -> None:
+        """1초 tick — decrement + display + expired 시 box disable."""
+        self._remaining_seconds -= 1
+        self._update_countdown_display()
+        if self._remaining_seconds <= 0:
+            self._countdown_timer.stop()
+            # 한글 주석 — expired 시 box disable + 재 송신 prompt
+            for box in self._boxes:
+                box.setEnabled(False)
+            self._countdown_label.setText(_tr("만료 — 재 송신 의무"))
+
     def _on_last_box_filled(self, text: str) -> None:
         """마지막 box 입력 시점 의 자동 검증 trigger."""
         if text and len(self._get_otp()) == OTP_LENGTH:
@@ -212,5 +262,14 @@ class OTPDialog(QDialog):
             return
         self._resend_remaining -= 1
         self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
+        # 한글 주석 — 재 송신 시 countdown 180s reset + box re-enable + timer restart
+        self._remaining_seconds = OTP_VALID_SECONDS
+        for box in self._boxes:
+            box.setEnabled(True)
+            box.clear()
+        self._boxes[0].setFocus()
+        self._update_countdown_display()
+        if not self._countdown_timer.isActive():
+            self._countdown_timer.start()
         # 한글 주석 — 실 송신 = auth_client.resend_otp endpoint actual binding cycle 154+ 의무
         log.info("OTP 재 송신 trigger — email=%s remaining=%d", self._email, self._resend_remaining)
