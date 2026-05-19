@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# TooTalk(p2p_msg) Phase 5 cycle 134 — release workflow.
+# TooTalk(p2p_msg) Phase 5 cycle 151 — release workflow (dual platform).
 # git tag push (vX.Y.Z[-phase]) 의 GitHub Release 자동 생성 + SHA-256 capture +
 # POST /api/version/release 의 DB app_versions row 자동 INSERT chain.
+# cycle 151 강화 — Windows native build job 추가 (release-windows-x64) +
+# prerelease 자동 mark (-pre/-rc/-beta suffix detect ternary).
 #
 # 참조 — docs/operations/release-workflow.md.
 # 보안 주의 — 모든 github.* context 값 = env: 경유 주입 (injection 차단).
@@ -61,6 +63,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           fail_on_unmatched_files: true
           generate_release_notes: true
+          # 한글 주석 — cycle 151 강화 — -pre/-rc/-beta suffix detect ternary 의 자동 prerelease mark
+          prerelease: ${{ contains(github.ref_name, '-pre') || contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') }}
 
       - name: POST /api/version/release (DB INSERT)
         env:
@@ -84,3 +88,94 @@ jobs:
             -H "Authorization: Bearer ${ADMIN_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD"
+
+  release-windows-x64:
+    name: Windows x64 release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 3.13 setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: venv + deps
+        shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          # 한글 주석 — windows-latest 의 pwsh + utf-8 console + venv + PyInstaller native
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install --upgrade pip
+          .venv\Scripts\pip.exe install -r app/requirements.txt "pyinstaller>=6.0"
+
+      - name: PyInstaller build
+        shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          # 한글 주석 — native Windows x64 의 .exe 산출 (wine cross-compile 미사용)
+          .venv\Scripts\pyinstaller.exe build/tootalk.spec --clean --noconfirm --distpath dist
+          Get-ChildItem dist
+
+      - name: Zip artifact
+        shell: pwsh
+        run: |
+          # 한글 주석 — TooTalk.exe (또는 TooTalk 폴더) 의 windows-x64.zip 패키징
+          # Compress-Archive — 산출물 형태 (single .exe vs 폴더) 동적 detect
+          $target = if (Test-Path dist/TooTalk.exe) { 'dist/TooTalk.exe' } else { 'dist/TooTalk' }
+          Compress-Archive -Path $target -DestinationPath dist/TooTalk-windows-x64.zip -Force
+          Get-Item dist/TooTalk-windows-x64.zip
+
+      - name: SHA-256 + size capture
+        id: sha
+        shell: pwsh
+        run: |
+          # 한글 주석 — Get-FileHash SHA256 + Get-Item Length 의 byte size capture
+          $hash = (Get-FileHash dist/TooTalk-windows-x64.zip -Algorithm SHA256).Hash.ToLower()
+          $size = (Get-Item dist/TooTalk-windows-x64.zip).Length
+          "hash=$hash" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "size=$size" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "[release] sha256=$hash size=$size"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/TooTalk-windows-x64.zip
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          # 한글 주석 — cycle 151 강화 — -pre/-rc/-beta suffix detect ternary 의 자동 prerelease mark
+          prerelease: ${{ contains(github.ref_name, '-pre') || contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') }}
+
+      - name: POST /api/version/release (DB INSERT)
+        shell: pwsh
+        env:
+          ADMIN_TOKEN: ${{ secrets.VERSION_ADMIN_TOKEN }}
+          API_HOST: ${{ secrets.API_HOST }}
+          VERSION_TAG: ${{ github.ref_name }}
+          REPO_FULL: ${{ github.repository }}
+          SHA_HASH: ${{ steps.sha.outputs.hash }}
+          FILE_SIZE: ${{ steps.sha.outputs.size }}
+        run: |
+          # 한글 주석 — admin Bearer + version + zip_url + sha256 + size 의 POST chain (windows-x64 platform)
+          # github.* context = env 경유 주입 (workflow injection 차단)
+          if (-not $env:ADMIN_TOKEN -or -not $env:API_HOST) {
+            Write-Host "[release] VERSION_ADMIN_TOKEN 또는 API_HOST secrets 부재 — DB INSERT skip"
+            exit 0
+          }
+          $zipUrl = "https://github.com/$env:REPO_FULL/releases/download/$env:VERSION_TAG/TooTalk-windows-x64.zip"
+          $payload = @{
+            version = $env:VERSION_TAG
+            platform = "windows-x64"
+            zip_url = $zipUrl
+            sha256 = $env:SHA_HASH
+            file_size = [int64]$env:FILE_SIZE
+            is_latest = $true
+          } | ConvertTo-Json -Compress
+          $headers = @{
+            "Authorization" = "Bearer $env:ADMIN_TOKEN"
+            "Content-Type" = "application/json"
+          }
+          Invoke-RestMethod -Method Post -Uri "$env:API_HOST/api/version/release" -Headers $headers -Body $payload

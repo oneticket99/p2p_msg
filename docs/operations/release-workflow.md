@@ -13,6 +13,22 @@ TooTalk 메신저 (Phase 5 cycle 134) `.github/workflows/release.yml` 의 git ta
 
 ## 0. 실 fire 이력 (cycle 150 ~)
 
+### 0-0. cycle 151 — Windows native build job + prerelease 자동 mark 신설 (2026-05-19)
+
+| 항목 | 값 |
+| --- | --- |
+| 변경 파일 | `.github/workflows/release.yml` |
+| 신규 job | `release-windows-x64` — `runs-on: windows-latest` + actions/setup-python@v5 (Python 3.13) + pwsh shell + `PYTHONIOENCODING=utf-8` + PyInstaller native build + Compress-Archive zip + Get-FileHash SHA256 + Invoke-RestMethod POST chain |
+| 기존 job 보존 | `release-macos-arm64` — self-hosted ARM64 runner + 7 step 유지 (cycle 150 PASS 정합) |
+| prerelease ternary | `${{ contains(github.ref_name, '-pre') \|\| contains(github.ref_name, '-rc') \|\| contains(github.ref_name, '-beta') }}` — 두 job 의 `Create GitHub Release` step 의 `with.prerelease` 일괄 적용 |
+| dual-platform 정합 | macOS arm64 + Windows x64 동시 zip artifact + dual DB INSERT row (platform=`macos-arm64`, platform=`windows-x64`) |
+| zip artifact (windows) | `TooTalk-windows-x64.zip` |
+| Compress-Archive 동적 detect | `Test-Path dist/TooTalk.exe` 분기 — single .exe 또는 폴더 산출물 동적 선택 |
+| YAML valid | `python3 -m yaml.safe_load` PASS — 2 job + 12 step (macOS 7 + windows 7 — 단, macOS step 변경 = prerelease 1줄 추가) |
+| trigger verify | 후속 cycle `v0.5.0-pre2` annotated tag push 의 dual-job parallel fire smoke 의무 |
+| Node.js 24 사전 대응 | actions/setup-python@v5 (Node.js 20→24 호환) — 후속 cycle `softprops/action-gh-release` 최신 major 추가 점검 |
+| BPE/pronoun 위생 | U+CE21 단독 + self/peer 대명사 0건 |
+
 ### 0-1. cycle 150 — `v0.5.0-pre1` first tag verify smoke (2026-05-19)
 
 | 항목 | 값 |

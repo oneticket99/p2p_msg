@@ -214,6 +214,7 @@ flutter build appbundle --release
 
 ## 12. 참조
 
+- [`mobile-cycle-181-prereq.md`](mobile-cycle-181-prereq.md) — cycle 151 신설, cycle 181 본격 진입 전 의 Apple Developer + Google Play Console + Firebase + binding chain 단계별 가이드.
 - [`../../mobile/README.md`](../../mobile/README.md) — Phase 5 Item 2 mobile base 안내.
 - [`../../mobile/pubspec.yaml`](../../mobile/pubspec.yaml) — Flutter dependency 선언.
 - [`../../mobile/lib/main.dart`](../../mobile/lib/main.dart) — 앱 진입점 skeleton.

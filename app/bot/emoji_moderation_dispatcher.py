@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Phase 5 Item 3 emoji pack moderation dispatcher chain — cycle 144.
+"""Phase 5 Item 3 emoji pack moderation dispatcher chain — cycle 151.
 
 cycle 132 (0004 emoji_packs migration + 5 endpoint skeleton) +
-cycle 133 (jailbreak_ocr + DMCA skeleton) + cycle 141 (OCR actual binding)
-chain 의 통합 dispatcher layer.
+cycle 133 (jailbreak_ocr + DMCA skeleton) + cycle 141 (OCR actual binding) +
+cycle 144 (dispatcher 4 stage pipeline) + cycle 150 (DMCA phash + dhash
+combined hash + fuzzy match) chain 의 통합 dispatcher layer.
 
-본 module 범위 (cycle 144)
+본 module 범위 (cycle 151)
 --------------------------
 - ``ModerationDecision`` Enum — APPROVED / REJECTED / DMCA_TAKEDOWN /
   HOLD_FOR_REVIEW (admin queue 의 manual 결정 대기).
@@ -13,19 +14,30 @@ chain 의 통합 dispatcher layer.
   ocr_signal + dmca_check + suggested_status (ModerationStatus 정합).
 - ``EmojiModerationDispatcher`` — 4 stage pipeline:
     1. OCR detect (jailbreak_detector_ocr.detect_image)
-    2. DMCA phash check (emoji_dmca_check.check_known_infringement)
+    2. DMCA combined hash (phash + dhash) + fuzzy match (cycle 150 binding)
     3. auto decision (BLOCKED / JAILBREAK_TEXT / DMCA → 즉시 차단)
     4. HOLD_FOR_REVIEW → admin queue 위탁 (manual approve/reject)
 - ``map_to_moderation_status`` — ModerationDecision →
   ModerationStatus ENUM (repository binding 의 변환 helper).
+
+cycle 151 갱신 사항
+-------------------
+- DMCA stage 의 placeholder (compute_phash_skeleton + check_known_infringement
+  exact match) → cycle 150 의 compute_combined_hash + check_known_infringement_fuzzy
+  (hamming threshold ≤ 5) actual binding 으로 교체.
+- ``known_dmca_hashes`` 는 placeholder set 유지 — 실 DMCA infringement hash
+  database 등록 은 사용자 manual 의무 (별개 cycle 152+ admin workflow).
+- fuzzy threshold default 5 — perceptual hash 의 1~5 bit 차이 까지 침해 hit.
 
 설계 결정
 ---------
 - graceful — OCR + DMCA chain 의 library 부재 시 NONE + HOLD_FOR_REVIEW.
 - pure function 로 구성 — repository binding (DB) 은 caller 의 책임.
 - admin queue persistence 는 별개 cycle (cycle 145+) 의무.
+- DMCA known_db 의 hash 길이 = 32자 (phash 16자 + dhash 16자 concat).
 
-본 cycle 의 범위 외 (별개 cycle 145+):
+본 cycle 의 범위 외 (별개 cycle 152+):
+- known infringement DB persistence (SQLite / MariaDB) + LRU cache
 - admin 결정 audit log (감사 추적)
 - moderation_decision_history 테이블 영속 + REST 노출
 - ML-based confidence score (HOLD vs auto 의 의사결정)
@@ -40,9 +52,10 @@ from enum import Enum
 from typing import List, Optional, Set, Tuple
 
 from app.bot.emoji_dmca_check import (
+    DEFAULT_FUZZY_THRESHOLD,
     DmcaCheckResult,
-    check_known_infringement,
-    compute_phash_skeleton,
+    check_known_infringement_fuzzy,
+    compute_combined_hash,
 )
 from app.bot.jailbreak_detector_ocr import (
     OcrModerationResult,
@@ -128,6 +141,7 @@ class EmojiModerationDispatcher:
         self,
         *,
         known_dmca_hashes: Optional[Set[str]] = None,
+        fuzzy_threshold: int = DEFAULT_FUZZY_THRESHOLD,
     ) -> None:
         """dispatcher 신설.
 
@@ -135,13 +149,19 @@ class EmojiModerationDispatcher:
         ----------
         known_dmca_hashes : Optional[Set[str]]
             등록된 침해 hash set (DMCA takedown 누계 의 in-memory snapshot).
-            None = 빈 set (DMCA chain skip).
+            cycle 151 = combined hash (phash 16자 + dhash 16자) 32자 hex.
+            None 또는 빈 set = DMCA chain skip (placeholder 의무).
+        fuzzy_threshold : int, default DEFAULT_FUZZY_THRESHOLD (5)
+            hamming distance threshold — 이하 = match (cycle 150 정합).
         """
 
         # 한글 주석: known_dmca_hashes None graceful — 빈 set 의 안전 default
+        # 한글 주석: 실 등록 = 사용자 manual 의무 (별개 cycle 152+ admin workflow)
         self._known_dmca_hashes: Set[str] = (
             set(known_dmca_hashes) if known_dmca_hashes else set()
         )
+        # 한글 주석: fuzzy threshold = 5 default (perceptual hash 1~5 bit 차이 hit)
+        self._fuzzy_threshold: int = fuzzy_threshold
 
     def evaluate(self, image_bytes: bytes) -> ModerationOutcome:
         """image bytes → 4 stage pipeline → ModerationOutcome.
@@ -191,19 +211,23 @@ class EmojiModerationDispatcher:
                 matched_patterns=ocr_result.matched_patterns,
             )
 
-        # Stage 2: DMCA phash check — known set 의 exact match (cycle 133 정합)
+        # Stage 2: DMCA combined hash (phash + dhash) + fuzzy match (cycle 150 binding)
+        # 한글 주석: cycle 151 = compute_combined_hash + check_known_infringement_fuzzy
+        # 한글 주석: known_db 의 hash 길이 = 32자 (phash 16자 + dhash 16자)
         dmca_result: Optional[DmcaCheckResult] = None
         if self._known_dmca_hashes:
-            # 한글 주석: phash skeleton — imagehash 부재 시 sha256[:16] fallback
             try:
-                phash_str = compute_phash_skeleton(image_bytes)
-                dmca_result = check_known_infringement(
-                    phash_str, self._known_dmca_hashes
+                combined_hash = compute_combined_hash(image_bytes)
+                dmca_result = check_known_infringement_fuzzy(
+                    combined_hash,
+                    self._known_dmca_hashes,
+                    threshold=self._fuzzy_threshold,
                 )
                 if dmca_result.is_infringement:
+                    # 한글 주석: confidence 표기 = 0.00 ~ 1.00 (소수점 2자리)
                     reasons.append(
-                        f"DMCA hash match (confidence={dmca_result.confidence}) "
-                        f"— auto takedown"
+                        f"DMCA hash match (confidence={dmca_result.confidence:.2f}, "
+                        f"threshold={self._fuzzy_threshold}) — auto takedown"
                     )
                     return ModerationOutcome(
                         decision=ModerationDecision.DMCA_TAKEDOWN,
@@ -213,8 +237,8 @@ class EmojiModerationDispatcher:
                         matched_patterns=ocr_result.matched_patterns,
                     )
             except Exception as exc:  # noqa: BLE001
-                # 한글 주석: phash 실패 graceful — admin queue 위탁 (HOLD)
-                log.warning("[dispatcher] phash 실패 — %r", exc)
+                # 한글 주석: combined hash / fuzzy match 실패 graceful — admin 위탁
+                log.warning("[dispatcher] DMCA chain 실패 — %r", exc)
                 reasons.append(f"DMCA chain 예외 ({type(exc).__name__})")
 
         # Stage 3: SUSPICIOUS → admin queue 위탁 (HOLD_FOR_REVIEW)
