@@ -185,39 +185,199 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         self._sound_player = sound_player
         # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
         self.setWindowTitle(f"TooTalk · {_tr('설정')}")
-        self.setMinimumWidth(360)
+        self.setMinimumSize(720, 560)
 
         initial = build_state_from_player(sound_player)
 
-        layout = QVBoxLayout(self)
+        # 한글 주석 — cycle 153.5 본격 redesign — QTabWidget 10 section
+        # 기존 sound binding 보존 (알림 tab 안 inline 통합) + 9 추가 section
+        from PyQt6.QtWidgets import QTabWidget
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
 
-        # 사운드 section
-        sound_label = QLabel("<b>시그니처 사운드</b>")
-        layout.addWidget(sound_label)
+        self._tabs = QTabWidget(self)
+        self._tabs.setTabPosition(QTabWidget.TabPosition.West)
+        outer.addWidget(self._tabs, stretch=1)
 
-        form = QFormLayout()
+        # 10 section build
+        self._tabs.addTab(self._build_account_tab(), f"👤  {_tr('계정')}")
+        self._tabs.addTab(self._build_privacy_tab(), f"🔒  {_tr('보안')}")
+        self._tabs.addTab(self._build_notification_tab(initial), f"🔔  {_tr('알림')}")
+        self._tabs.addTab(self._build_data_tab(), f"💾  {_tr('데이터')}")
+        self._tabs.addTab(self._build_theme_tab(), f"🎨  {_tr('테마')}")
+        self._tabs.addTab(self._build_locale_tab(), f"🌐  {_tr('언어')}")
+        self._tabs.addTab(self._build_device_tab(), f"📱  {_tr('디바이스')}")
+        self._tabs.addTab(self._build_folder_tab(), f"📁  {_tr('폴더')}")
+        self._tabs.addTab(self._build_advanced_tab(), f"⚙️  {_tr('고급')}")
+        self._tabs.addTab(self._build_about_tab(), f"ℹ️  {_tr('정보')}")
 
-        # 한글 주석 — "메시지" .ts entry tr() + " 수신 시 재생" suffix 결합.
+        # OK / 취소 버튼 (기존 sound binding 보존 — _on_accept 호출 chain)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self._on_accept)  # type: ignore[arg-type]
+        buttons.rejected.connect(self.reject)  # type: ignore[arg-type]
+        outer.addWidget(buttons)
+
+    # ------------------------------------------------------------------
+    # 10 section tab builders (cycle 153.5 신설)
+    # ------------------------------------------------------------------
+
+    def _build_account_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        form.addRow(_tr("이메일"), QLabel("user@example.com"))
+        form.addRow(_tr("username"), QLabel("@username"))
+        bio = QTextEdit()
+        bio.setMaximumHeight(80)
+        bio.setPlaceholderText(_tr("자기소개"))
+        form.addRow(_tr("bio"), bio)
+        form.addRow(QLabel(_tr("프로필 사진 — cycle 154 entry")))
+        return w
+
+    def _build_privacy_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QSpinBox, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        form.addRow(_tr("E2EE"), QLabel("✅ Signal Protocol 활성"))
+        form.addRow(_tr("2FA"), QLabel(f"🟡 {_tr('Phase 2~3 entry')}"))
+        form.addRow(_tr("jailbreak detector"), QCheckBox(_tr("활성")))
+        idle = QSpinBox()
+        idle.setRange(0, 1440)
+        idle.setValue(60)
+        form.addRow(_tr("자동 로그아웃 (분)"), idle)
+        return w
+
+    def _build_notification_tab(self, initial: SettingsState) -> "QWidget":
+        from PyQt6.QtWidgets import QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+
+        # 한글 주석 — 기존 sound binding 보존 — enabled_check + volume_slider 인스턴스 attribute
         self._enabled_check = QCheckBox(f"{_tr('메시지')} 수신 시 재생")
         self._enabled_check.setChecked(initial.sound_enabled)
-        form.addRow("활성", self._enabled_check)
+        form.addRow(_tr("signature sound"), self._enabled_check)
 
         self._volume_slider = QSlider(Qt.Orientation.Horizontal)
         self._volume_slider.setRange(0, 100)
         self._volume_slider.setValue(volume_to_percent(initial.sound_volume))
         self._volume_slider.setTickInterval(10)
         self._volume_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        form.addRow("볼륨 (0~100)", self._volume_slider)
+        form.addRow(_tr("볼륨 (0~100)"), self._volume_slider)
 
-        layout.addLayout(form)
+        form.addRow(_tr("그룹 알림"), QCheckBox(_tr("활성")))
+        form.addRow(_tr("봇 알림"), QCheckBox(_tr("활성")))
+        return w
 
-        # OK / 취소 버튼
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
-        buttons.accepted.connect(self._on_accept)  # type: ignore[arg-type]
-        buttons.rejected.connect(self.reject)  # type: ignore[arg-type]
-        layout.addWidget(buttons)
+    def _build_data_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QPushButton, QSpinBox, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        cap = QSpinBox()
+        cap.setRange(100, 10000)
+        cap.setValue(2000)
+        form.addRow(_tr("ChatView 메시지 cap"), cap)
+        form.addRow(_tr("자동 다운로드 — cellular"), QCheckBox(_tr("활성")))
+        form.addRow(_tr("자동 다운로드 — wifi"), QCheckBox(_tr("활성")))
+        form.addRow(_tr("캐시 size"), QLabel("0 MB"))
+        clear = QPushButton(_tr("캐시 삭제"))
+        clear.setProperty("variant", "danger")
+        form.addRow("", clear)
+        return w
+
+    def _build_theme_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QSpinBox, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        try:
+            from app.ui.theme_picker import ThemePicker
+            form.addRow(_tr("테마 모드"), ThemePicker())
+        except Exception:
+            form.addRow(_tr("테마 모드"), QLabel("dark / light / auto"))
+        form.addRow(_tr("말풍선 색상"), QLabel("Toonation primary #0066FF"))
+        font_size = QSpinBox()
+        font_size.setRange(10, 20)
+        font_size.setValue(13)
+        form.addRow(_tr("글꼴 크기"), font_size)
+        return w
+
+    def _build_locale_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QComboBox, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        combo = QComboBox()
+        for label, code in [
+            ("한국어", "ko"),
+            ("English", "en"),
+            ("中文 (简体)", "zh-CN"),
+            ("中文 (繁體)", "zh-TW"),
+            ("日本語", "ja"),
+        ]:
+            combo.addItem(f"{label} ({code})", code)
+        form.addRow(_tr("표시 언어"), combo)
+        form.addRow(QLabel(_tr("5 locale 지원 — cycle 132~149 i18n binding")))
+        return w
+
+    def _build_device_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QPushButton, QWidget
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.addWidget(QLabel(_tr("현 device — macOS Sonoma 14.5")))
+        layout.addWidget(QLabel(_tr("등록 device 목록 (cycle 119 endpoint)")))
+        layout.addStretch(1)
+        revoke = QPushButton(_tr("다른 device 종료"))
+        revoke.setProperty("variant", "danger")
+        layout.addWidget(revoke)
+        return w
+
+    def _build_folder_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QWidget
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.addWidget(QLabel(_tr("custom 폴더 + 자동 filter — Phase 5+ entry")))
+        layout.addStretch(1)
+        return w
+
+    def _build_advanced_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QLineEdit, QWidget
+        w = QWidget()
+        form = QFormLayout(w)
+        form.setContentsMargins(20, 20, 20, 20)
+        form.addRow(_tr("server endpoint"), QLineEdit("114.207.112.73:8080"))
+        form.addRow(_tr("STUN URL"), QLineEdit("stun:stun.l.google.com:19302"))
+        form.addRow(_tr("네트워크 사용량"), QLabel("0 MB"))
+        debug = QCheckBox(_tr("debug log 활성"))
+        form.addRow(_tr("debug"), debug)
+        return w
+
+    def _build_about_tab(self) -> "QWidget":
+        from PyQt6.QtWidgets import QPushButton, QWidget
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        title = QLabel("TooTalk")
+        title.setStyleSheet("color: #0066FF; font-size: 24px; font-weight: 700;")
+        layout.addWidget(title)
+        layout.addWidget(QLabel(_tr("친구와 직접 연결되는 P2P 메신저")))
+        layout.addWidget(QLabel("v0.5.0-pre1"))
+        layout.addWidget(QLabel("License: GPL-3.0-or-later"))
+        layout.addWidget(QLabel(_tr("개발 = Toonation")))
+        layout.addStretch(1)
+        link = QPushButton(_tr("GitHub 저장소"))
+        link.setProperty("variant", "ghost")
+        link.setFlat(True)
+        layout.addWidget(link)
+        return w
 
     def current_state(self) -> SettingsState:
         """현재 위젯 값 → ``SettingsState`` 스냅샷."""

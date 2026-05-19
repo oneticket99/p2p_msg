@@ -865,11 +865,24 @@ class MainWindow(QMainWindow):
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
             self._chat_header.clear_chat()
         elif tab_key == "bots":
-            # 한글 주석 — bots tab = 별개 panel 미진입 (cycle 153.5+ entry)
-            self._chat_header.set_chat("봇 (Phase 5 entry)", "cycle 150~160", "🤖")
+            # 한글 주석 — bots tab = BotPanel widget instantiate + stacked 안 inject (cycle 153.5)
+            self._chat_header.set_chat("봇 디렉토리", "cycle 150~160 base", "🤖")
+            if not hasattr(self, "_bot_panel_idx"):
+                from app.ui.bot_panel import BotPanel
+                bot_panel = BotPanel(parent=self._stacked)
+                self._bot_panel_idx = self._stacked.addWidget(bot_panel)
+            self._stacked.setCurrentIndex(self._bot_panel_idx)
         elif tab_key == "settings":
-            # 한글 주석 — settings tab = SettingsDialog 진입 (cycle 153.5+ entry)
-            self._chat_header.set_chat("설정", "cycle 153.5+ entry", "⚙️")
+            # 한글 주석 — settings tab = SettingsDialog modal open (cycle 153.5)
+            self._chat_header.set_chat("설정", "10 section tabbed", "⚙️")
+            try:
+                dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
+                dialog.exec()
+            except Exception as exc:  # pragma: no cover - graceful
+                log.debug("SettingsDialog open 실패 graceful — %r", exc)
+            # 한글 주석 — dialog close 후 sidebar tab default friends 복귀
+            self._sidebar_rail.set_active_tab("friends")
+            self._on_sidebar_tab_clicked("friends")
 
     @pyqtSlot()
     def _on_header_search(self) -> None:
