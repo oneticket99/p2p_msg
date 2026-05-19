@@ -243,38 +243,30 @@ class MainWindow(QMainWindow):
         # 한글 주석: 메뉴 "계정 → 친구 목록" 진입점 + 친구 추가 dialog 의 host.
         self._friend_list = FriendListWidget(parent=self._stacked)
         self._friend_list.set_friends([], viewer_id=0)  # 빈 placeholder
+        # cycle 153.7 — friend chat click → ProfileView modal open chain
+        try:
+            self._friend_list.friend_chat_clicked.connect(self._on_friend_profile_open)  # type: ignore[attr-defined]
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("friend_chat_clicked binding 실패 — %r", exc)
         self._stacked.addWidget(self._friend_list)  # idx 3
 
         # 초기 페이지 = 1:1 직접 메시지 (기존 호환)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
 
-        # 5) 입력 영역 (1:1 모드 의 의무 — group 모드 의 입력 은 GroupChatView 안 내장)
-        # cycle 139 — 본 입력 영역 은 ChatView (1:1) 페이지 가 active 일 때만 활성.
-        input_row = QHBoxLayout()
-        input_row.setContentsMargins(8, 8, 8, 8)
-        input_row.setSpacing(8)
+        # 5) 입력 영역 — cycle 153.7 본격 InputBar 마이그레이션
+        # 한글 주석 — 기존 QLineEdit + 보내기 button row → InputBar widget 교체
+        # InputBar = 첨부 + emoji + multi-line + voice + drag&drop 통합 (phase 6 신설)
+        from app.ui.input_bar import InputBar
+        self._input_bar = InputBar(parent=right_panel)
+        self._input_bar.message_sent.connect(self._on_input_message_sent)  # type: ignore[arg-type]
+        self._input_bar.file_attached.connect(self._on_input_file_attached)  # type: ignore[arg-type]
+        right_layout.addWidget(self._input_bar, stretch=0)
 
-        self._attach_button = QPushButton("📎", parent=right_panel)
-        self._attach_button.setToolTip("이미지/파일 첨부 (Phase 1 후반 활성)")
-        self._attach_button.setFixedWidth(36)
-        self._attach_button.setEnabled(False)
-
-        self._input_edit = QLineEdit(parent=right_panel)
-        # 한글 주석 — "메시지" .ts entry tr() + 입력 안내 suffix 결합 패턴.
-        self._input_edit.setPlaceholderText(f"{_tr('메시지')}를 입력하세요…")
-        self._input_edit.returnPressed.connect(self._on_send_clicked)
-
-        # 한글 주석 — "보내기" .ts entry tr() wrap (en=Send, ja=送信 등 5 locale 매핑).
-        self._send_button = QPushButton(_tr("보내기"), parent=right_panel)
-        self._send_button.clicked.connect(self._on_send_clicked)
-
-        input_row.addWidget(self._attach_button)
-        input_row.addWidget(self._input_edit, stretch=1)
-        input_row.addWidget(self._send_button)
-
-        self._input_container = QWidget(right_panel)
-        self._input_container.setLayout(input_row)
-        right_layout.addWidget(self._input_container, stretch=0)
+        # 한글 주석 — 기존 호환 binding (QLineEdit attribute 보존 legacy code path)
+        self._input_edit = self._input_bar._text_edit
+        self._send_button = self._input_bar._send_btn
+        self._attach_button = self._input_bar._attach_btn
+        self._input_container = self._input_bar
 
         # 6) Splitter 3 column 위젯 추가 + 비율 설정
         # 한글 주석 — index 0 rail (fixed) + 1 room_list (resize) + 2 right_panel (flex)
@@ -884,6 +876,62 @@ class MainWindow(QMainWindow):
             self._sidebar_rail.set_active_tab("friends")
             self._on_sidebar_tab_clicked("friends")
 
+    @pyqtSlot(str)
+    def _on_input_message_sent(self, text: str) -> None:
+        """InputBar message_sent → 기존 _on_send_clicked chain dispatch."""
+        # 한글 주석 — InputBar 의 QTextEdit 안 text 이미 clear 됨. 기존 logic 호환 의무
+        if hasattr(self, "_input_edit"):
+            self._input_edit.setPlainText(text)
+        self._on_send_clicked()
+        if hasattr(self, "_input_edit"):
+            self._input_edit.clear()
+
+    @pyqtSlot(list)
+    def _on_input_file_attached(self, paths: list) -> None:
+        """InputBar file_attached → 파일 송신 chain (cycle 154+ entry)."""
+        log.info("input file attached — %d file (cycle 154+ binding)", len(paths))
+
+    @pyqtSlot(int)
+    def _on_friend_profile_open(self, friend_id: int) -> None:
+        """friend chat click → ProfileView modal open (cycle 153.7 신설)."""
+        try:
+            from app.ui.profile_view import ProfileData, ProfileView
+            from PyQt6.QtWidgets import QDialog, QVBoxLayout
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("ProfileView import 실패 — %r", exc)
+            return
+
+        # 한글 주석 — friend_list 안 row data 조회 (cycle 144 정의 정합)
+        friend_data = next(
+            (f for f in getattr(self._friend_list, "_friends", []) if getattr(f, "user_id", None) == friend_id),
+            None,
+        )
+        if friend_data is None:
+            log.debug("friend_id %d data 부재 — graceful skip", friend_id)
+            return
+
+        # ProfileData mapping (cycle 144 friend dataclass → ProfileData)
+        profile = ProfileData(
+            user_id=friend_id,
+            email=getattr(friend_data, "email", ""),
+            username=getattr(friend_data, "username", ""),
+            bio=getattr(friend_data, "bio", ""),
+            avatar_emoji="👤",
+            is_online=getattr(friend_data, "is_online", False),
+        )
+
+        modal = QDialog(self)
+        modal.setWindowTitle(f"TooTalk · {_tr('프로필')}")
+        modal.setMinimumSize(440, 560)
+        layout = QVBoxLayout(modal)
+        layout.setContentsMargins(0, 0, 0, 0)
+        view = ProfileView(parent=modal)
+        view.set_profile(profile)
+        # cycle 154+ — 4 button signal 연결 chain
+        view.message_clicked.connect(lambda _uid=friend_id: modal.accept())  # type: ignore[arg-type]
+        layout.addWidget(view)
+        modal.exec()
+
     @pyqtSlot()
     def _on_header_search(self) -> None:
         """ChatHeader 검색 button — cycle 154+ entry."""
@@ -911,7 +959,12 @@ class MainWindow(QMainWindow):
         if self._stacked.currentIndex() != self._STACK_DIRECT_CHAT:
             return
 
-        text = self._input_edit.text().strip()
+        # 한글 주석 — cycle 153.7 InputBar 마이그레이션 — QTextEdit `toPlainText()` 우선
+        # legacy QLineEdit `text()` fallback graceful
+        try:
+            text = self._input_edit.toPlainText().strip()
+        except AttributeError:
+            text = self._input_edit.text().strip()
         if not text:
             return
 
