@@ -5,8 +5,8 @@ last_verified: 2026-05-20T07:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 06:45 KST — cycle 169.40~44 chain 누계
-> (OTP 미검증 user reclaim atomic transaction + SMTP 4 root cause fix + token usage regenerate + reviewer HIGH 2 회수 + asyncio loop 충돌 회수 + 다이얼로그 한글화 13 카테고리).
+> **최신 갱신 시점**: 2026-05-20 09:00 KST — cycle 169.45~49 chain 누계
+> (OTP resend endpoint 신설 + middleware allow + cooldown 60s + text link 변환 + HTTP worker 전면 변환 asyncio → QThread + sync urllib + Qt signal/slot).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 

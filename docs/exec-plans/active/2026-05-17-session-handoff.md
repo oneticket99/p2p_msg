@@ -1953,6 +1953,33 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.71 cycle 169.45~49 chain — OTP resend + HTTP worker 전면 변환 (2026-05-20 09:00 KST)
+
+**커밋 chain (5 commit)**:
+- `36b009f` docs(cycle169.44): 평가 freshness 회수 + handoff §8.70
+- `9b7318e` feat(cycle169.45): OTP 재 송신 endpoint 신설
+- `3dffba7` fix(cycle169.46): 재 송신 button 클릭 불가 회수
+- `ed46a27` fix(cycle169.47): 재 송신 UI feedback 즉시화 + text link 변환
+- `a0e40ce` fix(cycle169.48): signup OTP cancel 폐기 + setEnabled 폐기 + timeout
+- `7497f7e` fix(cycle169.49): HTTP worker 전면 변환 — asyncio → QThread + sync urllib
+
+**핵심 산출**:
+- 신규 `POST /api/auth/resend` endpoint + middleware PUBLIC_PATHS allow + `server/auth/resend_signup_otp.py` 60s cooldown + invalidate_pending + 신규 OTP + send.
+- 신규 exception 3종 — `UserNotFound`(404) + `RateLimitExceeded`(429) + `EmailAlreadyVerified`(409).
+- timezone fix — `datetime.now()` no-tz KST naive 정합 + abs() 가드.
+- signup OTP cancel 시 `self.reject()` 폐기 → signup dialog 잔존 path.
+- 신규 `app/ui/_http_worker.py::HttpJsonWorker(QThread)` — urllib sync HTTP + SSL CERT_NONE + 10s timeout + Qt signal/slot main thread dispatch.
+- 3 dialog 일괄 변환 (resend + verify + signup + login) → QThread worker + asyncio 의존 폐기.
+- root cause = qasync nested modal 안 ensure_future task scheduled coroutine fire 부재 detect.
+- text link 변환 — login_dialog 회원가입 link pattern 정합.
+
+**잔여 영역 (다음 cycle 우선)**:
+- test 9건 fail = `_AsyncAuthClient` mock pattern vs `HttpJsonWorker.start()` mock pattern mismatch — 별도 cycle test 갱신 의무.
+- 사용자 manual 클라이언트 재 빌드 + 재 송신 button click → 메일 실 수신 검증.
+- reviewer 잔여 6 finding 회수 (cycle 169.42 H-2 + M-1/M-3 + L-1/L-2/L-3).
+
+---
+
 ### 8.70 cycle 169.40~44 chain — OTP reclaim atomic + SMTP fix + asyncio loop 회수 + 다이얼로그 한글화 (2026-05-20 06:45 KST)
 
 **커밋 chain (5 commit)**:

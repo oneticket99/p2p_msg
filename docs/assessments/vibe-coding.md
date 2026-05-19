@@ -5,7 +5,7 @@ last_verified: 2026-05-20T07:00:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot)
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.49
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "내 바이브 코딩 능력에 대해서도 매 작업 마무리 시 정리, 매번 전체 업데이트".
@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 06:45 KST — cycle 169.40~44 chain 누계 (OTP 미검증 user reclaim atomic `reclaim_unverified_user_atomic` SELECT FOR UPDATE + SMTP 4 root cause fix — sasldb_path + realm `mail.dopa.co.kr` + .env duplicate row + force-recreate + token usage regenerate `tools/gen_token_usage_30d.py` sessions=4 msgs=11295 cost=$11564.61 + reviewer-agent HIGH 2 + MEDIUM 1 회수 + asyncio loop 충돌 회수 — `get_running_loop` detect + ensure_future + callback + 다이얼로그 13 카테고리 한글화 helper `app/ui/error_messages.py::translate_error`). drift 0건 108 연속 cycle 37~169.44. 이전 사이클 152 — cycle 149~152 4 cycle chain 누계 (release dual macOS arm64 + Windows x64 + DMCA phash emoji dispatcher + 원격 좌표 보정 + mobile cycle 181 prereq).
+> 최근 갱신 시점: 2026-05-20 09:00 KST — cycle 169.45~49 chain 누계 (OTP resend endpoint 신설 `POST /api/auth/resend` + middleware PUBLIC_PATHS allow + use case `resend_signup_otp.py` + 60s cooldown + invalidate_pending + 신규 OTP 발급 + send_otp_email + button 안 클릭 회수 + UI feedback 즉시화 + text link 변환 `login_dialog` 회원가입 link pattern 정합 + signup OTP cancel self.reject 폐기 + auth_client 10s timeout + HTTP worker 전면 변환 — `app/ui/_http_worker.py::HttpJsonWorker(QThread)` + urllib sync HTTP + Qt signal/slot main thread dispatch + asyncio 의존 폐기). drift 0건 113 연속 cycle 37~169.49. 이전 cycle 169.40~44 — OTP reclaim atomic + SMTP 4 root cause + token usage regenerate + reviewer HIGH 2 회수 + asyncio loop 충돌 회수 + 다이얼로그 13 카테고리 한글화.
 
 ---
 
