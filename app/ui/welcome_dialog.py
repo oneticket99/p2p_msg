@@ -35,6 +35,7 @@ _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 # 한글 주석 — branding asset path
 _LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
+_MASCOT_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "toona_sakamoto.png"
 
 
 class WelcomeDialog(QDialog):
@@ -105,12 +106,17 @@ class WelcomeDialog(QDialog):
         content_layout.setSpacing(20)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — 타이틀 + sub (text 안 _tr() i18n binding)
-        title = QLabel(_tr("TooTalk"))
-        title.setObjectName("welcomeTitle")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("color: #ffffff; font-size: 32px; font-weight: 700;")
-        content_layout.addWidget(title)
+        # 한글 주석 — TooTalk title 텍스트 → mascot 이미지 (toona_sakamoto.png) 대체
+        # 사용자 directive 2026-05-20 cycle 169.9
+        mascot_label = QLabel()
+        mascot_label.setStyleSheet("background: transparent;")
+        mascot_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        mascot_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        if _MASCOT_PATH.is_file():
+            mascot_pixmap = QPixmap(str(_MASCOT_PATH))
+            mascot_scaled = mascot_pixmap.scaledToHeight(160, Qt.TransformationMode.SmoothTransformation)
+            mascot_label.setPixmap(mascot_scaled)
+        content_layout.addWidget(mascot_label)
 
         sub1 = QLabel(_tr("친구와 직접 연결 P2P 메신저"))
         sub1.setAlignment(Qt.AlignmentFlag.AlignCenter)
