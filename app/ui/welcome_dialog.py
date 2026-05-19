@@ -60,17 +60,32 @@ class WelcomeDialog(QDialog):
         banner_layout = QVBoxLayout(banner)
         banner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — PNG 원본 그대로 (cycle 169.3) — QPixmap 직접 load + scale
-        logo_label = QLabel()
+        # 한글 주석 — PNG symbol + Talk QLabel 합성 (cycle 169.4)
+        # Toonation 공식 symbol PNG (Too typography) + Talk 흰색 옆 부착
+        logo_row = QHBoxLayout()
+        logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_row.setSpacing(12)
+
+        symbol_label = QLabel()
         if _LOGO_PATH.is_file():
             pixmap = QPixmap(str(_LOGO_PATH))
             scaled = pixmap.scaledToHeight(80, Qt.TransformationMode.SmoothTransformation)
-            logo_label.setPixmap(scaled)
+            symbol_label.setPixmap(scaled)
         else:
-            logo_label.setText("TooTalk")
-            logo_label.setStyleSheet("color: #ffffff; font-size: 32px; font-weight: 700;")
-        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        banner_layout.addWidget(logo_label)
+            symbol_label.setText("Too")
+            symbol_label.setStyleSheet("color: #ffffff; font-size: 48px; font-weight: 700;")
+        logo_row.addWidget(symbol_label)
+
+        talk_label = QLabel("Talk")
+        talk_label.setStyleSheet(
+            "color: #ffffff;"
+            " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
+            " font-size: 56px;"
+            " font-weight: 700;"
+            " letter-spacing: -2px;"
+        )
+        logo_row.addWidget(talk_label)
+        banner_layout.addLayout(logo_row)
 
         outer.addWidget(banner)
 
