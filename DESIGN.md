@@ -412,6 +412,64 @@ pytest -m "integration or e2e or not (integration or e2e)"
 - line-height = 1.5 base + 1.3 (heading)
 - 한국어 line-break = `word-break: keep-all` (어절 단위 break 유지)
 
+### 11.9 Toonation BI 색상 통합 (cycle 153~160 본격 entry, FRONTEND.md §15 ground truth)
+
+본 §11.9 = `app/assets/themes/base-dark.qss` + `app/ui/theme.py` actual binding 정합 본문. FRONTEND.md §15 BI 가이드 의 변수 mapping + DESIGN.md §11 컴포넌트 시스템 의 연결 layer.
+
+#### 11.9.1 brand color scale 6 변수 (ground truth)
+
+| 변수 | hex | 역할 |
+|---|---|---|
+| `--toon-primary` | `#0066FF` | 핵심 액션 (보내기 / CTA / nav active / self bubble) |
+| `--toon-primary-deep` | `#0052FF` | hover / active 변이 |
+| `--toon-navy` | `#0F172A` | dark bg + footer + welcome banner gradient end |
+| `--toon-slate` | `#1F2937` | dark elevated (card bg / peer bubble) |
+| `--toon-cyan` | `#22D3EE` | accent / heading / ACK progress |
+| `--toon-cyan-light` | `#67E8F9` | sub accent / badge / sender label |
+
+#### 11.9.2 widget ↔ brand color mapping
+
+| widget | bg | text | border |
+|---|---|---|---|
+| QPushButton[primary] | `#0066FF` → hover `#0052FF` | `#ffffff` | none |
+| QPushButton[secondary] | transparent | `#0066FF` | `#0066FF` 1px |
+| QFrame#messageBubbleSelf | `#0066FF` | `#ffffff` | none |
+| QFrame#messageBubblePeer | `#1F2937` | `#e5e7eb` | `#374151` |
+| QFrame#sidebarRail | `#0a0f1c` | `#9ca3af` (active `#0066FF`) | right 1px `#1f2937` |
+| QListWidget#chatList | `#0F172A` | `#e5e7eb` | none |
+| QListWidget#chatList::item:selected | `#1F2937` | `#67E8F9` | none |
+| QFrame#chatHeader | `#0F172A` | `#e5e7eb` + status `#67E8F9` | bottom 1px `#1f2937` |
+| QLineEdit / QTextEdit | `#1F2937` | `#e5e7eb` | `#374151` (focus `#0066FF`) |
+| QFrame#welcomeBanner | gradient `#0F172A` → `#0066FF` | `#ffffff` | none |
+| Reply preview (ChatView) | rgba(34,211,238,0.08) | `#9ca3af` | left 3px `#22D3EE` |
+| Reaction pill | rgba(34,211,238,0.15) | `#67E8F9` | 1px rgba(34,211,238,0.3) |
+
+#### 11.9.3 로고 자산 4 변형 (cycle 153.1)
+
+| 변형 | path | size | 용도 |
+|---|---|---|---|
+| Full | `app/assets/branding/tootalk_logo.svg` | 380×100 | WelcomeDialog banner + 정보 dialog |
+| Icon-only | `app/assets/branding/tootalk_icon.svg` | 64×64 | LoginDialog top + SignupDialog top + tray icon |
+| Wordmark-only | `app/assets/branding/tootalk_wordmark.svg` | 200×48 | header bar + footer + about |
+| Favicon | (cycle 161+ 신설 의무) | 16×16 + 32×32 | 브라우저 tab + Linux window icon |
+
+#### 11.9.4 theme 로딩 chain (cycle 155+ actual)
+
+```
+app/main.py qt_app 초기화
+  → load_user_theme_preference() 읽기 (~/.tootalk/theme_preferences.json)
+  → load_theme(qt_app, theme=chosen) — base-{dark|light|auto}.qss 적용
+
+사용자 SettingsDialog → 테마 tab → ThemePicker click
+  → ThemePicker._on_clicked(mode)
+  → load_theme(qt_app, mode) 즉시 reload
+  → save_user_theme_preference(mode) persist
+```
+
+#### 11.9.5 dark / light 변수 토글 (cycle 161+ light theme 의무)
+
+cycle 160 = dark mode 우선 actual + light mode skeleton 만. cycle 161+ light theme `base-light.qss` 신설 + 자동 감지 (`palette().windowText().lightness() < 128`) actual binding.
+
 ---
 
 ## 12. 참조

@@ -111,6 +111,14 @@ def main() -> int:
     api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").rstrip("/ws")
     auth_client = AuthClient(api_base)
 
+    # cycle 160 — ReactionsClient instantiate (graceful httpx 부재)
+    reactions_client = None
+    try:
+        from app.net.reactions_client import ReactionsClient
+        reactions_client = ReactionsClient(base_url=api_base)
+    except (ImportError, RuntimeError) as exc:  # pragma: no cover - graceful
+        logging.getLogger(__name__).debug("ReactionsClient 부재 graceful — %r", exc)
+
     # 5) AUTH_REQUIRED=1 시 Welcome → Login 강제 chain — Phase 1 회원가입 + 이메일 OTP 의무
     # default = 1 (사용자 directive 2026-05-19 cycle 152 회수)
     auth_required = os.environ.get("AUTH_REQUIRED", "1") == "1"
@@ -142,7 +150,11 @@ def main() -> int:
             return 0
 
     # 6) 메인 윈도우 표시
-    window = MainWindow(config=config, auth_client=auth_client)
+    window = MainWindow(
+        config=config,
+        auth_client=auth_client,
+        reactions_client=reactions_client,
+    )
     window.show()
 
     # 6) 이벤트 루프 진입 — Qt 시그널과 asyncio 코루틴 단일 스레드 처리

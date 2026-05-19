@@ -583,6 +583,66 @@ pytest -m "integration or e2e or not (integration or e2e)"
   <li>한국어 line-break = <code>word-break: keep-all</code> (어절 단위 break 유지)</li>
 </ul>
 
+<h3>11.9 Toonation BI 색상 통합 (cycle 153~160 본격 entry, FRONTEND.md §15 ground truth)</h3>
+
+<p>본 §11.9 = <code>app/assets/themes/base-dark.qss</code> + <code>app/ui/theme.py</code> actual binding 정합 본문. FRONTEND.md §15 BI 가이드 변수 mapping + DESIGN.md §11 컴포넌트 시스템 연결 layer.</p>
+
+<h4>11.9.1 brand color scale 6 변수 (ground truth)</h4>
+<table>
+  <thead><tr><th>변수</th><th>hex</th><th>역할</th></tr></thead>
+  <tbody>
+    <tr><td><code>--toon-primary</code></td><td><code>#0066FF</code></td><td>핵심 액션 (보내기 / CTA / nav active / self bubble)</td></tr>
+    <tr><td><code>--toon-primary-deep</code></td><td><code>#0052FF</code></td><td>hover / active 변이</td></tr>
+    <tr><td><code>--toon-navy</code></td><td><code>#0F172A</code></td><td>dark bg + footer + welcome banner gradient end</td></tr>
+    <tr><td><code>--toon-slate</code></td><td><code>#1F2937</code></td><td>dark elevated (card bg / peer bubble)</td></tr>
+    <tr><td><code>--toon-cyan</code></td><td><code>#22D3EE</code></td><td>accent / heading / ACK progress</td></tr>
+    <tr><td><code>--toon-cyan-light</code></td><td><code>#67E8F9</code></td><td>sub accent / badge / sender label</td></tr>
+  </tbody>
+</table>
+
+<h4>11.9.2 widget ↔ brand color mapping</h4>
+<table>
+  <thead><tr><th>widget</th><th>bg</th><th>text</th><th>border</th></tr></thead>
+  <tbody>
+    <tr><td>QPushButton[primary]</td><td><code>#0066FF</code> → hover <code>#0052FF</code></td><td><code>#ffffff</code></td><td>none</td></tr>
+    <tr><td>QPushButton[secondary]</td><td>transparent</td><td><code>#0066FF</code></td><td><code>#0066FF</code> 1px</td></tr>
+    <tr><td>QFrame#messageBubbleSelf</td><td><code>#0066FF</code></td><td><code>#ffffff</code></td><td>none</td></tr>
+    <tr><td>QFrame#messageBubblePeer</td><td><code>#1F2937</code></td><td><code>#e5e7eb</code></td><td><code>#374151</code></td></tr>
+    <tr><td>QFrame#sidebarRail</td><td><code>#0a0f1c</code></td><td><code>#9ca3af</code> (active <code>#0066FF</code>)</td><td>right 1px <code>#1f2937</code></td></tr>
+    <tr><td>QListWidget#chatList</td><td><code>#0F172A</code></td><td><code>#e5e7eb</code></td><td>none</td></tr>
+    <tr><td>QFrame#chatHeader</td><td><code>#0F172A</code></td><td><code>#e5e7eb</code> + status <code>#67E8F9</code></td><td>bottom 1px <code>#1f2937</code></td></tr>
+    <tr><td>QLineEdit / QTextEdit</td><td><code>#1F2937</code></td><td><code>#e5e7eb</code></td><td><code>#374151</code> (focus <code>#0066FF</code>)</td></tr>
+    <tr><td>QFrame#welcomeBanner</td><td>gradient <code>#0F172A</code> → <code>#0066FF</code></td><td><code>#ffffff</code></td><td>none</td></tr>
+    <tr><td>Reply preview (ChatView)</td><td>rgba(34,211,238,0.08)</td><td><code>#9ca3af</code></td><td>left 3px <code>#22D3EE</code></td></tr>
+    <tr><td>Reaction pill</td><td>rgba(34,211,238,0.15)</td><td><code>#67E8F9</code></td><td>1px rgba(34,211,238,0.3)</td></tr>
+  </tbody>
+</table>
+
+<h4>11.9.3 로고 자산 4 변형 (cycle 153.1)</h4>
+<table>
+  <thead><tr><th>변형</th><th>path</th><th>size</th><th>용도</th></tr></thead>
+  <tbody>
+    <tr><td>Full</td><td><code>app/assets/branding/tootalk_logo.svg</code></td><td>380×100</td><td>WelcomeDialog banner + 정보 dialog</td></tr>
+    <tr><td>Icon-only</td><td><code>app/assets/branding/tootalk_icon.svg</code></td><td>64×64</td><td>LoginDialog top + SignupDialog top + tray icon</td></tr>
+    <tr><td>Wordmark-only</td><td><code>app/assets/branding/tootalk_wordmark.svg</code></td><td>200×48</td><td>header bar + footer + about</td></tr>
+    <tr><td>Favicon</td><td>(cycle 161+ 신설)</td><td>16×16 + 32×32</td><td>브라우저 tab + Linux window icon</td></tr>
+  </tbody>
+</table>
+
+<h4>11.9.4 theme 로딩 chain (cycle 155+ actual)</h4>
+<pre><code>app/main.py qt_app 초기화
+  → load_user_theme_preference() 읽기 (~/.tootalk/theme_preferences.json)
+  → load_theme(qt_app, theme=chosen) — base-{dark|light|auto}.qss 적용
+
+사용자 SettingsDialog → 테마 tab → ThemePicker click
+  → ThemePicker._on_clicked(mode)
+  → load_theme(qt_app, mode) 즉시 reload
+  → save_user_theme_preference(mode) persist</code></pre>
+
+<h4>11.9.5 dark / light 변수 토글 (cycle 161+ light theme 의무)</h4>
+
+<p>cycle 160 = dark mode 우선 actual + light mode skeleton 만. cycle 161+ light theme <code>base-light.qss</code> 신설 + 자동 감지 (<code>palette().windowText().lightness() &lt; 128</code>) actual binding.</p>
+
 <hr>
 
 <h2>12. 참조</h2>
