@@ -152,27 +152,28 @@ class OTPDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — 재 송신 button (cycle 169.46 회수 — setFlat 폐기 + hit area 강제 + cursor)
+        # 한글 주석 — 재 송신 text link (cycle 169.47 회수 — login_dialog 회원가입 link pattern 정합)
+        # 사용자 directive verbatim: "재송신은 버튼이 아니라 하단의 로그인, 취소처럼 텍스트 링크로".
         link_row = QHBoxLayout()
         link_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._resend_btn = QPushButton(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
         self._resend_btn.setProperty("variant", "ghost")
-        self._resend_btn.setMinimumHeight(36)
-        self._resend_btn.setMinimumWidth(180)
+        self._resend_btn.setFlat(True)
         self._resend_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._resend_btn.setMinimumHeight(32)
         self._resend_btn.setStyleSheet(
             "QPushButton {"
             " color: #22D3EE;"
             " background: transparent;"
-            " border: 1px solid #22D3EE;"
-            " border-radius: 6px;"
-            " padding: 6px 16px;"
+            " border: none;"
+            " padding: 4px 12px;"
             " font-size: 13px;"
             " font-weight: 600;"
+            " text-decoration: underline;"
             "}"
-            " QPushButton:hover { background: rgba(34,211,238,0.12); }"
-            " QPushButton:pressed { background: rgba(34,211,238,0.20); }"
-            " QPushButton:disabled { color: #6b7280; border-color: #374151; }"
+            " QPushButton:hover { color: #67E8F9; }"
+            " QPushButton:pressed { color: #0891B2; }"
+            " QPushButton:disabled { color: #6b7280; }"
         )
         self._resend_btn.clicked.connect(self._on_resend_clicked)  # type: ignore[arg-type]
         link_row.addWidget(self._resend_btn)
@@ -298,22 +299,53 @@ class OTPDialog(QDialog):
             self._boxes[0].setFocus()
 
     def _on_resend_clicked(self) -> None:
-        """OTP 재 송신 — 사용자 directive cycle 169.45 회수. actual endpoint call."""
+        """OTP 재 송신 — 사용자 directive cycle 169.47 회수. UI 즉시 feedback + async send.
+
+        cycle 169.45 fire-and-forget silent fail 회수 — click 즉시 cap decrement +
+        UI 갱신 진행 (사용자 직관 정합). async send 별개 task. send fail 시 rollback.
+        """
+        log.info("[OTP resend] button clicked — remaining=%d", self._resend_remaining)
         if self._resend_remaining <= 0:
             QMessageBox.warning(self, "TooTalk", _tr("재 송신 횟수 초과 (24시간)"))
             return
 
-        # 한글 주석 — qasync.QEventLoop active 안 ensure_future + callback chain
+        # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
+        self._resend_remaining -= 1
+        self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
+        self._resend_btn.setEnabled(False)  # 한글 주석 — async fire 중 double click 차단
+        self._remaining_seconds = OTP_VALID_SECONDS
+        for box in self._boxes:
+            box.setEnabled(True)
+            box.clear()
+        self._boxes[0].setFocus()
+        self._update_countdown_display()
+        if not self._countdown_timer.isActive():
+            self._countdown_timer.start()
+
+        # 한글 주석 — async send fire (qasync loop active 안 ensure_future / 부재 시 asyncio.run)
         coro = self._do_resend()
         try:
             asyncio.get_running_loop()
             future = asyncio.ensure_future(coro)
             future.add_done_callback(self._on_resend_done)
         except RuntimeError:
-            asyncio.run(coro)
+            try:
+                asyncio.run(coro)
+                self._resend_btn.setEnabled(True)
+            except Exception as exc:
+                log.warning("[OTP resend] sync fallback 실패 — %r", exc)
+                self._rollback_resend()
+                QMessageBox.critical(self, "TooTalk", f"{_tr('재 송신 실패')} — {translate_error(exc)}")
+
+    def _rollback_resend(self) -> None:
+        """send fail 시 cap rollback + button 재 활성."""
+        self._resend_remaining = min(self._resend_remaining + 1, RESEND_CAP)
+        self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
+        self._resend_btn.setEnabled(True)
 
     async def _do_resend(self) -> None:
         """auth_client.resend_otp endpoint 호출."""
+        log.info("[OTP resend] async send 진입 email=%s", self._email)
         try:
             result = await self._client.resend_otp(self._email)  # type: ignore[attr-defined]
         except AttributeError:
@@ -322,24 +354,15 @@ class OTPDialog(QDialog):
                 "TooTalk",
                 _tr("재 송신 endpoint 부재 — 서버 버전 mismatch"),
             )
+            self._rollback_resend()
             return
 
+        log.info("[OTP resend] 응답 ok=%s code=%r", getattr(result, "ok", None), getattr(result, "error_code", ""))
         if getattr(result, "ok", False):
-            # 한글 주석 — 성공 시 cap -1 + countdown 180s reset + box re-enable + timer restart
-            self._resend_remaining -= 1
-            self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
-            self._remaining_seconds = OTP_VALID_SECONDS
-            for box in self._boxes:
-                box.setEnabled(True)
-                box.clear()
-            self._boxes[0].setFocus()
-            self._update_countdown_display()
-            if not self._countdown_timer.isActive():
-                self._countdown_timer.start()
-            log.info("[OTP resend] email=%s remaining=%d", self._email, self._resend_remaining)
             QMessageBox.information(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
+            self._resend_btn.setEnabled(True)
         else:
-            # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
+            # 한글 주석 — server error_code → 한국어 메시지 mapping + cap rollback
             err_code = getattr(result, "error_code", "")
             err_map = {
                 "RATE_LIMIT": "재 송신 cooldown — 60초 대기 의무",
@@ -348,14 +371,16 @@ class OTPDialog(QDialog):
                 "SMTP_FAILURE": "메일 발송 실패 — 잠시 후 재시도",
             }
             err_msg = err_map.get(err_code, getattr(result, "error_message", "재 송신 실패"))
+            self._rollback_resend()
             QMessageBox.warning(self, "TooTalk", err_msg)
 
     def _on_resend_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
-        """ensure_future done callback — exception graceful + 한글화."""
+        """ensure_future done callback — exception graceful + 한글화 + rollback."""
         try:
             future.result()
         except Exception as exc:
-            log.warning("[OTP resend] 실패 — %r", exc)
+            log.warning("[OTP resend] async 실패 — %r", exc)
+            self._rollback_resend()
             QMessageBox.critical(
                 self,
                 "TooTalk",

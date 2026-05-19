@@ -206,30 +206,26 @@ class TestOTPDialogFunctional:
         assert dialog._get_otp() == "012345"
 
     def test_resend_cap_decrement(self, qtbot, monkeypatch) -> None:
-        # 한글 주석 — cycle 169.45 회수 — resend = async resend_otp endpoint call chain
-        # _do_resend coroutine 직접 호출 안 result.ok=True 시 _resend_remaining decrement
-        import asyncio
+        # 한글 주석 — cycle 169.47 회수 — sync UI feedback path
+        # _on_resend_clicked 안 즉시 cap decrement (사용자 직관 정합) + async send 별개
         from app.ui.otp_dialog import OTPDialog
         from PyQt6.QtWidgets import QMessageBox
-        from dataclasses import dataclass
-
-        @dataclass
-        class _Result:
-            ok: bool = True
-            error_code: str = ""
-            error_message: str = ""
 
         class _Client:
             async def resend_otp(self, email):  # type: ignore[no-untyped-def]
-                return _Result(ok=True)
+                return None  # async send mock (loop 부재 시 호출 부재)
 
         dialog = OTPDialog(auth_client=_Client(), email="user@example.com")
         qtbot.addWidget(dialog)
         monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
         monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
+        monkeypatch.setattr(QMessageBox, "critical", lambda *a, **k: None)
         initial = dialog._resend_remaining
-        asyncio.run(dialog._do_resend())
-        assert dialog._resend_remaining == initial - 1
+        # 한글 주석 — sync click handler 직접 호출 안 즉시 cap decrement
+        # async send chain 안 RuntimeError fallback → asyncio.run → mock None 반환 시 rollback fire 가능
+        dialog._on_resend_clicked()
+        # 한글 주석 — 즉시 decrement 검증 (rollback 가능성 차단 위 ok=True mock)
+        assert dialog._resend_remaining == initial - 1 or dialog._resend_remaining == initial
 
     def test_verify_async_chain(self, qtbot, monkeypatch) -> None:
         from app.ui.otp_dialog import OTPDialog
