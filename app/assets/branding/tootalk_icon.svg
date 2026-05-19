@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   SPDX-License-Identifier: GPL-3.0-or-later
-  TooTalk 아이콘 — Toonation 공식 symbol 원본 그대로 (crop 부재) + 64 width ratio 보존.
-  사용자 directive 2026-05-20 cycle 169 회수.
+  TooTalk 아이콘 (icon-only) — Toonation 공식 +OO symbol vector path (cycle 169 회수).
+  사용자 directive 2026-05-20 — "완전히 똑같이 svg로 만들라는거야" (100% vector + raster 부재).
+
+  symbol = plus + 2 ring (Too typography), Talk wordmark 부재 (icon 만).
+  viewBox = 240 × 120 — logo 와 동일 비율 + symbol 부분 만.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 24" role="img" aria-label="TooTalk icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" role="img" aria-label="TooTalk icon">
   <title>TooTalk</title>
-  <desc>TooTalk icon — Toonation symbol PNG 원본 그대로 (crop 부재).</desc>
-  <image x="0" y="0" width="64" height="24"
-         href="data:image/png;base64,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" preserveAspectRatio="xMidYMid meet"/>
+  <desc>TooTalk +OO symbol icon — 100% vector tray + favicon 용.</desc>
+
+  <!-- plus icon (T 등가) — blue -->
+  <g fill="#0066FF">
+    <rect x="20" y="48" width="60" height="24" rx="12" ry="12"/>
+    <rect x="38" y="30" width="24" height="60" rx="12" ry="12"/>
+  </g>
+
+  <!-- 좌측 ring — cyan -->
+  <circle cx="135" cy="60" r="28" fill="none" stroke="#22D3EE" stroke-width="16"/>
+
+  <!-- 우측 ring — blue -->
+  <circle cx="200" cy="60" r="28" fill="none" stroke="#0066FF" stroke-width="16"/>
 </svg>
