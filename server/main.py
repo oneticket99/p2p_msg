@@ -153,6 +153,14 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     # messages REST endpoint 등록 (Phase 3 사이클 60 ChatView lazy load)
     register_messages_routes(app)
 
+    # reactions REST endpoint 등록 (cycle 155 신설 — emoji + count + UNIQUE constraint)
+    try:
+        from .api.reactions_handlers import register_reactions_routes
+        register_reactions_routes(app)
+        logging.getLogger(__name__).info("[api] reactions 3 endpoint 등록 완료 (cycle 155)")
+    except Exception as exc:  # pragma: no cover - graceful
+        logging.getLogger(__name__).debug("[api] reactions 등록 실패 graceful — %r", exc)
+
     # health + readiness endpoint 등록 (cycle 124 — Docker HEALTHCHECK + nginx + k8s probe)
     register_health_routes(app)
 

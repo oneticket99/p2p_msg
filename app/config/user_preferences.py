@@ -26,6 +26,12 @@ log = logging.getLogger(__name__)
 DEFAULT_PREF_PATH = Path.home() / ".tootalk" / "sound_preferences.json"
 # 한글 주석 — locale preference JSON persist 경로 (cycle 134 신설)
 DEFAULT_LOCALE_PREF_PATH = Path.home() / ".tootalk" / "locale_preferences.json"
+# 한글 주석 — theme preference JSON persist 경로 (cycle 155 신설)
+DEFAULT_THEME_PREF_PATH = Path.home() / ".tootalk" / "theme_preferences.json"
+
+# 한글 주석 — 3 mode (dark / light / auto) 만 허용
+SUPPORTED_THEMES = ("dark", "light", "auto")
+DEFAULT_THEME = "auto"
 
 
 @dataclass(slots=True)
@@ -199,4 +205,51 @@ def save_user_locale_preferences(
         return True
     except OSError as exc:
         log.warning("[pref] %s 저장 실패 — %r", pref_path, exc)
+        return False
+
+
+def load_user_theme_preference(path: Optional[Path] = None) -> str:
+    """JSON 경유 theme preference 로딩 — 부재 시 default 'auto' 반환 (cycle 155 신설).
+
+    Returns
+    -------
+    str
+        'dark' / 'light' / 'auto' 안 하나.
+    """
+    pref_path = path or DEFAULT_THEME_PREF_PATH
+    if not pref_path.is_file():
+        return DEFAULT_THEME
+    try:
+        raw = json.loads(pref_path.read_text(encoding="utf-8"))
+        mode = str(raw.get("theme", DEFAULT_THEME))
+        if mode not in SUPPORTED_THEMES:
+            log.warning("[pref] theme=%r unsupported — %s 폴백", mode, DEFAULT_THEME)
+            return DEFAULT_THEME
+        return mode
+    except (json.JSONDecodeError, OSError) as exc:
+        log.warning("[pref] theme load 실패 — %r → %s 폴백", exc, DEFAULT_THEME)
+        return DEFAULT_THEME
+
+
+def save_user_theme_preference(theme: str, path: Optional[Path] = None) -> bool:
+    """theme preference JSON persist (cycle 155 신설).
+
+    Parameters
+    ----------
+    theme : str
+        'dark' / 'light' / 'auto' 안 하나. 외 부재 시 default 폴백.
+    """
+    if theme not in SUPPORTED_THEMES:
+        log.warning("[pref] theme=%r unsupported — %s 폴백 저장", theme, DEFAULT_THEME)
+        theme = DEFAULT_THEME
+    pref_path = path or DEFAULT_THEME_PREF_PATH
+    try:
+        pref_path.parent.mkdir(parents=True, exist_ok=True)
+        pref_path.write_text(
+            json.dumps({"theme": theme}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return True
+    except OSError as exc:
+        log.warning("[pref] theme 저장 실패 — %r", exc)
         return False

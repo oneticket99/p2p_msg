@@ -79,10 +79,15 @@ def main() -> int:
     qt_app.setOrganizationName("TooTalk")
 
     # 3-0) Toonation BI 통합 theme load — cycle 153 phase 1 (FRONTEND.md §15 정합)
-    # 한글 주석 — base-dark.qss 적용 + palette 기반 dark/light auto-detect
+    # 한글 주석 — persist preference 우선 + base-dark.qss 적용 + palette auto-detect
     try:
         from app.ui.theme import load_theme
-        load_theme(qt_app, theme="auto")
+        try:
+            from app.config.user_preferences import load_user_theme_preference
+            chosen_theme = load_user_theme_preference()
+        except Exception:  # pragma: no cover - graceful
+            chosen_theme = "auto"
+        load_theme(qt_app, theme=chosen_theme)  # type: ignore[arg-type]
     except Exception as theme_exc:  # pragma: no cover - graceful 부재
         log.debug("theme load 실패 graceful — %r", theme_exc)
 
