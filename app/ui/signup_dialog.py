@@ -34,6 +34,7 @@ from PyQt6.QtWidgets import (
 
 from app.net.auth_client import AuthClient
 from app.ui.error_messages import translate_error
+from app.ui._http_worker import HttpJsonWorker
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -169,60 +170,45 @@ class SignupDialog(QDialog):
             QMessageBox.warning(self, "TooTalk", _tr("사용자명 3~16자 의무"))
             return
 
-        # cycle 169.43+ 회수 — qasync.QEventLoop active 안 running loop detect chain
-        coro = self._do_signup(email, username, password)
-        try:
-            asyncio.get_running_loop()
-            future = asyncio.ensure_future(coro)
-            future.add_done_callback(self._on_signup_done)
-        except RuntimeError:
-            asyncio.run(coro)
-
-    def _on_signup_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
-        """ensure_future done callback — exception graceful + 한글화."""
-        try:
-            future.result()
-        except Exception as exc:
-            log.warning("[회원가입] 실패 — %r", exc)
-            QMessageBox.critical(
-                self,
-                "TooTalk",
-                f"{_tr('회원가입 실패')} — {translate_error(exc)}",
-            )
-
-    async def _do_signup(self, email: str, username: str, password: str) -> None:
-        try:
-            result = await self._client.register(email, username, password)  # type: ignore[attr-defined]
-        except AttributeError:
-            QMessageBox.information(
-                self,
-                "TooTalk",
-                _tr("회원가입 endpoint 부재 — 서버 버전 mismatch"),
-            )
-            self._email = email
-            self.accept()
+        # cycle 169.49 회수 — QThread + sync urllib worker fire (asyncio 의존 폐기)
+        base_url = getattr(self._client, "_base_url", "")
+        if not base_url:
+            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
+        self._signup_email = email
+        self._signup_worker = HttpJsonWorker(
+            base_url,
+            "/api/auth/register",
+            {"email": email, "username": username, "password": password},
+            parent=self,
+        )
+        self._signup_worker.finished_with_result.connect(self._on_signup_finished)
+        self._signup_worker.start()
 
-        if getattr(result, "ok", False):
-            # 한글 주석 — cycle 169.48 회수 — OTP cancel 시 self.reject() 폐기.
-            # 사용자 directive verbatim: "otp 창만 닫혀야하고 회원 가입창은 계속 떠있어야함".
+    def _on_signup_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """HttpJsonWorker finished slot — signup 응답 처리 + OTP dialog chain."""
+        log.info("[회원가입] finished ok=%s code=%s", ok, error_code)
+        email = getattr(self, "_signup_email", "")
+        if ok:
+            # 한글 주석 — register PASS → OTP dialog 진입 (modal block + cancel 시 signup 잔존)
             from app.ui.otp_dialog import OTPDialog
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
             if otp.exec() == otp.DialogCode.Accepted:
                 self._email = email
                 self.accept()
             # 한글 주석 — OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
-            # else 분기 제거 — reject 부재 → signup dialog 잔존 유지
-        else:
-            # 한글 주석 — 서버 error_code → 한국어 메시지 mapping
-            err_code = getattr(result, "error_code", "")
-            err_map = {
-                "EMAIL_DUPLICATE": "이미 가입된 이메일 — 로그인 진입 의무",
-                "USERNAME_TAKEN": "이미 사용 중인 사용자명",
-                "INVALID_EMAIL": "이메일 형식 오류",
-                "INVALID_USERNAME": "사용자명 형식 오류",
-                "WEAK_PASSWORD": "비밀번호 형식 부재 (8자 이상 + 영문 + 숫자 권장)",
-                "RATE_LIMIT": "회원가입 시도 제한 — 잠시 후 재시도",
-            }
-            err_msg = err_map.get(err_code, getattr(result, "error_message", "가입 실패"))
-            QMessageBox.critical(self, _tr("회원가입 실패"), str(err_msg))
+            return
+        err_map = {
+            "EMAIL_DUPLICATE": "이미 가입된 이메일 — 로그인 진입 의무",
+            "USERNAME_TAKEN": "이미 사용 중인 사용자명",
+            "USERNAME_DUPLICATE": "이미 사용 중인 사용자명",
+            "INVALID_EMAIL": "이메일 형식 오류",
+            "INVALID_USERNAME": "사용자명 형식 오류",
+            "WEAK_PASSWORD": "비밀번호 형식 부재 (8자 이상 + 영문 + 숫자 권장)",
+            "VALIDATION": "입력 형식 오류 — 다시 확인 의무",
+            "RATE_LIMIT": "회원가입 시도 제한 — 잠시 후 재시도",
+            "TIMEOUT": "응답 시간 초과 — 잠시 후 재시도",
+            "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
+        }
+        err_msg = err_map.get(error_code, error_message or "가입 실패")
+        QMessageBox.critical(self, _tr("회원가입 실패"), str(err_msg))

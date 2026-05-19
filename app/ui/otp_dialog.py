@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 
 from app.net.auth_client import AuthClient
 from app.ui.error_messages import translate_error
+from app.ui._http_worker import HttpJsonWorker
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -235,74 +236,45 @@ class OTPDialog(QDialog):
             self._on_verify_clicked()
 
     def _on_verify_clicked(self) -> None:
-        """cycle 169.43+ 회수 — qasync loop active 안 ensure_future + callback fire."""
+        """cycle 169.49 회수 — QThread + sync urllib worker."""
         otp = self._get_otp()
         if len(otp) != OTP_LENGTH or not otp.isdigit():
-            QMessageBox.warning(
-                self,
-                "TooTalk",
-                _tr("6 digit OTP 입력 의무"),
-            )
+            QMessageBox.warning(self, "TooTalk", _tr("6 digit OTP 입력 의무"))
             return
-        # 한글 주석 — qasync.QEventLoop active 안 asyncio.run() reject. running loop detect.
-        coro = self._do_verify(otp)
-        try:
-            asyncio.get_running_loop()
-            future = asyncio.ensure_future(coro)
-            future.add_done_callback(self._on_verify_done)
-        except RuntimeError:
-            # 한글 주석 — loop 부재 (test 환경 등) fallback
-            asyncio.run(coro)
+        base_url = getattr(self._client, "_base_url", "")
+        if not base_url:
+            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            return
+        self._verify_worker = HttpJsonWorker(base_url, "/api/auth/verify", {"email": self._email, "code": otp}, parent=self)
+        self._verify_worker.finished_with_result.connect(self._on_verify_finished)
+        self._verify_worker.start()
 
-    def _on_verify_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
-        """ensure_future done callback — exception graceful + 한글화."""
-        try:
-            future.result()
-        except Exception as exc:
-            log.warning("[OTP] verify 실패 — %r", exc)
-            QMessageBox.critical(
-                self,
-                "TooTalk",
-                f"{_tr('OTP 인증 실패')} — {translate_error(exc)}",
-            )
-
-    async def _do_verify(self, otp: str) -> None:
-        """auth_client 의 OTP verify endpoint 호출."""
-        try:
-            # 한글 주석 — auth_client 안 verify_otp method 존재 ack 의무
-            result = await self._client.verify_otp(self._email, otp)  # type: ignore[attr-defined]
-        except AttributeError:
-            # 한글 주석 — verify_otp method 부재 시 graceful skip + 사용자 message
-            QMessageBox.information(
-                self,
-                "TooTalk",
-                _tr("OTP 검증 endpoint 미진입 — Phase 1 actual binding 의무"),
-            )
+    def _on_verify_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """HttpJsonWorker finished slot — verify 응답 처리."""
+        log.info("[OTP verify] finished ok=%s code=%s", ok, error_code)
+        if ok:
             self.accept()
             return
-        if getattr(result, "ok", False):
-            self.accept()
-        else:
-            # 한글 주석 — 서버 응답 error_code → 한국어 메시지 mapping
-            err_code = getattr(result, "error_code", "")
-            err_map = {
-                "INVALID_OTP": "OTP 코드 부재 또는 형식 오류",
-                "OTP_EXPIRED": "OTP 만료 — 재 송신 의무",
-                "OTP_ATTEMPT_EXCEEDED": "시도 횟수 초과 — 재 송신 의무",
-                "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
-            }
-            err_msg = err_map.get(err_code, getattr(result, "error_message", "검증 실패"))
-            QMessageBox.critical(self, "TooTalk", f"{_tr('OTP 인증 실패')} — {err_msg}")
-            # 한글 주석 — 실패 시 box clear + 첫 box focus
-            for box in self._boxes:
-                box.clear()
-            self._boxes[0].setFocus()
+        err_map = {
+            "INVALID_OTP": "OTP 코드 부재 또는 형식 오류",
+            "OTP_EXPIRED": "OTP 만료 — 재 송신 의무",
+            "OTP_ATTEMPT_EXCEEDED": "시도 횟수 초과 — 재 송신 의무",
+            "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
+            "OTP_INVALID": "OTP 코드 불일치 — 재 입력 의무",
+            "TIMEOUT": "응답 시간 초과 — 잠시 후 재시도",
+            "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
+        }
+        err_msg = err_map.get(error_code, error_message or _tr("검증 실패"))
+        QMessageBox.critical(self, "TooTalk", f"{_tr('OTP 인증 실패')} — {err_msg}")
+        for box in self._boxes:
+            box.clear()
+        self._boxes[0].setFocus()
 
     def _on_resend_clicked(self) -> None:
-        """OTP 재 송신 — 사용자 directive cycle 169.47 회수. UI 즉시 feedback + async send.
+        """OTP 재 송신 — cycle 169.49 QThread + sync urllib 변환.
 
-        cycle 169.45 fire-and-forget silent fail 회수 — click 즉시 cap decrement +
-        UI 갱신 진행 (사용자 직관 정합). async send 별개 task. send fail 시 rollback.
+        qasync nested modal 안 ensure_future dispatch fail 회수.
+        background QThread + Qt signal/slot — asyncio 의존 폐기.
         """
         log.info("[OTP resend] button clicked — remaining=%d", self._resend_remaining)
         if self._resend_remaining <= 0:
@@ -310,7 +282,6 @@ class OTPDialog(QDialog):
             return
 
         # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
-        # cycle 169.48 회수 — setEnabled(False) 폐기 (async fire 부재 시 button 영구 disable 차단)
         self._resend_remaining -= 1
         self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
         self._remaining_seconds = OTP_VALID_SECONDS
@@ -322,22 +293,34 @@ class OTPDialog(QDialog):
         if not self._countdown_timer.isActive():
             self._countdown_timer.start()
 
-        # 한글 주석 — async send fire (qasync loop active 안 ensure_future / 부재 시 asyncio.run)
-        coro = self._do_resend()
-        try:
-            loop = asyncio.get_running_loop()
-            log.info("[OTP resend] running loop detect — %r", loop)
-            future = asyncio.ensure_future(coro)
-            future.add_done_callback(self._on_resend_done)
-            log.info("[OTP resend] ensure_future scheduled — %r", future)
-        except RuntimeError as loop_exc:
-            log.info("[OTP resend] running loop 부재 — fallback asyncio.run (%r)", loop_exc)
-            try:
-                asyncio.run(coro)
-            except Exception as exc:
-                log.warning("[OTP resend] sync fallback 실패 — %r", exc)
-                self._rollback_resend()
-                QMessageBox.critical(self, "TooTalk", f"{_tr('재 송신 실패')} — {translate_error(exc)}")
+        # 한글 주석 — QThread background worker fire (sync urllib + TLS verify off)
+        base_url = getattr(self._client, "_base_url", "")
+        if not base_url:
+            log.warning("[OTP resend] base_url 부재")
+            self._rollback_resend()
+            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            return
+        self._resend_worker = HttpJsonWorker(base_url, "/api/auth/resend", {"email": self._email}, parent=self)
+        self._resend_worker.finished_with_result.connect(self._on_resend_finished)
+        self._resend_worker.start()
+
+    def _on_resend_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """HttpJsonWorker finished slot — main thread dispatch."""
+        log.info("[OTP resend] finished ok=%s code=%s", ok, error_code)
+        if ok:
+            QMessageBox.information(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
+            return
+        err_map = {
+            "RATE_LIMIT": "재 송신 cooldown — 60초 대기 의무",
+            "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
+            "EMAIL_ALREADY_VERIFIED": "이미 인증 완료 — 로그인 진입 의무",
+            "SMTP_FAILURE": "메일 발송 실패 — 잠시 후 재시도",
+            "TIMEOUT": "응답 시간 초과 — 잠시 후 재시도",
+            "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
+        }
+        msg = err_map.get(error_code, error_message or _tr("재 송신 실패"))
+        self._rollback_resend()
+        QMessageBox.warning(self, "TooTalk", msg)
 
     def _rollback_resend(self) -> None:
         """send fail 시 cap rollback + button 재 활성."""
@@ -345,46 +328,3 @@ class OTPDialog(QDialog):
         self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
         self._resend_btn.setEnabled(True)
 
-    async def _do_resend(self) -> None:
-        """auth_client.resend_otp endpoint 호출."""
-        log.info("[OTP resend] async send 진입 email=%s", self._email)
-        try:
-            result = await self._client.resend_otp(self._email)  # type: ignore[attr-defined]
-        except AttributeError:
-            QMessageBox.warning(
-                self,
-                "TooTalk",
-                _tr("재 송신 endpoint 부재 — 서버 버전 mismatch"),
-            )
-            self._rollback_resend()
-            return
-
-        log.info("[OTP resend] 응답 ok=%s code=%r", getattr(result, "ok", None), getattr(result, "error_code", ""))
-        if getattr(result, "ok", False):
-            QMessageBox.information(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
-            self._resend_btn.setEnabled(True)
-        else:
-            # 한글 주석 — server error_code → 한국어 메시지 mapping + cap rollback
-            err_code = getattr(result, "error_code", "")
-            err_map = {
-                "RATE_LIMIT": "재 송신 cooldown — 60초 대기 의무",
-                "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
-                "EMAIL_ALREADY_VERIFIED": "이미 인증 완료 — 로그인 진입 의무",
-                "SMTP_FAILURE": "메일 발송 실패 — 잠시 후 재시도",
-            }
-            err_msg = err_map.get(err_code, getattr(result, "error_message", "재 송신 실패"))
-            self._rollback_resend()
-            QMessageBox.warning(self, "TooTalk", err_msg)
-
-    def _on_resend_done(self, future: "asyncio.Future") -> None:  # type: ignore[name-defined]
-        """ensure_future done callback — exception graceful + 한글화 + rollback."""
-        try:
-            future.result()
-        except Exception as exc:
-            log.warning("[OTP resend] async 실패 — %r", exc)
-            self._rollback_resend()
-            QMessageBox.critical(
-                self,
-                "TooTalk",
-                f"{_tr('재 송신 실패')} — {translate_error(exc)}",
-            )
