@@ -1059,17 +1059,9 @@ class MainWindow(QMainWindow):
         - settings = SettingsDialog modal
         """
         if tab_key == "friends":
-            # cycle 169.136 — 채팅 통합 view (chat_list_panel 의 friend + room + bot entry 통합 chain)
+            # cycle 169.185 — "모든 대화방" 통합 view (default — chat_list 친구+방+봇 통합)
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
             self._chat_header.clear_chat()
-        elif tab_key == "rooms":
-            # cycle 169.136 — 연락처 view (friend list widget)
-            self._stacked.setCurrentIndex(self._STACK_FRIENDS)
-            self._chat_header.set_chat("연락처", "", "")
-        elif tab_key == "bots":
-            # cycle 169.136 — 통화 placeholder (Phase 5 actual call binding)
-            self._chat_header.set_chat("통화", "Phase 5 본격 binding", "")
-            self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         elif tab_key == "settings":
             # 한글 주석 — settings tab = SettingsDialog modal open (cycle 153.5)
             self._chat_header.set_chat("편집", "10 section tabbed")

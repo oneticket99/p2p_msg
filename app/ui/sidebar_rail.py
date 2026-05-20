@@ -31,12 +31,11 @@ class SidebarRail(QFrame):
     hamburger_clicked = pyqtSignal()
     folder_selected = pyqtSignal(str)  # cycle 169.74 — telegram folder column 통합
 
-    # cycle 169.152 — telegram align tab def (사용자 image #8 critique 회수)
-    # key retain (main_window mapping 무중단) + 마지막 entry label "설정" → "편집" + icon "edit" SVG (sliders)
+    # cycle 169.185 — telegram align (사용자 critique image #20) — home + phone icon 폐기
+    # 2 entry only — "모든 대화방" (chat bubble) + "편집" (sliders)
+    # folder list (모니터링/업무협조 등) = 별 cycle 본격 binding scope (telegram folder feature)
     TAB_DEFS = [
-        ("friends", "채팅", "home"),
-        ("rooms", "연락처", "friends"),
-        ("bots", "통화", "phone"),
+        ("friends", "모든 대화방", "chat_bubble"),
         ("settings", "편집", "edit"),
     ]
 
