@@ -182,18 +182,21 @@ class MessageBubble(QFrame):
             reaction_row.addStretch(1)
             bubble_layout.addLayout(reaction_row)
 
-        # 타임스탬프 + read receipt ✓✓ — 우측 하단
+        # 한글 주석 — cycle 169.69 회수 — 타임스탬프 + read receipt ✓✓ telegram desktop align
+        # ts + check 3px gap + 우측 하단 정합 + baseline align
         ts_row = QHBoxLayout()
-        ts_row.setContentsMargins(0, 0, 0, 0)
-        ts_row.setSpacing(4)
+        ts_row.setContentsMargins(0, 2, 0, 0)
+        ts_row.setSpacing(3)
+        ts_row.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         ts_row.addStretch(1)
         ts_label = QLabel(self._format_ts(ts), bubble)
-        ts_label.setStyleSheet(f"color: {self._COLOR_TS}; font-size: 10px;")
-        ts_row.addWidget(ts_label)
+        ts_label.setStyleSheet(f"color: {self._COLOR_TS}; font-size: 11px;")
+        ts_row.addWidget(ts_label, alignment=Qt.AlignmentFlag.AlignBottom)
         if is_self:
+            # 한글 주석 — telegram align — check ✓✓ unicode 의 의 cyan + 의 의 baseline
             check_label = QLabel("✓✓", bubble)
-            check_label.setStyleSheet("color: #67E8F9; font-size: 10px;")
-            ts_row.addWidget(check_label)
+            check_label.setStyleSheet("color: #67E8F9; font-size: 11px; font-weight: 700;")
+            ts_row.addWidget(check_label, alignment=Qt.AlignmentFlag.AlignBottom)
         bubble_layout.addLayout(ts_row)
 
         # 말풍선 스타일 — self/peer 색상 분기

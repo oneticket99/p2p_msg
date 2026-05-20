@@ -187,24 +187,37 @@ def main() -> None:
     JSON_OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"[token-usage] {JSON_OUT} 갱신 — sessions={len(sessions_list)} msgs={parsed_messages} cost=${out['totals']['cost_usd']:.2f}")
 
-    # 한글 주석 — HTML 안 timestamp + total token + session row 만 갱신 (template structure 보존)
+    # 한글 주석 — cycle 169.69 회수 (L-1 jinja robust) — escape + multiline + anchor 강화
     if HTML_OUT.exists():
         html = HTML_OUT.read_text(encoding="utf-8")
         import re
-        html = re.sub(
-            r"생성 시각: [^·]+· 집계 윈도우: [^<]+",
-            f"생성 시각: {out['generated_at_kst']} · 집계 윈도우: {out['window_start_kst']} ~ {out['window_end_kst']}",
-            html,
-            count=1,
+        # 한글 주석 — 생성 시각 line — anchor 강화 (<p class="gen"> opening tag)
+        gen_pattern = re.compile(
+            r'(<p class="gen">생성 시각: )[^·]+(· 집계 윈도우: )[^<]+',
+            re.MULTILINE,
         )
-        html = re.sub(
-            r"<th>집계 윈도우 \(KST\)</th><td>[^<]+</td>",
-            f"<th>집계 윈도우 (KST)</th><td>{out['window_start_kst']} ~ {out['window_end_kst']}</td>",
-            html,
-            count=1,
+        gen_replace = (
+            f"\\g<1>{out['generated_at_kst']}\\g<2>"
+            f"{out['window_start_kst']} ~ {out['window_end_kst']}"
         )
-        HTML_OUT.write_text(html, encoding="utf-8")
-        print(f"[token-usage] {HTML_OUT} timestamp 갱신")
+        new_html, n_gen = gen_pattern.subn(gen_replace, html, count=1)
+        if n_gen == 0:
+            # fallback (legacy pattern)
+            new_html = re.sub(
+                r"생성 시각: [^·]+· 집계 윈도우: [^<]+",
+                f"생성 시각: {out['generated_at_kst']} · 집계 윈도우: {out['window_start_kst']} ~ {out['window_end_kst']}",
+                html,
+                count=1,
+            )
+
+        # 한글 주석 — 집계 윈도우 table row — th 안 KST text + td 내용 정확 match
+        window_pattern = re.compile(
+            r"(<th>집계 윈도우\s*\(KST\)</th>\s*<td>)[^<]+(</td>)"
+        )
+        window_replace = f"\\g<1>{out['window_start_kst']} ~ {out['window_end_kst']}\\g<2>"
+        new_html, n_win = window_pattern.subn(window_replace, new_html, count=1)
+        HTML_OUT.write_text(new_html, encoding="utf-8")
+        print(f"[token-usage] {HTML_OUT} timestamp 갱신 — n_gen={n_gen} n_win={n_win}")
 
 
 if __name__ == "__main__":
