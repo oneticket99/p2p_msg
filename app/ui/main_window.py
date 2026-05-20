@@ -1196,14 +1196,18 @@ class MainWindow(QMainWindow):
         """cycle 169.160 — DM cache append + active chat 시점 chat_view render single source.
 
         send chain + receive callback (future cycle) 동일 helper 호출 → cache 정합.
+        cycle 169.163 — 1:1 chat (kind="friend" or "bot") sender label suppress (telegram align).
         """
         key = (kind, target_id)
         self._dm_history.setdefault(key, []).append((sender, text, ts, is_self))
         # active chat 이면 chat_view render
         if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
             try:
+                # 1:1 chat = friend/bot kind → sender label suppress (room = retain)
+                hide_sender = kind in ("friend", "bot")
                 self._chat_view.add_message(
-                    sender=sender, text=text, ts=ts, is_self=is_self, reply_to=reply_to,
+                    sender=sender, text=text, ts=ts, is_self=is_self,
+                    reply_to=reply_to, hide_sender=hide_sender,
                 )
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("chat_view add_message 실패 — %r", exc)

@@ -88,6 +88,7 @@ class MessageBubble(QFrame):
         reply_to: Optional[ReplyContext] = None,
         reactions: Optional[dict[str, int]] = None,
         grouped: bool = False,
+        hide_sender: bool = False,
     ) -> None:
         super().__init__(parent)
 
@@ -99,6 +100,8 @@ class MessageBubble(QFrame):
         self._reactions: dict[str, int] = dict(reactions or {})
         # cycle 169.144 — telegram align sender grouping (직전 bubble 의 sender 동일 시 True)
         self._grouped = grouped
+        # cycle 169.163 — 1:1 chat 시점 sender label suppress (telegram align image #6)
+        self._hide_sender = hide_sender
 
         # 본 위젯은 가로로 가득 차도록 두고, 내부 정렬을 통해 좌/우 분기
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
@@ -117,9 +120,9 @@ class MessageBubble(QFrame):
         bubble_layout.setContentsMargins(8, 6, 8, 6)
         bubble_layout.setSpacing(2)
 
-        # cycle 169.144 — grouped=True 시 sender label 생략 (telegram align D-20)
-        # peer 발신 + 첫 bubble (non-grouped) 만 sender label render
-        if not is_self and not self._grouped:
+        # cycle 169.144/163 — grouped 또는 1:1 chat (hide_sender) 시 sender label 생략
+        # peer 발신 + 첫 bubble (non-grouped) + 1:1 부재 시점 만 render
+        if not is_self and not self._grouped and not self._hide_sender:
             from app.ui.avatar_palette import palette_solid
             sender_color = palette_solid(sender)
             sender_label = QLabel(sender, bubble)

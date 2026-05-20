@@ -226,6 +226,7 @@ class ChatView(QScrollArea):
         reply_to: Optional["object"] = None,
         reactions: Optional[dict] = None,
         message_id: Optional[int] = None,
+        hide_sender: bool = False,
     ) -> None:
         """신규 메시지를 리스트에 추가하고 하단으로 자동 스크롤.
 
@@ -259,6 +260,7 @@ class ChatView(QScrollArea):
             reply_to=reply_to,  # type: ignore[arg-type]
             reactions=reactions,
             grouped=is_grouped,
+            hide_sender=hide_sender,
         )
         # 한글 주석 — cycle 154 reply_requested signal → parent main_window 안 reply mode set
         try:
