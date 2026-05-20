@@ -1089,10 +1089,59 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def _on_folder_selected(self, folder_id: str) -> None:
-        """FolderList folder click → chat_list_panel filter (cycle 169.71)."""
+        """folder click → chat_list_panel filter + edit popup (cycle 169.75)."""
         log.info("[main_window] folder_selected — folder_id=%s", folder_id)
+        # cycle 169.75 회수 — 편집 click → FolderManageDialog popup
+        if folder_id == "edit":
+            from app.ui.folder_manage_dialog import FolderManageDialog
+            user_folders = getattr(self, "_user_folders", [])
+            dialog = FolderManageDialog(user_folders=user_folders, parent=self)
+            dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
+            dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
+            dialog.exec()
+            return
         if hasattr(self, "_chat_list_panel"):
             self._chat_list_panel.set_active_folder(folder_id)
+
+    @pyqtSlot()
+    def _on_folder_create_requested(self) -> None:
+        """새 폴더 만들기 → FolderEditDialog popup (cycle 169.75)."""
+        from app.ui.folder_edit_dialog import FolderEditDialog
+        dialog = FolderEditDialog(parent=self)
+        dialog.folder_saved.connect(self._on_folder_saved)  # type: ignore[arg-type]
+        dialog.chat_picker_requested.connect(  # type: ignore[arg-type]
+            lambda mode: self._open_chat_picker(dialog, mode)
+        )
+        dialog.exec()
+
+    def _open_chat_picker(self, edit_dialog, mode: str) -> None:
+        """FolderEditDialog 안 대화방 추가 click → ChatPickerDialog."""
+        from app.ui.chat_picker_dialog import ChatPickerDialog
+        entries = list(getattr(self._chat_list_panel, "_entries", []))
+        picker = ChatPickerDialog(chat_entries=entries, mode=mode, parent=edit_dialog)
+
+        def _on_selected(chats):
+            if mode == "include":
+                edit_dialog.add_included_chats(chats)
+            else:
+                edit_dialog.add_excluded_chats(chats)
+        picker.chats_selected.connect(_on_selected)  # type: ignore[arg-type]
+        picker.exec()
+
+    @pyqtSlot(dict)
+    def _on_folder_saved(self, folder_data: dict) -> None:
+        """FolderEditDialog 만들기 PASS → user_folders 안 append."""
+        if not hasattr(self, "_user_folders"):
+            self._user_folders = []
+        self._user_folders.append(folder_data)
+        log.info("[main_window] folder created — name=%s", folder_data.get("name"))
+
+    @pyqtSlot(str)
+    def _on_folder_delete_requested(self, folder_id: str) -> None:
+        """folder delete request."""
+        user_folders = getattr(self, "_user_folders", [])
+        self._user_folders = [f for f in user_folders if f.get("folder_id") != folder_id]
+        log.info("[main_window] folder deleted — folder_id=%s", folder_id)
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
