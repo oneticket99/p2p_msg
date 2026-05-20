@@ -46,8 +46,10 @@ class SidebarRail(QFrame):
         # cycle 169.138 — sub-agent A drift D-1 — width 96 → 72 (telegram desktop align)
         self.setFixedWidth(72)
 
+        # cycle 169.182 — top bar 한 라인 align (image #15 critique)
+        # hamburger row top = height 60 (chat_list search + chat_header 정합)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 12, 4, 12)
+        layout.setContentsMargins(4, 0, 4, 12)
         layout.setSpacing(4)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -55,7 +57,8 @@ class SidebarRail(QFrame):
         hamburger_btn = QToolButton()
         hamburger_btn.setIcon(load_icon("menu", size=24, color="#9ca3af"))
         hamburger_btn.setIconSize(QSize(24, 24))
-        hamburger_btn.setFixedSize(56, 48)
+        # cycle 169.182 — height 60 fixed (top bar align)
+        hamburger_btn.setFixedSize(56, 60)
         hamburger_btn.setToolTip("메뉴")
         hamburger_btn.setStyleSheet(
             "QToolButton {"
@@ -67,7 +70,8 @@ class SidebarRail(QFrame):
         )
         hamburger_btn.clicked.connect(self.hamburger_clicked.emit)  # type: ignore[arg-type]
         layout.addWidget(hamburger_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addSpacing(8)
+        # cycle 169.182 — top bar 60 align — border-bottom row separator
+        layout.addSpacing(12)
 
         # 한글 주석 — QButtonGroup 의 mutually exclusive 토글 (one active 의 의무)
         self._button_group = QButtonGroup(self)

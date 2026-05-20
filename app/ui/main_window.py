@@ -258,6 +258,10 @@ class MainWindow(QMainWindow):
         self._chat_list_panel.set_entries(default_entries)
         # cycle 169.136 — 채팅 통합 (telegram align) — default tab "friends" = 채팅
         self._chat_list_panel.set_active_tab("friends")
+        # cycle 169.182 — startup 시점 default chat 진입 (사용자 critique image #16)
+        # 투네이션 고객센터 bot default selected → chat_header name 즉시 출력
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
 
         # RoomListWidget — 의 의 hide (group chat 진입 시 _on_room_entered 호출 chain backward compat)
         self._room_list = RoomListWidget(parent=self)

@@ -48,16 +48,10 @@ class ChatHeader(QFrame):
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        # 한글 주석 — cycle 169.52 회수 — SVG avatar placeholder (emoji 폐기)
+        # cycle 169.182 — 사용자 directive — avatar 폐기 + nickname 만 출력
+        # _avatar_label 은 hidden retain (set_chat 안 setVisible False chain — backwards compat 보장)
         self._avatar_label = QLabel()
-        self._avatar_label.setFixedSize(40, 40)
-        self._avatar_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._avatar_label.setStyleSheet(
-            "background-color: #1F2937;"
-            " border-radius: 20px;"
-        )
-        self._avatar_label.setPixmap(load_pixmap("avatar", size=24, color="#67E8F9"))
-        layout.addWidget(self._avatar_label)
+        self._avatar_label.setVisible(False)
 
         # 한글 주석 — name + status vbox
         info_layout = QVBoxLayout()
@@ -107,24 +101,12 @@ class ChatHeader(QFrame):
             layout.addWidget(btn)
 
     def set_chat(self, name: str, status: str = "", avatar_emoji: str = "") -> None:
-        """현 활성 chat 정보 갱신. avatar_emoji arg = legacy compat (무시)."""
+        """현 활성 chat 정보 갱신. avatar_emoji arg = legacy compat (무시).
+
+        cycle 169.182 — 사용자 directive — avatar 출력 폐기, nickname 만 render.
+        """
         self._name_label.setText(name)
         self._status_label.setText(status)
-        # cycle 169.142 — telegram per-user palette gradient avatar bg
-        if name:
-            from app.ui.avatar_palette import palette_pair
-            c_start, c_end = palette_pair(name)
-            self._avatar_label.setStyleSheet(
-                f"background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1,"
-                f" stop:0 {c_start}, stop:1 {c_end});"
-                f" border-radius: 20px;"
-                f" color: #ffffff;"
-                f" font-size: 18px;"
-                f" font-weight: 700;"
-            )
-            initial = name[:1].upper() if name[:1].isascii() else name[:1]
-            self._avatar_label.setText(initial)
-            self._avatar_label.setPixmap(QPixmap())
 
     def clear_chat(self) -> None:
         """chat 선택 해제 — placeholder text 부재 (cycle 169.100 회수 — 사용자 directive)."""
