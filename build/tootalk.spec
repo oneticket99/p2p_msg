@@ -25,7 +25,16 @@ a = Analysis(
     [ENTRY],
     pathex=[str(ROOT)],
     binaries=[],
-    datas=[],
+    datas=[
+        # cycle 169.95 회수 — frozen build 안 assets/branding + icons + sounds + sound/wav 패키징 의무
+        # path resolve = Path(__file__).resolve().parent.parent / "assets" / ... (= app/assets)
+        # PyInstaller 안 dest = app/assets/...
+        (str(ROOT / "app" / "assets" / "branding"), "app/assets/branding"),
+        (str(ROOT / "app" / "assets" / "icons"), "app/assets/icons"),
+        (str(ROOT / "app" / "assets" / "sounds"), "app/assets/sounds"),
+        (str(ROOT / "app" / "assets" / "themes"), "app/assets/themes"),
+        (str(ROOT / "app" / "sound" / "wav"), "app/sound/wav"),
+    ],
     hiddenimports=[
         # qasync + aiortc 누락 hidden dependency 명시
         "qasync",
