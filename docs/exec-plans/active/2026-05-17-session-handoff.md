@@ -1953,6 +1953,33 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.75 cycle 169.6~169.39 cluster 보충 entry — dereliction audit M-2 회수 (2026-05-20 18:30 KST)
+
+**커버 범위**: cycle 169.6~169.12 (8.78 안 이미 entry) + **cycle 169.13~169.39 = 27 cycle 무기록 보충**.
+
+**169.13~169.25 — UI redesign 본격 + asyncio loop 사슬**:
+- welcome_dialog logo + Talk wordmark + mascot 이미지 + 4 locale switch 회수
+- LoginDialog signup link `done(2)` intent + main.py switch chain
+- ssl.CERT_NONE TCPConnector + TOOTALK_API_BASE env priority
+- asyncio.run() 격리 loop fix (qasync.QEventLoop active 안 reject)
+
+**169.26~169.33 — qasync.asyncSlot fail 사슬**:
+- pytest-qt PYTEST_QT_API=pyqt6 env
+- qasync.asyncSlot RuntimeError 'no running event loop' 회수 시도
+- reviewer-agent FAIL 6 CRITICAL detect
+- C5 (QVBoxLayout import) + C6 (tuple annotation) 회수
+
+**169.34~169.39 — sync def + asyncio.run() chain**:
+- sync def + asyncio.run(coro) 격리 loop 변환
+- reactions REST `request["user_id"]` 직접 (X-User-Id fallback 폐기)
+- locale signature 회수
+- url removesuffix("/ws")
+- SMTP 535 5.7.8 fail chain — saslpasswd2 reset attempts
+
+**잔여 entry 보충 의무**: cycle 169.0~169.5 + 169.68~169.72 (본 cycle) — 별도 cycle.
+
+---
+
 ### 8.74 cycle 169.60~67 chain — TURN + ChatListPanel + skip 10 회수 + reviewer 잔여 4 (2026-05-20 16:00 KST)
 
 **커밋 chain (7 commit)**:

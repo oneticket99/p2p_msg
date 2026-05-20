@@ -34,6 +34,7 @@ class ChatHeader(QFrame):
     call_clicked = pyqtSignal()
     menu_clicked = pyqtSignal()
     sidebar_toggled = pyqtSignal()  # cycle 169.61 — telegram desktop sidebar toggle
+    pinned_dismissed = pyqtSignal()  # cycle 169.72 — pinned message close click
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -110,3 +111,46 @@ class ChatHeader(QFrame):
         """chat 선택 해제 — placeholder text."""
         self._name_label.setText("chat 선택 부재")
         self._status_label.setText("")
+
+    def set_pinned_message(self, title: str, preview: str) -> None:
+        """pinned message bar title + preview set (cycle 169.72 신설)."""
+        # 한글 주석 — pinned widget lazy create
+        bar = getattr(self, "_pinned_bar", None)
+        if bar is None:
+            from PyQt6.QtWidgets import QFrame as _QFrame, QPushButton as _QPushButton
+            bar = _QFrame(self.parentWidget() if self.parentWidget() else self)
+            bar.setFixedHeight(48)
+            bar.setStyleSheet(
+                "QFrame { background-color: #131C30; border-left: 3px solid #22D3EE;"
+                " border-radius: 0; }"
+            )
+            b_layout = QHBoxLayout(bar)
+            b_layout.setContentsMargins(16, 6, 16, 6)
+            b_layout.setSpacing(8)
+            col = QVBoxLayout()
+            col.setSpacing(2)
+            pin_title = QLabel("고정된 메시지", bar)
+            pin_title.setStyleSheet("color: #22D3EE; font-size: 11px; font-weight: 700;")
+            col.addWidget(pin_title)
+            pin_preview = QLabel("", bar)
+            pin_preview.setStyleSheet("color: #e5e7eb; font-size: 13px;")
+            col.addWidget(pin_preview)
+            b_layout.addLayout(col, stretch=1)
+            close_btn = _QPushButton("✕", bar)
+            close_btn.setFixedSize(28, 28)
+            close_btn.setFlat(True)
+            close_btn.setStyleSheet("color: #9ca3af; font-size: 14px; border: none;")
+            close_btn.clicked.connect(self.pinned_dismissed.emit)  # type: ignore[arg-type]
+            b_layout.addWidget(close_btn)
+            self._pinned_bar = bar
+            self._pinned_title = pin_title
+            self._pinned_preview = pin_preview
+        self._pinned_title.setText(title or "고정된 메시지")
+        self._pinned_preview.setText(preview)
+        bar.setVisible(True)
+
+    def hide_pinned(self) -> None:
+        """pinned message bar hide."""
+        bar = getattr(self, "_pinned_bar", None)
+        if bar is not None:
+            bar.setVisible(False)
