@@ -1411,19 +1411,30 @@ class MainWindow(QMainWindow):
         """
         from app.ui.hamburger_drawer import HamburgerDrawer
         username = getattr(self._config, "user_nickname", "사용자")
+        # cycle 169.115 회수 — child overlay (main_window 내부) — popup 폐기
+        # 이전 drawer 존재 시 close + 재 spawn 차단
+        if getattr(self, "_active_drawer", None) is not None:
+            try:
+                self._active_drawer.close_drawer()
+            except Exception:
+                pass
+            self._active_drawer = None
         drawer = HamburgerDrawer(username=username, parent=self)
         drawer.profile_clicked.connect(self._on_drawer_profile)  # type: ignore[arg-type]
         drawer.settings_clicked.connect(self._on_drawer_settings)  # type: ignore[arg-type]
         drawer.calls_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
         drawer.contacts_clicked.connect(self._on_drawer_contacts)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
-        # cycle 169.113 — 좌측 edge slide-in (main_window 좌측 0,0 anchor + 전체 높이 match)
-        main_geom = self.geometry()
-        drawer.setFixedHeight(main_geom.height())
-        # 한글 주석 — main_window 좌측 top-left 기준 global position 계산
-        top_left = self.mapToGlobal(self.rect().topLeft())
-        drawer.move(top_left.x(), top_left.y())
-        drawer.exec()
+        # cycle 169.115 — main_window 내부 child overlay 정합
+        # central widget geometry 안 0,0 anchor + 전체 높이 match
+        central = self.centralWidget() if self.centralWidget() else self
+        drawer.setGeometry(0, 0, 320, central.height())
+        drawer.exec()  # show + raise + setFocus
+        # 한글 주석 — close 시점 ref clear
+        def _on_drawer_closed():
+            self._active_drawer = None
+        drawer.closed.connect(_on_drawer_closed)  # type: ignore[arg-type]
+        self._active_drawer = drawer
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:

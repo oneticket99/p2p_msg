@@ -24,8 +24,12 @@ from PyQt6.QtWidgets import (
 from app.ui._icons import load_icon, load_pixmap
 
 
-class HamburgerDrawer(QDialog):
-    """좌상단 햄버거 click → 9 entry menu drawer (modal)."""
+class HamburgerDrawer(QFrame):
+    """좌상단 햄버거 click → 9 entry menu drawer.
+
+    cycle 169.115 회수 — QDialog popup 폐기 → QFrame child overlay (main_window 내부).
+    parent.installEventFilter — outside click 시 close.
+    """
 
     profile_clicked = pyqtSignal()
     new_group_clicked = pyqtSignal()
@@ -36,18 +40,18 @@ class HamburgerDrawer(QDialog):
     settings_clicked = pyqtSignal()
     night_mode_toggled = pyqtSignal(bool)
     logout_clicked = pyqtSignal()
+    closed = pyqtSignal()
 
     def __init__(self, username: str = "사용자", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("TooTalk · 메뉴")
-        self.setModal(True)
         self.setFixedWidth(320)
         self.setMinimumHeight(560)
-        # cycle 169.99 회수 — image #11 별도 OS window decoration 제거
-        # frameless + popup → 메인 window 안 sliding panel feel (telegram align)
-        from PyQt6.QtCore import Qt as _Qt
-        self.setWindowFlags(_Qt.WindowType.FramelessWindowHint | _Qt.WindowType.Popup)
-        self.setAttribute(_Qt.WidgetAttribute.WA_TranslucentBackground, False)
+        # 한글 주석 — child overlay 의 의 bg solid + raise_() 의무
+        self.setAutoFillBackground(True)
+        self.setStyleSheet("QFrame { background-color: #0F172A; border-right: 1px solid #1f2937; }")
+        # 한글 주석 — parent 의 의 event filter — outside click → close
+        if parent is not None:
+            parent.installEventFilter(self)
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
@@ -117,7 +121,7 @@ class HamburgerDrawer(QDialog):
         outer.addWidget(footer)
 
     def showEvent(self, event):  # type: ignore[override]
-        """slide-in animation — left edge 부터 320px width drawer 의 의 pos 의 animate (cycle 169.114)."""
+        """slide-in animation — left edge 부터 320px width drawer pos animate (cycle 169.114)."""
         super().showEvent(event)
         from PyQt6.QtCore import QPropertyAnimation, QPoint, QEasingCurve
         target_pos = self.pos()
@@ -130,6 +134,39 @@ class HamburgerDrawer(QDialog):
         anim.setEasingCurve(QEasingCurve.Type.OutCubic)
         anim.start()
         self._slide_anim = anim  # GC 차단 의무 — Python ref 보존
+
+    def eventFilter(self, obj, event):
+        """parent main_window outside click → drawer close (cycle 169.115)."""
+        from PyQt6.QtCore import QEvent
+        if event.type() == QEvent.Type.MouseButtonPress and obj is self.parent():
+            pos = event.pos()
+            if not self.geometry().contains(pos):
+                self.close_drawer()
+                return True
+        return super().eventFilter(obj, event)
+
+    def close_drawer(self) -> None:
+        """drawer close + parent event filter remove + closed signal emit."""
+        parent = self.parent()
+        if parent is not None:
+            parent.removeEventFilter(self)
+        self.hide()
+        self.closed.emit()
+        self.deleteLater()
+
+    def keyPressEvent(self, event):
+        """ESC key → close (cycle 169.115)."""
+        if event.key() == Qt.Key.Key_Escape:
+            self.close_drawer()
+            return
+        super().keyPressEvent(event)
+
+    def exec(self) -> int:
+        """QDialog compat shim — show + raise (cycle 169.115)."""
+        self.show()
+        self.raise_()
+        self.setFocus()
+        return 0
 
     def _build_menu_entry(self, icon_name: str, label: str) -> QPushButton:
         """단일 menu row button — icon + label."""
