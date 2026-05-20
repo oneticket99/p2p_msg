@@ -43,6 +43,7 @@ class ChatListEntry:
     is_pinned: bool = False
     is_online: bool = False
     last_sender: str = ""  # cycle 169.73 — group rooms last sender prefix ("나" / 사용자명)
+    folder_color: str = ""  # cycle 169.76 — folder 색상 hex (chat_list inline strip)
 
 
 class ChatListItemDelegate(QStyledItemDelegate):
@@ -75,6 +76,12 @@ class ChatListItemDelegate(QStyledItemDelegate):
         if entry is None:
             painter.restore()
             return
+
+        # cycle 169.76 회수 — folder 색상 inline strip (좌측 vertical 3px bar)
+        if entry.folder_color:
+            painter.setBrush(QColor(entry.folder_color))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRect(rect.left(), rect.top(), 3, rect.height())
         avatar_rect = QRect(
             rect.left() + self.PADDING,
             rect.top() + (self.ROW_HEIGHT - self.AVATAR_SIZE) // 2,
