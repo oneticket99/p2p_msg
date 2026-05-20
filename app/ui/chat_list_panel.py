@@ -219,7 +219,18 @@ class ChatListPanel(QFrame):
             self._search_edit.addAction(_li("search", size=16, color="#9ca3af"), _QLE.ActionPosition.LeadingPosition)  # type: ignore[attr-defined]
         except Exception:
             pass
+        # cycle 169.171 — search bar pill (radius 18 + bg seamless darker — image #14 align)
         self._search_edit.setMinimumHeight(36)
+        self._search_edit.setStyleSheet(
+            "QLineEdit {"
+            " background-color: #1a2335;"
+            " border: none;"
+            " border-radius: 18px;"
+            " padding: 6px 14px;"
+            " color: #e5e7eb;"
+            "}"
+            " QLineEdit:focus { background-color: #1f2a44; }"
+        )
         self._search_edit.textChanged.connect(self._on_search_changed)  # type: ignore[arg-type]
         search_layout.addWidget(self._search_edit)
         layout.addWidget(search_frame)
