@@ -62,13 +62,14 @@ class ChatHeader(QFrame):
 
         self._name_label = QLabel("")
         self._name_label.setObjectName("chatHeaderName")
-        self._name_label.setStyleSheet("color: #e5e7eb; font-size: 15px; font-weight: 600;")
+        # cycle 169.191 — 사용자 directive image #24 — 글자 배경 transparent 강제
+        self._name_label.setStyleSheet("color: #e5e7eb; font-size: 15px; font-weight: 600; background-color: transparent;")
         info_layout.addWidget(self._name_label)
 
         self._status_label = QLabel("")
         self._status_label.setObjectName("chatHeaderStatus")
-        # cycle 169.178 — status color cyan → gray (telegram image #6 align)
-        self._status_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        # cycle 169.178 + 169.191 — gray + transparent bg
+        self._status_label.setStyleSheet("color: #9ca3af; font-size: 12px; background-color: transparent;")
         info_layout.addWidget(self._status_label)
 
         layout.addLayout(info_layout, stretch=1)

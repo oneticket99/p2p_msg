@@ -70,9 +70,10 @@ class InputBar(QFrame):
         # pill composite frame — bg seamless (border 부재) + radius retain
         self._pill = QFrame(self)
         self._pill.setObjectName("inputBarPill")
+        # cycle 169.192 — search bar pill bg #1a2335 align (사용자 critique image #25/26)
         self._pill.setStyleSheet(
             "QFrame#inputBarPill {"
-            " background-color: #1F2937;"
+            " background-color: #1a2335;"
             " border: none;"
             " border-radius: 22px;"
             "}"

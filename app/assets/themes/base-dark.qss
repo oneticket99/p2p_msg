@@ -293,12 +293,15 @@ QLabel#chatHeaderName {
     font-size: 15px;
     font-weight: 600;
     padding-left: 8px;
+    /* cycle 169.191 — 사용자 directive image #24 — 글자 배경 transparent 강제 */
+    background-color: transparent;
 }
 
 QLabel#chatHeaderStatus {
     color: #A1AAB3;
     font-size: 12px;
     padding-left: 8px;
+    background-color: transparent;
 }
 
 QToolButton#chatHeaderIcon {
