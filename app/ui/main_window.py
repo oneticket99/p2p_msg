@@ -1334,14 +1334,15 @@ class MainWindow(QMainWindow):
             self._on_room_entered(target_id)
             return
         # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
+        # cycle 169.159 — telegram align fallback "최근에 접속함" (actual last_seen REST = 별 cycle)
         chat_panel = getattr(self, "_chat_list_panel", None)
         name = f"{kind}:{target_id}"
-        status = "online"
+        status = "최근에 접속함"
         if chat_panel is not None:
             for entry in getattr(chat_panel, "_entries", []):
                 if entry.kind == kind and entry.target_id == target_id:
                     name = entry.name
-                    status = "online" if entry.is_online else "오프라인"
+                    status = "온라인" if entry.is_online else "최근에 접속함"
                     break
         self._chat_header.set_chat(name, status=status)
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
