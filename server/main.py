@@ -148,12 +148,14 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     register_auth_routes(app)
 
     # folder REST endpoint 등록 (cycle 169.76 신설 — telegram folder management)
+    # cycle 169.78 회수 — LEGB scope shadow 차단 — module-level logging 직접 사용
     try:
         from .api.folder_handlers import register_folder_routes
         register_folder_routes(app)
     except Exception as folder_exc:
-        import logging
-        logging.getLogger(__name__).warning("[folder] route 등록 실패 graceful — %r", folder_exc)
+        logging.getLogger(__name__).warning(
+            "[folder] route 등록 실패 graceful — %r", folder_exc,
+        )
 
     # devices REST endpoint 등록 (Phase 2 사이클 43 multi-device sync)
     register_devices_routes(app)

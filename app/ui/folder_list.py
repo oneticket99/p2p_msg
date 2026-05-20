@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""FolderList — telegram desktop 좌측 folder column (cycle 169.69 신설).
+"""FolderList — legacy telegram desktop folder column (cycle 169.69 신설).
 
-image 73 align — 모든 대화방 + 모니터링 + 업무협조 + 이슈알림 + 파티 + 사내동호회 + 안읽음 + 편집.
-폴더 entry + unread badge + active highlight.
+cycle 169.74 회수 — DEFAULT_FOLDERS 안 telegram copycat 5종 (모니터링 + 업무협조 + 이슈알림 + 파티 + 사내동호회) 삭제.
+system 3종 (모든 대화방 + 안읽음 + 편집) 만 잔존. sidebar_rail 통합 후 main_window 안 hide 상태.
 """
 
 from __future__ import annotations
