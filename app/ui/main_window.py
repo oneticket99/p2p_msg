@@ -1613,13 +1613,20 @@ class MainWindow(QMainWindow):
                 reply_ctx = ReplyContext(original_sender=ctx[0], original_text=ctx[1])
             self._input_bar.clear_reply_to()
 
+        ts_now = datetime.now()
         self._chat_view.add_message(
             sender=self._config.user_nickname,
             text=text,
-            ts=datetime.now(),
+            ts=ts_now,
             is_self=True,
             reply_to=reply_ctx,
         )
+        # cycle 169.158 — DM cache append (active chat 의 self send entry)
+        if self._active_chat_kind and self._active_chat_target_id is not None:
+            key = (self._active_chat_kind, self._active_chat_target_id)
+            self._dm_history.setdefault(key, []).append(
+                (self._config.user_nickname, text, ts_now, True)
+            )
         self._input_edit.clear()
 
         # cycle 161~163 — mesh_manager broadcast + server REST POST chain
