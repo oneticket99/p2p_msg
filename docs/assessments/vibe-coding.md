@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 13:30 KST — cycle 169.55~59 chain 누계 (input_bar voice/send SVG + status bar CONNECTED + HamburgerDrawer modal 9 menu entry + CallDialog 음성/영상 통화 modal + MyAccountDialog + MyProfileDialog + main_window 햄버거 button + sidebar hamburger_clicked signal + signaling WebSocket background connect + 신규 helper CallClient aiortc RTCPeerConnection wrapper + signaling SDP/ICE exchange + MediaPlayer device capture Darwin avfoundation + Linux pulse + AccountClient ProfileUpdateWorker PUT /api/auth/profile Bearer + RoomsClient list_rooms background + VideoRenderer 30fps frame rendering aiortc VideoStreamTrack → QImage RGB888 + signaling offer/answer/ice/peer_joined dispatch chain + active_peer_id 추출 chain). drift 0건 123 연속 cycle 37~169.59. token usage regen — sessions=4 msgs=12021 cost=$12277.79.
+> 최근 갱신 시점: 2026-05-20 16:00 KST — cycle 169.60~67 chain 누계 (TURN production config CallClient _build_ice_servers + camera MediaPlayer Darwin avfoundation/Linux v4l2 + ChatListPanel inject main_window splitter migration + 검색 focus chat_header → chat_list_panel + skip 10건 회수 fake_http_worker fixture chain + reviewer 잔여 4 회수 — H-2 SMTP graceful smtp_status flag + M-1 EmailRaceVerified subclass + M-3 ActivityAction.RECLAIM_UNVERIFIED audit + L-3 edge case 3 test case-insensitive + concurrent gather + invalidate 0 rows). drift 0건 128 연속 cycle 37~169.67.
 
 ---
 

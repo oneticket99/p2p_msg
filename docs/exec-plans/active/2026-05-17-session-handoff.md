@@ -1953,6 +1953,36 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.74 cycle 169.60~67 chain — TURN + ChatListPanel + skip 10 회수 + reviewer 잔여 4 (2026-05-20 16:00 KST)
+
+**커밋 chain (7 commit)**:
+- `6ec86cf` feat(cycle169.60): TURN production config + camera capture
+- `5ec5811` feat(cycle169.62-64): ChatListPanel inject + 검색 focus + skip 3 test
+- `46f7f2a` feat(cycle169.61): HttpWorker fixture + group test + sidebar toggle
+- `783e373` test(cycle169.66): skip 6 회수 fake_http_worker
+- `84ce99c` feat(cycle169.67): reviewer 잔여 4 회수 — H-2 + M-1 + M-3 + L-3
+
+**핵심 산출**:
+- CallClient TURN production — `_build_ice_servers` + 3 field (turn_url/username/credential)
+- CallClient camera capture — `_build_media_player` Darwin avfoundation + Linux v4l2
+- ChatListPanel migration — main_window splitter RoomList → ChatListPanel
+- 검색 focus — chat_header search → chat_list_panel
+- fake_http_worker fixture — conftest.py + 4 import path monkeypatch
+- skip 10건 회수 (test_e2e_button_click 3 + test_e2e_flow 4 + test_dialog_functional 3)
+- chat_header sidebar_toggled signal + 4 control button
+- reviewer 잔여 4 회수 — H-2 SMTP graceful + M-1 EmailRaceVerified + M-3 RECLAIM_UNVERIFIED + L-3 3 test
+- register_user dict return + handler propagate
+- pytest 41 PASS + 4 skip (cycle 169.33 legacy 만 잔존)
+
+**잔여 별도 cycle**:
+- coturn server install (auto-classifier reject — 사용자 명시 authorization 의무)
+- L-1 jinja template (token-usage HTML fragile regex)
+- L-2 UserRow dataclass (test AsyncMock → real dataclass)
+- EmailRaceVerified race detect actual binding
+- telegram desktop image 73~77 본격 layout polish
+
+---
+
 ### 8.73 cycle 169.55~59 chain — telegram desktop align + WebRTC actual binding (2026-05-20 13:30 KST)
 
 **커밋 chain (5 commit)**:

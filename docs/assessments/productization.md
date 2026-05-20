@@ -5,8 +5,8 @@ last_verified: 2026-05-20T07:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 13:30 KST — cycle 169.55~59 chain 누계
-> (input_bar voice/send SVG + status bar CONNECTED + HamburgerDrawer + CallDialog + MyAccount/Profile + signaling connect + CallClient WebRTC + AccountClient PUT + RoomsClient list_rooms + MediaPlayer device capture + signaling incoming dispatch + VideoRenderer 30fps).
+> **최신 갱신 시점**: 2026-05-20 16:00 KST — cycle 169.60~67 chain 누계
+> (TURN production + camera capture + ChatListPanel inject + 검색 focus + skip 10건 회수 + reviewer 잔여 4 회수 — H-2 SMTP graceful + M-1 EmailRaceVerified + M-3 RECLAIM_UNVERIFIED audit + L-3 edge case 3 test).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
