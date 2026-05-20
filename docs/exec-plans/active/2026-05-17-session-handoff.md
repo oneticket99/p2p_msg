@@ -196,12 +196,35 @@ status: active
 | `32845fc` | 169.142 | Phase E remainder — message_bubble sender + chat_header avatar palette bind |
 | `fa743c3` | 169.143 | Phase F 1 — chat_header 4→3 action button (search + phone + more) |
 | `bcad49f` | 169.144 | Phase F 2 — sender grouping (chat_view prev_sender state + bubble grouped kwarg) |
+| `e4fba70` | 169.145 | handoff §8.79 27 entry prepend |
+| `fbe9858` | 169.146 | bot_panel.py orphan 폐기 -202 line |
+| `95019ef` | 169.147 | 평가 4 file fingerprint sync v3 |
+| `9d9bec4` | 169.148 | input_bar text edit single-row + content-fit autoexpand 40~160 |
+| `5bde274` | 169.149 | input_bar composite pill 본격 재 구조 (emoji+text+attach) |
+| `0327440` | 169.150 | input_bar telegram image #3 정합 (attach left + emoji right + seamless pill + transparent voice) |
+| `3720d4d` | 169.151 | ts 한국어 format "오전/오후 H:MM" + chat_list ts width 확장 |
+| `7b9cb29` | 169.152 | sidebar 마지막 entry "설정→편집" + edit.svg sliders SVG |
+| `afb50ae` | 169.153 | 평가 4 file fingerprint sync v4 |
+| `823485a` | 169.154 | chat_header emoji 제거 + friend nickname lookup helper |
+| `6be8e57` | 169.155 | 3 zone 색상 구분 (header #0A1019 + area #0F172A + input #0A1019) |
+| `0f9dc9b` | 169.156 | chat_view 전환 시 clear_messages + active state 추적 |
+| `784aa82` | 169.157 | DM history client cache + chat_selected replay skeleton |
+| `d57b68e` | 169.158 | self send → DM cache append chain |
+| `6ba7199` | 169.159 | chat_header status "최근에 접속함" telegram 한국어 align |
+| `f7ad54b` | 169.160 | _append_dm_message single source helper + send refactor |
+| `10e0ca0` | 169.161 | 평가 4 file fingerprint sync v5 |
 
 ### 8.79.2 사용자 critique 회수 chain
 
 - image #20~32 batch — drawer toggle + sidebar folder 중복 + emoji 상태설정 + profile modal + telegram align scope
 - "세부 레이아웃 + 입력창 등 전부 텔레그램과 동일" (첫화면/login/signup/OTP 제외) → Phase A~G batch dispatch
 - 사용자 ack — Toonation BI bubble #0066FF retain + sidebar tab telegram align + bot_panel 폐기 + chat_list 통합
+- image #1 — input_bar 거대 박스 → single-row content fit
+- image #3/4 — composite pill (attach left + emoji right + seamless + transparent voice)
+- image #7~9 — sidebar 마지막 entry gear → 편집 sliders SVG
+- image #10 — chat_header emoji 폐기 + friend nickname lookup
+- image #11 — 3 zone bg 색상 구분 (header/area/input subtle darker top/bottom)
+- image #12 — chat_list click → chat_view swap + active highlight + DM history isolation
 
 ### 8.79.3 telegram align Phase 누계 (cycle 169.126~144)
 
