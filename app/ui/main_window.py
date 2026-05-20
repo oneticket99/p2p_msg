@@ -1063,7 +1063,7 @@ class MainWindow(QMainWindow):
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         elif tab_key == "settings":
             # 한글 주석 — settings tab = SettingsDialog modal open (cycle 153.5)
-            self._chat_header.set_chat("설정", "10 section tabbed", "⚙️")
+            self._chat_header.set_chat("편집", "10 section tabbed")
             try:
                 dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
                 dialog.exec()
@@ -1174,7 +1174,25 @@ class MainWindow(QMainWindow):
         modal.accept()
         # 한글 주석 — 1:1 chat 진입 — friend_chat_clicked 등가 path 이미 main_window 안 처리
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-        self._chat_header.set_chat(f"friend #{friend_id}", "online", "👤")
+        # cycle 169.154 — friend 닉네임 lookup (image #10 critique 회수)
+        name = self._lookup_friend_name(friend_id)
+        self._chat_header.set_chat(name, "최근에 접속함")
+
+    def _lookup_friend_name(self, friend_id: int) -> str:
+        """cycle 169.154 — friend_id → nickname lookup (friend_list 안 cache 조회).
+
+        nickname > friend_username > "friend #{id}" 폴백 chain.
+        """
+        try:
+            friend = next(
+                (f for f in getattr(self._friend_list, "_friends", []) if getattr(f, "user_id", None) == friend_id),
+                None,
+            )
+            if friend:
+                return getattr(friend, "nickname", None) or getattr(friend, "friend_username", None) or f"friend #{friend_id}"
+        except Exception:  # pragma: no cover - graceful
+            pass
+        return f"friend #{friend_id}"
 
     def _profile_call_clicked(self, friend_id: int) -> None:
         """profile 통화 button — cycle 200+ WebRTC SDP entry."""
