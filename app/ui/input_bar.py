@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -46,9 +47,10 @@ class InputBar(QFrame):
         super().__init__(parent)
         self.setObjectName("inputBar")
         self.setAcceptDrops(True)
-        # cycle 169.137 — sub-agent A drift D-25/D-26 — bg transparent + min 52 max 200
-        self.setMinimumHeight(52)
+        # cycle 169.148 — telegram align inputBar fit content (bg transparent + border-top only)
+        self.setMinimumHeight(56)
         self.setMaximumHeight(200)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         # cycle 169.137 — telegram align bg transparent + border-top only
         self.setStyleSheet(
             "QFrame#inputBar {"
@@ -74,23 +76,26 @@ class InputBar(QFrame):
         self._emoji_btn.clicked.connect(self._on_emoji_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._emoji_btn)
 
-        # text edit (Shift+Enter newline + Enter send) + cycle 169.137 pill radius 18
+        # cycle 169.148 — text edit single-row default + content-fit height (telegram align)
+        # 사용자 critique image #1 — text edit 거대 박스 → telegram pattern single-row + auto expand
         self._text_edit = QTextEdit()
         self._text_edit.setPlaceholderText(_tr("메시지"))
-        self._text_edit.setMinimumHeight(36)
-        self._text_edit.setMaximumHeight(160)
-        # cycle 169.137 — pill radius 18 inline (qss override)
+        self._text_edit.setFixedHeight(40)
+        self._text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # pill radius 20 inline (height 40 / 2 = 20)
         self._text_edit.setStyleSheet(
             "QTextEdit {"
             " background-color: #1F2937;"
             " border: 1px solid #2c3a52;"
-            " border-radius: 18px;"
+            " border-radius: 20px;"
             " padding: 8px 14px;"
             " color: #e5e7eb;"
             "}"
         )
         self._text_edit.installEventFilter(self)
         self._text_edit.textChanged.connect(self._on_text_changed)  # type: ignore[arg-type]
+        # 한글 주석 — content fit chain (cycle 169.148) — document height 기반 autoexpand
+        self._text_edit.document().contentsChanged.connect(self._adjust_text_height)  # type: ignore[arg-type]
         layout.addWidget(self._text_edit, stretch=1)
 
         # cycle 169.137 — attach 우측 이동 (telegram align)
@@ -251,6 +256,17 @@ class InputBar(QFrame):
         has_text = bool(self._text_edit.toPlainText().strip())
         self._voice_btn.setVisible(not has_text)
         self._send_btn.setVisible(has_text)
+
+    def _adjust_text_height(self) -> None:
+        """cycle 169.148 — text edit document height 기반 autoexpand (telegram align).
+
+        single-row default 40px + multi-line 시점 content height + padding 6 (max 160).
+        """
+        doc = self._text_edit.document()
+        h = int(doc.size().height()) + 16
+        new_h = max(40, min(160, h))
+        if self._text_edit.height() != new_h:
+            self._text_edit.setFixedHeight(new_h)
 
     def _on_send_clicked(self) -> None:
         """보내기 button + Enter → message_sent emit + text clear."""
