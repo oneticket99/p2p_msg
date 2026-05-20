@@ -5,8 +5,8 @@ last_verified: 2026-05-20T07:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 18:30 KST — cycle 169.68~72 chain 누계
-> (ChatListItemDelegate + bubble alignment + FolderList + L-1 jinja robust + EmailRaceVerified race detect + folder filter chain + pre-existing 3 fail 회수 + asyncio import cleanup + pinned message bar + M6 WBS sqlite + handoff §8.75 cycle 169.13~39 보충).
+> **최신 갱신 시점**: 2026-05-20 21:00 KST — cycle 169.73~77 chain 누계
+> (EmailRaceVerified test + group sender preview + commit prefix M-4 + Phase 5 finalize + telegram copycat 삭제 + sidebar+folder 통합 + FolderManageDialog + FolderEditDialog + ChatPickerDialog + folder REST 4 endpoint + 0009 migration deploy + FolderClient QThread + 색상 indicator + handoff §8.77).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 

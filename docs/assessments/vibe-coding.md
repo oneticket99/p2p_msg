@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 18:30 KST — cycle 169.68~72 chain 누계 (ChatListItemDelegate custom paint avatar circle + online indicator + name elide + ts + unread badge + bubble alignment polish AlignBottom + folder list 8 default folder + L-1 jinja robust regex anchor + EmailRaceVerified race detect updated_at 5초 + FolderList main_window inject + chat_list_panel set_active_folder + pre-existing test fail 3건 회수 + asyncio import cleanup + chat_header pinned message bar + M6 WBS sqlite 인프라 + handoff §8.75 cycle 169.13~39 보충). drift 0건 133 연속 cycle 37~169.72. pytest 78 PASS + 4 skip (cycle 169.33 legacy 만).
+> 최근 갱신 시점: 2026-05-20 21:00 KST — cycle 169.73~77 chain 누계 (EmailRaceVerified test 2건 신설 + ChatListEntry last_sender + group sender preview + commit prefix agent attribution + Phase 5 plan finalize 7 priority + telegram copycat default 5 folder 삭제 + sidebar+folder single column 통합 width 96px + FolderManageDialog modal 520×720 + FolderEditDialog modal 480×720 색상 7 swatch + ChatPickerDialog multiselect + folder REST 4 endpoint POST/GET/DELETE/invite + 0009_folders migration deploy BIGINT FK 회수 + 3 table create PASS + FolderClient QThread 4 worker subclass + ChatListItemDelegate 좌측 3px folder_color vertical bar). drift 0건 138 연속 cycle 37~169.77.
 
 ---
 

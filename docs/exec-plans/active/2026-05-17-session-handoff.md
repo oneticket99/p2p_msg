@@ -1953,6 +1953,37 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.78 cycle 169.73~169.77 chain — telegram folder full stack 완성 (2026-05-20 21:00 KST)
+
+**커밋 chain (5 commit)**:
+- `522b51c` feat(cycle169.73 @qa,@history): 잔여 5 영역 — EmailRaceVerified test + group sender + handoff + Phase 5 finalize + commit prefix
+- `da7b927` feat(cycle169.74 @design): telegram copycat 삭제 + sidebar 통합 + folder manage dialog
+- `4ee767f` feat(cycle169.75 @design): folder 편집 chain — FolderEditDialog + ChatPickerDialog
+- `85b9f61` feat(cycle169.76 @backend): folder backend + DB persist + 색상 indicator
+- `5f232f9` feat(cycle169.77 @backend,@ssh-deploy): folder client REST binding + 0009 migration deploy
+
+**핵심 산출 telegram folder full stack**:
+- EmailRaceVerified test 2건 + subclass + code distinct
+- ChatListEntry last_sender + group room sender prefix preview
+- commit prefix agent attribution 시작 (M-4 dereliction audit 회수)
+- Phase 5 plan finalize 7 priority (i18n + emoji + bot + 원격 + mobile 최후 + streaming + KT PTR skip)
+- telegram copycat default 5 folder 삭제 (모니터링/업무협조/이슈알림/파티/사내동호회)
+- sidebar+folder single column 통합 width 64 → 96
+- FolderManageDialog modal 520×720 — 폴더 hero + 내 폴더 list + 새 폴더 + 탭 뷰 radio
+- FolderEditDialog modal 480×720 — 폴더명 + 포함/제외 picker + 색상 7 swatch + 초대 링크
+- ChatPickerDialog modal 420×560 — multiselect + 검색 filter
+- folder REST 4 endpoint — POST 생성/GET 목록/DELETE 삭제/POST 초대 link token (secrets.token_hex 32자)
+- 0009_folders migration deploy — FK BIGINT 회수 + 3 table (folders + folder_chats + folder_invites)
+- FolderClient QThread 4 worker subclass + main_window persist chain
+- ChatListItemDelegate 좌측 3px folder_color vertical bar paint
+
+**잔여 별도 cycle**:
+- folder_color propagate (FolderEditDialog entry inject + set_entries 갱신)
+- coturn install (auto-classifier reject — 사용자 명시 ack 의무)
+- 사용자 manual visual ack (클라이언트 재 빌드 후)
+
+---
+
 ### 8.77 cycle 169.0~169.5 + cycle 153~168 cluster 보충 entry (2026-05-20 19:00 KST)
 
 **169.0~169.5** (UI redesign 진입 직전):
