@@ -43,8 +43,8 @@ class SidebarRail(QFrame):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setObjectName("sidebarRail")
-        # cycle 169.74 회수 — telegram desktop image 73 align — width 64 → 96 + folder list 통합
-        self.setFixedWidth(96)
+        # cycle 169.138 — sub-agent A drift D-1 — width 96 → 72 (telegram desktop align)
+        self.setFixedWidth(72)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 12, 4, 12)
@@ -78,9 +78,9 @@ class SidebarRail(QFrame):
             btn = QToolButton()
             btn.setObjectName("sidebarTab")
             btn.setCheckable(True)
-            # 한글 주석 — cycle 169.51 회수 — SVG icon (gray default + cyan checked)
-            btn.setIcon(load_icon(icon_name, size=28, color="#9ca3af"))
-            btn.setIconSize(QSize(28, 28))
+            # cycle 169.138 — sub-agent A drift D-4 — icon size 28→24 (telegram align)
+            btn.setIcon(load_icon(icon_name, size=24, color="#9ca3af"))
+            btn.setIconSize(QSize(24, 24))
             btn.setToolTip(label)
             btn.setFixedSize(56, 56)
             # cycle 169.111 회수 — inline QSS 폐기 → base-dark.qss QSS#sidebarTab selector delegate

@@ -210,8 +210,9 @@ QPushButton#sendButton:disabled {
 QFrame#sidebarRail {
     background-color: #0a0f1c;
     border-right: 1px solid #1f2937;
-    min-width: 64px;
-    max-width: 64px;
+    /* cycle 169.138 — telegram align width 64→72 (python setFixedWidth 정합) */
+    min-width: 72px;
+    max-width: 72px;
 }
 
 QToolButton#sidebarTab {
