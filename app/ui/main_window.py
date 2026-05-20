@@ -179,6 +179,9 @@ class MainWindow(QMainWindow):
         self._reactions_poller = None
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
+        self._auth_token: Optional[str] = None
+        # 한글 주석 — cycle 169.59 — 현 active chat 의 peer_id (signaling 의 의 SDP exchange 의 target)
+        self._active_peer_id: Optional[str] = None
         # cycle 148 — 현재 user 의 service-wide role (admin / owner / member).
         # admin / owner 만 "관리자" 메뉴 가시 + emoji moderation dialog 진입 path.
         # 로그인 응답 의 role 의 caller 의 set_user_role 갱신 의무 (별개 cycle 의 chain).
@@ -1065,6 +1068,59 @@ class MainWindow(QMainWindow):
                     log.debug("block chain 실패 — %r", exc)
             modal.accept()
 
+    @pyqtSlot(str, str)
+    def _on_signaling_offer(self, from_peer: str, sdp: str) -> None:
+        """incoming OFFER → CallDialog incoming=True + CallClient.accept_offer (cycle 169.59)."""
+        log.info("[call] incoming OFFER from=%s sdp_len=%d", from_peer, len(sdp))
+        from app.ui.call_dialog import CallDialog
+        from app.net.call_client import CallClient
+        stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
+        signaling = getattr(self, "_signaling_client", None)
+        call_client = CallClient(stun_url=stun_url, signaling_client=signaling, peer_id=from_peer)
+        self._active_call_client = call_client
+        # 한글 주석 — accept_offer fire (background) + CallDialog incoming=True modal
+        import asyncio
+        asyncio.ensure_future(call_client.accept_offer(remote_sdp=sdp, video=False))
+        dialog = CallDialog(peer_name=from_peer, video_enabled=False, incoming=True, parent=self)
+        dialog.attach_client(call_client)
+        dialog.exec()
+
+    @pyqtSlot(str, str)
+    def _on_signaling_answer(self, from_peer: str, sdp: str) -> None:
+        """incoming ANSWER → call_client.apply_answer dispatch."""
+        log.info("[call] incoming ANSWER from=%s", from_peer)
+        client = getattr(self, "_active_call_client", None)
+        if client is None:
+            log.warning("[call] active client 부재 — answer drop")
+            return
+        import asyncio
+        asyncio.ensure_future(client.apply_answer(remote_sdp=sdp))
+
+    @pyqtSlot(str, dict)
+    def _on_signaling_ice(self, from_peer: str, candidate: dict) -> None:
+        """incoming ICE candidate → pc.addIceCandidate dispatch."""
+        log.debug("[call] incoming ICE from=%s", from_peer)
+        client = getattr(self, "_active_call_client", None)
+        if client is None or client._pc is None:
+            return
+        import asyncio
+        try:
+            from aiortc import RTCIceCandidate
+            cand = RTCIceCandidate(
+                candidate=candidate.get("candidate", ""),
+                sdpMid=candidate.get("sdpMid"),
+                sdpMLineIndex=candidate.get("sdpMLineIndex"),
+            )
+            asyncio.ensure_future(client._pc.addIceCandidate(cand))
+        except Exception as exc:
+            log.warning("[call] ICE addCandidate fail — %r", exc)
+
+    @pyqtSlot(str)
+    def _on_signaling_peer_joined(self, peer_id: str) -> None:
+        """peer joined → active peer 자동 set (단일 peer chain)."""
+        log.info("[signaling] peer joined — peer_id=%s", peer_id)
+        self._active_peer_id = peer_id
+
     @pyqtSlot()
     def _on_hamburger_clicked(self) -> None:
         """좌상단 햄버거 click → HamburgerDrawer modal (cycle 169.56)."""
@@ -1321,6 +1377,9 @@ class MainWindow(QMainWindow):
 
         self._group_chat_view = new_view
         self._current_room_id = room_id
+        # 한글 주석 — cycle 169.59 회수 — room entry 시 active_peer_id = room_id str 형식 set
+        # group chat = room peer 단위 (mesh broadcast). 1:1 = signaling peer_joined 의 의 set.
+        self._active_peer_id = f"room:{room_id}"
 
         # 4) StackedWidget swap + 1:1 입력 영역 비활성
         self._stacked.setCurrentIndex(self._STACK_GROUP_CHAT)

@@ -180,16 +180,44 @@ class CallDialog(QDialog):
         return btn
 
     def attach_client(self, call_client) -> None:  # type: ignore[no-untyped-def]
-        """CallClient 의 attach — accept/end/mute/video signal 의 binding chain.
+        """CallClient attach — accept/end/mute/video signal 의 binding chain.
 
-        cycle 169.57 회수 — actual WebRTC SDP/ICE fire 의 의 main_window 또는
-        signaling chain 안 외부 의 의 wire. 본 dialog = UI control 만 의 책임.
+        cycle 169.59 회수 — video track 수신 시 VideoRenderer 자동 start.
         """
         self._client = call_client
         self.accepted_signal.connect(lambda: self._handle_accept_with_client())  # type: ignore[arg-type]
         self.ended_signal.connect(lambda: self._handle_end_with_client())  # type: ignore[arg-type]
         self.mute_toggled.connect(call_client.toggle_mute)  # type: ignore[arg-type]
         self.video_toggled.connect(call_client.toggle_video)  # type: ignore[arg-type]
+
+        # 한글 주석 — cycle 169.59 회수 — remote video track 수신 시 VideoRenderer start
+        original_on_state = call_client._on_state_change
+
+        def _wrapped_state(state: str) -> None:
+            self._maybe_start_video_renderer()
+            if original_on_state is not None:
+                original_on_state(state)
+        call_client._on_state_change = _wrapped_state
+
+    def _maybe_start_video_renderer(self) -> None:
+        """CallClient remote_track 의 video 시 VideoRenderer start."""
+        client = getattr(self, "_client", None)
+        if client is None or client._remote_track is None:
+            return
+        track = client._remote_track
+        if getattr(track, "kind", "") != "video":
+            return
+        if hasattr(self, "_video_renderer"):
+            return
+        try:
+            from app.ui._video_renderer import VideoRenderer
+            self._video_renderer = VideoRenderer(self._video_frame, track)
+            self._video_renderer.start()
+            self._video_frame.setVisible(True)
+            self._avatar_widget.setVisible(False)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning("[CallDialog] VideoRenderer start fail — %r", exc)
 
     def _handle_accept_with_client(self) -> None:
         """accept 직후 client offer/answer fire — 별도 cycle binding chain."""

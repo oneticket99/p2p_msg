@@ -234,6 +234,19 @@ def main() -> int:
                 signaling_client.connection_state_changed.connect(  # type: ignore[attr-defined]
                     window._status_bar.set_connection_state
                 )
+                # 한글 주석 — cycle 169.59 회수 — incoming call signal dispatch chain
+                signaling_client.offer_received.connect(  # type: ignore[attr-defined]
+                    window._on_signaling_offer
+                )
+                signaling_client.answer_received.connect(  # type: ignore[attr-defined]
+                    window._on_signaling_answer
+                )
+                signaling_client.ice_received.connect(  # type: ignore[attr-defined]
+                    window._on_signaling_ice
+                )
+                signaling_client.peer_joined.connect(  # type: ignore[attr-defined]
+                    window._on_signaling_peer_joined
+                )
                 window._signaling_client = signaling_client  # type: ignore[attr-defined]
                 asyncio.ensure_future(signaling_client.connect())
             except Exception as sig_exc:
