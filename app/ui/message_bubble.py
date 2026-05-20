@@ -117,7 +117,9 @@ class MessageBubble(QFrame):
         bubble = QFrame(self)
         bubble.setObjectName("messageBubble")
         bubble_layout = QVBoxLayout(bubble)
-        bubble_layout.setContentsMargins(8, 6, 8, 6)
+        # cycle 169.180 — telegram align D-15 — ts inline overlay (text 우측 하단)
+        # padding right 의 의 ts label width reserve (~52px for "오전 1:14 ✓✓") + bottom 의 의 spacing 단축
+        bubble_layout.setContentsMargins(10, 6, 10, 4)
         bubble_layout.setSpacing(2)
 
         # cycle 169.144/163 — grouped 또는 1:1 chat (hide_sender) 시 sender label 생략
@@ -191,20 +193,21 @@ class MessageBubble(QFrame):
             reaction_row.addStretch(1)
             bubble_layout.addLayout(reaction_row)
 
-        # 한글 주석 — cycle 169.69 회수 — 타임스탬프 + read receipt ✓✓ telegram desktop align
-        # ts + check 3px gap + 우측 하단 정합 + baseline align
+        # cycle 169.180 — ts + check 인라인 overlay (telegram align D-15)
+        # negative top margin = text 마지막 라인 우측 하단 inline (overlap effect)
         ts_row = QHBoxLayout()
-        ts_row.setContentsMargins(0, 2, 0, 0)
+        ts_row.setContentsMargins(0, -8, 0, 0)
         ts_row.setSpacing(3)
         ts_row.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
         ts_row.addStretch(1)
+        # ts color self bubble white-ish (#0066FF bg contrast) + peer gray
+        ts_color = "#A9D4FF" if is_self else self._COLOR_TS
         ts_label = QLabel(self._format_ts(ts), bubble)
-        ts_label.setStyleSheet(f"color: {self._COLOR_TS}; font-size: 11px;")
+        ts_label.setStyleSheet(f"color: {ts_color}; font-size: 10px;")
         ts_row.addWidget(ts_label, alignment=Qt.AlignmentFlag.AlignBottom)
         if is_self:
-            # 한글 주석 — telegram align — check ✓✓ unicode 의 의 cyan + 의 의 baseline
             check_label = QLabel("✓✓", bubble)
-            check_label.setStyleSheet("color: #67E8F9; font-size: 11px; font-weight: 700;")
+            check_label.setStyleSheet(f"color: {ts_color}; font-size: 10px; font-weight: 700;")
             ts_row.addWidget(check_label, alignment=Qt.AlignmentFlag.AlignBottom)
         bubble_layout.addLayout(ts_row)
 
