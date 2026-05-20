@@ -274,6 +274,53 @@ def main() -> None:
             new_html, count=1,
         )
 
+        # 6 KPI card 갱신 — 총 토큰 + 메시지 + session + 활성 일수 + 추정 비용 + 캐시 적중률
+        t = out['totals']
+        active_days = len(per_day_list)
+        avg_daily_token = t['total_tokens'] // active_days if active_days else 0
+        avg_daily_cost = t['cost_usd'] / active_days if active_days else 0.0
+        cache_denom = t['cache_read_input_tokens'] + t['cache_creation_input_tokens'] + t['input_tokens']
+        cache_hit_pct = (100.0 * t['cache_read_input_tokens'] / cache_denom) if cache_denom else 0.0
+
+        kpi_patterns = [
+            (r"(<div class=\"label\">총 토큰</div>\s*<div class=\"value\">)[^<]+(</div>)",
+             f"\\g<1>{_fmt(t['total_tokens'])}\\g<2>"),
+            (r"(<div class=\"label\">총 assistant 메시지</div>\s*<div class=\"value\">)[^<]+(</div>)",
+             f"\\g<1>{_fmt(t['messages'])}\\g<2>"),
+            (r"(<div class=\"label\">분석 session</div>\s*<div class=\"value\">)[^<]+(</div>)",
+             f"\\g<1>{len(sessions_list)}\\g<2>"),
+            (r"(<div class=\"label\">활성 일수</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^ ]+( token</div>)",
+             f"\\g<1>{active_days}\\g<2>{_fmt(avg_daily_token)}\\g<3>"),
+            (r"(<div class=\"label\">추정 비용</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^<]+(</div>)",
+             f"\\g<1>{_fmt_cost(t['cost_usd'])}\\g<2>{_fmt_cost(avg_daily_cost)}\\g<3>"),
+            (r"(<div class=\"label\">캐시 적중률</div>\s*<div class=\"value\">)[^<]+(</div>)",
+             f"\\g<1>{cache_hit_pct:.1f}%\\g<2>"),
+        ]
+        n_kpi = 0
+        for pat, rep in kpi_patterns:
+            new_html, n = re.subn(pat, rep, new_html, count=1)
+            n_kpi += n
+
+        # §2 모델별 누계 tbody (synthetic 0-token row 도 표시 — 기존 패턴 유지)
+        total_t = t['total_tokens'] or 1
+        per_model_rows = "".join(
+            f"<tr><td><span class='chip chip-{m['model']}'>{m['model']}</span></td>"
+            f"<td class='num'>{_fmt(m['messages'])}</td>"
+            f"<td class='num'>{_fmt(m['input_tokens'])}</td>"
+            f"<td class='num'>{_fmt(m['output_tokens'])}</td>"
+            f"<td class='num'>{_fmt(m['cache_creation_input_tokens'])}</td>"
+            f"<td class='num'>{_fmt(m['cache_read_input_tokens'])}</td>"
+            f"<td class='num strong'>{_fmt(m['total_tokens'])}</td>"
+            f"<td class='num'>{100.0 * m['total_tokens'] / total_t:.2f}%</td>"
+            f"<td class='num cost'>{_fmt_cost(m['cost_usd'])}</td></tr>"
+            for m in per_model_list
+        )
+        new_html, n_pm = re.subn(
+            r"(<thead><tr>\s*<th>모델</th><th>메시지</th><th>input</th><th>output</th>\s*<th>cache create</th><th>cache read</th><th>총 토큰</th><th>점유율</th><th>비용 \(USD\)</th>\s*</tr></thead>\s*<tbody>)[\s\S]*?(</tbody>)",
+            lambda m: m.group(1) + per_model_rows + m.group(2),
+            new_html, count=1,
+        )
+
         # 차트 D dict 갱신 — dates + per-day arrays + model totals
         dates = [r['date'] for r in per_day_list]
         chart_d = {
@@ -296,7 +343,7 @@ def main() -> None:
         )
 
         HTML_OUT.write_text(new_html, encoding="utf-8")
-        print(f"[token-usage] {HTML_OUT} timestamp 갱신 — n_gen={n_gen} n_win={n_win} n_pd={n_pd} n_pdm={n_pdm} n_sess={n_sess} n_chart={n_chart}")
+        print(f"[token-usage] {HTML_OUT} 갱신 — n_gen={n_gen} n_win={n_win} n_kpi={n_kpi} n_pd={n_pd} n_pm={n_pm} n_pdm={n_pdm} n_sess={n_sess} n_chart={n_chart}")
 
 
 if __name__ == "__main__":
