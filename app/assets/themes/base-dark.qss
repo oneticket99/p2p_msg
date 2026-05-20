@@ -161,9 +161,9 @@ QLineEdit:disabled {
     color: #6b7280;
 }
 
-/* Input bar — 의 의 ChatView 하단 입력 영역 */
+/* Input bar — cycle 169.155 — telegram align 3 zone subtle darker bg */
 QFrame#inputBar, QWidget#inputContainer {
-    background-color: #131C30;
+    background-color: #0A1019;
     border-top: 1px solid #1f2937;
     padding: 8px 12px;
 }
@@ -279,9 +279,9 @@ QListWidget#chatList::item:hover:!selected {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
-/* Chat header — cycle 169.139 — bg #131C30 → #0F172A (chat area 동일 telegram align) */
+/* Chat header — cycle 169.155 — telegram align 3 zone subtle darker top */
 QFrame#chatHeader {
-    background-color: #0F172A;
+    background-color: #0A1019;
     border-bottom: 1px solid #1f2937;
     min-height: 60px;
     padding: 10px 16px;
