@@ -5,11 +5,11 @@
 #   pyinstaller build/tootalk.spec --clean --noconfirm
 #
 # 산출물 = dist/TooTalk/ (macOS .app 또는 Windows .exe 의 단일 디렉토리).
-# wine cross-compile 의 의 의 의 의 의 의 의 의 의 build.yml + cdrx/pyinstaller-windows docker 정합.
+# wine cross-compile chain — build.yml + cdrx/pyinstaller-windows docker 정합.
 #
 # 본 파일 = Python 문법 — PyInstaller 가 직접 exec 한다.
 
-# 한글 주석: macOS 와 Windows 의 의 의 의 의 의 의 의 의 단일 spec — sys.platform 분기 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+# 한글 주석: macOS + Windows 단일 spec — sys.platform 분기 chain 정합.
 
 import sys
 from pathlib import Path
@@ -27,7 +27,7 @@ a = Analysis(
     binaries=[],
     datas=[],
     hiddenimports=[
-        # qasync + aiortc 의 의 의 의 의 의 의 의 의 의 의 의 의 의 hidden dependency
+        # qasync + aiortc 누락 hidden dependency 명시
         "qasync",
         "aiortc",
         "aiortc.contrib.media",
@@ -46,6 +46,11 @@ a = Analysis(
         "tkinter",
         "matplotlib",
         "numpy.f2py",
+        # cycle 169.89 회수 — PyQt6 + PySide6 동시 collect 차단 (dev dependency 의 PySide6)
+        "PySide6",
+        "PySide2",
+        "shiboken6",
+        "shiboken2",
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -64,10 +69,10 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,  # macOS UPX 미지원 + wine 환경 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    upx=False,  # macOS UPX 미지원 + wine 환경 호환 부재 → 비활성
     console=False,
     disable_windowed_traceback=False,
-    argv_emulation=True,  # macOS .app 의 의 의 의 의 의 의 의 의 의 의 의 dock 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의
+    argv_emulation=True,  # macOS .app dock drop file arg 전달 정합
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
@@ -85,7 +90,7 @@ coll = COLLECT(
 )
 
 
-# macOS .app 번들 (wine 환경 의 의 의 의 의 의 의 의 의 의 의 skip — wine 의 .exe 산출)
+# macOS .app 번들 (wine 환경 skip — wine path → .exe 산출)
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,

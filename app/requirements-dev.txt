@@ -12,3 +12,6 @@ pytest-mock>=3.12
 # Playwright E2E (DESIGN.md §10.6 — 사용자 directive 2026-05-17)
 pytest-playwright>=0.5
 playwright>=1.42
+
+# PyInstaller — macOS arm64 + Windows x64 native build (cycle 169.89 신설)
+pyinstaller>=6.20.0
