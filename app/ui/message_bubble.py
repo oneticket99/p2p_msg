@@ -215,7 +215,8 @@ class MessageBubble(QFrame):
             " background-color: transparent;"
             "}"
         )
-        bubble.setMaximumWidth(420)
+        # cycle 169.128 — sub-agent A drift D-14 — 420→480 (telegram 65% rule)
+        bubble.setMaximumWidth(480)
 
         outer.addWidget(bubble)
 

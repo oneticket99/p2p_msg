@@ -39,7 +39,8 @@ class ChatHeader(QFrame):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setObjectName("chatHeader")
-        self.setFixedHeight(56)
+        # cycle 169.130 — sub-agent A drift D-32 — 56→60 (qss min-height 정합)
+        self.setFixedHeight(60)
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 8, 16, 8)

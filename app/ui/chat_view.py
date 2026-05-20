@@ -199,8 +199,9 @@ class ChatView(QScrollArea):
         # 콘텐츠 위젯 — 본 위젯 안에 실제 버블들이 쌓이는 영역
         self._content = QWidget(self)
         self._messages_layout = QVBoxLayout(self._content)
-        self._messages_layout.setContentsMargins(8, 8, 8, 8)
-        self._messages_layout.setSpacing(6)
+        # cycle 169.129 — sub-agent A drift D-19 — telegram align (margins 8→16 + spacing 6→4)
+        self._messages_layout.setContentsMargins(16, 12, 16, 12)
+        self._messages_layout.setSpacing(4)
         # 마지막에 빈 stretch 를 두어 메시지가 적을 때 위쪽으로 정렬
         self._messages_layout.addStretch(1)
 
