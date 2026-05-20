@@ -92,12 +92,19 @@ class ChatListItemDelegate(QStyledItemDelegate):
             self.AVATAR_SIZE,
             self.AVATAR_SIZE,
         )
-        painter.setBrush(QColor("#1F2937"))
+        # cycle 169.140 — telegram per-user palette gradient (sub-agent A drift D-9)
+        from app.ui.avatar_palette import palette_pair
+        from PyQt6.QtGui import QLinearGradient, QBrush
+        c_start, c_end = palette_pair(entry.name or "")
+        grad = QLinearGradient(avatar_rect.topLeft().toPointF(), avatar_rect.bottomRight().toPointF())
+        grad.setColorAt(0.0, QColor(c_start))
+        grad.setColorAt(1.0, QColor(c_end))
+        painter.setBrush(QBrush(grad))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(avatar_rect)
-        # avatar initial char
+        # avatar initial char (white over gradient)
         initial = (entry.name[:1] if entry.name else "?").upper()
-        painter.setPen(QPen(QColor("#67E8F9")))
+        painter.setPen(QPen(QColor("#ffffff")))
         f = QFont(); f.setPixelSize(16); f.setBold(True)
         painter.setFont(f)
         painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initial)
