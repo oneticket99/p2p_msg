@@ -265,6 +265,21 @@ class ChatListPanel(QFrame):
         if kind and target_id is not None:
             self.chat_selected.emit(kind, int(target_id))
 
+    def set_current_chat(self, kind: str, target_id: int) -> None:
+        """cycle 169.167 — programmatic 진입 path 의 list highlight sync (telegram align image #12).
+
+        profile modal "메시지" click + main_window external chain 의 의 호출 → list selected row 동기.
+        """
+        for i in range(self._list.count()):
+            item = self._list.item(i)
+            if item is None:
+                continue
+            i_kind = item.data(Qt.ItemDataRole.UserRole)
+            i_target = item.data(Qt.ItemDataRole.UserRole + 1)
+            if i_kind == kind and i_target == target_id:
+                self._list.setCurrentRow(i)
+                return
+
     def _matches_tab(self, entry: ChatListEntry) -> bool:
         """active tab + folder filter (cycle 169.71)."""
         # 한글 주석 — folder filter 우선 — unread folder 시 unread_count > 0 만
