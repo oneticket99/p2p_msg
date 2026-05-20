@@ -289,7 +289,14 @@ class ChatListPanel(QFrame):
         """cycle 169.167 — programmatic 진입 path 의 list highlight sync (telegram align image #12).
 
         profile modal "메시지" click + main_window external chain 의 의 호출 → list selected row 동기.
+        cycle 169.173 — chat_selected 시점 unread badge reset (telegram align).
         """
+        # cycle 169.173 — unread reset for selected entry
+        for entry in self._entries:
+            if entry.kind == kind and entry.target_id == target_id and entry.unread_count > 0:
+                entry.unread_count = 0
+                self._render()
+                break
         for i in range(self._list.count()):
             item = self._list.item(i)
             if item is None:
