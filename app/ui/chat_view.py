@@ -209,6 +209,10 @@ class ChatView(QScrollArea):
         # 동일 sender 연속 시 sender label/tail 생략 + spacing 단축 (2px)
         self._prev_sender: Optional[str] = None
         self._prev_is_self: Optional[bool] = None
+        # cycle 169.176 — per-chat scroll offset retain (chat 전환 시점 prev offset restore)
+        # key = (kind, target_id) → int (scrollbar.value())
+        self._scroll_offsets: dict[tuple[str, int], int] = {}
+        self._scroll_active_key: Optional[tuple[str, int]] = None
 
         self.setWidget(self._content)
 
@@ -317,6 +321,28 @@ class ChatView(QScrollArea):
         """deferred scroll bottom — layout 갱신 후 호출 (cycle 169.164)."""
         scrollbar = self.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
+
+    def save_scroll_offset(self) -> None:
+        """cycle 169.176 — 현 active chat 의 scroll offset retain (chat 전환 직전 호출)."""
+        if self._scroll_active_key is not None:
+            self._scroll_offsets[self._scroll_active_key] = self.verticalScrollBar().value()
+
+    def restore_scroll_offset(self, kind: str, target_id: int) -> bool:
+        """cycle 169.176 — kind/target_id 의 prev scroll offset restore.
+
+        Returns
+        -------
+        bool
+            True = restore PASS / False = prev offset 부재 (caller scroll_to_bottom fallback).
+        """
+        from PyQt6.QtCore import QTimer
+        key = (kind, target_id)
+        self._scroll_active_key = key
+        if key in self._scroll_offsets:
+            offset = self._scroll_offsets[key]
+            QTimer.singleShot(0, lambda v=offset: self.verticalScrollBar().setValue(v))
+            return True
+        return False
 
     def clear_messages(self) -> None:
         """모든 메시지 버블 제거 — 방 전환 등에서 호출.

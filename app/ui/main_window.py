@@ -1388,6 +1388,8 @@ class MainWindow(QMainWindow):
         self._chat_header.set_chat(name, status=status)
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
+            # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)
+            self._chat_view.save_scroll_offset()
             self._chat_view.clear_messages()
             self._active_chat_kind = kind
             self._active_chat_target_id = target_id
@@ -1397,14 +1399,17 @@ class MainWindow(QMainWindow):
             cached = self._dm_history.get((kind, target_id), [])
             for sender, text, ts, is_self in cached:
                 self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=hide_sender)
-            # cycle 169.164 — replay 후 scroll bottom 자동 (telegram align)
-            self._chat_view.scroll_to_bottom()
+            # cycle 169.176 — prev offset restore 시도 + 부재 시 bottom fallback
+            restored = self._chat_view.restore_scroll_offset(kind, target_id)
+            if not restored:
+                self._chat_view.scroll_to_bottom()
             # cycle 169.167 — chat_list selected row sync (programmatic 진입 path 정합)
             try:
                 self._chat_list_panel.set_current_chat(kind, target_id)
             except Exception:  # pragma: no cover - graceful
                 pass
-            log.info("[main_window] chat switched — kind=%s target=%d replay=%d", kind, target_id, len(cached))
+            log.info("[main_window] chat switched — kind=%s target=%d replay=%d restored=%s",
+                     kind, target_id, len(cached), restored)
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("chat_view switch 실패 — %r", exc)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
