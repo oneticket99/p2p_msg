@@ -1,10 +1,20 @@
 ---
 title: "TooTalk Phase 5 — extension setup plan"
 owner: oneticket99
-last_verified: 2026-05-22
-status: draft
+last_verified: 2026-05-20
+status: finalize
 phase: 5
 ---
+
+> **finalize ack (cycle 169.73)** — Phase 5 priority 재 배치 영구화:
+>
+> 1. i18n 5 locale + tr() wrap 완성 (cycle 144~148 PASS)
+> 2. emoji pack share 차별화 (sticker / custom emoji 공개 공유)
+> 3. bot framework 마무리 (BotFather + Bot API + webhook + inline + payment + 공개 디렉토리)
+> 4. 원격 데스크탑 제어 본격 (친구 A OBS ↔ 친구 B 도움자 chain — cycle 166+ prerequisite)
+> 5. mobile Flutter 가장 마지막 (cycle 181+ — libsignal-dart + Apple/Google/Firebase 사용자 manual)
+> 6. 4 streaming platform actual binding (YouTube/Twitch/CHZZK/Kick — OAuth + API key)
+> 7. KT PTR reverse DNS — 최후 또는 skip (dopa.co.kr 데모 전용)
 
 # Phase 5 — TooTalk 확장 plan (initial draft)
 

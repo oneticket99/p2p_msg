@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from server.auth.exceptions import EmailAlreadyRegistered, UsernameAlreadyTaken
+from server.auth.exceptions import EmailAlreadyRegistered, EmailRaceVerified, UsernameAlreadyTaken
 from server.auth.register import register_user
 
 # 한글 주석: register_user 가 import 한 의존성 5종 patch 경로 상수
@@ -433,3 +433,33 @@ class TestRegisterEdgeCases:
         assert result["reclaimed"] is True
         m_ins_otp.assert_called_once()
         m_send.assert_called_once()
+
+
+class TestEmailRaceVerifiedDetect:
+    """cycle 169.70 race detect — atomic status verified_race → EmailRaceVerified raise 검증."""
+
+    @pytest.mark.asyncio
+    async def test_verified_race_raises_email_race_verified(self) -> None:
+        # 한글 주석: atomic mock 안 status='verified_race' → EmailRaceVerified raise
+        m_atomic = AsyncMock(return_value=("verified_race", None))
+        m_send = AsyncMock()
+        with (
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
+            patch(_P_SEND, new=m_send),
+        ):
+            with pytest.raises(EmailRaceVerified):
+                await register_user(
+                    None,
+                    email="raced@example.com",
+                    username="racer",
+                    password="password123",
+                )
+        m_send.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_email_race_verified_is_subclass(self) -> None:
+        # 한글 주석: EmailRaceVerified 가 EmailAlreadyRegistered subclass (frontend 분기 backward compat)
+        assert issubclass(EmailRaceVerified, EmailAlreadyRegistered)
+        # error_code distinct
+        assert EmailRaceVerified.code == "EMAIL_RACE_VERIFIED"
+        assert EmailAlreadyRegistered.code == "EMAIL_DUPLICATE"

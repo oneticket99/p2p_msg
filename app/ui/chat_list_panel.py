@@ -42,6 +42,7 @@ class ChatListEntry:
     unread_count: int = 0
     is_pinned: bool = False
     is_online: bool = False
+    last_sender: str = ""  # cycle 169.73 — group rooms last sender prefix ("나" / 사용자명)
 
 
 class ChatListItemDelegate(QStyledItemDelegate):
@@ -112,13 +113,17 @@ class ChatListItemDelegate(QStyledItemDelegate):
         )
         painter.drawText(name_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_name)
 
-        # last_message
+        # last_message — group room 의 의 sender prefix ("나: ..." 또는 "{sender}: ...")
         painter.setPen(QPen(QColor("#9ca3af")))
         fm = QFont(); fm.setPixelSize(12)
         painter.setFont(fm)
         msg_rect = QRect(text_x, rect.top() + 32, text_w, 18)
+        if entry.last_sender and entry.kind == "room":
+            preview_text = f"{entry.last_sender}: {entry.last_message or ''}"
+        else:
+            preview_text = entry.last_message or ""
         elided_msg = painter.fontMetrics().elidedText(
-            entry.last_message or "", Qt.TextElideMode.ElideRight, text_w
+            preview_text, Qt.TextElideMode.ElideRight, text_w
         )
         painter.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
 

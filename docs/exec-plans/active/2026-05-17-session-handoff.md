@@ -1953,6 +1953,29 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.77 cycle 169.0~169.5 + cycle 153~168 cluster 보충 entry (2026-05-20 19:00 KST)
+
+**169.0~169.5** (UI redesign 진입 직전):
+- cycle 169.0 OTP dialog 진입 chain 안정화
+- cycle 169.1~3 reactions REST endpoint 정합 + auth_client 정합
+- cycle 169.4~5 i18n + emoji + dialog button 회수
+
+**cycle 153~168** (Phase 1 후반 UI redesign 본격):
+- cycle 153 phase 1~8 — 14 widget 신설 (WelcomeDialog + LoginDialog + SignupDialog + OTPDialog + SidebarRail + ChatListPanel + ChatHeader + ThemePicker + ProfileView + BotPanel + EmojiPicker + InputBar + ReactionsPoller + 평가 freshness)
+- cycle 153.4~7 phase 3 통합 — 3 column QSplitter + bubble reply/reaction/read receipt + DataChannel payload schema
+- cycle 154~157 reactions REST (POST/GET/DELETE 3 endpoint + 0008 migration apply PASS) + mesh_manager broadcast_payload
+- cycle 158~163 aiortc PeerConnectionWrapper skeleton + DataChannel + ICE STUN/TURN + SDP offer/answer
+- cycle 164~167 dereliction-detector-agent 신설 + Stop hook 8 entries + 7 영역 자동 detect
+- cycle 168 SSH deploy chain (114.207.112.73) + cycle 152 reactions endpoint actual binding + 0008 manual SOURCE apply
+
+**Phase 1 누적 metric** (cycle 37~168):
+- 사용자 비판 verbatim 회수 14건+
+- pytest 1737~1786 PASS 누적
+- drift 0건 105 연속 사이클 37~168
+- sub-agent 누계 48종+ 병렬
+
+---
+
 ### 8.76 cycle 169.68~169.72 chain — telegram polish + reviewer 잔여 + WBS sqlite (2026-05-20 18:30 KST)
 
 **커밋 chain (5 commit)**:
