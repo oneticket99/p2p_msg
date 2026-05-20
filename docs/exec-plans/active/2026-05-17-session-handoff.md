@@ -213,6 +213,21 @@ status: active
 | `6ba7199` | 169.159 | chat_header status "최근에 접속함" telegram 한국어 align |
 | `f7ad54b` | 169.160 | _append_dm_message single source helper + send refactor |
 | `10e0ca0` | 169.161 | 평가 4 file fingerprint sync v5 |
+| `84fa701` | 169.162 | handoff §8.79 cycle 145~161 append + image critique 17 entry |
+| `e232882` | 169.163 | 1:1 chat sender label suppress (hide_sender kwarg + chat_view + helper propagate) |
+| `88a4e30` | 169.164 | chat_view.scroll_to_bottom helper + replay hide_sender propagate |
+| `34e52cc` | 169.165 | helper render 직후 scroll bottom 자동 |
+| `15620f6` | 169.166 | profile message → _on_chat_selected redirect (single source) |
+| `d729950` | 169.167 | chat_list.set_current_chat highlight sync helper |
+| `f294022` | 169.168 | 평가 4 file fingerprint sync v6 |
+| `ef1e21e` | 169.169 | top bar 3 영역 한 라인 통합 (bg #0A1019 + height 60) |
+| `18cf624` | 169.170 | drawer header Toonation BI gradient (#0066FF→#001A4D vertical) |
+| `dce30af` | 169.171 | search bar pill radius 18 + bg #1a2335 seamless |
+| `76c914f` | 169.172 | bubble grouped tail 부재 chain (cycle 169.144 시각 강화) |
+| `97c8948` | 169.173 | chat_list unread badge reset on chat_selected |
+| `7b33d0a` | 169.174 | chat_list bump_entry on send (preview + ts + sort 재 정렬) |
+| `07f5592` | 169.175 | 평가 4 file fingerprint sync v7 |
+| `269ac6a` | 169.176 | chat_view scroll offset per-chat retain (save/restore + fallback bottom) |
 
 ### 8.79.2 사용자 critique 회수 chain
 
