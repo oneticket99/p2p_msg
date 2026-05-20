@@ -97,36 +97,11 @@ class SidebarRail(QFrame):
         # cycle 169.74 회수 — telegram desktop image 73 align — folder list 통합 (모든 대화방 + 안읽음 + 편집)
         layout.addSpacing(12)
         folder_defs = [
-            ("all", "모든\n대화방", "friends"),
-            ("unread", "안읽음", "search"),
-            ("edit", "편집", "settings"),
         ]
+        # cycle 169.119 회수 — folder_defs (모든대화방/안읽음/편집) 폐기
+        # 사용자 비판 image #29~32 — TAB icon (홈/설정) + folder 중복 + 정렬 불일치
+        # tab 의 의 friends/rooms/bots/settings 의 의 만 retain — 검색 + folder = drawer 또는 search dialog 의무
         self._folder_buttons: dict[str, QToolButton] = {}
-        for fid, label, icon_name in folder_defs:
-            fbtn = QToolButton()
-            fbtn.setIcon(load_icon(icon_name, size=20, color="#9ca3af"))
-            fbtn.setIconSize(QSize(20, 20))
-            fbtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-            fbtn.setText(label)
-            fbtn.setFixedSize(84, 56)
-            fbtn.setCursor(Qt.CursorShape.PointingHandCursor)
-            fbtn.setStyleSheet(
-                "QToolButton {"
-                " background-color: transparent;"
-                " border: none;"
-                " border-radius: 6px;"
-                " color: #9ca3af;"
-                " font-size: 10px;"
-                "}"
-                " QToolButton:hover { background-color: rgba(0,102,255,0.08); }"
-                " QToolButton:checked { background-color: rgba(0,102,255,0.18); color: #67E8F9; }"
-            )
-            fbtn.setCheckable(True)
-            fbtn.clicked.connect(  # type: ignore[arg-type]
-                lambda _c=False, f=fid: self.folder_selected.emit(f)
-            )
-            layout.addWidget(fbtn, alignment=Qt.AlignmentFlag.AlignCenter)
-            self._folder_buttons[fid] = fbtn
 
         layout.addStretch(1)
 

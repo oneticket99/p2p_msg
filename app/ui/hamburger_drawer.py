@@ -72,9 +72,7 @@ class HamburgerDrawer(QFrame):
         name_label = QLabel(username)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 15px; font-weight: 600;")
         h_layout.addWidget(name_label)
-        status_label = QLabel("이모지 상태 설정")
-        status_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
-        h_layout.addWidget(status_label)
+        # cycle 169.119 — 이모지 상태 설정 폐기 (사용자 directive)
         outer.addWidget(header)
 
         # 한글 주석 — 9 menu entry
