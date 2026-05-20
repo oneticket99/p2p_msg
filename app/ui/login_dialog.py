@@ -7,10 +7,10 @@ Toonation BI 통합 — logo icon top + primary CTA + 한글 글꼴 통합 + bra
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
-
 
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QPainter, QPixmap
@@ -27,8 +27,6 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
-from app.ui.error_messages import translate_error
-from app.ui._http_worker import HttpJsonWorker
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -146,47 +144,32 @@ class LoginDialog(QDialog):
         return self._user_id
 
     def _on_login_clicked(self) -> None:
-        """cycle 169.49 회수 — QThread + sync urllib worker."""
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
         if not email or not password:
-            QMessageBox.warning(self, "TooTalk", f"이메일 + {_tr('비밀번호')} 입력 의무")
+            QMessageBox.warning(
+                self,
+                "TooTalk",
+                f"이메일 + {_tr('비밀번호')} 입력 의무",
+            )
             return
-        base_url = getattr(self._client, "_base_url", "")
-        if not base_url:
-            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
-            return
-        self._login_worker = HttpJsonWorker(
-            base_url,
-            "/api/auth/login",
-            {"email": email, "password": password},
-            parent=self,
-        )
-        self._login_worker.finished_with_result.connect(self._on_login_finished)
-        self._login_worker.start()
-
-    def _on_login_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """HttpJsonWorker finished slot — login 응답 처리."""
-        log.info("[로그인] finished ok=%s code=%s", ok, error_code)
-        if ok:
-            self._token = data.get("token")
-            self._user_id = data.get("user_id")
-            self.accept()
-            return
-        err_map = {
-            "USER_NOT_FOUND": "사용자 부재 — 회원가입 진입 의무",
-            "INVALID_CREDENTIALS": "이메일 또는 비밀번호 불일치",
-            "INVALID_PASSWORD": "비밀번호 부재 또는 오류",
-            "EMAIL_NOT_VERIFIED": "이메일 미인증 — OTP 검증 의무",
-            "ACCOUNT_LOCKED": "계정 잠김 — 운영자 문의 의무",
-            "ACCOUNT_SUSPENDED": "계정 정지 — 운영자 문의 의무",
-            "RATE_LIMIT": "로그인 시도 제한 — 잠시 후 재시도",
-            "TIMEOUT": "응답 시간 초과 — 잠시 후 재시도",
-            "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
-        }
-        err_msg = err_map.get(error_code, error_message or "자격 정보 부재")
-        QMessageBox.critical(self, f"{_tr('로그인 실패')}", err_msg)
+        asyncio.ensure_future(self._do_login(email, password))
 
     def _on_signup_link_clicked(self) -> None:
-        """회원가입 link click — QDialog.done(2) signup intent code 반환."""
-        self.done(2)
+        """회원가입 link click — 본 dialog 종료 + 사용자 main flow 안 SignupDialog 분기."""
+        # 한글 주석 — reject + 별개 dialog code 의 signup 의도 명시 (main.py 안 분기 의무)
+        self.setResult(2)  # 한글 주석 — 2 = signup intent (cycle 154+ main.py 안 정합 의무)
+        self.reject()
+
+    async def _do_login(self, email: str, password: str) -> None:
+        result = await self._client.login(email, password)
+        if result.ok:
+            self._token = result.token
+            self._user_id = result.user_id
+            self.accept()
+        else:
+            QMessageBox.critical(
+                self,
+                f"{_tr('로그인')} 실패",
+                f"{result.error_code}: {result.error_message}",
+            )

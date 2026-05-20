@@ -160,6 +160,17 @@ class CallDialog(QDialog):
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._on_tick)  # type: ignore[arg-type]
 
+        # 한글 주석 — cycle 169.91 — 통화 사운드 player (incoming=ringtone / outgoing=ringback loop)
+        try:
+            from app.sound.ringtone import CallSoundPlayer
+            self._sound = CallSoundPlayer(volume=0.6)
+            initial_key = "ringtone" if incoming else "ringback"
+            self._sound.play_loop(initial_key)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning("[CallDialog] sound player init fail — %r", exc)
+            self._sound = None
+
     def _build_circle_button(self, icon_name: str, tooltip: str) -> QPushButton:
         """원형 control button (mute + video toggle)."""
         btn = QPushButton()
@@ -239,11 +250,19 @@ class CallDialog(QDialog):
         """수신 통화 수락."""
         self._status_label.setText("연결됨")
         self._timer.start()
+        # 한글 주석 — cycle 169.91 — ring loop stop + connect tone 1회
+        if getattr(self, "_sound", None) is not None:
+            self._sound.stop_loop()
+            self._sound.play_once("connect")
         self.accepted_signal.emit()
 
     def _on_end(self) -> None:
         """종료 / 거절."""
         self._timer.stop()
+        # 한글 주석 — cycle 169.91 — ring loop stop + end tone 1회
+        if getattr(self, "_sound", None) is not None:
+            self._sound.stop_loop()
+            self._sound.play_once("end")
         self.ended_signal.emit()
         self.reject()
 
