@@ -76,11 +76,11 @@ class ChatHeader(QFrame):
 
         layout.addLayout(info_layout, stretch=1)
 
-        # 한글 주석 — cycle 169.61 회수 — 4 control SVG icon (search + phone + sidebar toggle + more)
+        # cycle 169.143 — sub-agent A drift D-30 — 4→3 button (telegram align: search + phone + more)
+        # sidebar_toggle = more menu 안 entry 이동 (signal retain 의 main_window subscriber 보존)
         for icon_name, signal_attr in [
             ("search", "search_clicked"),
             ("phone", "call_clicked"),
-            ("menu", "sidebar_toggled"),
             ("more", "menu_clicked"),
         ]:
             btn = QPushButton()
