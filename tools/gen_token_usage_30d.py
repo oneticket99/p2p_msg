@@ -216,8 +216,87 @@ def main() -> None:
         )
         window_replace = f"\\g<1>{out['window_start_kst']} ~ {out['window_end_kst']}\\g<2>"
         new_html, n_win = window_pattern.subn(window_replace, new_html, count=1)
+
+        # 한글 주석 — cycle 169.87 회수 — 4 tbody dynamic re-render (stale row 차단)
+        def _fmt(n):
+            return f"{int(n):,}"
+
+        def _fmt_cost(c):
+            return f"${float(c):,.2f}"
+
+        # §5 일별 누계 tbody
+        per_day_rows = "".join(
+            f"<tr><td>{r['date']}</td>"
+            f"<td class='num'>{_fmt(r['messages'])}</td>"
+            f"<td class='num'>{_fmt(r['input_tokens'])}</td>"
+            f"<td class='num'>{_fmt(r['output_tokens'])}</td>"
+            f"<td class='num'>{_fmt(r['cache_creation_input_tokens'])}</td>"
+            f"<td class='num'>{_fmt(r['cache_read_input_tokens'])}</td>"
+            f"<td class='num strong'>{_fmt(r['total_tokens'])}</td>"
+            f"<td class='num cost'>{_fmt_cost(r['cost_usd'])}</td></tr>"
+            for r in per_day_list
+        )
+        new_html, n_pd = re.subn(
+            r"(<thead><tr>\s*<th>날짜 \(KST\)</th><th>메시지</th><th>input</th><th>output</th>\s*<th>cache create</th><th>cache read</th><th>총 토큰</th><th>비용 \(USD\)</th>\s*</tr></thead>\s*<tbody>)[\s\S]*?(</tbody>)",
+            lambda m: m.group(1) + per_day_rows + m.group(2),
+            new_html, count=1,
+        )
+
+        # §6 일자×모델 cross-tab tbody
+        pdm_rows = "".join(
+            f"<tr><td>{r['date']}</td>"
+            f"<td><span class='chip chip-{r['model']}'>{r['model']}</span></td>"
+            f"<td class='num'>{_fmt(r['messages'])}</td>"
+            f"<td class='num'>{_fmt(r['total_tokens'])}</td>"
+            f"<td class='num cost'>{_fmt_cost(r['cost_usd'])}</td></tr>"
+            for r in per_day_model_list
+            if r.get('total_tokens', 0) > 0 and r.get('model') != '<synthetic>'
+        )
+        new_html, n_pdm = re.subn(
+            r"(<thead><tr>\s*<th>날짜 \(KST\)</th><th>모델</th><th>메시지</th><th>총 토큰</th><th>비용 \(USD\)</th>\s*</tr></thead>\s*<tbody>)[\s\S]*?(</tbody>)",
+            lambda m: m.group(1) + pdm_rows + m.group(2),
+            new_html, count=1,
+        )
+
+        # §7 session 단위 누계 tbody
+        sess_rows = "".join(
+            f"<tr><td><code>{r['session_id'][:8]}</code></td>"
+            f"<td>{r['first_kst']}</td>"
+            f"<td>{r['last_kst']}</td>"
+            f"<td>{', '.join(sorted(r['models']))}</td>"
+            f"<td class='num'>{_fmt(r['messages'])}</td>"
+            f"<td class='num'>{_fmt(r['total_tokens'])}</td></tr>"
+            for r in sessions_list
+        )
+        new_html, n_sess = re.subn(
+            r"(<thead><tr>\s*<th>session</th><th>첫 활동 \(KST\)</th><th>마지막 활동 \(KST\)</th>\s*<th>모델</th><th>메시지</th><th>총 토큰</th>\s*</tr></thead>\s*<tbody>)[\s\S]*?(</tbody>)",
+            lambda m: m.group(1) + sess_rows + m.group(2),
+            new_html, count=1,
+        )
+
+        # 차트 D dict 갱신 — dates + per-day arrays + model totals
+        dates = [r['date'] for r in per_day_list]
+        chart_d = {
+            "dates": dates,
+            "total": [r['total_tokens'] for r in per_day_list],
+            "input": [r['input_tokens'] for r in per_day_list],
+            "output": [r['output_tokens'] for r in per_day_list],
+            "cache_create": [r['cache_creation_input_tokens'] for r in per_day_list],
+            "cache_read": [r['cache_read_input_tokens'] for r in per_day_list],
+            "cost": [r['cost_usd'] for r in per_day_list],
+            "model_labels": [m['model'] for m in per_model_list],
+            "model_totals": [m['total_tokens'] for m in per_model_list],
+            "model_costs": [m['cost_usd'] for m in per_model_list],
+        }
+        chart_json = json.dumps(chart_d, ensure_ascii=False)
+        new_html, n_chart = re.subn(
+            r"const D = \{[\s\S]*?\};",
+            f"const D = {chart_json};",
+            new_html, count=1,
+        )
+
         HTML_OUT.write_text(new_html, encoding="utf-8")
-        print(f"[token-usage] {HTML_OUT} timestamp 갱신 — n_gen={n_gen} n_win={n_win}")
+        print(f"[token-usage] {HTML_OUT} timestamp 갱신 — n_gen={n_gen} n_win={n_win} n_pd={n_pd} n_pdm={n_pdm} n_sess={n_sess} n_chart={n_chart}")
 
 
 if __name__ == "__main__":
