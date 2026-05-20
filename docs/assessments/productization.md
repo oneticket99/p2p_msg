@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-20T22:30:00+09:00
+last_verified: 2026-05-20T23:55:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 22:30 KST — cycle 169.73~80 chain 누계
+> **최신 갱신 시점**: 2026-05-20 23:55 KST — cycle 169.73~84 chain 누계 (직전 169.80 표 + cycle 169.81 잔존 batch + cycle 169.82 test coverage + cycle 169.83 DoD sign-off + cycle 169.84 token-usage 재 산출)
 > (EmailRaceVerified test + group sender preview + commit prefix M-4 + Phase 5 finalize + telegram copycat 삭제 + sidebar+folder 통합 + FolderManageDialog + FolderEditDialog + ChatPickerDialog + folder REST 4 endpoint + 0009 migration deploy + FolderClient QThread + 색상 indicator + cycle 169.78 qa-agent FAIL CRIT-1 LEGB scope shadow 회수 + 0009 migration scp 누락 회수 + cycle 169.79 reviewer + qa 잔여 8 finding 일괄 회수 (TLS env override + atomic transaction + owner SQL + worker list cleanup + color hex regex + invite expires + url env + timeout 30s LOW-3) + cycle 169.80 MED-3 folder test coverage 3 신규 file (tests/server/test_folder_repository.py 8 + tests/server/test_folder_handlers_integration.py 7 + tests/app/net/test_folder_client.py 6 = 21 PASS + 1 skip rollback mock).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
