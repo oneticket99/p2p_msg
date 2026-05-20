@@ -191,6 +191,11 @@ class MainWindow(QMainWindow):
         self._current_room_id: Optional[int] = None
         # cycle 142 — 가장 최근 REST POST 응답 의 message_id capture (UI / 추후 ack chain)
         self._last_message_id: Optional[int] = None
+        # cycle 169.157 — friend/bot DM history client cache (kind, target_id) → list[(sender, text, ts, is_self)]
+        # chat_selected 시점 replay → chat_view re-populate. server REST fetch chain = 별 cycle 169.158+
+        self._dm_history: dict[tuple[str, int], list[tuple[str, str, "datetime", bool]]] = {}
+        self._active_chat_kind: Optional[str] = None
+        self._active_chat_target_id: Optional[int] = None
 
         # 0-1) 시그니처 사운드 player — Config 의 sound_* 3 필드 기반 init
         self._sound_player: SoundPlayer = SoundPlayer(config)
@@ -1339,15 +1344,18 @@ class MainWindow(QMainWindow):
                     status = "online" if entry.is_online else "오프라인"
                     break
         self._chat_header.set_chat(name, status=status)
-        # cycle 169.156 — chat 전환 시점 chat_view clear (image #12 telegram 동작성)
-        # friend/bot/room 별 message history isolation — chat_view 단일 view + content swap
+        # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
             self._chat_view.clear_messages()
             self._active_chat_kind = kind
             self._active_chat_target_id = target_id
-            log.info("[main_window] chat_view cleared — kind=%s target=%d", kind, target_id)
+            # cycle 169.157 — cache replay (server REST fetch = 별 cycle 169.158+)
+            cached = self._dm_history.get((kind, target_id), [])
+            for sender, text, ts, is_self in cached:
+                self._chat_view.add_message(sender, text, ts, is_self=is_self)
+            log.info("[main_window] chat switched — kind=%s target=%d replay=%d", kind, target_id, len(cached))
         except Exception as exc:  # pragma: no cover - graceful
-            log.debug("chat_view clear 실패 — %r", exc)
+            log.debug("chat_view switch 실패 — %r", exc)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         self._input_container.setVisible(True)
 
