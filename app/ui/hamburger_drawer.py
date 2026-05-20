@@ -57,20 +57,26 @@ class HamburgerDrawer(QFrame):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # 한글 주석 — header (avatar + 사용자명 + 이모지 상태)
+        # cycle 169.170 — telegram D-37 align — header Toonation BI gradient
         header = QFrame()
-        header.setStyleSheet("background-color: #1F2937;")
+        header.setStyleSheet(
+            "background-color: qlineargradient("
+            "x1:0, y1:0, x2:0, y2:1,"
+            " stop:0 #0066FF, stop:1 #001A4D"
+            ");"
+        )
         header.setFixedHeight(120)
         h_layout = QVBoxLayout(header)
         h_layout.setContentsMargins(20, 20, 20, 12)
         h_layout.setSpacing(4)
         avatar = QLabel()
         avatar.setFixedSize(48, 48)
-        avatar.setPixmap(load_pixmap("avatar", size=48, color="#67E8F9"))
-        avatar.setStyleSheet("border-radius: 24px; background-color: #0F172A;")
+        avatar.setPixmap(load_pixmap("avatar", size=48, color="#ffffff"))
+        avatar.setStyleSheet("border-radius: 24px; background-color: rgba(255,255,255,0.18);")
         h_layout.addWidget(avatar)
         name_label = QLabel(username)
-        name_label.setStyleSheet("color: #e5e7eb; font-size: 15px; font-weight: 600;")
+        # cycle 169.170 — gradient header 안 white name (contrast)
+        name_label.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600;")
         h_layout.addWidget(name_label)
         # cycle 169.119 — 이모지 상태 설정 폐기 (사용자 directive)
         outer.addWidget(header)
