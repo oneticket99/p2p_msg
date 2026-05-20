@@ -11,6 +11,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import re
 from typing import Any
 
 from aiohttp import web
@@ -18,6 +20,11 @@ from aiohttp import web
 from server.db.repositories import folders as folder_repo
 
 log = logging.getLogger(__name__)
+
+# cycle 169.79 회수 — color_hex format validation (MED-4)
+_COLOR_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+# cycle 169.79 회수 — invite_url env override (LOW-2)
+_INVITE_URL_BASE = os.environ.get("INVITE_URL_BASE", "https://tootalk.demo")
 
 
 async def handle_create_folder(request: web.Request) -> web.Response:
@@ -34,31 +41,22 @@ async def handle_create_folder(request: web.Request) -> web.Response:
     if not folder_id or not name:
         raise web.HTTPBadRequest(reason="folder_id + name 의무")
     color_name = payload.get("color_name") or None
+    # cycle 169.79 회수 — color_hex format validation (MED-4)
+    color_hex = payload.get("color_hex") or None
+    if color_hex is not None and not _COLOR_HEX_RE.match(str(color_hex)):
+        raise web.HTTPBadRequest(reason="color_hex 형식 부재 (#RRGGBB)")
     pool = request.app["db_pool"]
-    folder_pk = await folder_repo.insert_folder(
+    # cycle 169.79 회수 — single transaction aggregate (HIGH-2)
+    folder_pk = await folder_repo.insert_folder_with_chats(
         pool,
         folder_id=folder_id,
         owner_id=user_id,
         name=name,
         color_name=color_name,
+        color_hex=color_hex,
+        included_chats=payload.get("included_chats", []),
+        excluded_chats=payload.get("excluded_chats", []),
     )
-    # 한글 주석 — included_chats batch INSERT
-    for chat in payload.get("included_chats", []):
-        await folder_repo.add_folder_chat(
-            pool,
-            folder_pk=folder_pk,
-            chat_kind=str(chat.get("kind", "")),
-            chat_target_id=int(chat.get("target_id", 0)),
-            mode="include",
-        )
-    for chat in payload.get("excluded_chats", []):
-        await folder_repo.add_folder_chat(
-            pool,
-            folder_pk=folder_pk,
-            chat_kind=str(chat.get("kind", "")),
-            chat_target_id=int(chat.get("target_id", 0)),
-            mode="exclude",
-        )
     return web.json_response({"ok": True, "folder_id": folder_id, "id": folder_pk}, status=201)
 
 
@@ -103,8 +101,8 @@ async def handle_create_folder_invite(request: web.Request) -> web.Response:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
     folder_id = request.match_info.get("folder_id", "")
     pool = request.app["db_pool"]
-    rows = await folder_repo.list_folders(pool, owner_id=user_id)
-    folder = next((r for r in rows if r.folder_id == folder_id), None)
+    # cycle 169.79 회수 — single SQL owner check (MED-1)
+    folder = await folder_repo.fetch_by_folder_id_and_owner(pool, folder_id, user_id)
     if folder is None:
         raise web.HTTPNotFound(reason="folder 부재")
     token = await folder_repo.create_invite(pool, folder_pk=folder.id, created_by=user_id)
@@ -112,7 +110,8 @@ async def handle_create_folder_invite(request: web.Request) -> web.Response:
         "ok": True,
         "folder_id": folder_id,
         "invite_token": token,
-        "invite_url": f"https://tootalk.demo/folder/{token}",
+        # cycle 169.79 회수 — invite_url env override (LOW-2)
+        "invite_url": f"{_INVITE_URL_BASE}/folder/{token}",
     }, status=201)
 
 

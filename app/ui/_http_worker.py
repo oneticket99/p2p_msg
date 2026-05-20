@@ -24,9 +24,9 @@ class HttpJsonWorker(QThread):
         self._payload = payload
 
     def run(self) -> None:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        # cycle 169.79 회수 — TOOTALK_TLS_VERIFY env override
+        from app.net._ssl_util import build_ssl_context
+        ctx = build_ssl_context()
         body = json.dumps(self._payload).encode("utf-8")
         req = urllib.request.Request(self._url, data=body, headers={"Content-Type": "application/json"}, method="POST")
         log.info("[HttpJsonWorker] fire url=%s keys=%s", self._url, list(self._payload.keys()))

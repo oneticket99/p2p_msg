@@ -1144,8 +1144,12 @@ class MainWindow(QMainWindow):
         from app.net.folder_client import FolderCreateWorker
         worker = FolderCreateWorker(base_url, token, folder_data, parent=self)
         worker.finished_with_result.connect(self._on_folder_persist_finished)  # type: ignore[arg-type]
+        # cycle 169.79 회수 — worker list append (MED-2 dangling 차단)
+        if not hasattr(self, "_folder_workers"):
+            self._folder_workers = []
+        self._folder_workers.append(worker)
+        worker.finished.connect(lambda w=worker: self._folder_workers.remove(w))  # type: ignore[arg-type]
         worker.start()
-        self._folder_worker = worker  # gc 회피
 
     @pyqtSlot(bool, str, str, dict)
     def _on_folder_persist_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
@@ -1170,8 +1174,12 @@ class MainWindow(QMainWindow):
         worker.finished_with_result.connect(  # type: ignore[arg-type]
             lambda ok, *_: log.info("[folder] DELETE finished ok=%s", ok)
         )
+        # cycle 169.79 회수 — worker list append
+        if not hasattr(self, "_folder_workers"):
+            self._folder_workers = []
+        self._folder_workers.append(worker)
+        worker.finished.connect(lambda w=worker: self._folder_workers.remove(w))  # type: ignore[arg-type]
         worker.start()
-        self._folder_del_worker = worker
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:

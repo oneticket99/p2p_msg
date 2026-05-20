@@ -32,17 +32,19 @@ class _BaseFolderWorker(QThread):
         method: str = "GET",
         payload: Optional[dict] = None,
         parent: Optional[object] = None,
+        timeout: int = 10,
     ) -> None:
         super().__init__(parent)
         self._url = f"{base_url.rstrip('/')}{path}"
         self._token = token
         self._method = method
         self._payload = payload
+        self._timeout = timeout
 
     def run(self) -> None:  # type: ignore[override]
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        # cycle 169.79 회수 — TOOTALK_TLS_VERIFY env override
+        from app.net._ssl_util import build_ssl_context
+        ctx = build_ssl_context()
         body = json.dumps(self._payload).encode("utf-8") if self._payload is not None else None
         req = urllib.request.Request(
             self._url,
@@ -55,7 +57,7 @@ class _BaseFolderWorker(QThread):
         )
         log.info("[FolderWorker] fire %s %s", self._method, self._url)
         try:
-            with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
+            with urllib.request.urlopen(req, timeout=self._timeout, context=ctx) as resp:
                 raw = resp.read()
                 data = json.loads(raw) if raw else {}
                 self.finished_with_result.emit(
@@ -83,7 +85,8 @@ class _BaseFolderWorker(QThread):
 
 class FolderCreateWorker(_BaseFolderWorker):
     def __init__(self, base_url: str, token: str, folder_data: dict, parent=None) -> None:
-        super().__init__(base_url, token, "/api/folders", "POST", folder_data, parent)
+        # cycle 169.79 회수 — Create batch INSERT 시 30s timeout (LOW-3)
+        super().__init__(base_url, token, "/api/folders", "POST", folder_data, parent, timeout=30)
 
 
 class FolderListWorker(_BaseFolderWorker):

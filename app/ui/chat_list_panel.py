@@ -77,11 +77,13 @@ class ChatListItemDelegate(QStyledItemDelegate):
             painter.restore()
             return
 
-        # cycle 169.76 회수 — folder 색상 inline strip (좌측 vertical 3px bar)
+        # cycle 169.76 회수 — folder 색상 inline strip + cycle 169.79 회수 QColor.isValid 분기 (MED-4)
         if entry.folder_color:
-            painter.setBrush(QColor(entry.folder_color))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRect(rect.left(), rect.top(), 3, rect.height())
+            color = QColor(entry.folder_color)
+            if color.isValid():
+                painter.setBrush(color)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRect(rect.left(), rect.top(), 3, rect.height())
         avatar_rect = QRect(
             rect.left() + self.PADDING,
             rect.top() + (self.ROW_HEIGHT - self.AVATAR_SIZE) // 2,

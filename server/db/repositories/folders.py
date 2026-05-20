@@ -88,15 +88,88 @@ async def add_folder_chat(
     return int(new_id) if new_id else 0
 
 
-async def create_invite(pool: Any, *, folder_pk: int, created_by: int) -> str:
-    """초대 link token 생성 — folder_invites row insert."""
-    token = secrets.token_hex(16)
+async def fetch_by_folder_id_and_owner(
+    pool: Any, folder_id: str, owner_id: int,
+) -> Optional[FolderRow]:
+    """단일 SELECT — owner check + folder_id 정합 (cycle 169.79 MED-1 회수)."""
     sql = (
-        "INSERT INTO folder_invites (folder_id, invite_token, created_by) "
-        "VALUES (%s, %s, %s)"
+        "SELECT id, folder_id, owner_id, name, color_name, color_hex, chat_count, created_at "
+        "FROM folders WHERE folder_id = %s AND owner_id = %s LIMIT 1"
     )
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(sql, (folder_pk, token, created_by))
+            await cur.execute(sql, (folder_id, owner_id))
+            row = await cur.fetchone()
+    return FolderRow(*row) if row is not None else None
+
+
+async def insert_folder_with_chats(
+    pool: Any,
+    *,
+    folder_id: str,
+    owner_id: int,
+    name: str,
+    color_name: Optional[str] = None,
+    color_hex: Optional[str] = None,
+    included_chats: Optional[list] = None,
+    excluded_chats: Optional[list] = None,
+) -> int:
+    """folder + chats batch — 단일 transaction (cycle 169.79 HIGH-2 회수)."""
+    sql_folder = (
+        "INSERT INTO folders (folder_id, owner_id, name, color_name, color_hex, chat_count) "
+        "VALUES (%s, %s, %s, %s, %s, %s)"
+    )
+    sql_chat = (
+        "INSERT IGNORE INTO folder_chats (folder_id, chat_kind, chat_target_id, mode) "
+        "VALUES (%s, %s, %s, %s)"
+    )
+    included_chats = included_chats or []
+    excluded_chats = excluded_chats or []
+    chat_count_cache = len(included_chats)
+    async with pool.acquire() as conn:
+        try:
+            await conn.begin()
+        except AttributeError:
+            await conn.autocommit(False)
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    sql_folder,
+                    (folder_id, owner_id, name, color_name, color_hex, chat_count_cache),
+                )
+                new_id = cur.lastrowid
+                for chat in included_chats:
+                    await cur.execute(
+                        sql_chat,
+                        (new_id, str(chat.get("kind", "")), int(chat.get("target_id", 0)), "include"),
+                    )
+                for chat in excluded_chats:
+                    await cur.execute(
+                        sql_chat,
+                        (new_id, str(chat.get("kind", "")), int(chat.get("target_id", 0)), "exclude"),
+                    )
+            await conn.commit()
+            return int(new_id)
+        except Exception:
+            await conn.rollback()
+            raise
+
+
+async def create_invite(
+    pool: Any,
+    *,
+    folder_pk: int,
+    created_by: int,
+    expires_days: int = 7,
+) -> str:
+    """초대 link token 생성 — folder_invites row insert + 7일 default expires (cycle 169.79 LOW-1)."""
+    token = secrets.token_hex(16)
+    sql = (
+        "INSERT INTO folder_invites (folder_id, invite_token, created_by, expires_at) "
+        "VALUES (%s, %s, %s, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL %s DAY))"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (folder_pk, token, created_by, expires_days))
         await conn.commit()
     return token
