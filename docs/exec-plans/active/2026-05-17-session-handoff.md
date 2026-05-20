@@ -169,6 +169,68 @@ status: active
 
 ---
 
+## 8.79 사이클 169.118~169.144 — telegram desktop Win11 align Phase A~G 전수 + dereliction 회수 chain (2026-05-21 신설)
+
+### 8.79.1 27 cycle 산출 (cycle 169.118~144)
+
+| commit | cycle | scope |
+|---|---|---|
+| `c0704d6` | 169.118~119 | hamburger drawer toggle behavior + sidebar folder_defs 폐기 + 이모지 상태설정 제거 |
+| `32c88d7` | 169.120 | stale folder_defs 빈 list dead code cleanup |
+| `c79fe7a` | 169.121 | my_profile_dialog frameless modal (telegram align image #23/24) |
+| `5261879` | 169.126 | Phase A 1 — chat_list_panel AVATAR_SIZE 40→54 + ROW_HEIGHT 60→72 |
+| `27fee52` | 169.127 | Phase A 2 — chat_list search placeholder emoji 제거 + addAction SVG icon |
+| `3f4e3c8` | 169.128~130 | Phase A 3~5 — message_bubble width 420→480 + chat_view margins 16/12 spacing 4 + chat_header height 60 |
+| `5191af3` | 169.131 | Phase G label — sidebar TAB_DEFS telegram align (채팅/연락처/통화/설정) |
+| `19e8bb8` | 169.132 @history | History.md 27 entry 역순 prepend |
+| `7a6a6b5` | 169.132 @release | README.md 30 entry trim + 75 행 cut |
+| (local) | 169.133 | WBS sqlite 54 row INSERT (cycle 169.72~134 backfill, gitignored) |
+| `0a0b58b` | 169.134 | token-usage-30d.html/json regen — 33 cycle drift 회수 |
+| `f90f9a4` | 169.135 | 평가 4 file fingerprint sync v1 |
+| `a5a3dfc` | 169.136 | bot_panel sidebar tab 폐기 + chat_list 통합 + main_window panel mapping 재 정렬 |
+| `69d8c14` | 169.137 | Phase B — input_bar reorder + circle send 36x36 + pill radius 18 + voice/send toggle |
+| `95a08a9` | 169.138 | Phase C — sidebar width 96→72 + icon 28→24 + qss sync |
+| `271d506` | 169.139 | Phase D — chat_header button hover rgba 0,102,255,0.1→255,255,255,0.06 + chatHeader bg #131C30→#0F172A |
+| `3937478` | 169.140 | Phase E — avatar_palette util 신설 + chat_list delegate gradient bind |
+| `d2e4491` | 169.141 | 평가 4 file fingerprint sync v2 |
+| `32845fc` | 169.142 | Phase E remainder — message_bubble sender + chat_header avatar palette bind |
+| `fa743c3` | 169.143 | Phase F 1 — chat_header 4→3 action button (search + phone + more) |
+| `bcad49f` | 169.144 | Phase F 2 — sender grouping (chat_view prev_sender state + bubble grouped kwarg) |
+
+### 8.79.2 사용자 critique 회수 chain
+
+- image #20~32 batch — drawer toggle + sidebar folder 중복 + emoji 상태설정 + profile modal + telegram align scope
+- "세부 레이아웃 + 입력창 등 전부 텔레그램과 동일" (첫화면/login/signup/OTP 제외) → Phase A~G batch dispatch
+- 사용자 ack — Toonation BI bubble #0066FF retain + sidebar tab telegram align + bot_panel 폐기 + chat_list 통합
+
+### 8.79.3 telegram align Phase 누계 (cycle 169.126~144)
+
+- A 5 entry — dimension (avatar/row/bubble/view/header)
+- B 1 entry batch — input_bar reorder + circle + pill + toggle + reply cancel
+- C 1 entry batch — sidebar width/icon
+- D 1 entry batch — header hover/bg
+- E 2 entry batch — avatar_palette 3 영역 (delegate + bubble sender + header avatar)
+- F 2 entry — header 3 button + sender grouping
+- G 2 entry — sidebar TAB label + bot_panel 폐기
+
+### 8.79.4 dereliction-detector-agent CRIT/HIGH 회수
+
+- M2 README — 45 entry prepend + 30 행 strict trim
+- M3 History — 27 entry 역순 prepend
+- M6 WBS — 54 row sqlite backfill (local gitignored)
+- token-usage 33 cycle drift regen
+- 평가 fingerprint 2 회 sync (cycle 169.135/141)
+
+### 8.79.5 다음 cycle 170+ 진입 우선순위
+
+- 사용자 manual visual ack 10 항목 (cycle 169.83 §2.1 PENDING) — 사용자 directive 의무
+- coturn 4 env binding + 친구 1:1 통화 smoke
+- `bot_panel.py` file cleanup (unused, `_on_bot_command_invoked` chain orphan)
+- 평가 4 file 본격 전체 rewrite (현 fingerprint sync 만 retain)
+- Phase 5 본격 — actual call binding + remote control + i18n .qm
+
+---
+
 ## 8.78 사이클 169.6~169.12 — mascot 이미지 + 투턱 텍스트 + LoginDialog/SignupDialog logo 합성 정합 (2026-05-20 신설)
 
 ### 8.78.1 7 commit 산출
