@@ -218,10 +218,16 @@ class MainWindow(QMainWindow):
         # 한글 주석 — cycle 169.56 회수 — 햄버거 menu drawer signal
         self._sidebar_rail.hamburger_clicked.connect(self._on_hamburger_clicked)  # type: ignore[arg-type]
 
-        # 3-2) 중앙 sidebar — RoomListWidget (cycle 139 신설, 보존)
-        self._room_list = RoomListWidget(parent=splitter)
-        self._room_list.setMinimumWidth(220)
-        self._room_list.setMaximumWidth(320)
+        # 3-2) 중앙 chat list — ChatListPanel (cycle 169.62 신설, telegram desktop align)
+        # RoomListWidget legacy 보존 — group chat 진입 chain (room_id) backward compat.
+        from app.ui.chat_list_panel import ChatListPanel
+        self._chat_list_panel = ChatListPanel(parent=splitter)
+        self._chat_list_panel.chat_selected.connect(self._on_chat_selected)  # type: ignore[arg-type]
+        self._sidebar_rail.tab_clicked.connect(self._chat_list_panel.set_active_tab)  # type: ignore[arg-type]
+
+        # RoomListWidget — 의 의 hide (group chat 진입 시 _on_room_entered 호출 chain backward compat)
+        self._room_list = RoomListWidget(parent=self)
+        self._room_list.setVisible(False)
         self._room_list.room_entered.connect(self._on_room_entered)
         self._room_list.set_rooms([])
 
@@ -1069,6 +1075,18 @@ class MainWindow(QMainWindow):
                     log.debug("block chain 실패 — %r", exc)
             modal.accept()
 
+    @pyqtSlot(str, int)
+    def _on_chat_selected(self, kind: str, target_id: int) -> None:
+        """ChatListPanel.chat_selected → group room 진입 또는 friend chat 진입 (cycle 169.62)."""
+        log.info("[main_window] chat_selected kind=%s target_id=%d", kind, target_id)
+        if kind == "room":
+            self._on_room_entered(target_id)
+            return
+        # 한글 주석 — friend/bot path = 1:1 chat_view (placeholder cycle 169.62)
+        self._chat_header.set_chat(f"{kind}:{target_id}", status="online")
+        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+        self._input_container.setVisible(True)
+
     @pyqtSlot()
     def _on_header_sidebar_toggle(self) -> None:
         """chat header sidebar toggle button — room_list visibility toggle (cycle 169.61)."""
@@ -1216,10 +1234,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_header_search(self) -> None:
-        """ChatHeader 검색 button — cycle 169.51 visible feedback."""
-        log.info("ChatHeader 검색 click")
-        from PyQt6.QtWidgets import QMessageBox
-        QMessageBox.information(self, "TooTalk", "메시지 검색 — 준비 중 (다음 cycle 진입)")
+        """ChatHeader 검색 button — cycle 169.63 ChatListPanel filter focus."""
+        log.info("ChatHeader 검색 click — chat list filter focus")
+        # 한글 주석 — chat_list_panel 안 search input focus + visible 보장
+        if hasattr(self, "_chat_list_panel"):
+            self._chat_list_panel._search_edit.setFocus()
+            self._chat_list_panel._search_edit.selectAll()
 
     @pyqtSlot()
     def _on_header_call(self) -> None:

@@ -68,7 +68,9 @@ class _OTPDialogStub:
     DialogCode = type("DC", (), {"Accepted": 1})
 
     def __init__(self, *args, **kwargs) -> None:
-        pass
+        # 한글 주석 — cycle 169.54 회수 — _token + _user_id attribute (signup propagate)
+        self._token = "stub-tok"
+        self._user_id = 42
 
     def exec(self) -> int:
         return 1
@@ -92,11 +94,13 @@ def _find_button_by_text(dialog, text):
 class TestSignupButtonClick:
     """SignupDialog 가입 button qtbot.mouseClick simulation."""
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_button_click_fires_register(self, qtbot, monkeypatch) -> None:
+    def test_button_click_fires_register(self, qtbot, monkeypatch, fake_http_worker) -> None:
+        # 한글 주석 — cycle 169.64 회수 — fake_http_worker fixture mock 적용
         from app.ui.signup_dialog import SignupDialog
-        client = _MockAuthClient()
+        from app.net.auth_client import AuthClient
         monkeypatch.setattr("app.ui.otp_dialog.OTPDialog", _OTPDialogStub)
+        monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+        client = AuthClient(base_url="https://fake.local")
         dialog = SignupDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("e2e@example.com")
@@ -106,7 +110,15 @@ class TestSignupButtonClick:
         btn = _find_primary_button(dialog)
         assert btn is not None
         qtbot.mouseClick(btn, Qt.MouseButton.LeftButton)
-        assert client.register_calls == [("e2e@example.com", "e2euser", "password123")]
+        # 한글 주석 — fake_http_worker instances 안 register fire 검증
+        assert len(fake_http_worker.instances) == 1
+        worker = fake_http_worker.instances[0]
+        assert worker.path == "/api/auth/register"
+        assert worker.payload == {
+            "email": "e2e@example.com",
+            "username": "e2euser",
+            "password": "password123",
+        }
 
     def test_short_password_button_click_blocks(self, qtbot, monkeypatch) -> None:
         from app.ui.signup_dialog import SignupDialog
@@ -126,10 +138,11 @@ class TestSignupButtonClick:
 class TestLoginButtonClick:
     """LoginDialog 로그인 button qtbot.mouseClick + Enter key simulation."""
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_button_click_fires_login(self, qtbot) -> None:
+    def test_button_click_fires_login(self, qtbot, fake_http_worker) -> None:
+        # cycle 169.64 회수
         from app.ui.login_dialog import LoginDialog
-        client = _MockAuthClient()
+        from app.net.auth_client import AuthClient
+        client = AuthClient(base_url="https://fake.local")
         dialog = LoginDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("e2e@example.com")
@@ -137,19 +150,21 @@ class TestLoginButtonClick:
         btn = _find_primary_button(dialog)
         assert btn is not None
         qtbot.mouseClick(btn, Qt.MouseButton.LeftButton)
-        assert client.login_calls == [("e2e@example.com", "password123")]
-        assert dialog.token == "tok-login"
+        assert len(fake_http_worker.instances) == 1
+        assert fake_http_worker.instances[0].path == "/api/auth/login"
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_enter_key_fires_login(self, qtbot) -> None:
+    def test_enter_key_fires_login(self, qtbot, fake_http_worker) -> None:
+        # cycle 169.64 회수
         from app.ui.login_dialog import LoginDialog
-        client = _MockAuthClient()
+        from app.net.auth_client import AuthClient
+        client = AuthClient(base_url="https://fake.local")
         dialog = LoginDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("e2e@example.com")
         dialog._password_edit.setText("password123")
         qtbot.keyClick(dialog._password_edit, Qt.Key.Key_Return)
-        assert client.login_calls == [("e2e@example.com", "password123")]
+        assert len(fake_http_worker.instances) == 1
+        assert fake_http_worker.instances[0].payload["email"] == "e2e@example.com"
 
     def test_signup_link_button_done_2(self, qtbot) -> None:
         from app.ui.login_dialog import LoginDialog

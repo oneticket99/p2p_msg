@@ -207,6 +207,7 @@ def main() -> int:
                     try:
                         payloads = await rooms_client.list_rooms(scope="all")
                         from app.ui.room_list import RoomItem
+                        from app.ui.chat_list_panel import ChatListEntry
                         items = [
                             RoomItem(
                                 room_id=p.id,
@@ -219,7 +220,30 @@ def main() -> int:
                             for p in payloads
                         ]
                         window._room_list.set_rooms(items)
-                        logging.getLogger(__name__).info("[rooms] list 갱신 — n=%d", len(items))
+                        # 한글 주석 — cycle 169.62 회수 — ChatListPanel rooms entry inject
+                        chat_entries = [
+                            ChatListEntry(
+                                kind="room",
+                                target_id=p.id,
+                                name=getattr(p, "name", "") or p.room_code,
+                                last_message="",
+                                unread_count=0,
+                                is_online=False,
+                            )
+                            for p in payloads
+                        ]
+                        # 한글 주석 — sample friends + bots placeholder (REST 신설 별도 cycle)
+                        chat_entries += [
+                            ChatListEntry(kind="friend", target_id=1, name="홍원표",
+                                          last_message="안녕하세요", is_online=True),
+                            ChatListEntry(kind="bot", target_id=2, name="투네이션 고객센터",
+                                          last_message="무엇을 도와드릴까요?", is_online=True),
+                        ]
+                        window._chat_list_panel.set_entries(chat_entries)
+                        logging.getLogger(__name__).info(
+                            "[chat_list] entries 갱신 — rooms=%d total=%d",
+                            len(items), len(chat_entries),
+                        )
                     except Exception as exc:
                         logging.getLogger(__name__).warning("[rooms] list_rooms 실패 — %r", exc)
                 asyncio.ensure_future(_populate_rooms())
