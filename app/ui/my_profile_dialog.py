@@ -35,6 +35,13 @@ class MyProfileDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 내 프로필")
         self.setModal(True)
+        # cycle 169.121 회수 — frameless modal (텔레그램 align)
+        # 사용자 directive image #23/24 — dialog 아닌 modal 의무
+        self.setWindowFlags(
+            Qt.WindowType.Dialog
+            | Qt.WindowType.FramelessWindowHint
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
         self.setFixedSize(420, 600)
 
         outer = QVBoxLayout(self)
