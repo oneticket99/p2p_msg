@@ -12,10 +12,10 @@ Flow:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
+
 
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QPainter, QPixmap
@@ -32,6 +32,8 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.error_messages import translate_error
+from app.ui._http_worker import HttpJsonWorker
 
 log = logging.getLogger(__name__)
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
@@ -46,6 +48,9 @@ class SignupDialog(QDialog):
         super().__init__(parent)
         self._client = auth_client
         self._email: Optional[str] = None
+        # 한글 주석 — cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
+        self._token: Optional[str] = None
+        self._user_id: Optional[int] = None
 
         self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
         self.setMinimumWidth(440)
@@ -107,13 +112,13 @@ class SignupDialog(QDialog):
 
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._password_edit.setPlaceholderText(_tr("password (8~32자)"))
+        self._password_edit.setPlaceholderText(_tr("비밀번호"))
         self._password_edit.setMinimumHeight(44)
         outer.addWidget(self._password_edit)
 
         self._password_confirm_edit = QLineEdit()
         self._password_confirm_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._password_confirm_edit.setPlaceholderText(_tr("password 확인"))
+        self._password_confirm_edit.setPlaceholderText(_tr("확인"))
         self._password_confirm_edit.setMinimumHeight(44)
         outer.addWidget(self._password_confirm_edit)
 
@@ -134,7 +139,9 @@ class SignupDialog(QDialog):
         btn_login_link = QPushButton(_tr("로그인"))
         btn_login_link.setProperty("variant", "ghost")
         btn_login_link.setFlat(True)
-        btn_login_link.clicked.connect(self.reject)  # type: ignore[arg-type]
+        # 한글 주석 — cycle 169.53 회수 — login link click → done(3) (signup → login switch intent)
+        # main.py 안 reject 의 어플 종료 차단 + login_dialog 진입 chain 의무
+        btn_login_link.clicked.connect(lambda: self.done(3))  # type: ignore[arg-type]
 
         btn_row.addWidget(btn_cancel)
         btn_row.addStretch(1)
@@ -147,49 +154,78 @@ class SignupDialog(QDialog):
     def email(self) -> Optional[str]:
         return self._email
 
+    @property
+    def token(self) -> Optional[str]:
+        """cycle 169.54 — OTP PASS 직후 자동 발급 session token."""
+        return self._token
+
+    @property
+    def user_id(self) -> Optional[int]:
+        """cycle 169.54 — OTP PASS 직후 user_id."""
+        return self._user_id
+
     def _on_signup_clicked(self) -> None:
+        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()
         password = self._password_edit.text()
         confirm = self._password_confirm_edit.text()
 
         if not email or not username or not password:
-            QMessageBox.warning(self, "TooTalk", _tr("4 field 모두 입력 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("4 항목 모두 입력 의무"))
             return
         if password != confirm:
-            QMessageBox.warning(self, "TooTalk", _tr("password 확인 mismatch"))
+            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 확인 불일치"))
             return
         if len(password) < 8 or len(password) > 32:
-            QMessageBox.warning(self, "TooTalk", _tr("password 8~32자 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 8~32자 의무"))
             return
         if len(username) < 3 or len(username) > 16:
-            QMessageBox.warning(self, "TooTalk", _tr("username 3~16자 의무"))
+            QMessageBox.warning(self, "TooTalk", _tr("사용자명 3~16자 의무"))
             return
 
-        asyncio.ensure_future(self._do_signup(email, username, password))
-
-    async def _do_signup(self, email: str, username: str, password: str) -> None:
-        try:
-            result = await self._client.register(email, username, password)  # type: ignore[attr-defined]
-        except AttributeError:
-            QMessageBox.information(
-                self,
-                "TooTalk",
-                _tr("회원가입 endpoint 미진입 — Phase 1 actual binding 의무"),
-            )
-            self._email = email
-            self.accept()
+        # cycle 169.49 회수 — QThread + sync urllib worker fire (asyncio 의존 폐기)
+        base_url = getattr(self._client, "_base_url", "")
+        if not base_url:
+            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
+        self._signup_email = email
+        self._signup_worker = HttpJsonWorker(
+            base_url,
+            "/api/auth/register",
+            {"email": email, "username": username, "password": password},
+            parent=self,
+        )
+        self._signup_worker.finished_with_result.connect(self._on_signup_finished)
+        self._signup_worker.start()
 
-        if getattr(result, "ok", False):
+    def _on_signup_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """HttpJsonWorker finished slot — signup 응답 처리 + OTP dialog chain."""
+        log.info("[회원가입] finished ok=%s code=%s", ok, error_code)
+        email = getattr(self, "_signup_email", "")
+        if ok:
+            # 한글 주석 — register PASS → OTP dialog 진입 (modal block + cancel 시 signup 잔존)
             from app.ui.otp_dialog import OTPDialog
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
             if otp.exec() == otp.DialogCode.Accepted:
+                # 한글 주석 — cycle 169.54 회수 — OTP PASS 의 자동 발급 token + user_id propagate
                 self._email = email
+                self._token = otp._token
+                self._user_id = otp._user_id
                 self.accept()
-            else:
-                QMessageBox.information(self, "TooTalk", _tr("OTP 미인증 — 다음 진입 시 재시도"))
-                self.reject()
-        else:
-            err_msg = getattr(result, "error_message", _tr("가입 실패"))
-            QMessageBox.critical(self, f"{_tr('회원가입')} 실패", str(err_msg))
+            # 한글 주석 — OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
+            return
+        err_map = {
+            "EMAIL_DUPLICATE": "이미 가입된 이메일 — 로그인 진입 의무",
+            "USERNAME_TAKEN": "이미 사용 중인 사용자명",
+            "USERNAME_DUPLICATE": "이미 사용 중인 사용자명",
+            "INVALID_EMAIL": "이메일 형식 오류",
+            "INVALID_USERNAME": "사용자명 형식 오류",
+            "WEAK_PASSWORD": "비밀번호 형식 부재 (8자 이상 + 영문 + 숫자 권장)",
+            "VALIDATION": "입력 형식 오류 — 다시 확인 의무",
+            "RATE_LIMIT": "회원가입 시도 제한 — 잠시 후 재시도",
+            "TIMEOUT": "응답 시간 초과 — 잠시 후 재시도",
+            "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
+        }
+        err_msg = err_map.get(error_code, error_message or "가입 실패")
+        QMessageBox.critical(self, _tr("회원가입 실패"), str(err_msg))
