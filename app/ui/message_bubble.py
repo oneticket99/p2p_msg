@@ -87,6 +87,7 @@ class MessageBubble(QFrame):
         *,
         reply_to: Optional[ReplyContext] = None,
         reactions: Optional[dict[str, int]] = None,
+        grouped: bool = False,
     ) -> None:
         super().__init__(parent)
 
@@ -96,6 +97,8 @@ class MessageBubble(QFrame):
         self._is_self = is_self
         self._reply_to = reply_to
         self._reactions: dict[str, int] = dict(reactions or {})
+        # cycle 169.144 — telegram align sender grouping (직전 bubble 의 sender 동일 시 True)
+        self._grouped = grouped
 
         # 본 위젯은 가로로 가득 차도록 두고, 내부 정렬을 통해 좌/우 분기
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
@@ -114,8 +117,9 @@ class MessageBubble(QFrame):
         bubble_layout.setContentsMargins(8, 6, 8, 6)
         bubble_layout.setSpacing(2)
 
-        # peer 발신 시 발신자 라벨 노출 + cycle 169.142 — per-user palette gradient color (telegram align)
-        if not is_self:
+        # cycle 169.144 — grouped=True 시 sender label 생략 (telegram align D-20)
+        # peer 발신 + 첫 bubble (non-grouped) 만 sender label render
+        if not is_self and not self._grouped:
             from app.ui.avatar_palette import palette_solid
             sender_color = palette_solid(sender)
             sender_label = QLabel(sender, bubble)

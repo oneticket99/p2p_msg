@@ -205,6 +205,11 @@ class ChatView(QScrollArea):
         # 마지막에 빈 stretch 를 두어 메시지가 적을 때 위쪽으로 정렬
         self._messages_layout.addStretch(1)
 
+        # cycle 169.144 — sender grouping state (telegram align D-20)
+        # 동일 sender 연속 시 sender label/tail 생략 + spacing 단축 (2px)
+        self._prev_sender: Optional[str] = None
+        self._prev_is_self: Optional[bool] = None
+
         self.setWidget(self._content)
 
     # ------------------------------------------------------------------
@@ -236,6 +241,15 @@ class ChatView(QScrollArea):
             ``True`` 인 경우 self 발신 — 버블이 우측 정렬되고 색상 분기.
         """
 
+        # cycle 169.144 — sender grouping detect (telegram align)
+        # 직전 bubble = 동일 sender + 동일 is_self → grouped (sender label 생략)
+        is_grouped = (
+            self._prev_sender == sender
+            and self._prev_is_self == is_self
+        )
+        self._prev_sender = sender
+        self._prev_is_self = is_self
+
         bubble = MessageBubble(
             sender=sender,
             text=text,
@@ -244,6 +258,7 @@ class ChatView(QScrollArea):
             parent=self._content,
             reply_to=reply_to,  # type: ignore[arg-type]
             reactions=reactions,
+            grouped=is_grouped,
         )
         # 한글 주석 — cycle 154 reply_requested signal → parent main_window 안 reply mode set
         try:
