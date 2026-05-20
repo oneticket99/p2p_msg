@@ -307,6 +307,17 @@ class ChatView(QScrollArea):
             # 이미 해제됐거나 연결 정보 누락 — 무시
             pass
 
+    def scroll_to_bottom(self) -> None:
+        """cycle 169.164 — chat 전환 + replay 직후 scrollbar bottom 강제 이동 (telegram align)."""
+        from PyQt6.QtCore import QTimer
+        # 한글 주석 — layout 갱신 직후 scroll 호출 의무 (QTimer.singleShot 0 ms)
+        QTimer.singleShot(0, self._do_scroll_bottom)
+
+    def _do_scroll_bottom(self) -> None:
+        """deferred scroll bottom — layout 갱신 후 호출 (cycle 169.164)."""
+        scrollbar = self.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
     def clear_messages(self) -> None:
         """모든 메시지 버블 제거 — 방 전환 등에서 호출.
 

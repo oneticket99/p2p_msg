@@ -1380,9 +1380,13 @@ class MainWindow(QMainWindow):
             self._active_chat_kind = kind
             self._active_chat_target_id = target_id
             # cycle 169.157 — cache replay (server REST fetch = 별 cycle 169.158+)
+            # cycle 169.163 — 1:1 chat (friend/bot) sender label suppress propagate
+            hide_sender = kind in ("friend", "bot")
             cached = self._dm_history.get((kind, target_id), [])
             for sender, text, ts, is_self in cached:
-                self._chat_view.add_message(sender, text, ts, is_self=is_self)
+                self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=hide_sender)
+            # cycle 169.164 — replay 후 scroll bottom 자동 (telegram align)
+            self._chat_view.scroll_to_bottom()
             log.info("[main_window] chat switched — kind=%s target=%d replay=%d", kind, target_id, len(cached))
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("chat_view switch 실패 — %r", exc)
