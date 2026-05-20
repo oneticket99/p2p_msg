@@ -52,9 +52,10 @@ class ChatListItemDelegate(QStyledItemDelegate):
     layout: avatar circle 40px + name (15px bold) + last_message (12px gray) + ts (11px gray) + unread badge.
     """
 
+    # cycle 169.109 — Figma Telegram Win11 정합 tune
     AVATAR_SIZE = 40
-    ROW_HEIGHT = 64
-    PADDING = 12
+    ROW_HEIGHT = 60
+    PADDING = 14
 
     def sizeHint(self, option: QStyleOptionViewItem, index) -> "QSize":  # type: ignore[override]
         from PyQt6.QtCore import QSize
@@ -65,11 +66,11 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # 한글 주석 — selected highlight (telegram brand 색)
+        # cycle 169.109 — Figma 정합 hover/selected (qss base-dark.qss chat list align)
         if option.state & QStyle.StateFlag.State_Selected:
-            painter.fillRect(rect, QColor("#1E3A5F"))
+            painter.fillRect(rect, QColor(0, 102, 255, 46))  # rgba(0,102,255,0.18)
         elif option.state & QStyle.StateFlag.State_MouseOver:
-            painter.fillRect(rect, QColor("#192335"))
+            painter.fillRect(rect, QColor(255, 255, 255, 10))  # rgba(255,255,255,0.04)
 
         # avatar circle
         entry = index.data(Qt.ItemDataRole.UserRole + 2)
@@ -123,7 +124,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.drawText(name_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_name)
 
         # last_message — group room 의 의 sender prefix ("나: ..." 또는 "{sender}: ...")
-        painter.setPen(QPen(QColor("#9ca3af")))
+        painter.setPen(QPen(QColor("#A1AAB3")))  # cycle 169.109 — Figma Service text token
         fm = QFont(); fm.setPixelSize(12)
         painter.setFont(fm)
         msg_rect = QRect(text_x, rect.top() + 32, text_w, 18)
@@ -139,7 +140,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         # ts (right top)
         ts_rect = QRect(rect.right() - 56, rect.top() + 10, 44, 18)
         ts_text = entry.last_ts.strftime("%H:%M") if entry.last_ts else ""
-        painter.setPen(QPen(QColor("#6b7280")))
+        painter.setPen(QPen(QColor("#A1AAB3")))  # cycle 169.109 — Figma Service text token (ts color)
         ft = QFont(); ft.setPixelSize(11)
         painter.setFont(ft)
         painter.drawText(ts_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, ts_text)
