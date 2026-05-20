@@ -1404,7 +1404,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_hamburger_clicked(self) -> None:
-        """좌상단 햄버거 click → HamburgerDrawer modal (cycle 169.56)."""
+        """좌상단 햄버거 click → HamburgerDrawer slide-in (cycle 169.113 회수).
+
+        의 main_window 좌측 edge 부터 320px width drawer slide-in.
+        높이 = main_window height match. 외부 click 시 popup 자동 close.
+        """
         from app.ui.hamburger_drawer import HamburgerDrawer
         username = getattr(self._config, "user_nickname", "사용자")
         drawer = HamburgerDrawer(username=username, parent=self)
@@ -1413,6 +1417,12 @@ class MainWindow(QMainWindow):
         drawer.calls_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
         drawer.contacts_clicked.connect(self._on_drawer_contacts)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
+        # cycle 169.113 — 좌측 edge slide-in (main_window 좌측 0,0 anchor + 전체 높이 match)
+        main_geom = self.geometry()
+        drawer.setFixedHeight(main_geom.height())
+        # 한글 주석 — main_window 좌측 top-left 기준 global position 계산
+        top_left = self.mapToGlobal(self.rect().topLeft())
+        drawer.move(top_left.x(), top_left.y())
         drawer.exec()
 
     @pyqtSlot()
