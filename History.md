@@ -40,6 +40,60 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.187 (2026-05-21 03:47 KST) — 평가 4 file fingerprint sync — cycle 169.182~186 5 cycle drift 회수
+- cycle 169.186 (2026-05-21 03:46 KST) — MyProfileDialog crash 회수 + telegram simple rewrite
+- cycle 169.185 (2026-05-21 03:42 KST) — sidebar TAB_DEFS 2 entry (home + phone icon 폐기) — 사용자 directive
+- cycle 169.184 (2026-05-21 03:40 KST) — chat_list "채팅" tab 통합 filter (사용자 critique 회수)
+- cycle 169.183 (2026-05-21 03:36 KST) — top bar 3 영역 vertical center align (image #17/18 critique)
+- cycle 169.182 (2026-05-21 03:32 KST) — chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입
+- cycle 169.181 (2026-05-21 03:25 KST) — 평가 4 file fingerprint sync — cycle 169.176~180 5 cycle drift 회수
+- cycle 169.180 (2026-05-21 03:24 KST) — bubble ts inline overlay (telegram D-15 align)
+- cycle 169.179 (2026-05-21 03:22 KST) — chat_view day separator (date 변경 시 label inject — telegram align)
+- cycle 169.178 (2026-05-21 03:20 KST) — chat_header status color cyan → gray (telegram image #6 align)
+- cycle 169.177 (2026-05-21 03:18 KST) — handoff §8.79 cycle 169.162~176 append (15 entry)
+- cycle 169.176 (2026-05-21 03:16 KST) — chat_view scroll offset per-chat retain (telegram align)
+- cycle 169.175 (2026-05-21 03:14 KST) — 평가 4 file fingerprint sync — cycle 169.169~174 6 cycle drift 회수
+- cycle 169.174 (2026-05-21 03:13 KST) — chat_list bump_entry on send — preview + ts + sort 정렬
+- cycle 169.173 (2026-05-21 03:12 KST) — chat_list unread badge reset on chat_selected (telegram align)
+- cycle 169.172 (2026-05-21 03:11 KST) — bubble grouped tail 부재 chain (telegram 시각 강화)
+- cycle 169.171 (2026-05-21 03:09 KST) — search bar pill radius 18 + bg seamless (image #14 align)
+- cycle 169.170 (2026-05-21 03:08 KST) — hamburger drawer header Toonation BI gradient (telegram D-37)
+- cycle 169.169 (2026-05-21 03:06 KST) — top bar 3 영역 한 라인 통합 — bg #0A1019 + height 60 (image #13/14)
+- cycle 169.168 (2026-05-21 03:02 KST) — 평가 4 file fingerprint sync — cycle 169.162~167 6 cycle drift 회수
+- cycle 169.167 (2026-05-21 03:01 KST) — chat_list highlight sync — programmatic 진입 path 정합
+- cycle 169.166 (2026-05-21 02:59 KST) — `_profile_message_clicked` → `_on_chat_selected` redirect (single source)
+- cycle 169.165 (2026-05-21 02:58 KST) — `_append_dm_message` render 직후 scroll bottom 자동
+- cycle 169.164 (2026-05-21 02:56 KST) — chat 전환 시 scroll bottom + replay sender suppress propagate
+- cycle 169.163 (2026-05-21 02:48 KST) — 1:1 chat sender label suppress — telegram image #6 align
+- cycle 169.162 (2026-05-21 02:45 KST) — handoff §8.79 append cycle 169.145~161 + 17 entry critique
+- cycle 169.161 (2026-05-21 02:42 KST) — 평가 4 file fingerprint sync — cycle 169.154~160 7 cycle drift 회수
+- cycle 169.160 (2026-05-21 02:41 KST) — `_append_dm_message` single source helper + send chain refactor
+- cycle 169.159 (2026-05-21 02:40 KST) — chat_header status fallback "최근에 접속함" telegram align
+- cycle 169.158 (2026-05-21 02:38 KST) — self send → DM cache append chain
+- cycle 169.157 (2026-05-21 02:36 KST) — DM history client cache + chat_selected replay chain
+- cycle 169.156 (2026-05-21 02:33 KST) — chat_view 전환 시점 clear + active chat state (image #12)
+- cycle 169.155 (2026-05-21 02:32 KST) — 3 zone 색상 구분 — header + chat area + input bar (telegram align)
+- cycle 169.154 (2026-05-21 02:28 KST) — chat_header emoji 제거 + friend nickname lookup chain
+- cycle 169.153 (2026-05-21 02:15 KST) — 평가 4 file fingerprint sync — cycle 169.148~152 5 cycle drift 회수
+- cycle 169.152 (2026-05-21 02:14 KST) — sidebar 마지막 entry "설정" → "편집" + edit SVG icon (telegram align)
+- cycle 169.151 (2026-05-21 02:12 KST) — ts 한국어 format "오전/오후 H:MM" + chat_list ts width 확장
+- cycle 169.150 (2026-05-21 02:10 KST) — input_bar telegram image #3 정합 — attach left + emoji right + seamless pill + transparent voice
+- cycle 169.149 (2026-05-21 02:06 KST) — input_bar composite pill 본격 재 구조 — telegram 95% align
+- cycle 169.148 (2026-05-21 02:04 KST) — input_bar text edit single-row + content fit (telegram align)
+- cycle 169.147 (2026-05-21 01:59 KST) — 평가 4 file fingerprint sync — cycle 169.142~146 5 cycle drift 회수
+- cycle 169.146 (2026-05-21 01:58 KST) — bot_panel.py orphan 폐기 + main_window `_on_bot_command_invoked` slot 제거
+- cycle 169.145 (2026-05-21 01:57 KST) — handoff §8.79 prepend — cycle 169.118~144 27 entry chain
+- cycle 169.144 (2026-05-21 01:55 KST) — Phase F entry 2 — sender grouping (chat_view + message_bubble)
+- cycle 169.143 (2026-05-21 01:53 KST) — Phase F entry 1 — chat_header 4→3 action button (telegram align)
+- cycle 169.142 (2026-05-21 01:51 KST) — Phase E remainder — message_bubble sender + chat_header avatar palette
+- cycle 169.141 (2026-05-21 01:46 KST) — 평가 4 file fingerprint sync — cycle 169.136~140 5 cycle drift 회수
+- cycle 169.140 (2026-05-21 01:45 KST) — Phase E avatar palette util + chat_list delegate bind
+- cycle 169.139 (2026-05-21 01:34 KST) — Phase D chat_header telegram align — hover gray + bg chat area 동일
+- cycle 169.138 (2026-05-21 01:33 KST) — Phase C sidebar telegram align — width 96→72 + icon 28→24
+- cycle 169.137 (2026-05-21 01:32 KST) — Phase B input_bar telegram align — button reorder + circle send + pill radius + voice/send toggle
+- cycle 169.136 (2026-05-21 01:26 KST) — bot_panel sidebar tab 폐기 + chat_list 통합 + telegram tab align
+- cycle 169.135 (2026-05-21 01:24 KST) — 평가 4 file fingerprint sync — last_verified + cycle marker
+- cycle 169.132 (2026-05-21 01:14 KST) — README 변경 이력 45 entry prepend + 30 행 상한 trim
 - cycle 169.131 (2026-05-21 01:10 KST) — sidebar TAB_DEFS telegram align label/icon 재배치 (5191af3)
 - cycle 169.128~130 (2026-05-21 00:59 KST) — Phase A entry 3~5 batch — bubble width + chat_view margins + chat_header height (3f4e3c8)
 - cycle 169.127 (2026-05-21 00:57 KST) — chat_list search placeholder emoji 제거 + SVG icon (Phase A entry 2) (27fee52)
