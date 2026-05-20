@@ -196,10 +196,19 @@ class ChatListPanel(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # 한글 주석 — 검색 bar top
+        # 한글 주석 — 검색 bar top (cycle 169.169 — top bar 한 라인 통합 + bg #0A1019 + height 60)
         search_frame = QFrame()
+        search_frame.setObjectName("chatListSearchBar")
+        search_frame.setFixedHeight(60)
+        search_frame.setStyleSheet(
+            "QFrame#chatListSearchBar {"
+            " background-color: #0A1019;"
+            " border-bottom: 1px solid #1f2937;"
+            "}"
+        )
         search_layout = QVBoxLayout(search_frame)
-        search_layout.setContentsMargins(12, 12, 12, 8)
+        search_layout.setContentsMargins(12, 12, 12, 12)
+        search_layout.setSpacing(0)
 
         self._search_edit = QLineEdit()
         # cycle 169.127 — sub-agent A drift D-8 — emoji prefix 제거 + addAction SVG (telegram align)

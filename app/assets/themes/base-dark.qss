@@ -208,7 +208,8 @@ QPushButton#sendButton:disabled {
 
 /* Sidebar rail — cycle 169.104 Figma 정합 (Toonation BI retain + hover/active state tune) */
 QFrame#sidebarRail {
-    background-color: #0a0f1c;
+    /* cycle 169.169 — top bar 통합 bg #0A1019 (chat_list_panel + chat_header 정합) */
+    background-color: #0A1019;
     border-right: 1px solid #1f2937;
     /* cycle 169.138 — telegram align width 64→72 (python setFixedWidth 정합) */
     min-width: 72px;
