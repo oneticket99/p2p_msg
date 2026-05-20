@@ -71,7 +71,8 @@ class ChatHeader(QFrame):
 
         self._status_label = QLabel("")
         self._status_label.setObjectName("chatHeaderStatus")
-        self._status_label.setStyleSheet("color: #67E8F9; font-size: 12px;")
+        # cycle 169.178 — status color cyan → gray (telegram image #6 align)
+        self._status_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         info_layout.addWidget(self._status_label)
 
         layout.addLayout(info_layout, stretch=1)
