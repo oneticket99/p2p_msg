@@ -1,3 +1,10 @@
+---
+title: "Docker rebuild — cycle 152"
+owner: oneticket99
+last_verified: 2026-05-19
+status: active
+---
+
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 # Docker rebuild — cycle 152 (mobile cycle 181 prerequisite)
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Any, Callable, Optional
 
 log = logging.getLogger(__name__)
@@ -37,10 +38,12 @@ class CallClient:
         turn_username: str = "",
         turn_credential: str = "",
     ) -> None:
-        self._stun_url = stun_url
-        self._turn_url = turn_url
-        self._turn_username = turn_username
-        self._turn_credential = turn_credential
+        # cycle 169.81 회수 — TURN credential 의 의 env override (production binding)
+        # TOOTALK_TURN_URL / TOOTALK_TURN_USERNAME / TOOTALK_TURN_CREDENTIAL
+        self._stun_url = os.environ.get("TOOTALK_STUN_URL", stun_url)
+        self._turn_url = os.environ.get("TOOTALK_TURN_URL", turn_url)
+        self._turn_username = os.environ.get("TOOTALK_TURN_USERNAME", turn_username)
+        self._turn_credential = os.environ.get("TOOTALK_TURN_CREDENTIAL", turn_credential)
         self._on_state_change = on_state_change
         self._signaling = signaling_client
         self._peer_id = peer_id  # 한글 주석 — 상대 peer signaling id
