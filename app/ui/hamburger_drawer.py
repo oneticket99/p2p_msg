@@ -116,6 +116,21 @@ class HamburgerDrawer(QDialog):
         footer.setStyleSheet("color: #6b7280; font-size: 11px; padding: 12px 20px;")
         outer.addWidget(footer)
 
+    def showEvent(self, event):  # type: ignore[override]
+        """slide-in animation — left edge 부터 320px width drawer 의 의 pos 의 animate (cycle 169.114)."""
+        super().showEvent(event)
+        from PyQt6.QtCore import QPropertyAnimation, QPoint, QEasingCurve
+        target_pos = self.pos()
+        start_pos = QPoint(target_pos.x() - self.width(), target_pos.y())
+        self.move(start_pos)
+        anim = QPropertyAnimation(self, b"pos", self)
+        anim.setDuration(220)
+        anim.setStartValue(start_pos)
+        anim.setEndValue(target_pos)
+        anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        anim.start()
+        self._slide_anim = anim  # GC 차단 의무 — Python ref 보존
+
     def _build_menu_entry(self, icon_name: str, label: str) -> QPushButton:
         """단일 menu row button — icon + label."""
         btn = QPushButton(f"  {label}")
