@@ -187,7 +187,14 @@ class ChatListPanel(QFrame):
         search_layout.setContentsMargins(12, 12, 12, 8)
 
         self._search_edit = QLineEdit()
-        self._search_edit.setPlaceholderText("🔍 친구 / 방 / 봇 검색")
+        # cycle 169.127 — sub-agent A drift D-8 — emoji prefix 제거 + addAction SVG (telegram align)
+        from PyQt6.QtWidgets import QLineEdit as _QLE  # type: ignore
+        self._search_edit.setPlaceholderText("검색")
+        try:
+            from app.ui._icons import load_icon as _li
+            self._search_edit.addAction(_li("search", size=16, color="#9ca3af"), _QLE.ActionPosition.LeadingPosition)  # type: ignore[attr-defined]
+        except Exception:
+            pass
         self._search_edit.setMinimumHeight(36)
         self._search_edit.textChanged.connect(self._on_search_changed)  # type: ignore[arg-type]
         search_layout.addWidget(self._search_edit)
