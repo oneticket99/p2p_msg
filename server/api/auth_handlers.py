@@ -114,7 +114,7 @@ async def handle_register(request: web.Request) -> web.Response:
     payload = await _read_json(request)
     pool = request.app["db_pool"]
     try:
-        user_id = await register_uc.register_user(
+        result = await register_uc.register_user(
             pool,
             email=str(payload.get("email", "")),
             username=str(payload.get("username", "")),
@@ -127,9 +127,20 @@ async def handle_register(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
-    await _audit(request, user_id=user_id, action=ActivityAction.SIGNUP)
+    # cycle 169.67 회수 — reclaim path 의 의 별개 audit + smtp_status response 포함
+    user_id = result["user_id"]
+    reclaimed = result.get("reclaimed", False)
+    smtp_status = result.get("smtp_status", "sent")
+    action = ActivityAction.RECLAIM_UNVERIFIED if reclaimed else ActivityAction.SIGNUP
+    await _audit(request, user_id=user_id, action=action)
     return web.json_response(
-        {"ok": True, "user_id": user_id, "next": "verify_otp"},
+        {
+            "ok": True,
+            "user_id": user_id,
+            "next": "verify_otp",
+            "reclaimed": reclaimed,
+            "smtp_status": smtp_status,
+        },
         status=201,
     )
 

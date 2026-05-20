@@ -35,6 +35,7 @@ class ActivityAction(str, Enum):
 
     SIGNUP = "signup"
     SIGNUP_OTP_VERIFY = "signup_otp_verify"
+    RECLAIM_UNVERIFIED = "reclaim_unverified"  # reviewer cycle 169.42 M-3 회수
     LOGIN = "login"
     LOGOUT = "logout"
     PASSWORD_RESET_REQUEST = "password_reset_request"

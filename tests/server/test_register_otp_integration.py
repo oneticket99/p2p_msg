@@ -73,13 +73,15 @@ class TestRegisterOtpCallArgs:
             patch(_P_INS_OTP, new=m_ins_otp),
             patch(_P_SEND, new=m_send),
         ):
-            user_id = await register_user(
+            result = await register_user(
                 None,
                 email="alice@example.com",
                 username="alice",
                 password="secret123",
             )
-        assert user_id == 42
+        assert result["user_id"] == 42
+        assert result["reclaimed"] is False
+        assert result["smtp_status"] == "sent"
         m_send.assert_called_once()
         # 한글 주석: 3번 arg = purpose
         assert m_send.call_args.args[2] == "signup"
@@ -147,13 +149,15 @@ class TestRegisterOtpSmtpFailure:
             patch(_P_INS_OTP, new=m_ins_otp),
             patch(_P_SEND, new=m_send),
         ):
-            user_id = await register_user(
+            result = await register_user(
                 None,
                 email="dave@example.com",
                 username="dave",
                 password="secret123",
             )
-        assert user_id == 11
+        assert result["user_id"] == 11
+        # cycle 169.67 회수 — SMTP graceful smtp_status='deferred' flag 검증
+        assert result["smtp_status"] == "deferred"
 
     @pytest.mark.asyncio
     async def test_smtp_failure_emits_warning_log(
@@ -300,13 +304,15 @@ class TestRegisterUnverifiedReclaim:
             patch(_P_INS_OTP, new=m_ins_otp),
             patch(_P_SEND, new=m_send),
         ):
-            user_id = await register_user(
+            result = await register_user(
                 None,
                 email="unverified@example.com",
                 username="newcreds",
                 password="newsecret123",
             )
-        assert user_id == 77
+        assert result["user_id"] == 77
+        # cycle 169.67 회수 — reclaim=True flag 검증
+        assert result["reclaimed"] is True
         m_atomic.assert_called_once()
         m_send.assert_called_once()
 
@@ -347,3 +353,83 @@ class TestRegisterUnverifiedReclaim:
                     password="secret123",
                 )
         m_send.assert_not_called()
+
+
+class TestRegisterEdgeCases:
+    """cycle 169.67 reviewer L-3 회수 — edge case 3 test."""
+
+    @pytest.mark.asyncio
+    async def test_case_insensitive_email_reclaim(self) -> None:
+        # 한글 주석: 대문자 email 입력 → lowercase normalize + reclaim chain 진입
+        m_atomic = AsyncMock(return_value=("reclaimed", 100))
+        m_ins_otp = AsyncMock(return_value=1)
+        m_send = AsyncMock()
+        with (
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
+            patch(_P_INS_OTP, new=m_ins_otp),
+            patch(_P_SEND, new=m_send),
+        ):
+            result = await register_user(
+                None,
+                email="ALICE@Example.COM",
+                username="alice",
+                password="password123",
+            )
+        # 한글 주석: lowercase normalize email 의 의 atomic call kwarg 검증
+        assert m_atomic.call_args.kwargs["email"] == "alice@example.com"
+        assert result["user_id"] == 100
+        assert result["reclaimed"] is True
+
+    @pytest.mark.asyncio
+    async def test_concurrent_register_race_handled_by_atomic(self) -> None:
+        # 한글 주석: concurrent register — atomic chain 안 1건 만 reclaimed PASS + 의 의 verified race
+        import asyncio
+        m_send = AsyncMock()
+        call_count = {"n": 0}
+
+        async def _atomic_mock(*args, **kwargs):
+            call_count["n"] += 1
+            # 첫 호출 = reclaimed / 두번째 호출 = verified (race detect)
+            if call_count["n"] == 1:
+                return ("reclaimed", 200)
+            return ("verified", None)
+
+        m_ins_otp = AsyncMock(return_value=1)
+        with (
+            patch(_P_RECLAIM_ATOMIC, new=_atomic_mock),
+            patch(_P_INS_OTP, new=m_ins_otp),
+            patch(_P_SEND, new=m_send),
+        ):
+            results = await asyncio.gather(
+                register_user(None, email="race@test.com", username="racer1", password="password123"),
+                register_user(None, email="race@test.com", username="racer2", password="password123"),
+                return_exceptions=True,
+            )
+        # 1 PASS + 1 EmailAlreadyRegistered
+        successes = [r for r in results if isinstance(r, dict)]
+        failures = [r for r in results if isinstance(r, EmailAlreadyRegistered)]
+        assert len(successes) == 1
+        assert len(failures) == 1
+
+    @pytest.mark.asyncio
+    async def test_otp_invalidate_pending_zero_rows_graceful(self) -> None:
+        # 한글 주석: reclaim 직전 pending OTP 부재 → atomic 의 invalidate UPDATE 가 0 row affect — graceful PASS
+        m_atomic = AsyncMock(return_value=("reclaimed", 300))
+        m_ins_otp = AsyncMock(return_value=1)
+        m_send = AsyncMock()
+        with (
+            patch(_P_RECLAIM_ATOMIC, new=m_atomic),
+            patch(_P_INS_OTP, new=m_ins_otp),
+            patch(_P_SEND, new=m_send),
+        ):
+            result = await register_user(
+                None,
+                email="fresh-reclaim@example.com",
+                username="freshie",
+                password="password123",
+            )
+        # 한글 주석: reclaim PASS + 신규 OTP insert 정합 (prior pending 부재 graceful)
+        assert result["user_id"] == 300
+        assert result["reclaimed"] is True
+        m_ins_otp.assert_called_once()
+        m_send.assert_called_once()

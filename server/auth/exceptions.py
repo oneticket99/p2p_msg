@@ -79,3 +79,13 @@ class EmailAlreadyVerified(AuthError):
 
     code = "EMAIL_ALREADY_VERIFIED"
     http_status = 409
+
+
+class EmailRaceVerified(EmailAlreadyRegistered):
+    """reclaim race — 동시 verify 완료 (reviewer cycle 169.42 M-1 회수).
+
+    EmailAlreadyRegistered subclass — frontend 분기 의무 시 별개 error_code 노출.
+    """
+
+    code = "EMAIL_RACE_VERIFIED"
+    http_status = 409

@@ -18,6 +18,7 @@ from app.core.security import (
 )
 from server.auth.exceptions import (
     EmailAlreadyRegistered,
+    EmailRaceVerified,
     UsernameAlreadyTaken,
 )
 from server.db.repositories import email_verification as otp_repo
@@ -64,13 +65,13 @@ async def register_user(
     email: str,
     username: str,
     password: str,
-) -> int:
+) -> dict:
     """회원가입 — 검증 + users insert + OTP 발급 + 이메일 발송.
 
-    Returns
-    -------
-    int
-        신규 user.id.
+    cycle 169.67 회수 — return value 의 dict 확장 (reviewer H-2 + M-3 회수):
+    - user_id
+    - reclaimed: bool (cycle 169.42 reclaim path 분기)
+    - smtp_status: "sent" / "deferred" (SMTP 실패 graceful 가시성)
 
     Raises
     ------
@@ -102,6 +103,7 @@ async def register_user(
     if status == "username_conflict":
         raise UsernameAlreadyTaken(f"username 중복 — {username}")
 
+    reclaimed = (status == "reclaimed")
     if status == "reclaimed":
         user_id = int(reclaimed_id) if reclaimed_id is not None else 0
         log.info("[register] reclaim user_id=%d email=%s username=%s", user_id, email_norm, username)
@@ -127,10 +129,12 @@ async def register_user(
         code_hash=hash_otp(otp_code),
         ttl_seconds=180,
     )
+    smtp_status = "sent"
     try:
         await send_otp_email(email_norm, otp_code, "signup")
     except Exception as exc:  # noqa: BLE001 - SMTP 오류는 비차단 (사용자 재요청 가능)
         log.warning("[register] SMTP 발송 실패 user_id=%d email=%s err=%r", user_id, email_norm, exc)
+        smtp_status = "deferred"
 
-    log.info("[register] user_id=%d email=%s username=%s OTP 발송 완료", user_id, email_norm, username)
-    return user_id
+    log.info("[register] user_id=%d email=%s username=%s OTP 발송=%s", user_id, email_norm, username, smtp_status)
+    return {"user_id": user_id, "reclaimed": reclaimed, "smtp_status": smtp_status}
