@@ -209,6 +209,8 @@ class ChatView(QScrollArea):
         # 동일 sender 연속 시 sender label/tail 생략 + spacing 단축 (2px)
         self._prev_sender: Optional[str] = None
         self._prev_is_self: Optional[bool] = None
+        # cycle 169.179 — day separator state (date 변경 detect)
+        self._prev_ts: Optional[datetime] = None
         # cycle 169.176 — per-chat scroll offset retain (chat 전환 시점 prev offset restore)
         # key = (kind, target_id) → int (scrollbar.value())
         self._scroll_offsets: dict[tuple[str, int], int] = {}
@@ -246,14 +248,21 @@ class ChatView(QScrollArea):
             ``True`` 인 경우 self 발신 — 버블이 우측 정렬되고 색상 분기.
         """
 
+        # cycle 169.179 — day separator inject (date 변경 시 label "오늘/어제/YYYY년 M월 D일")
+        if self._prev_ts is None or self._prev_ts.date() != ts.date():
+            self._insert_day_separator(ts)
+
         # cycle 169.144 — sender grouping detect (telegram align)
         # 직전 bubble = 동일 sender + 동일 is_self → grouped (sender label 생략)
+        # cycle 169.179 — day separator inject 직후 grouped reset
         is_grouped = (
             self._prev_sender == sender
             and self._prev_is_self == is_self
+            and (self._prev_ts is not None and self._prev_ts.date() == ts.date())
         )
         self._prev_sender = sender
         self._prev_is_self = is_self
+        self._prev_ts = ts
 
         bubble = MessageBubble(
             sender=sender,
@@ -321,6 +330,49 @@ class ChatView(QScrollArea):
         """deferred scroll bottom — layout 갱신 후 호출 (cycle 169.164)."""
         scrollbar = self.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
+
+    def _insert_day_separator(self, ts: datetime) -> None:
+        """cycle 169.179 — day separator label inject (telegram align).
+
+        오늘 = "오늘" / 어제 = "어제" / 그 외 = "YYYY년 M월 D일"
+        """
+        from PyQt6.QtWidgets import QLabel
+        today = datetime.now().date()
+        target = ts.date()
+        delta = (today - target).days
+        if delta == 0:
+            text = "오늘"
+        elif delta == 1:
+            text = "어제"
+        else:
+            text = f"{target.year}년 {target.month}월 {target.day}일"
+        label = QLabel(text, self._content)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setStyleSheet(
+            "QLabel {"
+            " background-color: rgba(15,23,42,0.7);"
+            " color: #9ca3af;"
+            " font-size: 11px;"
+            " padding: 4px 12px;"
+            " border-radius: 12px;"
+            "}"
+        )
+        label.setMaximumHeight(24)
+        # stretch 직전 insert (chat_view spacing chain 정합)
+        insert_at = max(0, self._messages_layout.count() - 1)
+        # 한글 주석 — separator wrap horizontal box (label center align)
+        from PyQt6.QtWidgets import QHBoxLayout, QWidget
+        wrap = QWidget(self._content)
+        wrap_layout = QHBoxLayout(wrap)
+        wrap_layout.setContentsMargins(0, 8, 0, 8)
+        wrap_layout.setSpacing(0)
+        wrap_layout.addStretch(1)
+        wrap_layout.addWidget(label)
+        wrap_layout.addStretch(1)
+        self._messages_layout.insertWidget(insert_at, wrap)
+        # day separator 안 sender grouping reset (다음 bubble = 신규 group)
+        self._prev_sender = None
+        self._prev_is_self = None
 
     def save_scroll_offset(self) -> None:
         """cycle 169.176 — 현 active chat 의 scroll offset retain (chat 전환 직전 호출)."""
