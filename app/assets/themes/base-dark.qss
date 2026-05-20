@@ -215,26 +215,54 @@ QLabel#chatHeaderStatus {
     font-size: 12px;
 }
 
-/* Scrollbar */
+/* Scrollbar — cycle 169.104 Figma 정합 tune (width 12 + radius 6 + 의 의 smooth) */
 QScrollBar:vertical {
-    background-color: #0F172A;
-    width: 8px;
-    margin: 0;
+    background-color: transparent;
+    width: 12px;
+    margin: 4px 2px 4px 0;
 }
 
 QScrollBar::handle:vertical {
     background-color: #374151;
-    border-radius: 4px;
-    min-height: 20px;
+    border-radius: 6px;
+    min-height: 32px;
 }
 
 QScrollBar::handle:vertical:hover {
     background-color: #4b5563;
 }
 
+QScrollBar::handle:vertical:pressed {
+    background-color: #5b6470;
+}
+
+QScrollBar:horizontal {
+    background-color: transparent;
+    height: 12px;
+    margin: 0 4px 2px 4px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #374151;
+    border-radius: 6px;
+    min-width: 32px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #4b5563;
+}
+
 QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical {
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
     height: 0;
+    width: 0;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: transparent;
 }
 
 /* StatusBar */
