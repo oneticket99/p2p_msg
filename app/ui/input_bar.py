@@ -46,12 +46,13 @@ class InputBar(QFrame):
         super().__init__(parent)
         self.setObjectName("inputBar")
         self.setAcceptDrops(True)
-        self.setMinimumHeight(64)
-        self.setMaximumHeight(140)
-        # cycle 169.110 — Figma 정합 (background bg #131C30 + padding 12 + spacing 8)
+        # cycle 169.137 — sub-agent A drift D-25/D-26 — bg transparent + min 52 max 200
+        self.setMinimumHeight(52)
+        self.setMaximumHeight(200)
+        # cycle 169.137 — telegram align bg transparent + border-top only
         self.setStyleSheet(
             "QFrame#inputBar {"
-            " background-color: #131C30;"
+            " background-color: transparent;"
             " border-top: 1px solid #1f2937;"
             "}"
         )
@@ -61,17 +62,8 @@ class InputBar(QFrame):
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
 
-        # 한글 주석 — cycle 169.52 회수 — SVG icon 변환 (첨부 + emoji)
-        self._attach_btn = QPushButton()
-        self._attach_btn.setProperty("variant", "ghost")
-        self._attach_btn.setFixedSize(36, 36)
-        self._attach_btn.setIcon(load_icon("attach", size=20, color="#9ca3af"))
-        self._attach_btn.setIconSize(QSize(20, 20))
-        self._attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._attach_btn.setToolTip(_tr("파일 첨부"))
-        self._attach_btn.clicked.connect(self._on_attach_clicked)  # type: ignore[arg-type]
-        layout.addWidget(self._attach_btn)
-
+        # cycle 169.137 — telegram align button order — emoji + text + attach + voice/send toggle
+        # F-21 drift 회수 — emoji left + attach right (telegram desktop align)
         self._emoji_btn = QPushButton()
         self._emoji_btn.setProperty("variant", "ghost")
         self._emoji_btn.setFixedSize(36, 36)
@@ -82,34 +74,66 @@ class InputBar(QFrame):
         self._emoji_btn.clicked.connect(self._on_emoji_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._emoji_btn)
 
-        # 한글 주석 — multi-line text edit (Shift+Enter newline + Enter send)
+        # text edit (Shift+Enter newline + Enter send) + cycle 169.137 pill radius 18
         self._text_edit = QTextEdit()
-        self._text_edit.setPlaceholderText(_tr("메시지 입력…"))
-        self._text_edit.setMinimumHeight(40)
-        self._text_edit.setMaximumHeight(120)
+        self._text_edit.setPlaceholderText(_tr("메시지"))
+        self._text_edit.setMinimumHeight(36)
+        self._text_edit.setMaximumHeight(160)
+        # cycle 169.137 — pill radius 18 inline (qss override)
+        self._text_edit.setStyleSheet(
+            "QTextEdit {"
+            " background-color: #1F2937;"
+            " border: 1px solid #2c3a52;"
+            " border-radius: 18px;"
+            " padding: 8px 14px;"
+            " color: #e5e7eb;"
+            "}"
+        )
         self._text_edit.installEventFilter(self)
+        self._text_edit.textChanged.connect(self._on_text_changed)  # type: ignore[arg-type]
         layout.addWidget(self._text_edit, stretch=1)
 
-        # 한글 주석 — cycle 169.55 회수 — voice mic SVG button
+        # cycle 169.137 — attach 우측 이동 (telegram align)
+        self._attach_btn = QPushButton()
+        self._attach_btn.setProperty("variant", "ghost")
+        self._attach_btn.setFixedSize(36, 36)
+        self._attach_btn.setIcon(load_icon("attach", size=20, color="#9ca3af"))
+        self._attach_btn.setIconSize(QSize(20, 20))
+        self._attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._attach_btn.setToolTip(_tr("파일 첨부"))
+        self._attach_btn.clicked.connect(self._on_attach_clicked)  # type: ignore[arg-type]
+        layout.addWidget(self._attach_btn)
+
+        # cycle 169.137 — voice + send mutually exclusive (telegram align — text 빈=mic, 있음=send)
         self._voice_btn = QPushButton()
         self._voice_btn.setProperty("variant", "ghost")
         self._voice_btn.setFixedSize(36, 36)
         self._voice_btn.setIcon(load_icon("mic", size=20, color="#9ca3af"))
         self._voice_btn.setIconSize(QSize(20, 20))
         self._voice_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._voice_btn.setToolTip(_tr("음성 메시지 (cycle 154+ entry)"))
+        self._voice_btn.setToolTip(_tr("음성 메시지"))
         self._voice_btn.clicked.connect(self._on_voice_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._voice_btn)
 
-        # 한글 주석 — cycle 169.55 회수 — 보내기 SVG button (primary)
+        # cycle 169.137 — send button circle 36x36 radius 18 (telegram align)
         self._send_btn = QPushButton()
         self._send_btn.setProperty("variant", "primary")
-        self._send_btn.setFixedSize(48, 36)
+        self._send_btn.setFixedSize(36, 36)
         self._send_btn.setIcon(load_icon("send", size=18, color="#ffffff"))
         self._send_btn.setIconSize(QSize(18, 18))
         self._send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._send_btn.setToolTip(_tr("보내기 (Enter)"))
+        self._send_btn.setStyleSheet(
+            "QPushButton {"
+            " background-color: #0066FF;"
+            " border-radius: 18px;"
+            " border: none;"
+            "}"
+            " QPushButton:hover { background-color: #1a75ff; }"
+            " QPushButton:disabled { background-color: #1F2937; }"
+        )
         self._send_btn.clicked.connect(self._on_send_clicked)  # type: ignore[arg-type]
+        self._send_btn.setVisible(False)
         layout.addWidget(self._send_btn)
 
         self._emoji_picker: Optional[QWidget] = None
@@ -160,7 +184,7 @@ class InputBar(QFrame):
         preview_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         preview_label.setWordWrap(True)
         v.addWidget(preview_label)
-        cancel_btn = QPushButton("✕ 취소")
+        cancel_btn = QPushButton("✕")
         cancel_btn.setProperty("variant", "ghost")
         cancel_btn.setFlat(True)
         cancel_btn.setMaximumWidth(80)
@@ -218,6 +242,15 @@ class InputBar(QFrame):
         """voice mic click — cycle 154+ entry."""
         self.voice_recorded.emit()
         log.info("input_bar voice mic click — cycle 154+ entry")
+
+    def _on_text_changed(self) -> None:
+        """cycle 169.137 — voice/send mutually exclusive toggle (telegram align).
+
+        text 빈 = mic only / text 있음 = send only.
+        """
+        has_text = bool(self._text_edit.toPlainText().strip())
+        self._voice_btn.setVisible(not has_text)
+        self._send_btn.setVisible(has_text)
 
     def _on_send_clicked(self) -> None:
         """보내기 button + Enter → message_sent emit + text clear."""
