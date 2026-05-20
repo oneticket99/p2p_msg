@@ -33,6 +33,7 @@ class ChatHeader(QFrame):
     search_clicked = pyqtSignal()
     call_clicked = pyqtSignal()
     menu_clicked = pyqtSignal()
+    sidebar_toggled = pyqtSignal()  # cycle 169.61 — telegram desktop sidebar toggle
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -72,10 +73,11 @@ class ChatHeader(QFrame):
 
         layout.addLayout(info_layout, stretch=1)
 
-        # 한글 주석 — cycle 169.52 회수 — 3 control SVG icon button
+        # 한글 주석 — cycle 169.61 회수 — 4 control SVG icon (search + phone + sidebar toggle + more)
         for icon_name, signal_attr in [
             ("search", "search_clicked"),
             ("phone", "call_clicked"),
+            ("menu", "sidebar_toggled"),
             ("more", "menu_clicked"),
         ]:
             btn = QPushButton()

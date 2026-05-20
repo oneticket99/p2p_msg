@@ -63,3 +63,56 @@ def fake_env_signal_host(monkeypatch: pytest.MonkeyPatch) -> str:
     fake_host = "10.0.0.42"
     monkeypatch.setenv("SIGNAL_SERVER_HOST", fake_host)
     return fake_host
+
+
+@pytest.fixture
+def fake_http_worker(monkeypatch: pytest.MonkeyPatch):
+    """HttpJsonWorker monkeypatch — cycle 169.49 worker 의 mock pattern (cycle 169.61 신설).
+
+    `HttpJsonWorker` 인스턴스 list capture + start() 호출 시 finished_with_result.emit 즉시 fire.
+    register/login/verify success 의 mock data fixture.
+    """
+    try:
+        from PyQt6.QtCore import QObject, pyqtSignal
+    except ImportError:
+        return None
+
+    instances: list = []
+    response_queue: list[dict] = []
+
+    class _FakeWorker(QObject):
+        finished_with_result = pyqtSignal(bool, str, str, dict)
+
+        def __init__(self, base_url, path, payload, parent=None):
+            super().__init__(parent)
+            self.base_url = base_url
+            self.path = path
+            self.payload = payload
+            instances.append(self)
+
+        def start(self) -> None:
+            # 한글 주석 — response queue 부재 시 default success
+            if response_queue:
+                resp = response_queue.pop(0)
+            else:
+                resp = {"ok": True, "user_id": 42, "token": "fake-tok", "next": "verify_otp"}
+            ok = bool(resp.get("ok", True))
+            err_code = str(resp.get("error", ""))
+            err_msg = str(resp.get("message", ""))
+            # 한글 주석 — sync emit (dialog close timing race 차단)
+            self.finished_with_result.emit(ok, err_code, err_msg, resp)
+
+    monkeypatch.setattr("app.ui._http_worker.HttpJsonWorker", _FakeWorker)
+    monkeypatch.setattr("app.ui.signup_dialog.HttpJsonWorker", _FakeWorker, raising=False)
+    monkeypatch.setattr("app.ui.login_dialog.HttpJsonWorker", _FakeWorker, raising=False)
+    monkeypatch.setattr("app.ui.otp_dialog.HttpJsonWorker", _FakeWorker, raising=False)
+
+    class _Handle:
+        @property
+        def instances(self):
+            return instances
+
+        def queue_response(self, resp: dict) -> None:
+            response_queue.append(resp)
+
+    return _Handle()

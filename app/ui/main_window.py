@@ -242,6 +242,7 @@ class MainWindow(QMainWindow):
         self._chat_header.search_clicked.connect(self._on_header_search)  # type: ignore[arg-type]
         self._chat_header.call_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
         self._chat_header.menu_clicked.connect(self._on_header_menu)  # type: ignore[arg-type]
+        self._chat_header.sidebar_toggled.connect(self._on_header_sidebar_toggle)  # type: ignore[arg-type]
         right_layout.addWidget(self._chat_header)
 
         self._stacked = QStackedWidget(right_panel)
@@ -1067,6 +1068,13 @@ class MainWindow(QMainWindow):
                 except Exception as exc:  # pragma: no cover - graceful
                     log.debug("block chain 실패 — %r", exc)
             modal.accept()
+
+    @pyqtSlot()
+    def _on_header_sidebar_toggle(self) -> None:
+        """chat header sidebar toggle button — room_list visibility toggle (cycle 169.61)."""
+        visible = self._room_list.isVisible()
+        self._room_list.setVisible(not visible)
+        log.info("[main_window] sidebar toggle — visible=%s", not visible)
 
     @pyqtSlot(str, str)
     def _on_signaling_offer(self, from_peer: str, sdp: str) -> None:
