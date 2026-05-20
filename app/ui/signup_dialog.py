@@ -52,7 +52,8 @@ class SignupDialog(QDialog):
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
+        self.setWindowTitle(f"TooTalk · {_tr('회원가입')
+        self.setModal(True)}")
         self.setMinimumWidth(440)
         self.setMinimumHeight(560)
 

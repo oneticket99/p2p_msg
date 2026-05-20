@@ -92,7 +92,8 @@ class OTPDialog(QDialog):
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')}")
+        self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')
+        self.setModal(True)}")
         self.setMinimumWidth(420)
 
         outer = QVBoxLayout(self)

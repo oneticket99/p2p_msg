@@ -230,12 +230,8 @@ else:
             self._friends = list(friends)
             self._viewer_id = viewer_id
 
+            # cycle 169.100 회수 — placeholder text 부재 (사용자 directive — 플레이스홀더 없이 전부 구현)
             if not self._friends:
-                placeholder = QListWidgetItem("친구 부재 — 검색 + 추가로 시작")
-                placeholder.setFlags(
-                    placeholder.flags() & ~Qt.ItemFlag.ItemIsSelectable
-                )
-                self.addItem(placeholder)
                 return
 
             for friend in self._friends:

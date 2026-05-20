@@ -200,10 +200,9 @@ class ChatListPanel(QFrame):
         self._list.itemClicked.connect(self._on_item_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._list, stretch=1)
 
-        # 한글 주석 — 빈 상태 placeholder text
-        self._empty_label = QLabel("참여 중인 chat 부재")
-        self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._empty_label.setStyleSheet("color: #6b7280; font-size: 13px; padding: 40px 12px;")
+        # cycle 169.100 회수 — placeholder text 부재 (사용자 directive — 플레이스홀더 없이 전부 구현)
+        self._empty_label = QLabel("")
+        self._empty_label.setVisible(False)
         layout.addWidget(self._empty_label)
 
         self._entries: list[ChatListEntry] = []

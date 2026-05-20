@@ -62,7 +62,7 @@ class ChatHeader(QFrame):
         info_layout.setContentsMargins(0, 0, 0, 0)
         info_layout.setSpacing(2)
 
-        self._name_label = QLabel("chat 선택 부재")
+        self._name_label = QLabel("")
         self._name_label.setObjectName("chatHeaderName")
         self._name_label.setStyleSheet("color: #e5e7eb; font-size: 15px; font-weight: 600;")
         info_layout.addWidget(self._name_label)
@@ -108,8 +108,8 @@ class ChatHeader(QFrame):
         self._status_label.setText(status)
 
     def clear_chat(self) -> None:
-        """chat 선택 해제 — placeholder text."""
-        self._name_label.setText("chat 선택 부재")
+        """chat 선택 해제 — placeholder text 부재 (cycle 169.100 회수 — 사용자 directive)."""
+        self._name_label.setText("")
         self._status_label.setText("")
 
     def set_pinned_message(self, title: str, preview: str) -> None:

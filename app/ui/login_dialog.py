@@ -48,7 +48,8 @@ class LoginDialog(QDialog):
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('로그인')}")
+        self.setWindowTitle(f"TooTalk · {_tr('로그인')
+        self.setModal(True)}")
         self.setMinimumWidth(420)
         self.setMinimumHeight(480)
 

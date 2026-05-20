@@ -105,6 +105,7 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
     def _setup_ui(self) -> None:
         # 한글 주석: 새 버전 안내 label + release notes + 사용자 GO 버튼 row
         self.setWindowTitle("TooTalk 업데이트")
+        self.setModal(True)
         layout = QVBoxLayout()
         latest_version = self.latest_info.get("version", "(unknown)")
         layout.addWidget(QLabel(f"새 버전 {latest_version} 사용 가능"))

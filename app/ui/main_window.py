@@ -348,18 +348,26 @@ class MainWindow(QMainWindow):
 
         # 6) Splitter 3 column 위젯 추가 + 비율 설정
         # 한글 주석 — index 0 rail (fixed) + 1 room_list (resize) + 2 right_panel (flex)
+        # cycle 169.100 회수 — telegram desktop align column order
+        # leftmost = sidebar_rail (folder + icon + label) + middle = chat_list_panel + right = chat area
+        # room_list = hidden sibling (group chat 진입 chain backward compat)
         splitter.addWidget(self._sidebar_rail)
-        splitter.addWidget(self._room_list)
+        splitter.addWidget(self._chat_list_panel)
         splitter.addWidget(right_panel)
-        splitter.setStretchFactor(0, 0)  # rail fixed
-        splitter.setStretchFactor(1, 0)  # room_list resizable
+        splitter.setStretchFactor(0, 0)  # rail fixed narrow
+        splitter.setStretchFactor(1, 0)  # chat list panel resizable
         splitter.setStretchFactor(2, 1)  # right_panel flex
+        # room_list = parent=self (별도 — hidden + signal chain retain)
+        self._room_list.setParent(self)
+        self._room_list.setVisible(False)
 
         self.setCentralWidget(splitter)
 
         # 7) StatusBar
         self._status_bar = StatusBar(parent=self)
         self.setStatusBar(self._status_bar)
+        # cycle 169.100 회수 — production status bar hide (telegram align 정합)
+        self._status_bar.setVisible(False)
         self._status_bar.set_connection_state("DISCONNECTED")
         self._status_bar.set_peer_count(0)
 
