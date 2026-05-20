@@ -1200,6 +1200,16 @@ class MainWindow(QMainWindow):
         """
         key = (kind, target_id)
         self._dm_history.setdefault(key, []).append((sender, text, ts, is_self))
+        # cycle 169.174 — chat_list entry preview + ts bump (sort + render)
+        try:
+            self._chat_list_panel.bump_entry(
+                kind=kind, target_id=target_id,
+                last_message=text, last_ts=ts,
+                last_sender=sender if not is_self else "나",
+                is_self=is_self,
+            )
+        except Exception:  # pragma: no cover - graceful
+            pass
         # active chat 이면 chat_view render
         if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
             try:

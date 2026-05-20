@@ -285,6 +285,35 @@ class ChatListPanel(QFrame):
         if kind and target_id is not None:
             self.chat_selected.emit(kind, int(target_id))
 
+    def bump_entry(
+        self,
+        kind: str,
+        target_id: int,
+        last_message: str,
+        last_ts: "datetime",
+        last_sender: Optional[str] = None,
+        is_self: bool = False,
+    ) -> None:
+        """cycle 169.174 — send/receive 시점 entry preview + ts + sort 재 정렬.
+
+        - last_message + last_ts update
+        - is_self=False 시 unread_count++ (active chat 부재 시점 — caller resolve 의무)
+        - resort + render
+        """
+        for entry in self._entries:
+            if entry.kind == kind and entry.target_id == target_id:
+                entry.last_message = last_message
+                entry.last_ts = last_ts
+                if last_sender is not None:
+                    entry.last_sender = last_sender
+                # sort 재 정렬 (pinned + ts desc)
+                self._entries = sorted(
+                    self._entries,
+                    key=lambda e: (not e.is_pinned, -(e.last_ts.timestamp() if e.last_ts else 0)),
+                )
+                self._render()
+                return
+
     def set_current_chat(self, kind: str, target_id: int) -> None:
         """cycle 169.167 — programmatic 진입 path 의 list highlight sync (telegram align image #12).
 
