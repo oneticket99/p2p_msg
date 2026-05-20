@@ -47,8 +47,8 @@ class WelcomeDialog(QDialog):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("TooTalk")
         self.setModal(True)
+        self.setWindowTitle("TooTalk")
         self.setMinimumSize(560, 720)
 
         outer = QVBoxLayout(self)

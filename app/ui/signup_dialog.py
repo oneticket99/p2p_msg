@@ -46,14 +46,14 @@ class SignupDialog(QDialog):
 
     def __init__(self, auth_client: AuthClient, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.setModal(True)
         self._client = auth_client
         self._email: Optional[str] = None
         # 한글 주석 — cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('회원가입')
-        self.setModal(True)}")
+        self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
         self.setMinimumWidth(440)
         self.setMinimumHeight(560)
 

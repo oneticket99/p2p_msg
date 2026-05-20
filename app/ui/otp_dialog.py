@@ -47,6 +47,7 @@ class OtpBox(QLineEdit):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.setModal(True)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setFixedSize(48, 56)
@@ -92,8 +93,7 @@ class OTPDialog(QDialog):
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')
-        self.setModal(True)}")
+        self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')}")
         self.setMinimumWidth(420)
 
         outer = QVBoxLayout(self)

@@ -29,11 +29,11 @@ class PasswordResetDialog(QDialog):
 
     def __init__(self, auth_client: AuthClient, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.setModal(True)
         self._client = auth_client
         self._email: str = ""
 
         self.setWindowTitle("TooTalk 비밀번호 재설정")
-        self.setModal(True)
         self.setMinimumWidth(360)
 
         self._stack = QStackedWidget(self)

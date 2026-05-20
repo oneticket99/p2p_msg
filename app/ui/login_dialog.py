@@ -44,12 +44,12 @@ class LoginDialog(QDialog):
 
     def __init__(self, auth_client: AuthClient, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.setModal(True)
         self._client = auth_client
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
 
-        self.setWindowTitle(f"TooTalk · {_tr('로그인')
-        self.setModal(True)}")
+        self.setWindowTitle(f"TooTalk · {_tr('로그인')}")
         self.setMinimumWidth(420)
         self.setMinimumHeight(480)
 
