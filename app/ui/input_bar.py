@@ -66,38 +66,39 @@ class InputBar(QFrame):
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
 
-        # pill composite frame — emoji + text_edit + attach 단일 rounded container
+        # cycle 169.150 — telegram image #3 정합 (attach left + emoji/voice right + seamless pill)
+        # pill composite frame — bg seamless (border 부재) + radius retain
         self._pill = QFrame(self)
         self._pill.setObjectName("inputBarPill")
         self._pill.setStyleSheet(
             "QFrame#inputBarPill {"
             " background-color: #1F2937;"
-            " border: 1px solid #2c3a52;"
-            " border-radius: 20px;"
+            " border: none;"
+            " border-radius: 22px;"
             "}"
         )
         pill_layout = QHBoxLayout(self._pill)
-        pill_layout.setContentsMargins(6, 0, 6, 0)
+        pill_layout.setContentsMargins(4, 0, 4, 0)
         pill_layout.setSpacing(2)
         pill_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        # emoji 의 의 pill 안 좌측 inline
-        self._emoji_btn = QPushButton(self._pill)
-        self._emoji_btn.setFixedSize(32, 32)
-        self._emoji_btn.setIcon(load_icon("emoji", size=20, color="#9ca3af"))
-        self._emoji_btn.setIconSize(QSize(20, 20))
-        self._emoji_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._emoji_btn.setToolTip(_tr("emoji 선택"))
-        self._emoji_btn.setStyleSheet(
-            "QPushButton { background-color: transparent; border: none; border-radius: 16px; }"
+        # attach pill 좌측 inline (telegram align)
+        self._attach_btn = QPushButton(self._pill)
+        self._attach_btn.setFixedSize(36, 36)
+        self._attach_btn.setIcon(load_icon("attach", size=22, color="#9ca3af"))
+        self._attach_btn.setIconSize(QSize(22, 22))
+        self._attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._attach_btn.setToolTip(_tr("파일 첨부"))
+        self._attach_btn.setStyleSheet(
+            "QPushButton { background-color: transparent; border: none; border-radius: 18px; }"
             " QPushButton:hover { background-color: rgba(255,255,255,0.06); }"
         )
-        self._emoji_btn.clicked.connect(self._on_emoji_clicked)  # type: ignore[arg-type]
-        pill_layout.addWidget(self._emoji_btn)
+        self._attach_btn.clicked.connect(self._on_attach_clicked)  # type: ignore[arg-type]
+        pill_layout.addWidget(self._attach_btn)
 
-        # text edit (pill 안 transparent + border 부재)
+        # text edit (pill transparent + frame 부재)
         self._text_edit = QTextEdit(self._pill)
-        self._text_edit.setPlaceholderText(_tr("메시지"))
+        self._text_edit.setPlaceholderText(_tr("메시지 작성..."))
         self._text_edit.setFixedHeight(40)
         self._text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -115,23 +116,23 @@ class InputBar(QFrame):
         self._text_edit.document().contentsChanged.connect(self._adjust_text_height)  # type: ignore[arg-type]
         pill_layout.addWidget(self._text_edit, stretch=1)
 
-        # attach 의 의 pill 안 우측 inline
-        self._attach_btn = QPushButton(self._pill)
-        self._attach_btn.setFixedSize(32, 32)
-        self._attach_btn.setIcon(load_icon("attach", size=20, color="#9ca3af"))
-        self._attach_btn.setIconSize(QSize(20, 20))
-        self._attach_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._attach_btn.setToolTip(_tr("파일 첨부"))
-        self._attach_btn.setStyleSheet(
-            "QPushButton { background-color: transparent; border: none; border-radius: 16px; }"
+        # emoji pill 우측 inline (telegram align)
+        self._emoji_btn = QPushButton(self._pill)
+        self._emoji_btn.setFixedSize(36, 36)
+        self._emoji_btn.setIcon(load_icon("emoji", size=22, color="#9ca3af"))
+        self._emoji_btn.setIconSize(QSize(22, 22))
+        self._emoji_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._emoji_btn.setToolTip(_tr("emoji 선택"))
+        self._emoji_btn.setStyleSheet(
+            "QPushButton { background-color: transparent; border: none; border-radius: 18px; }"
             " QPushButton:hover { background-color: rgba(255,255,255,0.06); }"
         )
-        self._attach_btn.clicked.connect(self._on_attach_clicked)  # type: ignore[arg-type]
-        pill_layout.addWidget(self._attach_btn)
+        self._emoji_btn.clicked.connect(self._on_emoji_clicked)  # type: ignore[arg-type]
+        pill_layout.addWidget(self._emoji_btn)
 
         layout.addWidget(self._pill, stretch=1)
 
-        # 외부 우측 circle button — voice (default) + send (text 있음 시 toggle)
+        # cycle 169.150 — voice 외부 transparent inline (telegram align — circle outline 폐기)
         self._voice_btn = QPushButton(self)
         self._voice_btn.setFixedSize(40, 40)
         self._voice_btn.setIcon(load_icon("mic", size=22, color="#9ca3af"))
@@ -139,8 +140,8 @@ class InputBar(QFrame):
         self._voice_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._voice_btn.setToolTip(_tr("음성 메시지"))
         self._voice_btn.setStyleSheet(
-            "QPushButton { background-color: #1F2937; border: 1px solid #2c3a52; border-radius: 20px; }"
-            " QPushButton:hover { background-color: #2c3a52; }"
+            "QPushButton { background-color: transparent; border: none; border-radius: 20px; }"
+            " QPushButton:hover { background-color: rgba(255,255,255,0.06); }"
         )
         self._voice_btn.clicked.connect(self._on_voice_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._voice_btn)
