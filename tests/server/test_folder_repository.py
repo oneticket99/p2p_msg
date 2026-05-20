@@ -98,7 +98,35 @@ class TestFoldersRepository:
         # folders INSERT 1회 + folder_chats INSERT 3회
         assert cur.execute.await_count == 4
 
-    @pytest.mark.skip(reason="cycle 169.80 — mock cursor reuse + side_effect chain 회수 별도 cycle (실 DB integration 의무)")
     @pytest.mark.asyncio
     async def test_insert_folder_with_chats_rollback_on_exception(self) -> None:
-        pass
+        # 한글 주석 — 첫 execute call 시점 raise → except Exception 분기 → rollback + raise propagate 검증
+        cur = AsyncMock()
+        cur.execute = AsyncMock(side_effect=RuntimeError("DB fail"))
+        cur.lastrowid = 100
+
+        cursor_cm = AsyncMock()
+        cursor_cm.__aenter__ = AsyncMock(return_value=cur)
+        cursor_cm.__aexit__ = AsyncMock(return_value=None)
+
+        conn = MagicMock()
+        conn.cursor = MagicMock(return_value=cursor_cm)
+        conn.commit = AsyncMock()
+        conn.rollback = AsyncMock()
+        conn.begin = AsyncMock()
+
+        pool_cm = AsyncMock()
+        pool_cm.__aenter__ = AsyncMock(return_value=conn)
+        pool_cm.__aexit__ = AsyncMock(return_value=None)
+
+        pool = MagicMock()
+        pool.acquire = MagicMock(return_value=pool_cm)
+
+        included = [{"kind": "room", "target_id": 1}]
+        with pytest.raises(RuntimeError):
+            await insert_folder_with_chats(
+                pool, folder_id="rollback", owner_id=1, name="Rollback",
+                included_chats=included,
+            )
+        conn.rollback.assert_awaited_once()
+        conn.commit.assert_not_awaited()
