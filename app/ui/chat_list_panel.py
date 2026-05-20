@@ -207,8 +207,10 @@ class ChatListPanel(QFrame):
             "}"
         )
         search_layout = QVBoxLayout(search_frame)
-        search_layout.setContentsMargins(12, 12, 12, 12)
+        # cycle 169.183 — vertical center align (image #17/18 critique)
+        search_layout.setContentsMargins(12, 0, 12, 0)
         search_layout.setSpacing(0)
+        search_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self._search_edit = QLineEdit()
         # cycle 169.127 — sub-agent A drift D-8 — emoji prefix 제거 + addAction SVG (telegram align)

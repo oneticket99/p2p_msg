@@ -44,7 +44,8 @@ class ChatHeader(QFrame):
         self.setFixedHeight(60)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 8, 16, 8)
+        # cycle 169.183 — vertical center align (image #17/18 critique)
+        layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
@@ -53,10 +54,11 @@ class ChatHeader(QFrame):
         self._avatar_label = QLabel()
         self._avatar_label.setVisible(False)
 
-        # 한글 주석 — name + status vbox
+        # 한글 주석 — name + status vbox (vertical center align)
         info_layout = QVBoxLayout()
         info_layout.setContentsMargins(0, 0, 0, 0)
         info_layout.setSpacing(2)
+        info_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self._name_label = QLabel("")
         self._name_label.setObjectName("chatHeaderName")

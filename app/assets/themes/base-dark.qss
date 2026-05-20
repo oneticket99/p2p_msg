@@ -280,12 +280,12 @@ QListWidget#chatList::item:hover:!selected {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
-/* Chat header — cycle 169.155 — telegram align 3 zone subtle darker top */
+/* Chat header — cycle 169.183 — vertical center align (padding 0 override) */
 QFrame#chatHeader {
     background-color: #0A1019;
     border-bottom: 1px solid #1f2937;
     min-height: 60px;
-    padding: 10px 16px;
+    padding: 0;
 }
 
 QLabel#chatHeaderName {
