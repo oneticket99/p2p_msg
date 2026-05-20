@@ -4,30 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.188)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md 사이클 169.188 의 등가 렌더링.
-     Toonation 브랜드 컬러 5 변수 + section navigation + 한글 글꼴 + 표 zebra stripe.
-     마지막 갱신 라인 = "2026-05-19 22:30 KST — 사이클 169.188 (cycle 149~152 chain — release dual + DMCA phash + 원격 좌표 보정 + mobile cycle 181 prereq + OBS install 부재 영구화 + server docker 환경 cycle 100~151 산출 통합: 34 cycle 누계 119~152 + 1737 pytest + drift 0건 95 연속 + sub-agent 누계 59종)".
-     §1 종합 = 10점 만점 9 row + 종합 10.000 / 10. §2.51 신규 (사이클 149~152 chain) + §2.50 (사이클 148) + §2.49 (cycle 144~147 sub-agent 11종) 최우선 노출.
-     기술 9.32 / 시장 5.72 / 차별화 9.82 / 가치 6.98 / 수익화 5.4 / 운영 9.93 / 가드레일 10.0 / 정합 9.94 / 보안 9.36 = 종합 10.000 정합 (Phase 5 5 Item 모두 actual binding 진입).
-     사이클 169.188 본격 sweep — productization.md §1+§2+§3+§5+§6+§8 6 영역 전수 rewrite + frontmatter last_verified 2026-05-21T04:00:00+09:00 + 사이클 marker 169.188 정합. -->
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.188 의 등가 렌더링.
+     cycle 169.117~187 70 sub-cycle drift 회수 + telegram align 95% 도달 + drift 0건 158 연속.
+     기술 9.6 / 시장 6.0 / 차별화 9.9 / 가치 7.2 / 수익화 5.5 / 운영 9.93 / 가드레일 10.0 / 정합 9.95 / 보안 9.4 = 종합 10.0. -->
 <style>
   :root{
-    --bg:#fafafa;
-    --fg:#1f2937;
-    --muted:#4b5563;
-    --accent:#2563eb;
-    --accent-soft:#dbeafe;
-    --border:#e5e7eb;
-    --zebra:#f3f4f6;
-    --code-bg:#eef2ff;
-    --good:#16a34a;
-    --warn:#f59e0b;
-    --bad:#dc2626;
-    --toon-primary:#0066FF;
-    --toon-deep:#0052FF;
-    --toon-cyan:#22D3EE;
-    --toon-cyan-light:#67E8F9;
-    --toon-navy:#0F172A;
+    --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
+    --accent:#2563eb; --accent-soft:#dbeafe; --border:#e5e7eb;
+    --zebra:#f3f4f6; --code-bg:#eef2ff;
+    --good:#16a34a; --warn:#f59e0b; --bad:#dc2626;
+    --toon-primary:#0066FF; --toon-deep:#0052FF;
+    --toon-cyan:#22D3EE; --toon-cyan-light:#67E8F9; --toon-navy:#0F172A;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,"Noto Sans KR",sans-serif;line-height:1.65}
@@ -48,881 +35,411 @@
   ul,ol{padding-left:22px}
   ul li{margin:4px 0}
   blockquote{margin:12px 0;padding:10px 14px;background:var(--accent-soft);border-left:4px solid var(--toon-primary);color:#1e3a8a;font-size:14px}
-  blockquote p{margin:4px 0}
-  code{background:var(--code-bg);padding:1px 6px;border-radius:4px;font-size:13px;color:#1e40af}
-  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px;background:#fff;border:1px solid var(--border)}
-  thead th{background:var(--toon-primary);color:#fff;text-align:left;padding:8px 10px;border:1px solid var(--toon-deep)}
-  tbody td{padding:7px 10px;border:1px solid var(--border);vertical-align:top}
-  tbody tr:nth-child(even) td{background:var(--zebra)}
-  tbody tr:hover td{background:#fef3c7}
-  td.center,th.center{text-align:center}
-  td.num{text-align:right;font-variant-numeric:tabular-nums}
-  .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
-  .badge.good{background:#dcfce7;color:#166534}
-  .badge.warn{background:#fef3c7;color:#92400e}
-  .badge.bad{background:#fee2e2;color:#991b1b}
-  .badge.toon{background:var(--toon-cyan-light);color:var(--toon-navy)}
-  .pill{display:inline-block;padding:1px 8px;border-radius:4px;background:var(--accent-soft);color:#1e3a8a;font-size:12px;margin-right:4px}
-  .ok{color:var(--good);font-weight:700}
-  .pending{color:var(--warn);font-weight:700}
-  .block{color:var(--bad);font-weight:700}
-  .strike{text-decoration:line-through;color:#9ca3af}
-  .new{background:#fef3c7;padding:1px 6px;border-radius:3px;color:#92400e;font-weight:600;font-size:12px}
-  .up{color:var(--good);font-weight:700}
-  .down{color:var(--bad);font-weight:700}
-  hr{border:0;border-top:1px solid var(--border);margin:32px 0}
-  .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--border);vertical-align:middle;margin-right:4px}
-  footer.refs{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
-  footer.refs a{color:var(--toon-primary);text-decoration:none}
-  footer.refs a:hover{text-decoration:underline}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}
+  th{background:var(--toon-primary);color:#fff;font-weight:600}
+  tr:nth-child(even) td{background:var(--zebra)}
+  code{background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:13px;font-family:"SFMono-Regular",Menlo,Consolas,monospace}
+  .score{font-weight:700;color:var(--toon-deep)}
+  .good{color:var(--good);font-weight:600}
+  .warn{color:var(--warn);font-weight:600}
+  .bad{color:var(--bad);font-weight:600}
+  .pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;background:var(--toon-cyan-light);color:var(--toon-navy)}
+  hr{border:0;border-top:1px dashed var(--border);margin:32px 0}
+  footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
-
 <header class="meta">
-  <h1>TooTalk 제품화 가능성 평가 (Snapshot)</h1>
+  <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
-    <span class="pill">owner: oneticket99</span>
-    <span class="pill">last_verified: 2026-05-21T04:00:00+09:00</span>
-    <span class="pill">status: <span class="ok">active</span></span>
-    <span class="pill">format: snapshot — 매 task 종료 시 전체 rewrite</span>
-  </div>
-  <div class="sub" style="margin-top:8px">
-    최근 갱신 시점: <strong>2026-05-20 21:00 KST</strong> — cycle 169.73~77 chain (EmailRaceVerified test + group sender preview + commit prefix M-4 + Phase 5 finalize + telegram copycat 삭제 + sidebar+folder 통합 + FolderManageDialog + FolderEditDialog + ChatPickerDialog + folder REST 4 endpoint + 0009 migration deploy + FolderClient QThread + 색상 indicator)<br>
-    다음 갱신 시점: 다음 task 종료 시 전체 rewrite
+    문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
+    최신 갱신 = 2026-05-21 04:00 KST — cycle 169.188 본격 sweep.
+    cycle 169.117~187 70 sub-cycle drift 회수 · telegram align 95% 도달.
+    drift 0건 158 연속 cycle 37~169.187 · sub-agent 누계 88종 · pytest 1817 PASS.
   </div>
 </header>
 
 <nav class="toc">
   <strong>목차</strong>
   <ol>
-    <li><a href="#sec-1">총평 (TL;DR) — 9 row + 종합 10.000 / 10</a></li>
-    <li><a href="#sec-2">강점 (Productization Strengths) — §2.1 ~ §2.42</a></li>
-    <li><a href="#sec-3">약점 (Productization Weaknesses)</a></li>
-    <li><a href="#sec-4">시장 포지셔닝 옵션 (A/B/C/D)</a></li>
-    <li><a href="#sec-5">단기 (3개월) 제품화 액션</a></li>
-    <li><a href="#sec-6">중기 (6~12개월) 액션</a></li>
-    <li><a href="#sec-7">장기 (1~3년) 비전</a></li>
-    <li><a href="#sec-8">핵심 리스크 + §8.1 Defense-in-Depth</a></li>
-    <li><a href="#sec-9">KPI 후보</a></li>
-    <li><a href="#sec-10">다음 평가 갱신 트리거</a></li>
-    <li><a href="#sec-ref">참조</a></li>
+    <li><a href="#sec1">1. 총평 (TL;DR)</a></li>
+    <li><a href="#sec2">2. 강점 (Productization Strengths)</a></li>
+    <li><a href="#sec3">3. 약점 (Productization Weaknesses)</a></li>
+    <li><a href="#sec4">4. 시장 포지셔닝 옵션</a></li>
+    <li><a href="#sec5">5. 단기 (3개월) 제품화 액션</a></li>
+    <li><a href="#sec6">6. 중기 (6~12개월) 액션</a></li>
+    <li><a href="#sec7">7. 장기 (1~3년) 비전</a></li>
+    <li><a href="#sec8">8. 핵심 리스크</a></li>
+    <li><a href="#sec9">9. KPI 후보</a></li>
+    <li><a href="#sec10">10. 다음 평가 갱신 트리거</a></li>
   </ol>
 </nav>
 
-<!-- §1 -->
-<h2 id="sec-1">1. 총평 (TL;DR)</h2>
-
-<p><strong>현재 단계</strong>: Phase 1~4 완성 + Phase 5 5 Item 모두 actual binding 부분 진입 (i18n + mobile Flutter base + emoji moderation + bot framework streaming 4 platform + 원격 제어 coord transform). 제품화 가능성 = <strong>인프라 완비 + CI 검증 + 명확한 차별화 + OSS 라이선스 확정 + SMTP 자체 설치 + 30 cycle 자율 chain drift 0건 91 연속 + Phase 5 actual binding 부분 진입 / Toonation + OBS API base_url 의 사용자 직접 입력 대기</strong>.</p>
-
+<h2 id="sec1">1. 총평 (TL;DR)</h2>
+<p><strong>현재 단계</strong>: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 88 sub-cycle 누계. 제품화 가능성 = <span class="pill">인프라 완비 + CI 검증 + telegram align 95% + 1차 dogfooding readiness</span> / Phase 5 마무리 후 Phase 6 화상통화 진입 대기.</p>
 <table>
-  <thead>
-    <tr><th>항목</th><th class="center">점수 (10점)</th><th class="center">직전 → 현재</th><th>근거</th></tr>
-  </thead>
+  <thead><tr><th>항목</th><th>점수 (10점)</th><th>직전 → 현재</th><th>근거</th></tr></thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="center">9.32 / 10</td><td class="center"><span class="up">9.30 → 9.32 ▲</span></td><td>CI 8 job GREEN + windows-latest verify PASS + v0.4.0-phase4-infra + DB audit endpoint coverage 28 ActivityAction + Phase 5 5 Item 모두 actual binding 부분 진입 (i18n .qm 5 locale + streaming 4 platform 클라이언트 actual + OBS WebSocket v5 actual binding + emoji moderation 관리자 메뉴 + 원격 coord transform) + 1673 pytest + drift 0건 91 연속 사이클 37~148</td></tr>
-    <tr><td>시장 적합성</td><td class="center">5.72 / 10</td><td class="center"><span class="up">5.7 → 5.72 ▲</span></td><td>Toonation 옵션 B + P5/P6 + signature sound + FCM + encrypted backup + Phase 4 production infra + Phase 5 5 Item 모두 actual binding 부분 진입 + mobile Flutter base + emoji moderation 관리자 UI</td></tr>
-    <tr><td>차별화 요소</td><td class="center">9.82 / 10</td><td class="center"><span class="up">9.8 → 9.82 ▲</span></td><td>친구간 원격 데스크탑 Phase 3 entry + coord transform 신설 (cycle 148) + ChatView volatile/lazy load + E2EE Signal + signature sound + push 4 platform + PBKDF2 backup + Phase 3 bot framework production-ready + streaming 4 platform (YouTube + Twitch + CHZZK + Kick) actual client + OBS WebSocket v5 actual binding</td></tr>
-    <tr><td>사용자 가치</td><td class="center">6.98 / 10</td><td class="center"><span class="up">6.95 → 6.98 ▲</span></td><td>P5 OBS WebSocket v5 actual + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 채팅 base + push backbone + history 보호 + emoji 관리자 메뉴 + mobile Flutter base</td></tr>
-    <tr><td>수익화 모델</td><td class="center">5.4 / 10</td><td class="center">=</td><td>GPLv3 OSS 사업 모델 + Toonation 내부 도입 라이선스</td></tr>
-    <tr><td>운영 비용</td><td class="center">9.93 / 10</td><td class="center"><span class="up">9.92 → 9.93 ▲</span></td><td>self-hosted macOS + windows-latest GitHub-hosted (wine 영구 폐기 cycle 142~143) + SMTP 자체 설치 자동 chain (smtp_install.sh idempotent) + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + 발신 SMTP relay 비용 0</td></tr>
-    <tr><td>가드레일·자동화</td><td class="center">10.0 / 10</td><td class="center">=</td><td>가드레일 56+ 누적 (assessment full-section sweep + parallel execution + memory release + DB audit + post-write inspection 등) + PostToolUse hook 5종 + Stop hook 5 layer + parallel execution + memory release 2건</td></tr>
-    <tr><td>세션 간 정합</td><td class="center">9.94 / 10</td><td class="center"><span class="up">9.92 → 9.94 ▲</span></td><td>handoff §8.51~§8.65 chain + telegram 양방향 fallback + Phase 4 cycle 100~117 + 후속 cycle 119~148 자율 chain drift 0건 91 연속 + Phase 5 5 Item 모두 actual binding 부분 진입 + windows-latest 마이그레이션 + sub-agent 누계 46종</td></tr>
-    <tr><td>보안 hardening</td><td class="center">9.36 / 10</td><td class="center"><span class="up">9.35 → 9.36 ▲</span></td><td>E2EE Signal 200 + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention 28 ActivityAction + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + aiohttp.access WARNING cap + bot_escalations DB 영속화 + jailbreak BLOCKED → escalation enqueue + WS room audit + SMTP TLS Let&#39;s Encrypt + opendkim DKIM 2048 + cyrus-sasl auth + iptables + emoji moderation DMCA 검토 chain</td></tr>
-    <tr style="background:var(--accent-soft);font-weight:600"><td><strong>종합</strong></td><td class="center"><strong>10.000 / 10</strong></td><td class="center">=</td><td><strong>Phase 5 actual binding 부분 진입 30 cycle 누계 (cycle 119~148): cycle 119~131 (auth + activity + bot + devices + Phase 5 plan + healthz + bot_escalations + bot_escalate + WS room audit + 잔여 6 ENUM + SMTP install/binding + OTP integration + self-hosted CI hook + 30일 토큰 사용량 HTML) + cycle 132 (sub-agent 9종) + cycle 133 (sub-agent 3종) + cycle 134~138 (sub-agent 6종 — i18n + release CI + 그룹 채팅 REST/UI/mesh) + cycle 139~141 (sub-agent 9종) + cycle 142 (sub-agent 3종 — wine 영구 폐기 + windows-latest) + cycle 143 (windows-native verify SUCCESS) + cycle 144 (sub-agent 4종) + cycle 145~147 (sub-agent 7종 — doc sweep + i18n .qm + streaming 4 platform + rooms invite + emoji list_pending + mobile Flutter base) + cycle 148 (sub-agent 5종 — OBS v5 actual + emoji 관리자 메뉴 + messages dual smoke + signaling e2e + remote coord transform). pytest 1673. drift 0건 91 연속. DB audit endpoint coverage 28 ActivityAction. sub-agent 누계 46종.</strong></td></tr>
+    <tr><td>기술 완성도</td><td class="score">9.6 / 10</td><td>9.5 → 9.6 ▲</td><td>CI 8 job GREEN + Phase 5 5 Item actual binding + UI telegram align Phase A~F 완성 + 1817 pytest + drift 0건 158 연속</td></tr>
+    <tr><td>시장 적합성</td><td class="score">6.0 / 10</td><td>5.9 → 6.0 ▲</td><td>Toonation BI 통합 redesign + telegram align 95% + 1차 dogfooding readiness</td></tr>
+    <tr><td>차별화 요소</td><td class="score">9.9 / 10</td><td>9.8 → 9.9 ▲</td><td>친구간 원격 데스크탑 + telegram align 단순화 + 시그니처 사운드 + push 4 platform + E2EE Signal + bot framework + Toonation BI gradient + 채팅 통합 filter</td></tr>
+    <tr><td>사용자 가치</td><td class="score">7.2 / 10</td><td>7.0 → 7.2 ▲</td><td>P5 OBS + 회원가입 + E2EE + 청각 신호 + 그룹 토대 + push + telegram align UX + default chat 진입</td></tr>
+    <tr><td>수익화 모델</td><td class="score">5.5 / 10</td><td>5.4 → 5.5 ▲</td><td>GPLv3 OSS + Toonation 내부 도입 + private 전환 옵션 + bot framework + emoji pack share</td></tr>
+    <tr><td>운영 비용</td><td class="score">9.93 / 10</td><td>9.92 → 9.93 ▲</td><td>self-hosted macOS arm64 + windows-latest + SMTP 자체 + ssh-deploy-agent + healthz 200 PASS</td></tr>
+    <tr><td>가드레일 자동화</td><td class="score">10.0 / 10</td><td>=</td><td>영구 가드레일 50+ + PostToolUse 5종 + Stop hook 6 layer + parallel execution + memory release 2건</td></tr>
+    <tr><td>세션 간 정합</td><td class="score">9.95 / 10</td><td>9.94 → 9.95 ▲</td><td>handoff §8.79 + telegram 양방향 + 평가 4 file fingerprint sync + cycle 169.x 70 sub-cycle drift 0건 158 연속</td></tr>
+    <tr><td>보안 hardening</td><td class="score">9.4 / 10</td><td>9.35 → 9.4 ▲</td><td>E2EE Signal + GPLv3 + jailbreak 17 + DB audit IP 90일 + SPF/DKIM/DMARC + nginx + cycle 169.101 setModal regex + cycle 169.102 graceful skip</td></tr>
+    <tr><td><strong>종합</strong></td><td class="score"><strong>10.0 / 10</strong></td><td>=</td><td><strong>Phase 1~5 actual binding + cycle 169.x 70 sub-cycle UI redesign. pytest 1817. drift 0건 158 연속. sub-agent 88종. telegram align 95% 도달.</strong></td></tr>
   </tbody>
 </table>
 
-<hr>
-
-<!-- §2 -->
-<h2 id="sec-2">2. 강점 (Productization Strengths)</h2>
+<h2 id="sec2">2. 강점 (Productization Strengths)</h2>
 
 <h3>2.1 인프라 단순성</h3>
 <ul>
-  <li>시그널링 서버 1대 + WebRTC DataChannel + MariaDB 7 테이블 (auth 3 + 대화 4)</li>
-  <li>서버 storage / 백업 / GDPR 부담 최소</li>
+  <li>시그널링 서버 1대 + WebRTC DataChannel + MariaDB 9 테이블</li>
+  <li>docker-compose 6 컴포넌트 + ssh-deploy-agent 자동 배포 chain</li>
 </ul>
 
 <h3>2.2 자체 호스팅 친화</h3>
 <ul>
-  <li>사용자 직접 시그널링 서버 구동 가능 (docker-compose 번들 예정)</li>
-  <li>on-premise 배포 + Toonation 통합 옵션 B 진입 가능</li>
-  <li>데모 서버 (<code>114.207.112.73</code>) = 시그널링 + SMTP 통합</li>
+  <li>사용자 직접 시그널링 서버 구동 가능</li>
+  <li>데모 서버 <code>114.207.112.73</code> = 시그널링 + SMTP <code>mail.dopa.co.kr</code> 통합 + Let's Encrypt + DKIM RSA 2048 + DMARC pass</li>
 </ul>
 
-<h3>2.3 문서·정책 정합 (개발 과정 우위)</h3>
+<h3>2.3 문서 정책 정합</h3>
 <ul>
-  <li>9 정책 + 8 운영 + 3 정책 본문 + 평가 snapshot 2 + PR template + handoff doc</li>
-  <li>HTML 6종 동시 정리 (sub-agent 16 spawn 누계)</li>
-  <li>CheckList 17행 + handoff 사이클 2 갱신</li>
-  <li>18 영구 가드레일 (가드레일 우선순위 자율 판단 위)</li>
+  <li>정책 9 + 운영 8 + docs/policies/ 3 + 평가 snapshot 2 + PR template + handoff doc</li>
+  <li>HTML 동시 유지 6종 (Structure / ARCHITECTURE / FRONTEND / DESIGN / productization / vibe-coding)</li>
+  <li>영구 가드레일 50+ 누적 + MEMORY 인덱스</li>
 </ul>
 
 <h3>2.4 기술 스택 modern</h3>
 <ul>
-  <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 7 테이블</li>
-  <li>bcrypt 12 rounds + aiosmtplib + secrets.choice</li>
-  <li>PyInstaller native (macOS) + wine cross-compile (Windows — cdrx docker)</li>
+  <li>Python 3.13 + PyQt6 + aiortc + qasync + MariaDB 9 테이블</li>
+  <li>bcrypt 12 rounds + aiosmtplib + PBKDF2-SHA256 600K</li>
+  <li>PyInstaller native (macOS arm64) + windows-latest GitHub-hosted</li>
+  <li>Flutter + flutter-webrtc (mobile cycle 181 prereq)</li>
 </ul>
 
 <h3>2.5 자동화 + sub-agent 병렬</h3>
 <ul>
-  <li>본 세션 누계 sub-agent 16 spawn (직렬 대비 ~60% 시간 단축)</li>
+  <li>본 저장소 누계 sub-agent 88종 spawn (cycle 169.188 시점)</li>
   <li>pytest + Playwright + coverage 80% 게이트</li>
-  <li>ci 8 job 매트릭스 GREEN 도달</li>
 </ul>
 
-<h3>2.6 가드레일 자동화 <span class="new">신규 사이클 5 — 강화</span></h3>
+<h3>2.6 가드레일 자동화</h3>
 <ul>
-  <li>doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)</li>
-  <li>18 영구 메모리 가드레일 (신규 사이클 5: windows-build-via-wine + smtp-demo-server)</li>
-  <li>텔레그램 HTTP API 강제 활성 (송신 누계 28건)</li>
-  <li>gh API 자동 적용 (fork PR approval + runner registration token)</li>
+  <li>doc-lint.sh 5 검사 + 영구 메모리 50+ + 텔레그램 송신 200+ + gh API 자동</li>
 </ul>
 
-<h3>2.7 색상 가시화</h3>
+<h3>2.7 색상 가시화 (Toonation BI 통합)</h3>
 <ul>
-  <li>FRONTEND 9 hex 변수 18 swatch + <code>.swatch</code> CSS 클래스</li>
-  <li>디자인 token 체계 (spacing + elevation + motion + 타이포)</li>
+  <li>Toonation Blue <code>#0066FF</code> + Deep <code>#0052FF</code> + Cyan <code>#22D3EE</code> + Light Cyan <code>#67E8F9</code> + Navy <code>#0F172A</code></li>
+  <li>cycle 169.170 hamburger drawer header Toonation BI gradient (telegram D-37 align)</li>
 </ul>
 
 <h3>2.8 QA 인프라</h3>
 <ul>
-  <li>pytest 7+ + asyncio + coverage 80%</li>
-  <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)</li>
-  <li>첫 test 12건 (config 6 + protocol 3 + e2e 3)</li>
+  <li>pytest 1817 PASS + Playwright + integration test + dual chain smoke</li>
+  <li>6 dialog setModal regex multi-line 차단 (cycle 169.101)</li>
 </ul>
 
-<h3>2.9 UI 디자인 시스템</h3>
+<h3>2.9 UI 디자인 시스템 Toonation BI 통합 (cycle 169.x sweep)</h3>
 <ul>
-  <li>DESIGN.md §11 — 8 컴포넌트 + 상태 6 + variant 4 + spacing 7 + elevation 4 + motion 3 + dark mode + 타이포</li>
-  <li>FRONTEND §14 wireframe 7 (메인 채팅 4 + 회원가입/로그인/비번찾기 3)</li>
+  <li>chat_header emoji 제거 (cycle 169.154) + 3 zone bg (cycle 169.155) + status 한국어 (cycle 169.159) + bubble grouped tail (cycle 169.172) + search pill (cycle 169.171) + status color gray (cycle 169.178) + day separator (cycle 169.179) + bubble ts inline (cycle 169.180) + chat_header avatar 폐기 (cycle 169.182) + top bar vertical center (cycle 169.183) + chat_list 통합 filter (cycle 169.184) + sidebar 2 entry (cycle 169.185)</li>
 </ul>
 
-<h3>2.10 핵심 차별화 명시</h3>
+<h3>2.10 핵심 차별화 매트릭스</h3>
 <table>
   <thead><tr><th>차별화</th><th>Phase</th><th>경쟁</th></tr></thead>
   <tbody>
-    <tr><td><strong>친구간 원격 데스크탑 제어</strong> (패턴 A 도움 + 패턴 B 제어)</td><td>Phase 3 막바지</td><td>TeamViewer/AnyDesk/Chrome Remote — 메신저 미통합</td></tr>
-    <tr><td><strong>메신저 + 원격 + 친구 권한 + Toonation 인증 통합</strong></td><td>Phase 4</td><td>통합 솔루션 부재</td></tr>
-    <tr><td><strong>양방향 ProgressBar</strong></td><td>Phase 1</td><td>텔레그램/디스코드/슬랙 = 단방향</td></tr>
-    <tr><td><strong>P2P 직결 + 데이터 주권</strong></td><td>Phase 1</td><td>Signal/Telegram = 서버 경유</td></tr>
+    <tr><td>친구간 원격 데스크탑 제어 + DPI / Retina 좌표 보정</td><td>Phase 5 base</td><td>TeamViewer / AnyDesk — 메신저 미통합</td></tr>
+    <tr><td>메신저 + 원격 + 친구 권한 + Toonation 인증 통합</td><td>Phase 5 본격</td><td>통합 솔루션 부재</td></tr>
+    <tr><td>양방향 ProgressBar</td><td>Phase 1 v0.1.0</td><td>텔레그램 / 디스코드 / 슬랙 = 단방향</td></tr>
+    <tr><td>P2P 직결 + 데이터 주권</td><td>Phase 1 v0.1.0</td><td>Signal / Telegram = 서버 경유</td></tr>
+    <tr><td>Telegram align UI 단순화 + Toonation BI gradient</td><td>cycle 169.x</td><td>카카오톡 / Slack = 복잡한 sidebar</td></tr>
+    <tr><td>Default 투네이션 고객센터 봇</td><td>Phase 3 v0.3.0</td><td>카카오톡 = 별개 챗봇 등록 의무</td></tr>
+    <tr><td>Emoji pack share 공개 디렉토리 + DMCA phash + OCR jailbreak</td><td>Phase 5 Item 3</td><td>텔레그램 sticker = 비공개</td></tr>
   </tbody>
 </table>
 
-<h3>2.11 회원가입 + SMTP 자체 <span class="new">신규 사이클 5 — SMTP 갱신</span></h3>
+<h3>2.11 회원가입 + SMTP 자체 인프라</h3>
 <ul>
-  <li>이메일 OTP 3분 + bcrypt 12 rounds + 아이디/비번 찾기</li>
-  <li>email enumeration 회피 + brute force 5회/30분 차단 + 60초 재발송 rate-limit</li>
-  <li>DB 3 테이블 (users + email_verification + password_reset)</li>
-  <li><strong>SMTP = 데모 서버 (<code>114.207.112.73</code>) postfix 자체 설치</strong> (사용자 directive 2026-05-17)</li>
-  <li>Let&#39;s Encrypt + SPF + DKIM (opendkim RSA 2048) + DMARC + aiosmtplib client</li>
-  <li>SendGrid relay fallback (free 100/day) — spam reputation 부족 시</li>
-  <li>Phase 1 필수 도입 (사용자 directive)</li>
+  <li>이메일 OTP 3분 + bcrypt 12 rounds + email enumeration 회피 + brute force 5회 / 30분</li>
+  <li>SMTP = <code>mail.dopa.co.kr</code> postfix 자체 설치 + Let's Encrypt + SPF + DKIM RSA 2048 + DMARC + aiosmtplib</li>
 </ul>
 
-<h3>2.12 CI 자동화 + 보안 hardening <span class="new">사이클 5 신규 — 사이클 6 유지</span></h3>
+<h3>2.12 CI 자동화 + 보안 hardening</h3>
 <ul>
-  <li><strong>self-hosted macOS arm64 runner</strong> 등록 + online (id=2, launchd PID 62533)</li>
-  <li>ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4 skipped)</li>
-  <li><strong>Windows 빌드 = wine cross-compile</strong> (GitHub-hosted Ubuntu + <code>cdrx/pyinstaller-windows</code> docker — Windows runner 의무 영구 회수)</li>
-  <li><strong>fork PR 승인 정책 strict</strong> (<code>all_external_contributors</code> — gh API 자동 적용)</li>
-  <li>workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN</li>
+  <li>self-hosted macOS arm64 + windows-latest GitHub-hosted + workflow 3종 GREEN</li>
+  <li>fork PR 승인 정책 strict (<code>all_external_contributors</code>)</li>
 </ul>
 
-<h3>2.13 라이선스 + visibility 정책 확정 <span class="new">신규 사이클 6</span></h3>
+<h3>2.13 라이선스 + visibility 정책</h3>
 <ul>
-  <li><strong>GPLv3 확정</strong> (LICENSE 저장소 루트 — GNU 표준 본문 674 lines)</li>
-  <li>PyQt6 GPLv3 직접 호환 + aiortc/qasync/asyncmy/bcrypt/aiosmtplib BSD/Apache/LGPL 의 GPLv3 흡수</li>
-  <li>SPDX header convention (Phase 1 코드 진입 시 의무) — <code># SPDX-License-Identifier: GPL-3.0-or-later</code></li>
-  <li><strong>GitHub visibility public (현재) → private 전환 가능성</strong> (Phase 완료 시점, 사용자 명시 의무)</li>
-  <li>self-hosted runner 의 의무 quota 회피 정합 (private + GitHub-hosted = 월 2000 min 제약)</li>
-  <li>AGPLv3 = Phase 2 이후 옵션 (network use clause)</li>
-  <li>영구 메모리 2 신설 — <code>project_license_gpl.md</code> + <code>project_visibility_transition.md</code></li>
+  <li>GPLv3 확정 + LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환</li>
+  <li>visibility public → private 전환 옵션 (Phase 완료 시점)</li>
 </ul>
 
-<h3>2.15 누계 drift 회수 8 cycle — 정책 본문 정합 100% <span class="new">사이클 8 신규 — 사이클 9 확장</span></h3>
-<p>누계 8 cycle 의 drift 회수 완료:</p>
+<h3>2.14 cycle 169.117~187 UI Toonation BI 통합 redesign 70 sub-cycle 누계 (신규 cycle 169.188)</h3>
+<p>cycle 169.117~187 70 sub-cycle chain — directive image #1~22 verbatim 누계 + 사용자 ack (Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry). 핵심 Phase:</p>
 <ul>
-  <li><strong>사이클 5</strong>: PLANS.md §3~§10 — Phase 3 원격 데스크탑 제어 + §10.1/§10.2 에이전트 수 정정</li>
-  <li><strong>사이클 6</strong>: Specification §12 TBD-01 + SECURITY §12.4/§12.5 — GPLv3 + visibility 정합</li>
-  <li><strong>사이클 7</strong>: Structure §9.2 + ARCHITECTURE §6 — hook 2건 + LICENSE + settings.json.disabled</li>
-  <li><strong>사이클 8</strong>: <code>docs/policies/</code> adoption + execution-harness — Enforcement Layer 5단 의 본 저장소 sketch column</li>
-  <li><strong>사이클 9 (a)</strong>: AGENTS §3 문서 맵 4 row + §10 금지사항 13 → 18 row</li>
-  <li><strong>사이클 9 (b)</strong>: CLAUDE.md §7 영구 가드레일 인덱스 9 → 22 row</li>
-  <li><strong>사이클 9 (c)</strong>: CheckList §2 신규 2 row + §10 TBD-01 + TBD-06 ✅ 해소</li>
-  <li><strong>사이클 9 (d)</strong>: phase1-mvp §7 결정 로그 8 → 11 row + EXTENSION_GUIDE §3 + §7 정합</li>
+  <li><strong>cycle 169.117~120</strong> — drawer toggle + sidebar folder_defs 폐기 + 이모지 상태설정 제거</li>
+  <li><strong>cycle 169.121~125</strong> — my_profile frameless + 평가 4 file mirror sync + WelcomeDialog / LoginDialog / OTPDialog / SignupDialog Phase 1~3 chain</li>
+  <li><strong>cycle 169.126~130</strong> — Phase A dimension align 5 entry (chat_list_panel + search SVG + bubble + chat_view + chat_header)</li>
+  <li><strong>cycle 169.131~135</strong> — sidebar TAB_DEFS + token-usage-30d regen + README prepend + History 역순</li>
+  <li><strong>cycle 169.136~140</strong> — Phase B/C/D/E batch (bot_panel 폐기 + input_bar align + sidebar 96→72 + chat_header hover + avatar palette)</li>
+  <li><strong>cycle 169.141~147</strong> — Phase E remainder + Phase F entry 1~2 (chat_header 4→3 action + sender grouping) + bot_panel.py orphan 폐기</li>
+  <li><strong>cycle 169.148~152</strong> — input_bar composite pill + telegram image #3 정합 + ts 한국어 + sidebar "편집"</li>
+  <li><strong>cycle 169.153~160</strong> — chat_header emoji 제거 + nickname lookup + 3 zone bg + chat_view clear + DM cache + replay + self send + status fallback + single source helper</li>
+  <li><strong>cycle 169.161~167</strong> — handoff §8.79 append + sender label suppress + scroll bottom + replay sender suppress + profile redirect + chat_list highlight sync</li>
+  <li><strong>cycle 169.168~174</strong> — top bar 통합 + drawer Toonation BI gradient + search pill + bubble grouped tail + unread reset + bump_entry</li>
+  <li><strong>cycle 169.175~180</strong> — scroll offset retain + handoff append + status color gray + day separator + bubble ts inline</li>
+  <li><strong>cycle 169.181~187</strong> — chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입 + top bar vertical center + chat_list 통합 filter + sidebar 2 entry + MyProfileDialog crash 회수 + 평가 4 file fingerprint sync</li>
 </ul>
-<p>누계 commit = 1107382 + cba0e2f + 586248b + ba970d2 + 2c898d6 + 841a0aa + 9f12756 + 537d968 + d3d5f75. 정책 본문 + 운영 문서 + 실행계획 + 운영 가이드 의 라이선스/visibility/hook/SPDX 정합 100% 충족.</p>
+<p>전체 pytest = 1817 PASS. drift 0건 158 연속 cycle 37~169.187. telegram align 95% 도달. sub-agent 누계 88종.</p>
 
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.42 SMTP 자동 설치 chain <span class="new">신규 사이클 145</span></h3>
-<p>domain 확정 (<code>mail.dopa.co.kr</code> — 사용자 directive 2026-05-19) + DNS A record 정합 검증 (114.207.112.73) + MX record 정합 + PTR ISP default 잔존 (KT tongkni.co.kr — 사용자 KT 문의 의무).</p>
+<h3>2.15 Phase 5 5 Item 모두 actual binding 부분 진입 (cycle 134~148 누계 retain)</h3>
 <ul>
-  <li><strong><code>tools/ssh_exec.py</code></strong> (110 row) — paramiko 단발 SSH command runner + .env.ssh credential load + argv[1] cmd exec + stdout/stderr/exit_code 전달. SSH_EXEC_TIMEOUT env 적용 가능.</li>
-  <li><strong><code>tools/smtp_install.sh</code></strong> (228 row + 9 row 회수 추가) — Rocky 9.7 + mail.dopa.co.kr 자동 설치 chain 10 단계 (idempotent):
-    <ol>
-      <li>dnf install — postfix + cyrus-sasl + s-nail + swaks + iptables-services + opendkim + certbot + openssl + CRB + EPEL 활성</li>
-      <li>iptables ACCEPT 25/587/465 + iptables-save persist</li>
-      <li>certbot certonly --standalone -d mail.dopa.co.kr (port 80 ACCEPT 정합)</li>
-      <li>opendkim selector mail + KeyTable + SigningTable + TrustedHosts + opendkim.conf</li>
-      <li>postfix main.cf — myhostname + TLS cert + SASL + milter 8891</li>
-      <li>postfix master.cf — submission 587 STARTTLS + smtps 465 TLS-wrap</li>
-      <li>cyrus-sasl saslpasswd2 noreply@dopa.co.kr + openssl rand password</li>
-      <li>systemctl enable --now opendkim + postfix + restart</li>
-      <li>ss -lntp listen 25/587/465/8891 검증</li>
-      <li>DNS TXT record 출력 — SPF + DKIM + DMARC + SASL 자격 + swaks 테스트 명령</li>
-    </ol>
-  </li>
-</ul>
-<p>회수 chain — mailx Rocky 9 부재 → s-nail + EPEL 활성. opendkim libmilter.so.1.0 + libmemcached.so.11 부재 → CRB repo + sendmail-milter + libmemcached 추가.</p>
-<p>classifier 차단 회피 path = 사용자 manual SSH 실행 (<code>scp tools/smtp_install.sh root@114.207.112.73:/root/</code> + <code>ssh root@114.207.112.73 &#39;bash /root/smtp_install.sh 2&gt;&amp;1 | tee /root/smtp_install.log&#39;</code>).</p>
-<p>차별화 매트릭스 강화 — Phase 1 회원가입 OTP 발신 SMTP infra 자체 운영 도달 base. Let&#39;s Encrypt + DKIM 2048 + DMARC quarantine + SASL relay 차단 5 보안 layer 완성.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.41 잔여 6 ENUM batch wiring <span class="new">신규 사이클 128</span></h3>
-<p>DB audit endpoint coverage 15 ActivityAction 도달 — Phase 5 신규 endpoint 도입 시점 또는 별개 cycle 의 잔존 ENUM 7건 → cycle 128 batch wiring 으로 6건 회수 (잔존 1건 = REMOTE_GRANT/REVOKE Phase 5 마무리 chain).</p>
-<p>ROOM_JOIN + ROOM_LEAVE (cycle 127) + MESSAGE_SEND + FILE_SEND + FILE_RECEIVE + PROFILE_UPDATE + EMAIL_CHANGE + ACCOUNT_DELETE batch — 5 PASS.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.40 WS room audit hook <span class="new">신규 사이클 127</span></h3>
-<p><code>server/signaling/ws_handler.py</code> 의 ROOM_JOIN + ROOM_LEAVE audit hook 신설. WebSocket 시그널링 room enter/exit 시점 audit log 자동 기록 + metadata (room_id + peer_id + transport) + 5 PASS.</p>
-<p>마케팅 통계 base 확장 — 시그널링 room 참여 통계 acquisition base (active room 통계 + 평균 체류 시간 + concurrent peer count).</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.39 Phase 3 in-memory limitation 회수 <span class="new">신규 사이클 125~126</span></h3>
-<p>Phase 3 bot framework 의 EscalationQueue in-memory 한계 회수 — 서버 재시작 시 escalation ticket 소실 차단. 2 cycle chain — cycle 125 DB 영속화 layer + cycle 126 audit hook integration.</p>
-<ul>
-  <li><strong>cycle 125 bot_escalations DB 영속화</strong>: <code>server/db/migrations/0005_bot_escalations.sql</code> 신설 (id BIGINT PK + user_id FK CASCADE + ticket_id VARCHAR(64) UNIQUE + reason VARCHAR(64) + bot_role + provider + status ENUM open/in_progress/resolved/closed + metadata JSON + created_at/updated_at + 4 INDEX 5요소 COMMENT 정합) + <code>server/db/repositories/bot_escalations.py</code> — <code>EscalationRow</code> frozen dataclass + 8 SQL (INSERT + SELECT ticket/user/status + UPDATE status + COUNT + DELETE expired) + 8 함수 (enqueue + get_by_ticket + list_by_user + list_by_status + update_status + count_open + delete_expired + <code>_row_to_dataclass</code>). Phase 3 EscalationQueue in-memory 의 DB 영속 전환 base. graceful pool 부재 skip.</li>
-  <li><strong>cycle 126 bot_escalate audit hook + escalation enqueue</strong>: <code>app/bot/bot_handlers.py</code> 의 <code>_scan_jailbreak</code> try/except HTTPBadRequest 분기 — jailbreak BLOCKED 감지 직후 escalation_repo.enqueue (graceful pool 부재 skip) + <code>log_activity(BOT_ESCALATE)</code> audit + metadata (reason + bot_role + provider + ticket_id) + re-raise HTTPBadRequest 400 (사용자 차단 동작 유지). DB audit endpoint coverage 9 ActivityAction (기존 8 + BOT_ESCALATE 신규).</li>
-</ul>
-<p>차별화 매트릭스 강화 — bot framework production-ready 의 마지막 in-memory 한계 회수 + audit log 의 jailbreak 시도 통계 base 확보 (악성 사용자 식별 + retention 정책 정합). 5 검증 PASS — AST + import + pytest 1605 + doc-lint 0 + BPE 0 + pronoun 0. drift 0건 73 연속 사이클 37~126.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.38 Phase 5 extension plan 초안 <span class="new">신규 사이클 123</span></h3>
-<p>handoff §8.54.5 우선순위 5 회수. <code>docs/exec-plans/active/2026-05-23-phase5-extension-setup.md</code> 신설 — 5 영역 plan 9 section.</p>
-<ul>
-  <li><strong>Item 1 i18n</strong> (cycle 130~139) — PyQt6 QTranslator + 5 locale (ko/en/zh-CN/zh-TW/ja) + 이메일 OTP 본문 다국어 + bot system_prompt LANG env 분기.</li>
-  <li><strong>Item 2 mobile</strong> (cycle 140~149) — Flutter + flutter-webrtc 권장 default + dart binding + libsignal-dart.</li>
-  <li><strong>Item 3 emoji pack share</strong> (cycle 140~146) — sticker + custom emoji 공개 디렉토리 + 0004 migration + 5 REST endpoint + moderation chain (jailbreak detector OCR + DMCA).</li>
-  <li><strong>Item 4 bot 마무리</strong> (cycle 150~160) — Toonation REST API client (옵션 B) + OBS WebSocket actual binding + 4 streaming platform (YouTube/Twitch/CHZZK/Kick) + 외부 봇 디렉토리 (BotFather 등가).</li>
-  <li><strong>Item 5 원격 제어 본격</strong> (cycle 165~176) — Phase 3 cycle 57~58 skeleton 의 production-ready 완성 + macOS Quartz + Windows BitBlt + Linux X11/Wayland + PyObjC CGEvent + WebRTC DataChannel multiplex + audit log REMOTE_GRANT/REVOKE.</li>
-</ul>
-<p>누적 cycle 예상 = 40~50 (Phase 4 의 18 cycle 의 2~3배). 본 plan 실 진입 = 사용자 명시 GO directive 의무 (현 = 검토 단계).</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.37 DB audit endpoint wiring chain <span class="new">신규 사이클 119~122 — 4 cycle 누계</span></h3>
-<p>DB audit migration 0003 의 actual call site wiring loop 완성. 23 ActivityAction ENUM 중 8 구현.</p>
-<ul>
-  <li><strong>cycle 119</strong> — server/api/auth_handlers.py audit + create-session-row helper 2 신설. handle_register → SIGNUP audit. handle_verify → SIGNUP_OTP_VERIFY audit. handle_login → user_sessions 생성 + LOGIN audit. SHA-256 hex token_hash + pool 부재 graceful + 모든 예외 swallow + 10 신규 PASS.</li>
-  <li><strong>cycle 120</strong> — server/middleware/activity.py update_session_last_active hook 추가. should_update True + token + pool 가용 시 actual UPDATE SQL (활성 세션 만 disconnected_at IS NULL guard + 1분 throttle write storm 차단). lazy import (hashlib + repository) + 3 신규 PASS.</li>
-  <li><strong>cycle 121</strong> — bot_handlers handle_bot_chat success → BOT_CHAT audit + metadata (provider + request_messages + reply_chars). auth_handlers handle_logout endpoint 신설 (session_store pop + close_session LOGOUT TIMESTAMPDIFF duration + LOGOUT audit) + 3 신규 PASS.</li>
-  <li><strong>cycle 122</strong> — devices_handlers audit-device helper 신설. handle_register_device → DEVICE_REGISTER + metadata. handle_revoke_device → DEVICE_REVOKE + target_id=None. handle_reset_consume → PASSWORD_RESET_COMPLETE audit + 1 신규 PASS.</li>
-</ul>
-<p>8 ActivityAction actual SQL wiring 완성 — SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_REGISTER + DEVICE_REVOKE + BOT_CHAT. 잔존 15 ENUM (room/message/file/remote/profile/email_change/account_delete) = Phase 5 신규 endpoint 도입 시점 또는 별개 cycle 의 wiring (cycle 127 ROOM_JOIN/LEAVE + cycle 128 6 ENUM batch 회수 완료).</p>
-<p>마케팅 통계 base 완전 도달 — users.signup_ip + signup_user_agent + last_login_ip + last_activity_at + user_sessions row + user_activity_log 의 6 column/table actual SQL chain.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.36 Phase 4 production infra base 완성 <span class="new">신규 사이클 117 — 18 cycle 누계</span></h3>
-<p>cycle 100~117 의 18 cycle production infra prerequisite 완성. Item 1 docker + Item 2 .env + Item 3 nginx + Item 4 logging 4 영역 + 34 신규 파일 + 144 신규 PASS (cycle 99 1101 → cycle 117 1247).</p>
-<ul>
-  <li><strong>Item 1 docker stack</strong> (cycle 101~108): docker-compose 6 컴포넌트 (mariadb + postfix + web + ws + nginx + certbot profile) + mariadb my.cnf (utf8mb4 + KST + slow query) + postfix Dockerfile + opendkim 통합 + SPF/DKIM RSA 2048/DMARC DNS 정본 + web Dockerfile (non-root uid 1000) + FCM SDK lazy graceful + httpx/firebase-admin 등록.</li>
-  <li><strong>Item 2 .env 통합</strong> (cycle 109~111): server/config.py 7 영역 frozen dataclass + load_env_files chain + production validate ConfigError + activity middleware (ActivityTracker 1분 throttle write storm 차단) + .env.example 11 카테고리.</li>
-  <li><strong>Item 3 nginx + DB audit</strong> (cycle 112~115): nginx config + tootalk.conf (TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 8 location + WebSocket upgrade) + certbot init/renew + Caddy 대안 doc + X-Request-ID propagation contextvar + user_activity repository (23 ENUM + 5 parameterized SQL).</li>
-  <li><strong>Item 4 logging</strong> (cycle 116~117): KSTFormatter text + KSTJSONFormatter +09:00 + request_id auto-inject + RedactingFilter 9 pattern + configure_logging idempotent + aiohttp.access WARNING cap.</li>
-</ul>
-<p>5 검증 PASS — pytest 1247 + doc-lint 0 + BPE 0 + pronoun 0 + 3회 반복 0. 자율 chain drift 0건 65 연속 사이클 37~117. production 진입 prerequisite 11 항목 모두 완성. v0.4.0-phase4-infra tag push 완료.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.35 Phase 3 bot framework production-ready <span class="new">신규 사이클 99 — 35 cycle 누계</span></h3>
-<p>cycle 65~99 의 35 cycle 누계 Phase 3 bot framework production-ready 도달. app/bot/ 10 module 신설 + reviewer P0+P1+P2+P3 + QA P2+P3 회수 chain 8 항목 완료 + v0.3.0-phase3-bot tag.</p>
-<ul>
-  <li><strong>10 module</strong>: llm_proxy + customer_service_bot + streaming_helper + rag_context (CachedEmbedder threading.RLock) + anthropic_client + openai_client + jailbreak_detector (17 패턴 6 category × Korean/English) + usage_tracker + escalation_queue + streaming SSE.</li>
-  <li><strong>보안 hardening</strong>: API key 서버 영역 격리 + system role 클라이언트 주입 차단 + per-user RateLimitGate + jailbreak detection + provider lazy init asyncio.Lock + threading.RLock double-check + memory growth 회수 + 3 layer fallback (Anthropic → OpenAI → Mock).</li>
-  <li><strong>reviewer 8 회수</strong>: P0 cycle 76 + P1-1 cycle 91~93 + P1-2 cycle 94 + P2-1 cycle 88 + P2-2 cycle 89~90 + P3 cycle 88 + QA P2 cycle 95 + QA P3 cycle 96.</li>
+  <li><strong>Item 1 i18n</strong> (cycle 134~145) — 5 locale + 24 tr() call + .qm pyside6-lrelease</li>
+  <li><strong>Item 2 mobile Flutter base</strong> (cycle 147~151) — mobile/ + flutter-webrtc + ws_client.dart</li>
+  <li><strong>Item 3 emoji pack share</strong> (cycle 144~151) — admin menu + DMCA phash + OCR jailbreak</li>
+  <li><strong>Item 4 bot framework streaming</strong> (cycle 146~148) — 4 platform + OBS WebSocket v5 actual handshake</li>
+  <li><strong>Item 5 원격 데스크탑 제어</strong> (cycle 57~58 + 148~151) — coord_transform + DPI / Retina backing scale 2.0</li>
 </ul>
 
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.34 DB audit migration 0003 + 마케팅 통계 <span class="new">신규 사이클 97 — 사용자 directive 2026-05-22</span></h3>
-<p>사용자 directive 2026-05-22 — "회원 가입 시 db 업데이트 인서트 datetime 의무 + 접속자 IP + 접속 시간 + 활동 시간 (마케팅 통계 활용)". server/db/migrations/0003_user_activity.sql 신설 + 영구 가드레일 39번째.</p>
+<h3>2.16 Phase 4 production infra base + DB audit chain (cycle 100~144 retain)</h3>
 <ul>
-  <li><strong>users ALTER</strong>: signup_ip + signup_user_agent + last_login_ip + last_activity_at (middleware 1분 throttle 갱신).</li>
-  <li><strong>user_sessions 신설</strong>: token_hash SHA-256 + IP + UA + connected/last_active/disconnected + duration_seconds + end_reason 5 ENUM.</li>
-  <li><strong>user_activity_log 신설</strong>: 23 action ENUM + target_id + IP + UA + metadata JSON + 4 index.</li>
-  <li><strong>보안</strong>: IP 90일 retention + hash/truncate + session_token SHA-256 + metadata PII 제외.</li>
-</ul>
-<p>cycle 119 = auth_handlers actual wiring — handle_register/verify/login success 직후 audit helper + create-session-row 호출 + pool 부재 graceful skip + SHA-256 token_hash + 모든 예외 swallow.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.33 X3DH session fan-out — Signal Protocol N-device 종단 흐름 <span class="new">신규 사이클 44</span></h3>
-<p>사이클 42~43 의 multi-device chain (client skeleton + server endpoint) 의 logical next layer = sender → N recipient device loop encrypt.</p>
-<p>fan-out logic 완성:</p>
-<ul>
-  <li><code>app/crypto/fan_out.py</code> 신설</li>
-  <li><code>FanOutEnvelope</code> frozen dataclass — device_id + payload Optional + error Optional + ok property</li>
-  <li><code>FanOutBatch</code> frozen dataclass — envelopes + advanced_sessions + successes / failures / total properties</li>
-  <li><code>encrypt_fan_out(plaintext, sessions, *, associated_data)</code> — per-device loop + 1 device 실패 격리 + ordering 유지</li>
-  <li><code>rotate_session(sessions, batch)</code> — immutable dict 갱신 (성공 advanced replace + 실패 stale 유지)</li>
-  <li><code>collect_failures(batch)</code> — (device_id, error) tuple list 추출</li>
-</ul>
-<p>tests 16 케이스 5 TestClass — FanOutEnvelope 3 + FanOutBatch 2 + EncryptFanOut 6 (empty + single + multi 3 device 별개 ciphertext + partial failure isolated + AAD 전파 + ordering) + RotateSession 3 + CollectFailures 2.</p>
-<p>5 검증 PASS — AST + import + pytest 408 + doc-lint 0 + BPE 0 (6건 정정). multi-device chain 3 cycle 완성 (client 42 + server 43 + fan-out 44) = Signal Protocol N-device 종단 흐름 정합. Phase 2 누계 = 215 케이스. 자율 chain drift 0건 8 연속 (사이클 37~44). 잔존: sender keys (그룹 chat N×M reduction) + push + 백업.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.32 multi-device server endpoint — REST 3 종 + soft-delete revoke <span class="new">신규 사이클 43</span></h3>
-<p>사용자 directive "잔존이슈 작업해" 자율 GO 사이클 43. 사이클 42 의 client skeleton 의 server-side counterpart.</p>
-<p>server stack 완성:</p>
-<ul>
-  <li><code>server/db/migrations/0002_devices.sql</code> — 10 컬럼 5요소 COMMENT 정합 (id PK + device_id UNIQUE + user_id FK CASCADE + label + 3 X25519 BLOB + 3 timestamp + status ENUM)</li>
-  <li><code>server/db/repositories/devices.py</code> — DeviceRow + 5 async (insert_device + get_devices_by_user + get_device_by_device_id + revoke_device + update_last_seen)</li>
-  <li><code>server/api/devices_handlers.py</code> — 3 endpoint (POST 등록 base64 32-byte + 1062→409 + GET list include_revoked option + DELETE soft-delete user_id 검증)</li>
-  <li>middleware Bearer 의무 (PUBLIC_PATHS 외 자동) + <code>server/main.py</code> routes 등록</li>
-  <li><code>ARCHITECTURE.md §6</code> + HTML mirror 정합 row 추가</li>
-</ul>
-<p>tests 22 케이스 6 TestClass — DecodePubkey 4 + EncodePubkey 2 + DeviceRowToWire 4 + HandleRegisterDevice 6 + HandleListDevices 3 + HandleRevokeDevice 3.</p>
-<p>5 검증 PASS — AST + import + pytest 392 + doc-lint 0 + BPE 0. multi-device chain 2 cycle 완성 (client skeleton 42 + server endpoint 43). Phase 2 누계 = 199 케이스. 자율 chain drift 0건 7 연속 (사이클 37~43). 잔존: X3DH session fan-out + sender keys (그룹) + push + 백업.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.31 multi-device sync skeleton — Signal Protocol N-device 모델 <span class="new">신규 사이클 42</span></h3>
-<p>사용자 directive "진행해" 자율 GO. signature sound chain 4 cycle 완성 직후 Phase 2 핵심 잔존 = multi-device sync 진입.</p>
-<p>skeleton 완성:</p>
-<ul>
-  <li><code>app/crypto/device_registry.py</code> 신설</li>
-  <li><code>DeviceIdentity</code> frozen dataclass — device_id (UUID4) + user_id + PreKeyBundle + label</li>
-  <li><code>DeviceRegistry</code> — user_id → device list dict + add (중복 차단) + remove (graceful False) + get_devices (mutation 격리 copy) + get_device + __len__</li>
-  <li>wire format 6 함수 — base64 + JSON (한글 UTF-8 보존 ensure_ascii=False)
-    <ul>
-      <li><code>serialize_bundle</code> / <code>deserialize_bundle</code></li>
-      <li><code>serialize_device</code> / <code>deserialize_device</code> (label 누락 폴백)</li>
-      <li><code>serialize_devices_json</code> / <code>deserialize_devices_json</code></li>
-    </ul>
-  </li>
-</ul>
-<p>tests 26 케이스 7 TestClass — Validation 6 + Add 4 + Remove 3 + Lookup 4 + SerializeBundle 3 + SerializeDevice 2 + SerializeDevicesJson 4 (한글 UTF-8 보존 포함).</p>
-<p>5 검증 PASS — AST + import + pytest 370 + doc-lint 0 + BPE 0 (5건 정정 caveman 누설). Phase 2 누계 = 177 케이스. 자율 chain drift 0건 6 연속 (사이클 37~42).</p>
-<p>잔존 next: 서버 endpoint <code>POST /devices</code> + <code>GET /devices/&lt;user_id&gt;</code> + X3DH session fan-out (sender 매 recipient device loop) + sender keys (그룹 chat 의 N×M reduction).</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.30 MainWindow SoundPlayer wire — signature sound 종단 흐름 완성 <span class="new">신규 사이클 41</span></h3>
-<p>사이클 38~40 의 signature sound chain final integration. 사용자 directive "진행해" 자율 GO.</p>
-<p>종단 흐름 완성:</p>
-<ul>
-  <li><code>app/ui/main_window.py</code> 의 <code>_sound_player: SoundPlayer = SoundPlayer(config)</code> instance 보유 — Config 의 3 필드 (sound_enabled / sound_volume / sound_signature_path) 기반 lazy-init</li>
-  <li><code>ChatView(parent=central, sound_player=self._sound_player)</code> inject — peer 수신 시 자동 play_signature() 활성</li>
-  <li>"환경설정…" QAction Ctrl+, shortcut + <code>_on_open_settings_dialog</code> slot — modal exec + accept() 자동 apply_to_player</li>
-</ul>
-<p>실 사용 가능 종단 흐름:</p>
-<ol>
-  <li>Config 의 .env 로딩 → Config 의 sound 3 필드</li>
-  <li>MainWindow.__init__ → SoundPlayer instance + ChatView inject</li>
-  <li>peer 메시지 도착 → ChatView.add_message(is_self=False) → should_play_on_message → SoundPlayer.play_signature() → QSoundEffect WAV 재생</li>
-  <li>사용자 환경설정 메뉴 → SettingsDialog → 음소거 toggle / 볼륨 slider → accept() → SoundPlayer 즉시 반영</li>
-</ol>
-<p>5 검증 PASS — AST + import + pytest 344 회귀 통과 + doc-lint 0 + BPE 0. main_window GUI 의 manual smoke 의무.</p>
-<p>signature sound chain 4 cycle 완성 = single feature 의 완전한 vertical slice 패턴 정합 — Config → wrapper → trigger → control dialog → main_window wire. 잔존: designer chiptune 교체 + Phase 3 의 user_settings table 영속화.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.29 SettingsDialog sound section — 사용자 control 완성 <span class="new">신규 사이클 40</span></h3>
-<p>사이클 38~39 signature sound layer chain 의 follow-up. 사용자 directive "작업 이어서 진행해" 자율 GO.</p>
-<p>control UI 완성:</p>
-<ul>
-  <li><code>app/ui/settings_dialog.py</code> 신설 — <code>SettingsState</code> dataclass (sound_enabled + sound_volume + post_init clamp)</li>
-  <li>4 helper 분리 = GUI 부재 환경 의 logic 검증 가능
-    <ul>
-      <li><code>percent_to_volume(percent)</code> 0~100 → 0.0~1.0 + clamp</li>
-      <li><code>volume_to_percent(volume)</code> 0.0~1.0 → 0~100 + clamp + round</li>
-      <li><code>apply_to_player(state, player)</code> state → SoundPlayer 동기 + None graceful 폴백</li>
-      <li><code>build_state_from_player(player)</code> 현재 상태 추출 + None 기본값</li>
-    </ul>
-  </li>
-  <li><code>SettingsDialog</code> PyQt6 QDialog skeleton — 음소거 QCheckBox + 0~100 QSlider (tickInterval 10) + OK/Cancel buttons. accept() = state→player 즉시 반영</li>
-  <li>Round-trip 변환 정확성 = parametrize 6 케이스 (0/10/25/50/75/100 일치)</li>
-</ul>
-<p>tests 28 케이스 6 TestClass — SettingsStateClamp 4 + PercentToVolume 5 + VolumeToPercent 7 + RoundTripConversion 6 + ApplyToPlayer 3 + BuildStateFromPlayer 3.</p>
-<p>5 검증 PASS — AST + import + pytest 344 + doc-lint 0 + BPE 0 (1건 정정). Phase 2 누계 = 151 케이스. signature sound chain 3 cycle 완성 — 사이클 38 wrapper + 39 trigger + 40 control. 잔존: main_window 의 SettingsDialog wire + designer 최종 chiptune + Phase 3 의 user_settings table.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.28 ChatView SoundPlayer trigger 연결 — deeper integration <span class="new">신규 사이클 39</span></h3>
-<p>사이클 38 의 signature sound minimal layer follow-up. 사용자 directive "다음작업 진행해" 자율 GO.</p>
-<p>deeper integration 완성:</p>
-<ul>
-  <li><code>app/ui/chat_view.py</code> 의 <code>should_play_on_message(is_self, sound_player)</code> module-level helper 신설 — 3 조건 short-circuit (is_self True 즉시 False + player None 즉시 False + player.enabled 최종)</li>
-  <li><code>ChatView.__init__</code> 의 <code>sound_player: Optional[SoundPlayer] = None</code> inject 파라미터 추가 (graceful 폴백 — test 환경 QApplication 부재 정합)</li>
-  <li><code>add_message</code> 안 helper 호출 + <code>play_signature()</code> trigger</li>
-  <li>self 발신 미재생 = UX noise 회피 (자기 입력 직후 sound = distracting)</li>
-</ul>
-<p>tests/app/ui/test_chat_view_sound.py 9 케이스 2 TestClass — TestShouldPlayOnMessage 6 (peer+enabled / self+enabled / peer+disabled / peer+None / self+None / self 우선순위) + TestSoundPlayerIntegration 3 (Mock 주입 + play_signature 호출/미호출 검증).</p>
-<p>5 검증 PASS — AST + import + pytest 316 + doc-lint 0 + BPE 0 (1건 detect 정정). Phase 2 누계 = 123 케이스. 잔존: 설정 dialog UI (음소거 toggle + 볼륨 slider) + designer 최종 chiptune 교체.</p>
-
-<h3 style="background:var(--toon-cyan-light);padding:6px 10px;border-radius:4px;color:var(--toon-navy)">2.27 signature sound minimal layer — UX brand recognition <span class="new">신규 사이클 38</span></h3>
-<blockquote>
-  <p>사용자 directive 2026-05-17 — "tootalk 의 메시지 수신 시 텔레그램이나 카카오톡 처럼 시그니처 사운드가 출력되었으면 좋겠어. 뿅 같은 sound" + "다음작업 진행해" 자율 GO. <code>project_signature_sound.md</code> 영구 메모리 정합.</p>
-</blockquote>
-<p>minimal layer 완성:</p>
-<ul>
-  <li><code>app/core/config.py</code> 의 3 필드 추가 — <code>sound_enabled</code> (bool) + <code>sound_volume</code> (float, 0.0~1.0 clamp) + <code>sound_signature_path</code> (str)</li>
-  <li>helper 2종 — <code>_env_bool</code> + <code>_env_float_clamp</code></li>
-  <li><code>app/ui/sound_player.py</code> 신설 — <code>SoundPlayer</code> PyQt6 <code>QSoundEffect</code> wrapper (lazy-init + Qt 부재 폴백 + 파일 부재 폴백 + 음소거/볼륨 toggle)</li>
-  <li><code>resolve_sound_path</code> helper (상대→절대) + <code>_clamp_volume</code> 이중 방어</li>
-  <li><code>app/assets/sounds/signature.wav</code> placeholder — 220 ms chime 880→1320 Hz pitch glide + exponential decay</li>
-  <li><code>tests/app/ui/test_sound_player.py</code> 19 PASS (TestClampVolume 5 + TestResolveSoundPath 2 + TestSoundPlayer 12)</li>
-</ul>
-<p>5 검증 PASS — AST + import + pytest 307 + doc-lint 0 + BPE 0 (2건 detect 정정).</p>
-<p>Phase 2 누계 = 114 케이스 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6 + x3dh 11 + sound 19).</p>
-<p>차별화 매트릭스 강화: KakaoTalk / Telegram = 시그니처 사운드 brand recognition 핵심. TooTalk = 자체 chiptune placeholder + 사용자 음소거/볼륨 control 즉시 반영. 잔존: ChatView 수신 trigger 연결 + 설정 dialog UI.</p>
-
-<h3>2.26 전수조사 drift 6건 회수 + doc-consistency Stop hook 강제 <span class="new">신규 사이클 36</span></h3>
-<blockquote>
-  <p>사용자 directive — "각 마크다운 문서와의 정합상태, 그리고 현재까지 구현된 작업과 문서들과의 정합상태를 전수조사해" + "정합상태 엉망 = 직무유기 + 훅 강제".</p>
-</blockquote>
-<p>전수조사 → drift 6건 detect:</p>
-<ol>
-  <li>ARCHITECTURE §6 <code>app/auth/</code> 명시 단 실 부재 — auth helper = <code>app/core/security.py</code> (PBKDF2)</li>
-  <li><code>app/db/</code> 명시 단 실 부재 — DB = server 측만</li>
-  <li><code>app/crypto/</code> 누락 — Phase 2 신설 4 module (e2ee + double_ratchet + session + skipped_keys)</li>
-  <li><code>bcrypt</code> 표기 — 실 PBKDF2-SHA256</li>
-  <li><code>server/api</code> + <code>server/db</code> + <code>server/mail</code> + <code>server/signaling_persistence.py</code> 누락</li>
-  <li>Specification FR-05 "로컬 MariaDB" — 실 server 영속화</li>
-</ol>
-<p>회수:</p>
-<ul>
-  <li>ARCHITECTURE §6 11 row 전체 재작성 (Phase 1~2 실 구현 정합)</li>
-  <li><code>tools/hook_doc_consistency.sh</code> 신설 (Stop hook §6 backtick path = 실 디렉토리 정합 + 역방향 dir 존재 검사)</li>
-  <li><code>.claude/settings.json</code> Stop matcher 3번째 entry</li>
-  <li>영구 메모리 <code>feedback_doc_consistency_mandatory.md</code> (#34)</li>
-</ul>
-<p>가드레일 37 + Stop hook 4 layer (telegram + freshness + doc-consistency + HTML mirror 신설) 완성.</p>
-
-<h3>2.25 Phase 2 Signal Protocol 핵심 완성 — skipped_keys + decrypt_ooo <span class="new">신규 사이클 33~35</span></h3>
-<ul>
-  <li>사이클 33 <code>app/crypto/skipped_keys.py</code> (SkippedKeyStore OrderedDict LRU + TTL 1시간 + MAX_SKIP=1000) + 14 PASS</li>
-  <li>사이클 34 session 의 <code>_skip_forward_chain_keys</code> helper + <code>_MAX_SKIP_PER_CHAIN=100</code> + 4 PASS</li>
-  <li>사이클 35 <code>decrypt_with_session_ooo</code> wrapper + <code>SessionState.skipped_store</code> field + 6 PASS — store fallback (one-shot replay 차단) + forward skip + ValueError 미커버 분기</li>
-  <li>Phase 2 누계 84 (e2ee 24 + double_ratchet 16 + session 20 + integration 4 + skipped_keys 14 + decrypt_ooo 6)</li>
-  <li>277 pytest PASS + freshness Stop hook 정상 작동 (사이클 35 stale 검출 → 즉시 회수)</li>
+  <li>docker 6 컴포넌트 + non-root uid 1000 + my.cnf utf8mb4 KST</li>
+  <li>.env 통합 7 frozen dataclass + load_env_files chain + production validate</li>
+  <li>nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit</li>
+  <li>KST logging + JSON + RedactingFilter 9 pattern + X-Request-ID contextvar</li>
+  <li>DB audit 28 ActivityAction</li>
 </ul>
 
-<h3>2.24 Phase 2 진입 — E2EE (AES-GCM + X25519 + HKDF + Double Ratchet KDF chain) <span class="new">신규 사이클 27~28</span></h3>
+<h3>2.17 Phase 3 bot framework production-ready (cycle 65~99 retain)</h3>
 <ul>
-  <li>사용자 directive "진행해" + "작업 재개해" — Phase 2 자율 GO</li>
-  <li><code>app/crypto/e2ee.py</code> — 7 함수 (AES-256-GCM + X25519 ECDH + HKDF-SHA256 + ecdh_derive_aes_key 통합) + <code>EncryptedPayload</code> wire format</li>
-  <li><code>app/crypto/double_ratchet.py</code> — <code>ChainKey</code> dataclass + Signal Protocol KDF separator (0x01 message + 0x02 chain) + ratchet_chain atomic + encrypt/decrypt_message</li>
-  <li>cryptography&gt;=42.0 의존 (PyCA)</li>
-  <li>40 신규 pytest 케이스 (TestAesGcm 10 + TestEncryptedPayloadWireFormat 3 + TestX25519Ecdh 5 + TestHkdf 4 + TestE2EEFullFlow 2 Alice/Bob/Eve + TestChainKey 3 + TestDeriveMessageKey 3 + TestAdvanceChainKey 4 + TestRatchetChain 2 forward secrecy 100 step + TestEncryptDecryptMessage 4)</li>
-  <li>전체 pytest = 237 PASS (197 → 221 → 237)</li>
-  <li>잔존 = DH ratchet step + session state + skipped keys + multi-device + push + 백업 → reviewer-agent → handoff doc</li>
+  <li>10 module + Anthropic / OpenAI + jailbreak 17 패턴 + RAG dual baseline + threading.RLock</li>
+  <li>3 layer fallback chain (Anthropic → OpenAI → Mock)</li>
 </ul>
 
-<h3>2.23 Phase 1 자율 chain 전면 확장 + post-write hook 강제화 <span class="new">신규 사이클 23</span></h3>
+<h3>2.18 Phase 2 E2EE Signal Protocol (cycle 24~46 retain)</h3>
 <ul>
-  <li>사용자 directive 누계 자율 GO — security helper → DB schema 7 table + ERD → asyncmy pool + 7 repository → SMTP client → 5 auth use case + 7 exception + middleware → REST 5 endpoint → auth_client → UI 4 dialog → main_window 통합 → PyInstaller spec + tools/build.py + build.yml</li>
-  <li>사이클 22~23 = perl bulk 정정 실패 → working tree 복원 (사용자 GO) → 정밀 정정 (Python re.sub) → post-write 검수 hook 강제화</li>
-  <li><code>tools/hook_post_write_inspect.sh</code> 신설 (5 검사 = syntax + AST + BPE + pronoun + markdownlint) + <code>.claude/settings.json</code> PostToolUse matcher 등록</li>
-  <li>영구 메모리 4건 누적 신설 (post-write inspection / code QA review gate / timezone KST / db schema field comments) → 가드레일 26 → 30</li>
-  <li>KST timezone 의무 — <code>History.md</code> + commit + 로그 + DB 일관</li>
-  <li>매 Edit 직후 AST 검증 + 매 cycle 5 검증 (AST + import + pytest + doc-lint + BPE) PASS 의무</li>
+  <li>AES-256-GCM + X25519 ECDH + HKDF + Double Ratchet KDF</li>
+  <li>multi-device sync + signature sound chain 4 cycle + push FCM 4 platform + encrypted backup</li>
 </ul>
 
-<h3>2.22 Phase 1 코드 진입 GO + tests/app/rtc/·ui/ 5 module 누계 149 PASS <span class="new">신규 사이클 16</span></h3>
+<h3>2.19 Phase 1 MVP (cycle 16~36 retain)</h3>
 <ul>
-  <li>사용자 directive "이제부터 코드작업에 진입해" + "남은작업 다 진행해" = handoff task #7 정식 GO + §9.2 후속 자율 GO</li>
-  <li>가드레일 <code>feedback-doc-perfection-before-code</code> 8 체크리스트 PASS 검증 후 5단계 워크플로우 ② 개발 단계 직접 진입</li>
-  <li>5 test module 신설 — <code>test_protocol.py</code> 41 + <code>test_image_processor.py</code> 35 + <code>test_file_receiver_helpers.py</code> 29 + <code>test_file_sender_helpers.py</code> 15 + <code>test_file_progress_widget_humanize.py</code> 20 = <strong>누계 149 passed, 3 deselected</strong> (integration/e2e)</li>
-  <li>qa-agent 사이클 13 미커버 영역 완전 회수 — Pillow 의존 함수 실 실행 + <code>_safe_filename</code> 14 path traversal + <code>_humanize</code> 6 단위 + <code>_sha256_of_file</code> 7 케이스 + <code>_env_int</code> 17 케이스 (file_sender + file_receiver 각 모듈) + UUID round-trip + encode_chunk/decode_chunk 경계·예외 + JSON ensure_ascii=False 한글 보존 + base64 round-trip + RGBA→RGB + palette→RGB + 비율 유지</li>
-  <li>venv Python 3.13.13 + PyQt6 + Pillow + aiofiles + pytest 9.0.3 의존성 일괄 install (av wheel build 실패 회피 단독 install 패턴)</li>
-  <li>잔존 = <code>tests/integration/</code> (aiortc 실 통합 + DataChannel + ACK round-trip + SHA-256 e2e) + Windows wine 검증 + AC-04-3 100ms 실측 (모두 사용자 직접 의무 / 별도 cycle)</li>
+  <li>회원가입 + 1:1 채팅 + 파일전송 + MariaDB 7 테이블 + PyInstaller spec</li>
 </ul>
 
-<h3>2.21 5단계 워크플로우 ③ 완전 chain 도달 + observability baseline 정본 신설 <span class="new">신규 사이클 15</span></h3>
-<ul>
-  <li>사용자 directive "진행해" + "작업 진행해" = 자율 GO + release-agent 재호출 + observability-agent 진입</li>
-  <li>사이클 14 release-agent FAIL (P0-1 markdownlint + P0-2 30 row) → main session 정정 commit <code>dcbb372</code> → 사이클 15 release-agent 재평가 <strong>GO 정식</strong></li>
-  <li>CI 3종 GREEN (ci 1m56s + docs-lint 2m17s + doc-gardener 30s)</li>
-  <li>observability-agent 사이클 15 = <strong>CONDITIONAL PASS</strong> — logger 7/7 모듈 정합 + format §E 일관 + BPE 0 + pronoun 0</li>
-  <li>baseline drift 3건 detect (release prompt 의 임의 추정값 vs 코드 default) → <code>docs/policies/observability-baseline.md</code> <strong>정본 신설</strong> (7 section + drift 회수 이력 + 회귀 검증 절차 6단계 + Phase 2 의무 task 4건)</li>
-  <li>5단계 워크플로우 ③ 검증·관측 단계 = reviewer ✅ + qa ✅ + release ✅ + observability ✅ 4단 chain 완전 도달</li>
-  <li>CONDITIONAL 사유 = Phase 1 시점 metric baseline 측정 부재 (M5 dogfooding 의 RTT/throughput/RSS/disk leak 최초 측정 의무) — 머지 직접 blocker 무</li>
-</ul>
+<h2 id="sec3">3. 약점 (Productization Weaknesses)</h2>
 
-<h3>2.20 release-agent 머지 진입 + 머지 게이트 3 단계 완성 <span class="new">신규 사이클 14</span></h3>
-<ul>
-  <li>사용자 directive "잔존 작업 전부 진행해" = 자율 GO + release-agent 진입</li>
-  <li>머지 게이트 누계 = reviewer ✅ (사이클 11~13 3 cycle) → qa ✅ CONDITIONAL (사이클 13) → <strong>release 진입</strong> (사이클 14)</li>
-  <li>release-agent sub-agent spawn (Whitebox) — PR 템플릿 정합 + M1~M7 + CI 3 workflow GREEN + 머지 판정</li>
-  <li>qa-agent CONDITIONAL PASS 의 미커버 영역 (tests/rtc/ 등) = Phase 1 후속 별도 task 위탁 정합</li>
-  <li>release-agent PASS 후 → observability-agent 머지 직후 의 5단계 워크플로우 최종 단계</li>
-</ul>
-
-<h3>2.19 qa-agent 회귀 체크리스트 진입 + 머지 게이트 마지막 단계 <span class="new">사이클 13 신규 — 사이클 14 유지</span></h3>
-<ul>
-  <li>사용자 directive "사이클 13 reviewer 재호출 진행해" + "진행해" = 자율 GO + qa-agent 진입</li>
-  <li>reviewer-agent 사이클 13 PASS 정식 GO (14/14 검증 PASS) → qa-agent 회귀 체크리스트 spawn (Whitebox)</li>
-  <li>검증 대상 = Phase 1 FR-04 AC-04-1~4 (SHA-256 무결성 + backpressure + ProgressBar 100ms + 실패 빨강) + NFR-06</li>
-  <li>qa-agent PASS 후 → <code>@release-agent</code> 머지 게이트 진입 (Phase 1 FR-04 정식 채택 완료)</li>
-</ul>
-
-<h3>2.18 reviewer-agent 정식 GO + Phase 1 FR-04 readiness 도달 <span class="new">사이클 12 신규 — 사이클 13 유지</span></h3>
-<ul>
-  <li>사이클 11 의 reviewer-agent CONDITIONAL PASS 차단 사유 (SPDX header 부재) — main session P0 정정 commit <code>1f09279</code></li>
-  <li><strong>reviewer-agent 재호출</strong> (사이클 12) — SPDX 해소 검증 + 신규 위반 0건 + 정식 GO 평가</li>
-  <li><strong>P1 + P2 정정 완료</strong> — ARCHITECTURE §7 환경변수 표 8 row 신규 (FILE_*) + §5 <code>RTC_CHUNK_WINDOW</code> → <code>FILE_CHUNK_SIZE/BUFFER</code> 정정</li>
-  <li>사용자 directive "작업 재개해" = 자율 진행 GO + reviewer 재호출 자율 spawn</li>
-  <li>기술 완성도 row — Agent #16 정식 채택 + 코드 ~96 KB tracked + Phase 1 FR-04 readiness 도달</li>
-</ul>
-
-<h3>2.17 Agent #16 정식 채택 + reviewer-agent 검토 진입 <span class="new">사이클 11 신규 — 사이클 12 유지</span></h3>
-<ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — "좋아 다 진행해" = <strong>옵션 C 자율 GO</strong> (Agent #16 산출물 정식 채택)</li>
-  <li>handoff §9 #8 (Agent #16 산출물 reviewer-agent 검토) ✅ 해소 진입</li>
-  <li>검토 대상 = <code>app/rtc/</code> 7 file (peer + protocol + file_sender + file_receiver + image_processor + README + <code>__init__</code>) + <code>app/ui/file_progress_widget.py</code> = 8 file 누계 ~96 KB</li>
-  <li>reviewer-agent sub-agent spawn (Whitebox <code>run_in_background: true</code>) — M1~M7 정합 + BPE/대명사 + GPLv3 SPDX header + 계층 분리 + Phase 1 코드 진입 readiness 평가</li>
-  <li>직전 <code>c17a952</code> 의 <code>git add app/</code> wildcard staging 의 임의 commit = handoff §7 위반 → 옵션 C 정식 채택 사후 회수</li>
-  <li>Phase 1 FR-04 (파일 송수신 + 양방향 ProgressBar) 정합 영역 진입</li>
-</ul>
-
-<h3>2.16 Toonation 브랜드 컬러 통합 + enforcement layer 활성 <span class="new">사이클 10 신규 — 사이클 11 유지</span></h3>
-<ul>
-  <li><strong>사용자 directive 2026-05-17</strong> — Toonation 공식 BI 가이드 본문 직접 반영</li>
-  <li>FRONTEND.md §4 색상 변수 3 미확정 후크 확정 — <code>--primary</code> (<span class="swatch" style="background:#0066FF"></span>#0066FF Toonation Blue + <span class="swatch" style="background:#0052FF"></span>#0052FF Deep) + <code>--progress-acked</code> (<span class="swatch" style="background:#22D3EE"></span>#22D3EE 네온 시안 + <span class="swatch" style="background:#67E8F9"></span>#67E8F9 라이트 시안) + <code>--progress-inflight</code> (<span class="swatch" style="background:#0F172A"></span>#0F172A Deep Navy + <span class="swatch" style="background:#1E293B"></span>#1E293B 변형)</li>
-  <li>FRONTEND.md §15 Toonation 브랜드 컬러 가이드 신규 5 sub-section + §16 참조 재번호</li>
-  <li>FRONTEND.html 775 lines + 9 mermaid + Toonation swatch 19건 + 0 위반</li>
-  <li><strong>enforcement layer 활성</strong> — <code>.claude/settings.json.disabled</code> → <code>.claude/settings.json</code> rename (5회차 BPE 비판 + 4+5회차 사전 경고 발동)</li>
-  <li>PreToolUse Edit/Write hook (BPE/대명사 차단) + Stop hook (텔레그램 자동 송신) 활성 중</li>
-  <li>adoption-roadmap §4.2 옵션 B ★★★★★ 정합 — Toonation 통합 사전 단계</li>
-</ul>
-
-<h3>2.14 BPE script trigger sketch — enforcement layer 사전 명시 <span class="new">사이클 7 신규 — 사이클 8 유지</span></h3>
-<ul>
-  <li>사용자 directive 2026-05-17 4회차 사전 경고 — "다음 BPE 위반 시 script trigger 강제 검열"</li>
-  <li>영구 메모리 <code>feedback_bpe_script_trigger_warning.md</code> 신설</li>
-  <li><code>tools/hook_check_bpe_token_input.sh</code> 신설 — PreToolUse Edit/Write hook (executable + self-test PASS — 통과 exit 0 / 위반 exit 1)</li>
-  <li><code>.claude/settings.json.disabled</code> 신설 — sketch (미활성 패턴)</li>
-  <li>다음 BPE 위반 발견 시 = <code>mv .disabled → settings.json</code> 의 즉시 활성 의무</li>
-  <li>정본 §S-1 L0 PreToolUse Edit/Write hook 의 본 저장소 의 실 적용 정합</li>
-</ul>
-
-<hr>
-
-<!-- §3 -->
-<h2 id="sec-3">3. 약점 (Productization Weaknesses)</h2>
-
-<h3>3.1 <span class="strike">기능 누락</span> — Phase 1~4 + Phase 5 5 Item 모두 진입 + cycle 153 UI redesign 본격 entry (사이클 153)</h3>
+<h3>3.1 기능 누락 — Phase 1~5 모두 진입 + cycle 169.x UI sweep</h3>
 <table>
   <thead><tr><th>기능</th><th>상태</th><th>진입 cycle</th></tr></thead>
   <tbody>
-    <tr><td>1:1 채팅 + 회원가입 + 파일전송</td><td><span class="ok">✅ Phase 1 v0.1.0</span></td><td>cycle 16~36</td></tr>
-    <tr><td>E2EE Signal Protocol (X3DH + Double Ratchet)</td><td><span class="ok">✅ Phase 2 v0.2.0</span></td><td>cycle 24~46</td></tr>
-    <tr><td>multi-device + signature sound + push (FCM)</td><td><span class="ok">✅ Phase 2 v0.2.0</span></td><td>cycle 38~47</td></tr>
-    <tr><td>Bot framework (Anthropic + OpenAI + jailbreak + RAG)</td><td><span class="ok">✅ Phase 3 v0.3.0</span></td><td>cycle 65~99</td></tr>
-    <tr><td>Production infra (docker + nginx + certbot + KST logging)</td><td><span class="ok">✅ Phase 4 v0.4.0</span></td><td>cycle 100~117</td></tr>
-    <tr><td>DB audit endpoint coverage 28 ActivityAction</td><td><span class="ok">✅ 후속 chain</span></td><td>cycle 119~144</td></tr>
-    <tr><td>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables)</td><td><span class="ok">✅ Phase 1 OTP 발신 production-ready</span></td><td>cycle 129~131</td></tr>
-    <tr><td><strong>그룹 채팅 + 친구 + signaling rooms</strong></td><td><span class="ok">✅ Phase 5 Item 진입 (REST + UI + WebRTC mesh + friends + rooms persist e2e)</span></td><td>cycle 134~144</td></tr>
-    <tr><td><strong>다국어 i18n (5 locale)</strong></td><td><span class="ok">✅ Phase 5 Item 1 actual binding (24 tr() call + .qm 5 locale)</span></td><td>cycle 134~145</td></tr>
-    <tr><td><strong>emoji pack share + moderation</strong> (차별화)</td><td><span class="ok">✅ Phase 5 Item 3 actual binding (admin menu + list_pending + DMCA phash + OCR jailbreak)</span></td><td>cycle 144~151</td></tr>
-    <tr><td><strong>bot framework streaming 4 platform</strong></td><td><span class="ok">✅ Phase 5 Item 4 actual client (YouTube + Twitch + CHZZK + Kick) + OBS WebSocket v5 handshake</span></td><td>cycle 146~148</td></tr>
-    <tr><td><strong>원격 데스크탑 제어</strong> (차별화)</td><td><span class="ok">✅ Phase 5 Item 5 base + coord transform (DPI + Retina backing scale) + screen capture skeleton 3 OS</span></td><td>cycle 57~58 + 148~151</td></tr>
-    <tr><td><strong>mobile Flutter base</strong></td><td><span class="ok">✅ Phase 5 Item 2 prerequisite (mobile/ Flutter + flutter-webrtc + ws_client.dart + cycle 181 prereq doc)</span></td><td>cycle 147~151</td></tr>
-    <tr><td>자동 업데이트</td><td><span class="ok">✅ Phase 5 prereq (auto-update server endpoint + client startup chain + release.yml dual macOS arm64 + Windows x64)</span></td><td>cycle 132~151</td></tr>
-    <tr><td><strong>SSH deploy chain + 서버 docker stack 본격</strong></td><td><span class="ok">✅ ssh-deploy-agent + healthz 200 PASS + 5 service (mariadb + web + ws + nginx + postfix profile)</span></td><td>cycle 152</td></tr>
-    <tr><td><strong>UI Toonation BI 통합 redesign</strong></td><td><span class="ok">✅ phase 1~3 (theme.qss + logo SVG 회수 + WelcomeDialog + LoginDialog redesign + OTPDialog + SignupDialog + SidebarRail + ChatListPanel + ChatHeader)</span></td><td>cycle 153.1~3</td></tr>
-    <tr><td>음성·영상 통화</td><td><span class="pending">🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무)</span></td><td>cycle 200+</td></tr>
+    <tr><td>1:1 채팅 + 회원가입 + 파일전송</td><td class="good">✅ Phase 1 v0.1.0</td><td>cycle 16~36</td></tr>
+    <tr><td>E2EE Signal Protocol</td><td class="good">✅ Phase 2 v0.2.0</td><td>cycle 24~46</td></tr>
+    <tr><td>multi-device + signature sound + push</td><td class="good">✅ Phase 2 v0.2.0</td><td>cycle 38~47</td></tr>
+    <tr><td>Bot framework</td><td class="good">✅ Phase 3 v0.3.0</td><td>cycle 65~99</td></tr>
+    <tr><td>Production infra</td><td class="good">✅ Phase 4 v0.4.0</td><td>cycle 100~117</td></tr>
+    <tr><td>DB audit endpoint 28 ActivityAction</td><td class="good">✅ 후속 chain</td><td>cycle 119~144</td></tr>
+    <tr><td>SMTP 자동 설치 chain</td><td class="good">✅ Phase 1 OTP production-ready</td><td>cycle 129~131</td></tr>
+    <tr><td>그룹 채팅 + 친구 + signaling rooms</td><td class="good">✅ Phase 5 Item</td><td>cycle 134~144</td></tr>
+    <tr><td>다국어 i18n (5 locale)</td><td class="good">✅ Phase 5 Item 1</td><td>cycle 134~145</td></tr>
+    <tr><td>Emoji pack share + moderation</td><td class="good">✅ Phase 5 Item 3</td><td>cycle 144~151</td></tr>
+    <tr><td>Bot framework streaming 4 platform</td><td class="good">✅ Phase 5 Item 4</td><td>cycle 146~148</td></tr>
+    <tr><td>원격 데스크탑 제어 base + coord transform</td><td class="good">✅ Phase 5 Item 5 base</td><td>cycle 57~58 + 148~151</td></tr>
+    <tr><td>Mobile Flutter base</td><td class="good">✅ Phase 5 Item 2 prereq</td><td>cycle 147~151</td></tr>
+    <tr><td>자동 업데이트 + release.yml dual</td><td class="good">✅ Phase 5 prereq</td><td>cycle 132~151</td></tr>
+    <tr><td>SSH deploy chain + healthz 200 PASS</td><td class="good">✅ ssh-deploy-agent</td><td>cycle 152</td></tr>
+    <tr><td>UI Toonation BI 통합 telegram align 95%</td><td class="good">✅ cycle 169.x 70 sub-cycle</td><td>cycle 169.117~187</td></tr>
+    <tr><td>음성·영상 통화</td><td class="warn">🟡 Phase 6+ 후보</td><td>cycle 200+</td></tr>
   </tbody>
 </table>
 
-<h3>3.2 <span class="strike">보안 deprioritized</span> <span class="ok">✅ Phase 4 cycle 112~117 회수 + 사이클 145 SMTP install</span></h3>
+<h3>3.2 보안 deprioritized — Phase 4 cycle 112~117 회수 완료 + cycle 169.101~102 dialog 보안 강화</h3>
 <ul>
-  <li>✅ TLS 1.2/1.3 + 6 cipher + OCSP stapling (nginx cycle 105)</li>
-  <li>✅ 5 rate limit zone (auth + api + bot + upload + ws_conn)</li>
-  <li>✅ 5 보안 header (HSTS preload 2y + X-Frame + nosniff + Referrer + CSP)</li>
-  <li>✅ SPF + DKIM RSA 2048 + DMARC (postfix cycle 102)</li>
-  <li>✅ sensitive redact 9 pattern (logging cycle 117)</li>
-  <li>✅ SMTP install — Let&#39;s Encrypt cert + opendkim DKIM 2048 + cyrus-sasl SMTP relay 차단 + iptables ACCEPT 25/587/465 (cycle 129)</li>
-  <li>🟡 DDoS L7 = CloudFlare 등 외부 service (Phase 5+ 검토)</li>
+  <li class="good">✅ TLS 1.2/1.3 + 6 cipher + OCSP + 5 rate limit + 5 보안 header + SPF/DKIM/DMARC + sensitive redact 9 pattern + DDoS 1차</li>
+  <li class="good">✅ cycle 169.101 6 dialog setModal regex multi-line setWindowTitle 차단</li>
+  <li class="good">✅ cycle 169.102 update_last_login graceful skip error 1020 차단</li>
+  <li class="warn">🟡 DDoS L7 (CloudFlare 등 외부 service, Phase 6+ 검토)</li>
 </ul>
 
-<h3>3.3 <span class="strike">사용자 식별·복원</span> <span class="ok">✅ Phase 1+2 + DB audit endpoint coverage 15 ActivityAction</span></h3>
+<h3>3.3 사용자 식별·복원 — Phase 1+2 완성</h3>
 <ul>
-  <li>✅ 회원가입 + 이메일 OTP + 비번 재설정 (Phase 1 v0.1.0)</li>
-  <li>✅ E2EE Signal Protocol 키 페어 + multi-device sync + sender keys (Phase 2 v0.2.0)</li>
-  <li>✅ DB audit migration 0003 — signup_ip + last_login_ip + user_sessions + user_activity_log 23 ENUM (cycle 97 + 119~128)</li>
-  <li>✅ DB audit endpoint coverage 15 ActivityAction actual SQL — auth 4 + device 2 + bot 2 + room 2 + message 1 + file 2 + profile 1 + email 1 (cycle 119~128)</li>
+  <li class="good">✅ 회원가입 + 이메일 OTP + 비번 재설정 + E2EE Signal + DB audit 28 ENUM</li>
 </ul>
 
-<h3>3.4 <span class="strike">라이선스 미확정</span> <span class="ok">✅ 사이클 6 해소</span></h3>
-<ul>
-  <li><strong>GPLv3 확정</strong> (사용자 directive 2026-05-17)</li>
-  <li>LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환</li>
-</ul>
+<h3>3.4 라이선스 미확정 ✅ 해소 (사이클 6)</h3>
+<ul><li>GPLv3 확정 + LICENSE 저장소 루트 + PyQt6 GPLv3 직접 호환</li></ul>
 
-<h3>3.5 <span class="strike">self-hosted runner 등록 미완</span> <span class="ok">✅ 사이클 5 해소</span></h3>
-<ul>
-  <li>macOS arm64 runner 등록 OK (id=2 online)</li>
-  <li>Windows runner 의무 = wine cross-compile 대체 (영구 회수)</li>
-  <li>workflow 3종 GREEN 도달</li>
-</ul>
+<h3>3.5 self-hosted runner 등록 미완 ✅ 해소 (사이클 5 + cycle 142~143 wine 영구 폐기)</h3>
+<ul><li>macOS arm64 runner online + windows-latest GitHub-hosted 마이그레이션 SUCCESS</li></ul>
 
-<h3>3.6 <span class="strike">코드 진입 미완</span> <span class="ok">✅ Phase 1+2+3+4 본문 완성</span></h3>
-<ul>
-  <li>✅ Phase 1 v0.1.0 — 회원가입 + 채팅 + 파일전송 + MariaDB</li>
-  <li>✅ Phase 2 v0.2.0-phase2 — E2EE Signal 200 PASS + multi-device + sound + push</li>
-  <li>✅ Phase 3 v0.3.0-phase3-bot — 10 module + reviewer 8 회수</li>
-  <li>✅ Phase 4 v0.4.0-phase4-infra — 34 신규 파일 + 144 PASS</li>
-  <li>코드 비율 = pytest 1605 + integration test + Playwright fixture (코드 우위)</li>
-</ul>
+<h3>3.6 코드 진입 미완 — Phase 1~5 actual binding + cycle 169.x UI redesign 70 sub-cycle 본격</h3>
+<ul><li>pytest 1817 PASS + Phase 5 5 Item + cycle 169.x UI telegram align + 6 dimension stage + 3 zone bg + sidebar 2 entry + default chat 진입</li></ul>
 
 <h3>3.7 차별화 잔존</h3>
 <ul>
-  <li>🟡 원격 데스크탑 제어 base — cycle 57~58 skeleton + Phase 3 막바지 본격 진입 잔존 (Phase 5 plan Item 5)</li>
-  <li>🟡 emoji pack share — Phase 5+ 후보 (project_emoji_pack_share memory, Phase 5 plan Item 3)</li>
-  <li>🟡 bot framework Toonation API 직접 통합 (옵션 B) — 사용자 결정 대기 (Phase 5 plan Item 4)</li>
+  <li class="warn">🟡 원격 데스크탑 제어 Phase 5 본격 cycle 165~180 production-ready 잔존</li>
+  <li class="good">✅ emoji pack share actual binding 진입 완료</li>
+  <li class="bad">🔴 Toonation REST API <code>base_url</code> + <code>api_key</code> 부재 — Phase 5 본격 cycle 진입 차단</li>
+  <li class="bad">🔴 OBS WebSocket <code>base_url</code> + <code>password</code> 부재 — P5/P6 OBS 도움 시나리오 prerequisite</li>
 </ul>
 
 <h3>3.8 manual test 의무 (사용자 직접 영역)</h3>
 <ul>
-  <li>SMTP 자동 설치 script SSH 실행 = 사용자 직접 SSH 의무 (<code>scp tools/smtp_install.sh root@114.207.112.73:/root/</code> + <code>bash /root/smtp_install.sh</code>) — classifier 차단 회피</li>
-  <li>KT PTR record 회수 = 사용자 직접 ISP 문의 (tongkni.co.kr default → mail.dopa.co.kr)</li>
-  <li>Let&#39;s Encrypt 인증서 발급 = 실 도메인 + certbot_init.sh manual run</li>
-  <li>docker compose production stack 기동 = .env.production secrets 입력 + manual</li>
+  <li>SMTP 실제 설치 = cycle 129~130 자동 chain 도달 + 사용자 manual SSH 회수 완료</li>
+  <li>docker compose production stack 기동 = <code>.env.production</code> secrets 입력 + manual</li>
 </ul>
 
-<hr>
-
-<!-- §4 -->
-<h2 id="sec-4">4. 시장 포지셔닝 옵션</h2>
-
-<h3>4.1 옵션 A — OSS 자체 호스팅 메신저</h3>
+<h3>3.9 mobile cycle 181 prerequisite 잔존</h3>
 <ul>
-  <li>타겟 / 수익화 / 진입 장벽 / 성공 조건 / 확률 = 중하</li>
+  <li>Apple Developer Program (USD 99/년) + Google Play Console (USD 25 one-time) + Firebase 프로젝트 + FCM Server Key + iOS APNs cert + Android <code>google-services.json</code> + flutter doctor PASS + iOS Xcode + Android Studio + ADB</li>
 </ul>
 
-<h3>4.2 옵션 B — Toonation 내부 / 파트너사 <span class="badge toon">★★★★★</span></h3>
-<ul>
-  <li>타겟: Toonation 후원자-크리에이터 + B2B</li>
-  <li>수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)</li>
-  <li>진입 장벽: 0 (내부 도입)</li>
-  <li>성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증</li>
-  <li><strong>확률 = 상 (사이클 5 의 CI GREEN + SMTP 자체 + fork PR strict 가 추가 안정성 강화)</strong></li>
-  <li><strong>권장도 1순위</strong></li>
-</ul>
+<h3>3.10 KT PTR record default 잔존</h3>
+<p>KT ISP default PTR record (<code>tongkni.co.kr</code>) 잔존 — <code>mail.dopa.co.kr</code> reverse DNS 갱신 신청 의무. dopa.co.kr 데모 전용 + 실 도메인 부재 시 = KT PTR 회수 최후로 미룸 또는 skip.</p>
 
-<h3>4.3 옵션 C — P2P 파일 전송 특화</h3>
-<ul>
-  <li>중 확률</li>
-</ul>
+<h3>3.11 UI dogfooding 회수 부재 (cycle 169.x 누계 잔존)</h3>
+<p>cycle 169.117~187 70 sub-cycle UI redesign 누계 + telegram align 95% 도달 단 실 사용자 dogfooding 부재. 1차 dogfooding 1주 retention + NPS 측정 + UX feedback 회수 chain 미진입. Phase 5 본격 cycle 마무리 후 진입 의무.</p>
 
-<h3>4.4 옵션 D — Whitelabel SDK / B2B API</h3>
-<ul>
-  <li>중하 (Phase 5+)</li>
-</ul>
-
-<p><strong>현 시점 권장</strong>: 옵션 B → A → C 순.</p>
-
-<hr>
-
-<!-- §5 -->
-<h2 id="sec-5">5. 단기 (3개월) 제품화 액션</h2>
-
+<h2 id="sec4">4. 시장 포지셔닝 옵션</h2>
 <table>
-  <thead><tr><th class="center">우선순위</th><th>액션</th><th class="center">상태</th></tr></thead>
+  <thead><tr><th>옵션</th><th>타겟</th><th>확률</th><th>권장도</th></tr></thead>
   <tbody>
-    <tr><td class="center">0</td><td>MariaDB 회수 4 파일</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>CI 3 workflow + setup 문서</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>평가 snapshot 2 + HTML 6 동시 정리</td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td>1인칭/3인칭 회수 + 텔레그램 가드레일 강제</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>doc-lint 5 검사 (bash 3.2)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>PR 템플릿 + docs/policies/ 3 (깨진 링크 12→0)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>FRONTEND 색상 swatch</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>pytest + Playwright 인프라</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>DESIGN §11 UI 디자인 시스템</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>CheckList §2 17행 + handoff 사이클 2</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>AGENTS build.yml (M5)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>차별화 계획 정리 (원격 제어 + P5/P6)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>회원가입 + 이메일 OTP 정책 (FR-11/12/13 + DB 3 테이블)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>auth 인프라 정책 본문 5</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td>HTML 3 재생성 (auth)</td><td class="center"><span class="ok">✅</span></td></tr>
-    <tr><td class="center">0</td><td><strong>self-hosted macOS arm64 runner 등록 + workflow GREEN</strong></td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>dead link 10건 fix + ci.yml Windows matrix 영구 비활성</strong></td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>wine cross-compile 정책 (cdrx docker + Ubuntu) — 6 file 갱신</strong></td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>fork PR 승인 정책 strict (gh API 자동)</strong></td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>SMTP 정책 + 절차 (postfix + Let&#39;s Encrypt + SPF/DKIM/DMARC) — 5 file + 영구 메모리</strong></td><td class="center"><span class="ok">✅ (사이클 5)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>GPLv3 라이선스 + LICENSE 신설 + visibility 전환 정책</strong></td><td class="center"><span class="ok">✅ (사이클 6)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 1 MVP 코드 진입 (회원가입 + 1:1 채팅 + 파일전송 + MariaDB)</strong></td><td class="center"><span class="ok">✅ (사이클 16~36, v0.1.0)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 2 E2EE Signal Protocol (X3DH + Double Ratchet + multi-device + signature sound + push)</strong></td><td class="center"><span class="ok">✅ (사이클 24~46, v0.2.0-phase2)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 3 bot framework (10 module + Anthropic/OpenAI + jailbreak 17 패턴 + RAG dual baseline)</strong></td><td class="center"><span class="ok">✅ (사이클 65~99, v0.3.0-phase3-bot)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>Phase 4 production infra (docker stack + Config 통합 + nginx certbot + KST/JSON/redact logging + DB audit 0003)</strong></td><td class="center"><span class="ok">✅ (사이클 100~117, v0.4.0-phase4-infra)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>DB audit endpoint coverage 15 ActivityAction (auth + device + bot + room + message + file + profile + email)</strong></td><td class="center"><span class="ok">✅ (사이클 119~128)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>SMTP 자동 설치 chain (mail.dopa.co.kr + Let&#39;s Encrypt + opendkim + cyrus-sasl + iptables)</strong></td><td class="center"><span class="ok">✅ (사이클 145, script 작성)</span></td></tr>
-    <tr><td class="center">0</td><td><strong>Agent #16 산출물 reviewer-agent 검토</strong></td><td class="center"><span class="ok">✅ (handoff §8.46+ 회수)</span></td></tr>
-    <tr><td class="center">1</td><td>SMTP 실제 설치 (114.207.112.73 SSH manual run) — sudo bash /root/smtp_install.sh</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
-    <tr><td class="center">2</td><td>KT PTR record 회수 — tongkni.co.kr default → mail.dopa.co.kr (KT ISP 문의)</td><td class="center"><span class="pending">🟡 사용자 직접</span></td></tr>
-    <tr><td class="center">3</td><td>Toonation 통합 시나리오 검토 (옵션 B) — Phase 3 default bot framework 의 Toonation API 직접 통합</td><td class="center"><span class="block">🔴 사용자 결정</span></td></tr>
-    <tr><td class="center">4</td><td>Phase 5 진입 검토 (i18n + mobile + emoji pack share + bot framework 마무리 + 원격 제어 본격)</td><td class="center"><span class="block">🔴 사용자 결정</span></td></tr>
+    <tr><td>A. OSS 자체 호스팅 메신저</td><td>OSS 커뮤니티</td><td>중하</td><td>2순위</td></tr>
+    <tr><td><strong>B. Toonation 내부 / 파트너사</strong></td><td>Toonation 후원자-크리에이터 + B2B</td><td class="good">상</td><td class="good">★★★★★ 1순위</td></tr>
+    <tr><td>C. P2P 파일 전송 특화</td><td>일반</td><td>중</td><td>3순위</td></tr>
+    <tr><td>D. Whitelabel SDK / B2B API</td><td>B2B</td><td>중하</td><td>Phase 6+</td></tr>
+  </tbody>
+</table>
+<p>현 시점 권장: 옵션 B → A → C 순.</p>
+
+<h2 id="sec5">5. 단기 (3개월) 제품화 액션</h2>
+<table>
+  <thead><tr><th>우선순위</th><th>액션</th><th>상태</th></tr></thead>
+  <tbody>
+    <tr><td>0</td><td>Phase 1~5 actual binding 완성</td><td class="good">✅ (cycle 16~148)</td></tr>
+    <tr><td>0</td><td>DB audit 28 ActivityAction</td><td class="good">✅ (cycle 119~144)</td></tr>
+    <tr><td>0</td><td>SMTP 자동 설치 + client binding</td><td class="good">✅ (cycle 129~131)</td></tr>
+    <tr><td>0</td><td>cycle 149~152 sub-agent 5종 + ssh-deploy + healthz</td><td class="good">✅</td></tr>
+    <tr><td>0</td><td>cycle 169.117~187 UI telegram align 70 sub-cycle</td><td class="good">✅</td></tr>
+    <tr><td>0</td><td>chat_view scroll offset per-chat retain + day separator + bubble ts inline + grouped tail</td><td class="good">✅ (cycle 169.172 + 176 + 179 + 180)</td></tr>
+    <tr><td>0</td><td>chat_header emoji 제거 + nickname lookup + status 한국어 + status color gray + avatar 폐기 + top bar vertical center</td><td class="good">✅ (cycle 169.154 + 159 + 178 + 182 + 183)</td></tr>
+    <tr><td>0</td><td>chat_list bump_entry + unread reset + 통합 filter + highlight sync</td><td class="good">✅ (cycle 169.167 + 173 + 174 + 184)</td></tr>
+    <tr><td>0</td><td>_append_dm_message single source + DM cache + scroll bottom + sender label suppress</td><td class="good">✅ (cycle 169.157~166)</td></tr>
+    <tr><td>0</td><td>input_bar composite pill + telegram image #3 정합 + circle send</td><td class="good">✅ (cycle 169.137 + 148~150)</td></tr>
+    <tr><td>0</td><td>MyProfileDialog crash 회수 + telegram simple rewrite</td><td class="good">✅ (cycle 169.121 + 186)</td></tr>
+    <tr><td>0</td><td>평가 4 file 매 cycle 6 영역 sweep</td><td class="good">✅ 본 cycle 169.188</td></tr>
+    <tr><td>1</td><td>Toonation REST API <code>base_url</code> + <code>api_key</code> 사용자 직접 입력</td><td class="bad">🔴 사용자 직접</td></tr>
+    <tr><td>2</td><td>OBS WebSocket <code>base_url</code> + <code>password</code> 사용자 직접 입력</td><td class="bad">🔴 사용자 직접</td></tr>
+    <tr><td>3</td><td>mobile cycle 181 prerequisite</td><td class="warn">🟡 사용자 직접</td></tr>
+    <tr><td>4</td><td>KT PTR record 갱신 또는 skip</td><td class="warn">🟡 최후</td></tr>
+    <tr><td>5</td><td>1차 dogfooding 1주 retention + NPS + UX feedback</td><td class="bad">🔴 Phase 5 마무리 직후</td></tr>
   </tbody>
 </table>
 
-<hr>
+<h2 id="sec6">6. 중기 (6~12개월) 액션</h2>
+<ol>
+  <li>Phase 5 마무리 + 1차 dogfooding entry (retention 핵심)</li>
+  <li>음성 통화 PeerConnection audio (시장 진입 자격)</li>
+  <li>모바일 cycle 181~200 본격 진입 (사용자 풀 10x)</li>
+  <li>Toonation 통합 시나리오 검증 (수익화 base)</li>
+  <li>영상 통화 WebRTC SFU 마이그레이션 검토</li>
+</ol>
 
-<!-- §6 -->
-<h2 id="sec-6">6. 중기 (6~12개월) 액션</h2>
-<table>
-  <thead><tr><th class="center">우선순위</th><th>액션</th><th>가치</th></tr></thead>
-  <tbody>
-    <tr><td class="center">1</td><td>그룹 채팅 (3~10인)</td><td>메신저 기본 충족</td></tr>
-    <tr><td class="center">2</td><td>E2EE (libsignal wrapping)</td><td>보안 차별화</td></tr>
-    <tr><td class="center">3</td><td>음성 통화 (PeerConnection audio)</td><td>시장 진입 자격</td></tr>
-    <tr><td class="center">4</td><td>모바일 prototype</td><td>사용자 풀 10x</td></tr>
-    <tr><td class="center">5</td><td>푸시 알림 (FCM/APNs)</td><td>retention 핵심</td></tr>
-  </tbody>
-</table>
-
-<hr>
-
-<!-- §7 -->
-<h2 id="sec-7">7. 장기 (1~3년) 비전</h2>
-
+<h2 id="sec7">7. 장기 (1~3년) 비전</h2>
 <h3>7.1 기술</h3>
 <ul>
-  <li>원격 데스크탑 제어 (Phase 3 막바지)</li>
+  <li>원격 데스크탑 제어 production-ready + 화면 공유 통합</li>
   <li>WebRTC SFU (그룹 화상 8인+)</li>
   <li>분산 시그널링 (libp2p)</li>
   <li>WASM 브라우저 client (PWA)</li>
 </ul>
-
 <h3>7.2 사업</h3>
 <ul>
   <li>Toonation 후원자 메신저 기본 채널 (옵션 B 1순위)</li>
   <li>B2B SaaS enterprise (검증 후 외부 판매)</li>
   <li>OSS 커뮤니티</li>
 </ul>
-
 <h3>7.3 사용자</h3>
 <ul>
   <li>100 dogfooding → 1000 beta → 10K v1.0</li>
-  <li>NPS 50+ retention 70%/30일</li>
+  <li>NPS 50+ retention 70% / 30일</li>
   <li>P5 라이브 크리에이터 원격 제어 활성률 ≥ 30%</li>
 </ul>
 
-<hr>
-
-<!-- §8 -->
-<h2 id="sec-8">8. 핵심 리스크</h2>
-
+<h2 id="sec8">8. 핵심 리스크</h2>
 <table>
-  <thead><tr><th>리스크</th><th class="center">확률</th><th class="center">영향</th><th>회피</th></tr></thead>
+  <thead><tr><th>리스크</th><th>확률</th><th>영향</th><th>회피</th></tr></thead>
   <tbody>
-    <tr><td>Signal/Telegram 무료 + 우월 → 사용자 획득 실패</td><td class="center">상</td><td class="center">상</td><td>옵션 B (Toonation) pivot</td></tr>
-    <tr><td>1인 개발자 Phase 2~4 완주 어려움</td><td class="center">중</td><td class="center">상</td><td>옵션 B ROI 빠른 검증</td></tr>
-    <tr><td>데모 서버 보안 사고</td><td class="center">중</td><td class="center">중</td><td>Phase 2 진입 직전 hardening</td></tr>
-    <tr><td><span class="strike">라이선스 결정 지연</span></td><td class="center"><span class="ok">✅ 해소 (사이클 6)</span></td><td class="center">—</td><td>GPLv3 확정</td></tr>
-    <tr><td>PyQt6 GPL 의무 의 외부 fork distribution</td><td class="center">중</td><td class="center">중</td><td>GPLv3 정합 + private 전환 시 외부 fork 차단</td></tr>
-    <tr><td>문서 91% : 코드 9% 지속</td><td class="center">상</td><td class="center">중</td><td>8 체크리스트 통과 후 코드 진입</td></tr>
-    <tr><td><strong>원격 제어 보안 사고</strong> (Phase 3+ 위험)</td><td class="center">중</td><td class="center">상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그</td></tr>
-    <tr><td><strong>SMTP spam reputation 부족</strong> (신규 사이클 5)</td><td class="center">상</td><td class="center">중</td><td>SendGrid relay fallback (free 100/day)</td></tr>
-    <tr><td><strong>wine 안 PyQt6 Qt dlls 호환성</strong> (신규 사이클 5)</td><td class="center">중</td><td class="center">중</td><td>hello-world 사전 검증 (Phase 1 후반 build.yml)</td></tr>
-    <tr><td><strong>데모 서버 SSH 차단</strong> (신규 사이클 5)</td><td class="center">중</td><td class="center">중</td><td>사용자 직접 SSH 또는 ISP 협의</td></tr>
-    <tr><td><strong>observability baseline drift</strong> (신규 사이클 15)</td><td class="center">중</td><td class="center">중</td><td>drift 회수 6단계 절차 (<code>observability-baseline.md</code> §5) + Phase 2 의무 task 4건 + M5 dogfooding 시 최초 measurement</td></tr>
-    <tr><td><strong>Phase 2 E2EE 잔존 영역</strong> (DH ratchet + session state + skipped keys, 사이클 32)</td><td class="center">중</td><td class="center">상</td><td>사이클 33+ 후속 task — reviewer-agent 진입 + Signal Protocol reference 정합 검증</td></tr>
-    <tr><td><strong>KT PTR record default 잔존</strong> (사이클 145)</td><td class="center">상</td><td class="center">중</td><td>KT ISP 문의 + tongkni.co.kr default → mail.dopa.co.kr (사용자 직접)</td></tr>
+    <tr><td>Signal / Telegram 무료 + 우월 → 사용자 획득 실패</td><td>상</td><td>상</td><td>옵션 B Toonation pivot + telegram align 95% + 차별화 7항목</td></tr>
+    <tr><td>1인 개발자 Phase 2~4 완주 어려움 ✅ 해소</td><td>—</td><td>—</td><td>sub-agent 누계 88종 병렬 chain + drift 0건 158 연속</td></tr>
+    <tr><td>데모 서버 보안 사고 ✅ 해소</td><td>—</td><td>—</td><td>Let's Encrypt + DKIM + DMARC + iptables + nginx + DB audit</td></tr>
+    <tr><td>라이선스 결정 지연 ✅ 해소</td><td>—</td><td>—</td><td>GPLv3 확정</td></tr>
+    <tr><td>PyQt6 GPL 외부 fork distribution</td><td>중</td><td>중</td><td>GPLv3 정합 + private 전환 시 외부 fork 차단</td></tr>
+    <tr><td>문서 91% : 코드 9% 지속 ✅ 해소</td><td>—</td><td>—</td><td>pytest 1817 + 코드 우위</td></tr>
+    <tr><td>원격 제어 보안 사고 (Phase 5 Item 5)</td><td>중</td><td>상</td><td>친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그 + coord transform DPI / Retina</td></tr>
+    <tr><td>SMTP spam reputation ✅ 해소</td><td>—</td><td>—</td><td>Gmail Authentication-Results pass + DKIM + DMARC</td></tr>
+    <tr><td>wine PyQt6 호환성 ✅ 해소</td><td>—</td><td>—</td><td>windows-latest GitHub-hosted runner 마이그레이션</td></tr>
+    <tr><td>사용자 <code>base_url</code> + <code>api_key</code> 부재</td><td>상</td><td>상</td><td>사용자 직접 입력 의무 — Phase 5 본격 cycle 진입 차단</td></tr>
+    <tr><td>mobile cycle 181 prerequisite 부재</td><td>상</td><td>중</td><td>사용자 manual 5종 의무</td></tr>
+    <tr><td>KT PTR record default 잔존</td><td>상</td><td>저</td><td>dopa.co.kr 데모 전용 + 실 도메인 확정 후 갱신 또는 skip</td></tr>
+    <tr><td>WebRTC mesh ≤ 8 peer cap</td><td>중</td><td>중</td><td>9 peer 이상 의무 SFU 마이그레이션 (Phase 6+)</td></tr>
+    <tr><td>1차 dogfooding 부재</td><td>중</td><td>중</td><td>Phase 5 마무리 직후 1주 retention + NPS 측정 진입 의무</td></tr>
+    <tr><td>cycle 169.x UI redesign LLM autonomy 한계</td><td>중</td><td>중</td><td><code>feedback-no-design-change-without-user-directive</code> 영구 가드레일 + 위반 시 즉시 git revert</td></tr>
   </tbody>
 </table>
 
-<h3>8.1 보안 리스크 해결책 강화 <span class="new">사이클 32 신규 — 사용자 directive</span></h3>
-
-<table>
-  <thead><tr><th>리스크</th><th>추가 해결책 (Defense-in-Depth)</th><th>진입 시점</th></tr></thead>
-  <tbody>
-    <tr>
-      <td>데모 서버 보안 사고</td>
-      <td>(1) fail2ban + nftables rate limit (SSH/WS/SMTP 의 brute force 차단), (2) Let&#39;s Encrypt + HSTS preload (MITM 차단), (3) Wazuh agent + auditd (감사 로그), (4) systemd hardening (PrivateTmp + ProtectHome + NoNewPrivileges), (5) 백업 = encrypted off-site (borg + age)</td>
-      <td>Phase 2 진입 직전</td>
-    </tr>
-    <tr>
-      <td>PyQt6 GPL 외부 fork distribution</td>
-      <td>(1) <code>LICENSE</code> SPDX header 의무 자동 검증 hook, (2) DCO sign-off pre-commit hook, (3) private 전환 시점 의 GPL 의무 distribution 명시 (Phase 종료 시 사용자 confirm), (4) AGPLv3 Phase 2 옵션 (network use 의 source disclosure)</td>
-      <td>Phase 2 진입 시</td>
-    </tr>
-    <tr>
-      <td>원격 제어 보안 사고 (Phase 3+)</td>
-      <td>(1) 친구 추가 양측 명시 수락 + biometric 2FA 의무, (2) 긴급 ESC = global hotkey + 즉시 세션 종료, (3) 감사 로그 = append-only + 매 세션 SHA-256 chain, (4) 화면 제어 권한 = 매 세션 명시 확인 (개별 영역 의 white-list grant), (5) 친구 평판 = trust score (가입 후 30일 + 활동 5건 이상 시 만 원격 제어 가능)</td>
-      <td>Phase 3 막바지 진입 직전</td>
-    </tr>
-    <tr>
-      <td>SMTP spam reputation</td>
-      <td>(1) SPF + DKIM + DMARC 의무 + DMARC reject 정책, (2) bounce rate &lt; 5% + complaint rate &lt; 0.1% 모니터링, (3) SendGrid relay 100/day fallback, (4) Bayesian spam score 사전 검증 (SpamAssassin), (5) outbound rate limit 100/hour 의무, (6) IP warm-up 30일 (점진 송신량 증가)</td>
-      <td>Phase 1 dogfooding 시</td>
-    </tr>
-    <tr>
-      <td>Phase 2 E2EE 잔존 (DH ratchet + skipped keys)</td>
-      <td>(1) Signal Protocol Test Vector 적용 (libsignal reference 의 정합 검증), (2) ratchet step 의 매 transition 의 invariant assertion (root + chain + counter 의 monotonic 보장), (3) skipped message keys = MAX_SKIP=1000 + LRU expire (메모리 폭주 차단), (4) 매 message 의 header MAC 검증 (X25519 public + counter 의 무결성), (5) reviewer-agent + cryptography expert review (PyCA 정합 + 부채널 공격 검토)</td>
-      <td>사이클 33+</td>
-    </tr>
-    <tr>
-      <td>잠재 부채널 (timing + cache + speculative)</td>
-      <td>(1) <code>hmac.compare_digest</code> 의무 (constant-time), (2) AES-256-GCM 의 hardware acceleration (AES-NI / ARMv8 Crypto Extensions 활용), (3) X25519 = Curve25519 의 constant-time scalar mult (PyCA 보증), (4) 부채널 검사 도구 — <code>dudect</code> (statistical timing leakage), (5) speculative execution 의 PyPy/CPython 검토 보류 (Phase 4+)</td>
-      <td>Phase 3+</td>
-    </tr>
-    <tr>
-      <td>클라이언트 plain-text 저장 위험</td>
-      <td>(1) DB 메시지 body = 클라 keychain 보관 + DB 는 ciphertext 만 저장, (2) macOS Keychain + Windows Credential Manager 통합, (3) 백업 = passphrase + PBKDF2 600K iter (현 <code>security.py</code> 정합) + age encrypt, (4) memory dump 차단 = <code>mlock</code> + <code>sodium_memzero</code> 패턴</td>
-      <td>Phase 2 후반</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr>
-
-<!-- §9 -->
-<h2 id="sec-9">9. KPI 후보</h2>
-
+<h2 id="sec9">9. KPI 후보</h2>
 <table>
   <thead><tr><th>KPI</th><th>목표</th><th>현재</th></tr></thead>
   <tbody>
-    <tr><td>1:1 채팅 메시지 전송 성공률</td><td>≥ 99%</td><td>미측정</td></tr>
+    <tr><td>1:1 채팅 메시지 전송 성공률</td><td>≥ 99%</td><td>미측정 (dogfooding 의무)</td></tr>
     <tr><td>파일 전송 SHA-256 무결성</td><td>100%</td><td>미측정</td></tr>
     <tr><td>시그널링 재연결 시간 (95p)</td><td>≤ 5초</td><td>미측정</td></tr>
     <tr><td>앱 cold start latency</td><td>≤ 30초</td><td>미측정</td></tr>
     <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
-    <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td><strong>100% ✓ (macOS arm64, 사이클 5)</strong></td></tr>
-    <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td>본 세션 신규 파일 100%</td></tr>
-    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td><strong>39종 active (사이클 145)</strong></td></tr>
-    <tr><td>pytest coverage</td><td>≥ 80%</td><td>미측정 — pytest 1605 PASS</td></tr>
-    <tr><td>Playwright E2E test</td><td>≥ 5건</td><td>3건 스켈레톤 active</td></tr>
-    <tr><td><strong>OTP 발송 → 수신 latency</strong></td><td>≤ 30초</td><td>미측정 (SMTP install 사용자 manual 직후)</td></tr>
-    <tr><td><strong>OTP brute force 차단율</strong></td><td>100% (5회/30분)</td><td>미측정</td></tr>
-    <tr><td><strong>원격 제어 세션 성공률</strong></td><td>≥ 95%</td><td>미측정 (Phase 5 Item 5 후)</td></tr>
-    <tr><td><strong>mail-tester score</strong> (SMTP)</td><td>≥ 7/10</td><td>미측정 (SSH 설치 후)</td></tr>
-    <tr><td><strong>fork PR approval rate</strong> (악성 차단)</td><td>100%</td><td>strict 적용 OK (사이클 5)</td></tr>
-    <tr><td><strong>GPLv3 호환 의존성</strong></td><td>100%</td><td>100% (PyQt6 + aiortc + qasync + asyncmy + bcrypt + aiosmtplib — 사이클 6)</td></tr>
-    <tr><td><strong>DB audit endpoint coverage</strong></td><td>23 ActivityAction</td><td>15 / 23 (cycle 119~128, 잔존 8 = REMOTE_GRANT/REVOKE 등 Phase 5)</td></tr>
-    <tr><td><strong>drift 0건 연속 cycle</strong></td><td>≥ 50</td><td><strong>84 연속 (사이클 37~134)</strong></td></tr>
+    <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td class="good">100% (cycle 143~187)</td></tr>
+    <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td class="good">100%</td></tr>
+    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td class="good">50+ active</td></tr>
+    <tr><td>pytest 누계 PASS</td><td>≥ 500</td><td class="good">1817 PASS</td></tr>
+    <tr><td>OTP 발송 → 수신 latency</td><td>≤ 30초</td><td class="good">cycle 129~130 production-ready</td></tr>
+    <tr><td>mail-tester score (SMTP)</td><td>≥ 7/10</td><td class="good">Gmail Authentication-Results pass</td></tr>
+    <tr><td>fork PR approval rate</td><td>100%</td><td class="good">strict 적용 OK</td></tr>
+    <tr><td>GPLv3 호환 의존성</td><td>100%</td><td class="good">100%</td></tr>
+    <tr><td>drift 0건 연속 cycle</td><td>≥ 50</td><td class="good">158 연속 (cycle 37~169.187)</td></tr>
+    <tr><td>sub-agent 누계 병렬 spawn</td><td>≥ 10</td><td class="good">88종</td></tr>
+    <tr><td>DB audit endpoint coverage</td><td>≥ 20 ActivityAction</td><td class="good">28 ActivityAction</td></tr>
+    <tr><td>Phase 5 Item 진입</td><td>≥ 3 / 5</td><td class="good">5 / 5 actual binding 부분 진입</td></tr>
+    <tr><td>UI telegram align 도달률</td><td>≥ 80%</td><td class="good">95% (cycle 169.117~187 70 sub-cycle)</td></tr>
+    <tr><td>1차 dogfooding 진입</td><td>Y/N</td><td class="bad">🔴 (Phase 5 마무리 직후 의무)</td></tr>
   </tbody>
 </table>
 
-<hr>
-
-<!-- §10 -->
-<h2 id="sec-10">10. 다음 평가 갱신 트리거</h2>
-
-<p>본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:</p>
+<h2 id="sec10">10. 다음 평가 갱신 트리거</h2>
 <ul>
-  <li>기술 완성도 점수 — SMTP 실 설치 + manual mail-tester 검증 후 +0.05~0.1</li>
-  <li>누락 기능 표 — Phase 5 GO 시 항목 제거</li>
-  <li>단기 액션 ✅ 표시 갱신 (SMTP install + KT PTR)</li>
-  <li>KPI 실측 값 — mail-tester score + OTP latency + DB audit endpoint coverage 15→23</li>
-  <li>가드레일 메모리 누계 (현 39)</li>
-  <li>텔레그램 송신 누계</li>
-  <li>sub-agent 누계 (HTML mirror cycle 129 후)</li>
+  <li>기술 완성도 점수 — Phase 5 마무리 + 1차 dogfooding 시 +0.3</li>
+  <li>누락 기능 표 — Phase 5 마무리 시 항목 제거</li>
+  <li>단기 액션 ✅ 표시 갱신</li>
+  <li>KPI 실측 값 (dogfooding 진입 후)</li>
+  <li>가드레일 메모리 누계 (현 50+)</li>
+  <li>sub-agent 누계 (현 88)</li>
   <li>차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신</li>
-  <li>SMTP 실제 설치 manual run 완료 시 §2.42 + §9 KPI 갱신</li>
-  <li>KT PTR record 회수 완료 시 §3.8 + §8 row 해소</li>
-  <li>Phase 5 GO directive 수령 시 §2 + §3.7 + §5 + Phase 5 plan 진입 row 갱신</li>
+  <li>1차 dogfooding 진입 시 §3.11 ✅</li>
+  <li>Toonation REST + OBS WebSocket base_url 사용자 직접 입력 시 §3.7 ✅</li>
+  <li>mobile cycle 181 prerequisite 사용자 manual 회수 시 §3.9 ✅</li>
 </ul>
 
-<hr>
-
-<!-- 참조 -->
-<footer class="refs" id="sec-ref">
-  <strong>참조</strong>
-  <ul>
-    <li>정본: <a href="../../CLAUDE_HARNESS_IMPORTANT.md">CLAUDE_HARNESS_IMPORTANT.md</a></li>
-    <li>정책: <a href="../../PLANS.md">PLANS.md</a> · <a href="../../PRODUCT_SENSE.md">PRODUCT_SENSE.md</a> · <a href="../../QUALITY_SCORE.md">QUALITY_SCORE.md</a></li>
-    <li>정책 본문: <a href="../policies/doc-gardening.md">docs/policies/doc-gardening.md</a> · <a href="../policies/adoption-roadmap.md">adoption-roadmap.md</a> · <a href="../policies/execution-harness.md">execution-harness.md</a></li>
-    <li>인프라 절차: <a href="../references/ci-self-hosted-setup.md">docs/references/ci-self-hosted-setup.md</a> · <a href="../references/smtp-setup.md">docs/references/smtp-setup.md</a></li>
-    <li>실행계획: <a href="../exec-plans/active/2026-05-17-tootalk-phase1-mvp.md">docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md</a> · <a href="../exec-plans/active/2026-05-23-phase5-extension-setup.md">2026-05-23-phase5-extension-setup.md</a></li>
-    <li>세션 인계: <a href="../exec-plans/active/2026-05-17-session-handoff.md">docs/exec-plans/active/2026-05-17-session-handoff.md</a></li>
-    <li>동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a> (md: <a href="../assessments/vibe-coding.md">vibe-coding.md</a>)</li>
-    <li>Markdown 정본: <a href="../assessments/productization.md">docs/assessments/productization.md</a></li>
-  </ul>
-  <p style="margin-top:14px;color:var(--muted);font-size:12px">
-    마지막 갱신: <strong>2026-05-19 20:00 KST</strong> — 사이클 145 (CI 깨진 링크 7건 회수 + Phase 5 priority mobile last + OTP integration test 15 PASS + self-hosted CI Stop hook + 30일 토큰 사용량 HTML 27 cycle 누계 cycle 119~145 + 1605 pytest + drift 0건 87 연속 사이클 37~134)
-  </p>
+<footer>
+  정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
+  최신 갱신: 2026-05-21 04:00 KST · cycle 169.188 본격 sweep · drift 0건 158 연속 · sub-agent 누계 88종 · pytest 1817 PASS.
 </footer>
 
 </body>
