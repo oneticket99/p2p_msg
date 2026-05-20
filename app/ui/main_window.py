@@ -1063,14 +1063,15 @@ class MainWindow(QMainWindow):
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
             self._chat_header.clear_chat()
         elif tab_key == "settings":
-            # 한글 주석 — settings tab = SettingsDialog modal open (cycle 153.5)
-            self._chat_header.set_chat("편집", "10 section tabbed")
+            # cycle 169.193 — 편집 tab = FolderManageDialog modal (telegram 폴더 편집 — 사용자 directive 회수)
+            # SettingsDialog 폐기 chain (이전 디렉션 회수)
             try:
-                dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
+                from app.ui.folder_manage_dialog import FolderManageDialog
+                user_folders = getattr(self, "_user_folders", [])
+                dialog = FolderManageDialog(user_folders=user_folders, parent=self)
                 dialog.exec()
             except Exception as exc:  # pragma: no cover - graceful
-                log.debug("SettingsDialog open 실패 graceful — %r", exc)
-            # 한글 주석 — dialog close 후 sidebar tab default friends 복귀
+                log.debug("FolderManageDialog open 실패 graceful — %r", exc)
             self._sidebar_rail.set_active_tab("friends")
             self._on_sidebar_tab_clicked("friends")
 
