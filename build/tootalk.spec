@@ -111,5 +111,12 @@ if sys.platform == "darwin":
             "CFBundleVersion": "0.1.0",
             "NSHighResolutionCapable": True,
             "LSMinimumSystemVersion": "11.0",  # macOS Big Sur 이상 (arm64 정합)
+            # cycle 169.112 회수 — TCC privacy crash 차단 (avfoundation + AVCaptureSession)
+            "NSMicrophoneUsageDescription": "TooTalk 음성 통화 + 음성 메시지 녹음 의무 마이크 접근.",
+            "NSCameraUsageDescription": "TooTalk 영상 통화 + 프로필 사진 촬영 의무 카메라 접근.",
+            "NSDesktopFolderUsageDescription": "TooTalk 파일 전송 chain 의무 데스크탑 접근 (선택).",
+            "NSDocumentsFolderUsageDescription": "TooTalk 파일 전송 chain 의무 문서 폴더 접근 (선택).",
+            "NSDownloadsFolderUsageDescription": "TooTalk 다운로드 file 저장 의무 다운로드 폴더 접근 (선택).",
+            "NSPhotoLibraryUsageDescription": "TooTalk 이미지 첨부 의무 사진 라이브러리 접근 (선택).",
         },
     )
