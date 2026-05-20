@@ -1,22 +1,22 @@
 {
-  "generated_at_kst": "2026-05-21 01:11:04 KST",
-  "window_start_kst": "2026-04-21 01:11:04",
-  "window_end_kst": "2026-05-21 01:11:04",
+  "generated_at_kst": "2026-05-21 03:55:07 KST",
+  "window_start_kst": "2026-04-21 03:55:07",
+  "window_end_kst": "2026-05-21 03:55:07",
   "files_scanned": 4,
   "files_with_usage": 4,
-  "parsed_messages": 13751,
+  "parsed_messages": 14565,
   "sessions": 4,
   "skipped_lines": 0,
   "totals": {
-    "input_tokens": 45198,
-    "output_tokens": 17071019,
-    "cache_creation_input_tokens": 177154419,
-    "cache_read_input_tokens": 6672306931,
-    "messages": 13751,
-    "total_tokens": 6866577567,
-    "cost_usd": 14611.1101
+    "input_tokens": 47303,
+    "output_tokens": 18081837,
+    "cache_creation_input_tokens": 194253081,
+    "cache_read_input_tokens": 6975857058,
+    "messages": 14565,
+    "total_tokens": 7188239279,
+    "cost_usd": 15462.8782
   },
-  "cache_hit_rate_percent": 97.41,
+  "cache_hit_rate_percent": 97.29,
   "per_day": [
     {
       "date": "2026-05-17",
@@ -60,25 +60,25 @@
     },
     {
       "date": "2026-05-21",
-      "input_tokens": 1748,
-      "output_tokens": 167722,
-      "cache_creation_input_tokens": 201669,
-      "cache_read_input_tokens": 9499186,
-      "messages": 76,
-      "total_tokens": 9870325,
-      "cost_usd": 30.6354
+      "input_tokens": 3853,
+      "output_tokens": 1178540,
+      "cache_creation_input_tokens": 17300331,
+      "cache_read_input_tokens": 313049313,
+      "messages": 890,
+      "total_tokens": 331532037,
+      "cost_usd": 882.4035
     }
   ],
   "per_model": [
     {
       "model": "claude-opus-4-7",
-      "input_tokens": 45198,
-      "output_tokens": 17071019,
-      "cache_creation_input_tokens": 177154419,
-      "cache_read_input_tokens": 6672306931,
-      "messages": 13741,
-      "total_tokens": 6866577567,
-      "cost_usd": 14611.1101
+      "input_tokens": 47303,
+      "output_tokens": 18081837,
+      "cache_creation_input_tokens": 194253081,
+      "cache_read_input_tokens": 6975857058,
+      "messages": 14555,
+      "total_tokens": 7188239279,
+      "cost_usd": 15462.8782
     },
     {
       "model": "<synthetic>",
@@ -194,13 +194,13 @@
     {
       "date": "2026-05-21",
       "model": "claude-opus-4-7",
-      "input_tokens": 1748,
-      "output_tokens": 167722,
-      "cache_creation_input_tokens": 201669,
-      "cache_read_input_tokens": 9499186,
-      "messages": 74,
-      "total_tokens": 9870325,
-      "cost_usd": 30.6354
+      "input_tokens": 3853,
+      "output_tokens": 1178540,
+      "cache_creation_input_tokens": 17300331,
+      "cache_read_input_tokens": 313049313,
+      "messages": 888,
+      "total_tokens": 331532037,
+      "cost_usd": 882.4035
     }
   ],
   "sessions_summary": [
@@ -241,14 +241,14 @@
     {
       "session_id": "553f4dc7-1a54-4cb5-9870-f9b46fccbe63",
       "first_kst": "2026-05-18 13:40",
-      "last_kst": "2026-05-21 01:10",
+      "last_kst": "2026-05-21 03:54",
       "models": [
         "<synthetic>",
         "claude-opus-4-7"
       ],
-      "messages": 8814,
-      "total_tokens": 4676513107,
-      "cost_usd": 10311.338433
+      "messages": 9628,
+      "total_tokens": 4998174819,
+      "cost_usd": 11163.106461
     }
   ],
   "pricing": {
