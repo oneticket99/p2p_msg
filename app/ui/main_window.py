@@ -1425,10 +1425,11 @@ class MainWindow(QMainWindow):
         drawer.calls_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
         drawer.contacts_clicked.connect(self._on_drawer_contacts)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
-        # cycle 169.115 — main_window 내부 child overlay 정합
-        # central widget geometry 안 0,0 anchor + 전체 높이 match
+        # cycle 169.116 회수 — sidebar_rail (96px) 의 의 reserve — 햄버거 button click 가능
+        # drawer x anchor = sidebar width — sidebar_rail visible retain
         central = self.centralWidget() if self.centralWidget() else self
-        drawer.setGeometry(0, 0, 320, central.height())
+        sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
+        drawer.setGeometry(sidebar_w, 0, 320, central.height())
         drawer.exec()  # show + raise + setFocus
         # 한글 주석 — close 시점 ref clear
         def _on_drawer_closed():
