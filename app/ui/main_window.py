@@ -251,7 +251,8 @@ class MainWindow(QMainWindow):
             ),
         ]
         self._chat_list_panel.set_entries(default_entries)
-        self._chat_list_panel.set_active_tab("bots")
+        # cycle 169.136 — 채팅 통합 (telegram align) — default tab "friends" = 채팅
+        self._chat_list_panel.set_active_tab("friends")
 
         # RoomListWidget — 의 의 hide (group chat 진입 시 _on_room_entered 호출 chain backward compat)
         self._room_list = RoomListWidget(parent=self)
@@ -1041,25 +1042,25 @@ class MainWindow(QMainWindow):
     def _on_sidebar_tab_clicked(self, tab_key: str) -> None:
         """SidebarRail tab 변경 — stacked widget index 매핑.
 
-        tab_key ∈ {"friends", "rooms", "bots", "settings"}
+        tab_key ∈ {"friends", "rooms", "bots", "settings"} (telegram align label = 채팅/연락처/통화/설정)
+        cycle 169.136 — bot_panel 폐기 + chat_list 통합 (사용자 ack)
+        - friends("채팅") = chat_list 통합 view (이미 friend + room + bot entry populate chain — cycle 169.106)
+        - rooms("연락처") = friends widget (연락처 list)
+        - bots("통화") = call placeholder (Phase 5 actual binding)
+        - settings = SettingsDialog modal
         """
-        # 한글 주석 — friends tab = FriendListWidget index 3 / rooms = direct chat default
         if tab_key == "friends":
-            self._stacked.setCurrentIndex(self._STACK_FRIENDS)
-            self._chat_header.set_chat("친구 목록", "", "👥")
-        elif tab_key == "rooms":
+            # cycle 169.136 — 채팅 통합 view (chat_list_panel 의 friend + room + bot entry 통합 chain)
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
             self._chat_header.clear_chat()
+        elif tab_key == "rooms":
+            # cycle 169.136 — 연락처 view (friend list widget)
+            self._stacked.setCurrentIndex(self._STACK_FRIENDS)
+            self._chat_header.set_chat("연락처", "", "")
         elif tab_key == "bots":
-            # 한글 주석 — bots tab = BotPanel widget instantiate + stacked 안 inject (cycle 153.5)
-            self._chat_header.set_chat("봇 디렉토리", "cycle 150~160 base", "🤖")
-            if not hasattr(self, "_bot_panel_idx"):
-                from app.ui.bot_panel import BotPanel
-                bot_panel = BotPanel(parent=self._stacked)
-                # cycle 153.8 — command click → InputBar text inject chain
-                bot_panel.command_invoked.connect(self._on_bot_command_invoked)  # type: ignore[arg-type]
-                self._bot_panel_idx = self._stacked.addWidget(bot_panel)
-            self._stacked.setCurrentIndex(self._bot_panel_idx)
+            # cycle 169.136 — 통화 placeholder (Phase 5 actual call binding)
+            self._chat_header.set_chat("통화", "Phase 5 본격 binding", "")
+            self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         elif tab_key == "settings":
             # 한글 주석 — settings tab = SettingsDialog modal open (cycle 153.5)
             self._chat_header.set_chat("설정", "10 section tabbed", "⚙️")
