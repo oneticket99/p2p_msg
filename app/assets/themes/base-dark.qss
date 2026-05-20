@@ -279,9 +279,9 @@ QListWidget#chatList::item:hover:!selected {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
-/* Chat header — cycle 169.104 Figma 정합 (height 60 + spacing tune) */
+/* Chat header — cycle 169.139 — bg #131C30 → #0F172A (chat area 동일 telegram align) */
 QFrame#chatHeader {
-    background-color: #131C30;
+    background-color: #0F172A;
     border-bottom: 1px solid #1f2937;
     min-height: 60px;
     padding: 10px 16px;

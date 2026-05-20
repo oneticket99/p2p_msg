@@ -89,6 +89,7 @@ class ChatHeader(QFrame):
             btn.setIcon(load_icon(icon_name, size=20, color="#9ca3af"))
             btn.setIconSize(QSize(20, 20))
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            # cycle 169.139 — sub-agent A drift D-34 — hover blue → neutral gray (telegram align)
             btn.setStyleSheet(
                 "QPushButton {"
                 " background-color: transparent;"
@@ -96,7 +97,7 @@ class ChatHeader(QFrame):
                 " border-radius: 18px;"
                 "}"
                 "QPushButton:hover {"
-                " background-color: rgba(0, 102, 255, 0.1);"
+                " background-color: rgba(255, 255, 255, 0.06);"
                 "}"
             )
             sig = getattr(self, signal_attr)
