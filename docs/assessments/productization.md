@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T02:15:00+09:00
+last_verified: 2026-05-21T02:45:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-21 02:15 KST — cycle 169.148~152 5 cycle drift 회수 + input_bar text edit single-row content fit + composite pill 재 구조 + telegram image #3 정합 (attach left + emoji right + seamless pill + transparent voice) + ts 한국어 format "오전/오후 H:MM" + sidebar 마지막 entry "설정→편집" + edit.svg sliders SVG 신설. 직전 누계 = cycle 169.142~146 5 cycle + cycle 169.136~140 5 cycle + cycle 169.117~134 18 cycle (cycle 169.112 macOS Info.plist privacy keys 6종 추가 TCC crash 회수 + cycle 169.113 hamburger drawer 좌측 slide-in 회수 + cycle 169.114 QPropertyAnimation 220ms slide animation + cycle 169.115 QDialog → QFrame child overlay 변환 eventFilter outside click close + cycle 169.116 drawer setGeometry x = sidebar width 햄버거 button visible retain)
+> **최신 갱신 시점**: 2026-05-21 02:45 KST — cycle 169.154~160 7 cycle drift 회수 + chat_header emoji 제거 + friend nickname lookup + 3 zone 색상 구분 (header/area/input bg) + chat_view 전환 clear + DM history client cache + self send cache append + header status "최근에 접속함" telegram align + _append_dm_message single source helper. 직전 누계 = cycle 169.148~152 5 cycle + cycle 169.142~146 5 cycle + cycle 169.136~140 5 cycle + cycle 169.117~134 18 cycle (cycle 169.112 macOS Info.plist privacy keys 6종 추가 TCC crash 회수 + cycle 169.113 hamburger drawer 좌측 slide-in 회수 + cycle 169.114 QPropertyAnimation 220ms slide animation + cycle 169.115 QDialog → QFrame child overlay 변환 eventFilter outside click close + cycle 169.116 drawer setGeometry x = sidebar width 햄버거 button visible retain)
 > (EmailRaceVerified test + group sender preview + commit prefix M-4 + Phase 5 finalize + telegram copycat 삭제 + sidebar+folder 통합 + FolderManageDialog + FolderEditDialog + ChatPickerDialog + folder REST 4 endpoint + 0009 migration deploy + FolderClient QThread + 색상 indicator + cycle 169.78 qa-agent FAIL CRIT-1 LEGB scope shadow 회수 + 0009 migration scp 누락 회수 + cycle 169.79 reviewer + qa 잔여 8 finding 일괄 회수 (TLS env override + atomic transaction + owner SQL + worker list cleanup + color hex regex + invite expires + url env + timeout 30s LOW-3) + cycle 169.80 MED-3 folder test coverage 3 신규 file (tests/server/test_folder_repository.py 8 + tests/server/test_folder_handlers_integration.py 7 + tests/app/net/test_folder_client.py 6 = 21 PASS + 1 skip rollback mock).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
