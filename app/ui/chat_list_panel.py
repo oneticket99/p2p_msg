@@ -14,13 +14,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import QRect, Qt, pyqtSignal
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen
 from PyQt6.QtWidgets import (
     QFrame,
     QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QVBoxLayout,
     QWidget,
 )
@@ -38,6 +42,112 @@ class ChatListEntry:
     unread_count: int = 0
     is_pinned: bool = False
     is_online: bool = False
+
+
+class ChatListItemDelegate(QStyledItemDelegate):
+    """telegram desktop chat list item custom paint (cycle 169.68 신설).
+
+    layout: avatar circle 40px + name (15px bold) + last_message (12px gray) + ts (11px gray) + unread badge.
+    """
+
+    AVATAR_SIZE = 40
+    ROW_HEIGHT = 64
+    PADDING = 12
+
+    def sizeHint(self, option: QStyleOptionViewItem, index) -> "QSize":  # type: ignore[override]
+        from PyQt6.QtCore import QSize
+        return QSize(option.rect.width() if option.rect.width() > 0 else 280, self.ROW_HEIGHT)
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # type: ignore[override]
+        rect = option.rect
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # 한글 주석 — selected highlight (telegram brand 색)
+        if option.state & QStyle.StateFlag.State_Selected:
+            painter.fillRect(rect, QColor("#1E3A5F"))
+        elif option.state & QStyle.StateFlag.State_MouseOver:
+            painter.fillRect(rect, QColor("#192335"))
+
+        # avatar circle
+        entry = index.data(Qt.ItemDataRole.UserRole + 2)
+        if entry is None:
+            painter.restore()
+            return
+        avatar_rect = QRect(
+            rect.left() + self.PADDING,
+            rect.top() + (self.ROW_HEIGHT - self.AVATAR_SIZE) // 2,
+            self.AVATAR_SIZE,
+            self.AVATAR_SIZE,
+        )
+        painter.setBrush(QColor("#1F2937"))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(avatar_rect)
+        # avatar initial char
+        initial = (entry.name[:1] if entry.name else "?").upper()
+        painter.setPen(QPen(QColor("#67E8F9")))
+        f = QFont(); f.setPixelSize(16); f.setBold(True)
+        painter.setFont(f)
+        painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initial)
+
+        # online indicator (right-bottom)
+        if entry.is_online:
+            painter.setBrush(QColor("#22c55e"))
+            painter.setPen(QPen(QColor("#0F172A"), 2))
+            painter.drawEllipse(
+                avatar_rect.right() - 10, avatar_rect.bottom() - 10, 10, 10
+            )
+
+        # name + last_message text area
+        text_x = avatar_rect.right() + self.PADDING
+        text_w = rect.width() - text_x - self.PADDING - 56  # 56 = right side (ts + badge)
+
+        # name
+        painter.setPen(QPen(QColor("#e5e7eb")))
+        fn = QFont(); fn.setPixelSize(14); fn.setBold(True)
+        painter.setFont(fn)
+        name_rect = QRect(text_x, rect.top() + 10, text_w, 20)
+        elided_name = painter.fontMetrics().elidedText(
+            entry.name, Qt.TextElideMode.ElideRight, text_w
+        )
+        painter.drawText(name_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_name)
+
+        # last_message
+        painter.setPen(QPen(QColor("#9ca3af")))
+        fm = QFont(); fm.setPixelSize(12)
+        painter.setFont(fm)
+        msg_rect = QRect(text_x, rect.top() + 32, text_w, 18)
+        elided_msg = painter.fontMetrics().elidedText(
+            entry.last_message or "", Qt.TextElideMode.ElideRight, text_w
+        )
+        painter.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
+
+        # ts (right top)
+        ts_rect = QRect(rect.right() - 56, rect.top() + 10, 44, 18)
+        ts_text = entry.last_ts.strftime("%H:%M") if entry.last_ts else ""
+        painter.setPen(QPen(QColor("#6b7280")))
+        ft = QFont(); ft.setPixelSize(11)
+        painter.setFont(ft)
+        painter.drawText(ts_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, ts_text)
+
+        # unread badge (right bottom)
+        if entry.unread_count > 0:
+            badge_text = str(entry.unread_count) if entry.unread_count < 100 else "99+"
+            badge_w = max(20, painter.fontMetrics().horizontalAdvance(badge_text) + 12)
+            badge_rect = QRect(rect.right() - 12 - badge_w, rect.top() + 32, badge_w, 20)
+            painter.setBrush(QColor("#0066FF"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(badge_rect, 10, 10)
+            painter.setPen(QPen(QColor("white")))
+            fb = QFont(); fb.setPixelSize(11); fb.setBold(True)
+            painter.setFont(fb)
+            painter.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, badge_text)
+
+        # divider line (bottom)
+        painter.setPen(QPen(QColor("#1F2937"), 1))
+        painter.drawLine(rect.left() + self.PADDING, rect.bottom(), rect.right() - self.PADDING, rect.bottom())
+
+        painter.restore()
 
 
 class ChatListPanel(QFrame):
@@ -71,6 +181,8 @@ class ChatListPanel(QFrame):
         self._list = QListWidget()
         self._list.setObjectName("chatList")
         self._list.setSpacing(0)
+        # 한글 주석 — cycle 169.68 회수 — custom delegate paint chain (avatar + name + ts + unread badge)
+        self._list.setItemDelegate(ChatListItemDelegate(self._list))
         self._list.itemClicked.connect(self._on_item_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._list, stretch=1)
 
@@ -131,17 +243,11 @@ class ChatListPanel(QFrame):
             if self._filter_text and self._filter_text not in entry.name.lower():
                 if self._filter_text not in entry.last_message.lower():
                     continue
-            pin = "📌 " if entry.is_pinned else ""
-            online = "🟢 " if entry.is_online else ""
-            display = f"{pin}{online}{entry.name}"
-            if entry.last_message:
-                display += f"\n    {entry.last_message[:40]}"
-            item = QListWidgetItem(display)
+            # 한글 주석 — cycle 169.68 delegate paint chain — 빈 text + entry full data UserRole+2 store
+            item = QListWidgetItem("")
             item.setData(Qt.ItemDataRole.UserRole, entry.kind)
             item.setData(Qt.ItemDataRole.UserRole + 1, entry.target_id)
-            if entry.unread_count > 0:
-                # 한글 주석 — unread badge 의 tooltip 표기 (cycle 154 inline badge widget 의무)
-                item.setToolTip(f"unread {entry.unread_count}")
+            item.setData(Qt.ItemDataRole.UserRole + 2, entry)
             self._list.addItem(item)
             visible += 1
         self._empty_label.setVisible(visible == 0)
