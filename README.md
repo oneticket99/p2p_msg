@@ -305,39 +305,39 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > `- [YYYY-mm-dd H:i:s] 요약 (파일/영역)`, prepend 전용. 30행 초과 시 오래된
 > 항목 제거 + 상세는 [History.md](History.md) (작성 예정) 위임.
 >
-> 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.132 M2 45 entry batch prepend + dereliction-detector CRIT 회수 정합).
+> 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
-- cycle 169.131 (2026-05-21 01:10 KST) — sidebar TAB_DEFS telegram align label/icon 재배치
-- cycle 169.128~130 (2026-05-21 00:59 KST) — Phase A entry 3~5 batch (bubble width + chat_view margins + chat_header height)
-- cycle 169.127 (2026-05-21 00:57 KST) — chat_list search placeholder emoji 제거 + SVG icon (Phase A entry 2)
-- cycle 169.126 (2026-05-21 00:56 KST) — chat_list_panel avatar/row telegram align (Phase A entry 1)
-- cycle 169.121 (2026-05-20 23:08 KST) — my_profile_dialog frameless modal telegram align
-- cycle 169.120 (2026-05-20 22:57 KST) — sidebar folder_defs 빈 list dead code cleanup
-- cycle 169.118~119 (2026-05-20 22:52 KST) — drawer toggle + sidebar folder_defs 폐기 + 이모지 상태설정 제거
-- cycle 169.117 (2026-05-20 20:29 KST) — 평가 4 file mirror sync (cycle 169.112~116 chain 반영)
-- cycle 169.116 (2026-05-20 20:28 KST) — drawer setGeometry x = sidebar width (햄버거 button visible retain)
-- cycle 169.115 (2026-05-20 20:23 KST) — hamburger drawer QDialog → QFrame child overlay 변환
-- cycle 169.114 (2026-05-20 20:14 KST) — hamburger drawer slide-in animation
-- cycle 169.113 (2026-05-20 20:11 KST) — hamburger drawer 좌측 slide-in 회수
-- cycle 169.112 (2026-05-20 20:07 KST) — macOS Info.plist privacy keys 추가 (TCC crash 회수)
-- cycle 169.111 (2026-05-20 19:57 KST) — sidebar_rail inline QSS 폐기 + 평가 4 file mirror sync
-- cycle 169.110 (2026-05-20 19:54 KST) — MessageBubble + InputBar Figma 정합 tune
-- cycle 169.109 (2026-05-20 19:49 KST) — chat_list_panel delegate Figma 정합 tune
-- cycle 169.108 (2026-05-20 19:47 KST) — 평가 4 file mirror sync (cycle 169.103~107 chain 반영)
-- cycle 169.107 (2026-05-20 19:43 KST) — login PASS 후 friend/room server fetch + chat_selected name lookup
-- cycle 169.106 (2026-05-20 19:40 KST) — chat_list_panel populate chain (friend + room + bot 통합)
-- cycle 169.105 (2026-05-20 19:33 KST) — Figma 정합 step 2~7 batch (chat area QSS tune)
-- cycle 169.104 (2026-05-20 19:28 KST) — Figma 정합 step 1 ScrollBar tune (width 12 + radius 6)
-- cycle 169.103 (2026-05-20 17:50 KST) — 평가 4 file mirror sync (cycle 169.97~102 chain 반영)
-- cycle 169.102 (2026-05-20 17:49 KST) — update_last_login graceful skip (error 1020 차단)
-- cycle 169.101 (2026-05-20 17:41 KST) — 6 dialog setModal regex fix (multi-line setWindowTitle 차단)
-- cycle 169.100 (2026-05-20 17:37 KST) — step 2~7 batch 일괄 (telegram align + placeholder 제거 + modal 강제)
-- cycle 169.99 (2026-05-20 17:32 KST) — hamburger drawer frameless + 투네이션 고객센터 봇 default seed
-- cycle 169.98 (2026-05-20 17:23 KST) — api_base HTTPS 443 강제 (POST→GET redirect conversion 차단)
-- cycle 169.97 (2026-05-20 17:19 KST) — 평가 4 file mirror sync (cycle 169.91~96 chain 반영)
-- cycle 169.96 (2026-05-20 17:17 KST) — api_base default 회수 (signal_host HTTPS 443 + TLS verify 0 fallback)
-- cycle 169.95 (2026-05-20 16:29 KST) — PyInstaller spec datas 추가 (assets/branding + sound/wav 패키징)
+- cycle 169.187 (2026-05-21 03:47 KST) — 평가 4 file fingerprint sync (cycle 169.182~186 5 cycle drift 회수)
+- cycle 169.186 (2026-05-21 03:46 KST) — MyProfileDialog crash 회수 + telegram simple rewrite
+- cycle 169.185 (2026-05-21 03:42 KST) — sidebar TAB_DEFS 2 entry (home + phone icon 폐기) — 사용자 directive
+- cycle 169.184 (2026-05-21 03:40 KST) — chat_list "채팅" tab 통합 filter (사용자 critique 회수)
+- cycle 169.183 (2026-05-21 03:36 KST) — top bar 3 영역 vertical center align (image #17/18 critique)
+- cycle 169.182 (2026-05-21 03:32 KST) — chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입
+- cycle 169.181 (2026-05-21 03:25 KST) — 평가 4 file fingerprint sync (cycle 169.176~180 5 cycle drift 회수)
+- cycle 169.180 (2026-05-21 03:24 KST) — bubble ts inline overlay (telegram D-15 align)
+- cycle 169.179 (2026-05-21 03:22 KST) — chat_view day separator (date 변경 시 label inject — telegram align)
+- cycle 169.178 (2026-05-21 03:20 KST) — chat_header status color cyan → gray (telegram image #6 align)
+- cycle 169.177 (2026-05-21 03:18 KST) — handoff §8.79 cycle 169.162~176 append (15 entry, @history)
+- cycle 169.176 (2026-05-21 03:16 KST) — chat_view scroll offset per-chat retain (telegram align)
+- cycle 169.175 (2026-05-21 03:14 KST) — 평가 4 file fingerprint sync (cycle 169.169~174 6 cycle drift 회수)
+- cycle 169.174 (2026-05-21 03:13 KST) — chat_list bump_entry on send (preview + ts + sort 정렬)
+- cycle 169.173 (2026-05-21 03:12 KST) — chat_list unread badge reset on chat_selected (telegram align)
+- cycle 169.172 (2026-05-21 03:11 KST) — bubble grouped tail 부재 chain (telegram 시각 강화)
+- cycle 169.171 (2026-05-21 03:09 KST) — search bar pill radius 18 + bg seamless (image #14 align)
+- cycle 169.170 (2026-05-21 03:08 KST) — hamburger drawer header Toonation BI gradient (telegram D-37)
+- cycle 169.169 (2026-05-21 03:06 KST) — top bar 3 영역 한 라인 통합 — bg #0A1019 + height 60 (image #13/14)
+- cycle 169.168 (2026-05-21 03:02 KST) — 평가 4 file fingerprint sync (cycle 169.162~167 6 cycle drift 회수)
+- cycle 169.167 (2026-05-21 03:01 KST) — chat_list highlight sync (programmatic 진입 path 정합)
+- cycle 169.166 (2026-05-21 02:59 KST) — `_profile_message_clicked` → `_on_chat_selected` redirect (single source)
+- cycle 169.165 (2026-05-21 02:58 KST) — `_append_dm_message` render 직후 scroll bottom 자동
+- cycle 169.164 (2026-05-21 02:56 KST) — chat 전환 시 scroll bottom + replay sender suppress propagate
+- cycle 169.163 (2026-05-21 02:48 KST) — 1:1 chat sender label suppress (telegram image #6 align)
+- cycle 169.162 (2026-05-21 02:45 KST) — handoff §8.79 append cycle 169.145~161 + 17 entry critique (@history)
+- cycle 169.161 (2026-05-21 02:42 KST) — 평가 4 file fingerprint sync (cycle 169.154~160 7 cycle drift 회수)
+- cycle 169.160 (2026-05-21 02:41 KST) — `_append_dm_message` single source helper + send chain refactor
+- cycle 169.159 (2026-05-21 02:40 KST) — chat_header status fallback "최근에 접속함" telegram align
+- cycle 169.158 (2026-05-21 02:38 KST) — self send → DM cache append chain
 
 ---
 
