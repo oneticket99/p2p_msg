@@ -339,15 +339,19 @@ class ChatListPanel(QFrame):
                 return
 
     def _matches_tab(self, entry: ChatListEntry) -> bool:
-        """active tab + folder filter (cycle 169.71)."""
-        # 한글 주석 — folder filter 우선 — unread folder 시 unread_count > 0 만
+        """active tab + folder filter (cycle 169.71).
+
+        cycle 169.184 — telegram align tab filter 재 매핑:
+        - friends ("채팅") = friend + room + bot 통합 (default — 모든 대화)
+        - rooms ("연락처") = friend only
+        - bots ("통화") = bot only (Phase 5 call history placeholder)
+        """
         if self._active_folder == "unread" and entry.unread_count <= 0:
             return False
-        # custom folder (monitor/work/issue 등) entry.folder field 미존재 시 skip 차단 부재
         if self._active_tab == "friends":
-            return entry.kind == "friend"
+            return entry.kind in ("friend", "room", "bot")
         if self._active_tab == "rooms":
-            return entry.kind == "room"
+            return entry.kind == "friend"
         if self._active_tab == "bots":
             return entry.kind == "bot"
         return False
