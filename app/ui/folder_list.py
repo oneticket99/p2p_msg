@@ -33,14 +33,11 @@ class FolderItem:
     unread: int = 0
 
 
+# cycle 169.74 회수 — telegram copycat default 5 folder 삭제 (사용자 directive)
+# 모든 대화방 + 안읽음 + 편집 3 system folder 만 hardcoded. 사용자 정의 folder 별도.
 DEFAULT_FOLDERS: List[FolderItem] = [
-    FolderItem("all", "모든\n대화방", "friends", 13),
-    FolderItem("monitor", "모니터링", "notification", 7),
-    FolderItem("work", "업무협조", "folder", 0),
-    FolderItem("issue", "이슈알림", "info", 0),
-    FolderItem("party", "파티", "emoji", 0),
-    FolderItem("internal", "사내동호회", "account", 0),
-    FolderItem("unread", "안읽음", "search", 13),
+    FolderItem("all", "모든\n대화방", "friends", 0),
+    FolderItem("unread", "안읽음", "search", 0),
     FolderItem("edit", "편집", "settings", 0),
 ]
 

@@ -218,10 +218,15 @@ class MainWindow(QMainWindow):
         # 한글 주석 — cycle 169.56 회수 — 햄버거 menu drawer signal
         self._sidebar_rail.hamburger_clicked.connect(self._on_hamburger_clicked)  # type: ignore[arg-type]
 
-        # 3-1b) folder list rail (cycle 169.70 신설 — telegram desktop image 73 align)
+        # 한글 주석 — cycle 169.74 회수 — sidebar_rail + FolderList 통합 single column.
+        # 사용자 verbatim "같은 레이아웃에 있어야 하는데 그냥 목업 레이아웃을 새로 붙인걸로밖에".
+        # FolderList legacy 보존 (signal backward compat) + splitter 안 hide.
         from app.ui.folder_list import FolderList
-        self._folder_list = FolderList(parent=splitter)
+        self._folder_list = FolderList(parent=self)
+        self._folder_list.setVisible(False)
         self._folder_list.folder_selected.connect(self._on_folder_selected)  # type: ignore[arg-type]
+        # sidebar_rail 내부 folder 통합 chain — folder_selected signal direct binding
+        self._sidebar_rail.folder_selected.connect(self._on_folder_selected)  # type: ignore[arg-type]
 
         # 3-2) 중앙 chat list — ChatListPanel (cycle 169.62 신설, telegram desktop align)
         # RoomListWidget legacy 보존 — group chat 진입 chain (room_id) backward compat.
