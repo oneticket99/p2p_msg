@@ -7,7 +7,6 @@ Toonation BI 통합 — logo icon top + primary CTA + 한글 글꼴 통합 + bra
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from pathlib import Path
 from typing import Optional

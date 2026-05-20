@@ -141,13 +141,13 @@ class TestMainWindowRoomsIntegration:
         assert main_window._input_container.isHidden()
 
         # 1:1 입력창 의 텍스트 주입 + 보내기 호출 — 그룹 모드 의 의무 차단
-        main_window._input_edit.setText("이 메시지 는 차단 되어야 함")
+        # cycle 169.71 회수 — InputBar widget 안 _text_edit QTextEdit 의 의 정합
+        main_window._input_bar._text_edit.setPlainText("이 메시지 는 차단 되어야 함")
         main_window._on_send_clicked()
 
-        # ChatView (1:1) 의 message_count 증가 부재 검증 — 초기 1 (시스템 안내) 만
-        # 메시지 가 추가 됐다면 layout 의 widget count 증가 — 본 검증 은
-        # _input_edit 의 텍스트 의 의 보존 으로 우회 (clear 가 호출 안 됨)
-        assert main_window._input_edit.text() == "이 메시지 는 차단 되어야 함"
+        # ChatView (1:1) message_count 증가 부재 검증 — 초기 1 시스템 안내 만
+        # 보존된 텍스트 (clear 호출 부재) 검증
+        assert main_window._input_bar._text_edit.toPlainText() == "이 메시지 는 차단 되어야 함"
 
     def test_members_panel_signal_swaps_to_member_list(self, main_window) -> None:
         """GroupChatView 의 members_panel_requested 의 emit → MemberList swap."""

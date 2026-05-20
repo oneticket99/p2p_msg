@@ -12,7 +12,6 @@ Flow:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
@@ -113,13 +112,13 @@ class SignupDialog(QDialog):
 
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._password_edit.setPlaceholderText(_tr("password (8~32자)"))
+        self._password_edit.setPlaceholderText(_tr("비밀번호"))
         self._password_edit.setMinimumHeight(44)
         outer.addWidget(self._password_edit)
 
         self._password_confirm_edit = QLineEdit()
         self._password_confirm_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._password_confirm_edit.setPlaceholderText(_tr("password 확인"))
+        self._password_confirm_edit.setPlaceholderText(_tr("확인"))
         self._password_confirm_edit.setMinimumHeight(44)
         outer.addWidget(self._password_confirm_edit)
 

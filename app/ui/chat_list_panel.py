@@ -195,10 +195,16 @@ class ChatListPanel(QFrame):
         self._entries: list[ChatListEntry] = []
         self._filter_text: str = ""
         self._active_tab: str = "friends"
+        self._active_folder: str = "all"  # cycle 169.71
 
     def set_active_tab(self, tab_key: str) -> None:
         """sidebar_rail tab_clicked signal 연결 — list re-render."""
         self._active_tab = tab_key
+        self._render()
+
+    def set_active_folder(self, folder_id: str) -> None:
+        """FolderList folder_selected signal 연결 (cycle 169.71)."""
+        self._active_folder = folder_id
         self._render()
 
     def set_entries(self, entries: list[ChatListEntry]) -> None:
@@ -223,14 +229,17 @@ class ChatListPanel(QFrame):
             self.chat_selected.emit(kind, int(target_id))
 
     def _matches_tab(self, entry: ChatListEntry) -> bool:
-        """active tab kind filter."""
+        """active tab + folder filter (cycle 169.71)."""
+        # 한글 주석 — folder filter 우선 — unread folder 시 unread_count > 0 만
+        if self._active_folder == "unread" and entry.unread_count <= 0:
+            return False
+        # custom folder (monitor/work/issue 등) entry.folder field 미존재 시 skip 차단 부재
         if self._active_tab == "friends":
             return entry.kind == "friend"
         if self._active_tab == "rooms":
             return entry.kind == "room"
         if self._active_tab == "bots":
             return entry.kind == "bot"
-        # settings tab — 별개 panel 의무 (cycle 153.4)
         return False
 
     def _render(self) -> None:

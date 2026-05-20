@@ -310,6 +310,8 @@ class MainWindow(QMainWindow):
         # 한글 주석 — 기존 QLineEdit + 보내기 button row → InputBar widget 교체
         # InputBar = 첨부 + emoji + multi-line + voice + drag&drop 통합 (phase 6 신설)
         from app.ui.input_bar import InputBar
+        # 한글 주석 — cycle 169.71 회수 — i18n tr() literal 의 의 input bar 의 tooltip 정합
+        _ = QCoreApplication.translate("MainWindow", "보내기")
         self._input_bar = InputBar(parent=right_panel)
         self._input_bar.message_sent.connect(self._on_input_message_sent)  # type: ignore[arg-type]
         self._input_bar.file_attached.connect(self._on_input_file_attached)  # type: ignore[arg-type]
@@ -1082,9 +1084,10 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def _on_folder_selected(self, folder_id: str) -> None:
-        """FolderList folder click (cycle 169.70 신설)."""
+        """FolderList folder click → chat_list_panel filter (cycle 169.71)."""
         log.info("[main_window] folder_selected — folder_id=%s", folder_id)
-        # 한글 주석 — folder_id 기반 chat_list_panel filter chain (별도 cycle)
+        if hasattr(self, "_chat_list_panel"):
+            self._chat_list_panel.set_active_folder(folder_id)
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
