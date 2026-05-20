@@ -1175,13 +1175,13 @@ class MainWindow(QMainWindow):
         modal.exec()
 
     def _profile_message_clicked(self, modal, friend_id: int) -> None:
-        """profile 메시지 button → modal close + chat 진입 (cycle 154.2)."""
+        """profile 메시지 button → modal close + chat 진입 (cycle 154.2).
+
+        cycle 169.166 — _on_chat_selected redirect (single source chain).
+        chat_header set_chat + chat_view clear + DM cache replay + scroll bottom 일괄 처리.
+        """
         modal.accept()
-        # 한글 주석 — 1:1 chat 진입 — friend_chat_clicked 등가 path 이미 main_window 안 처리
-        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-        # cycle 169.154 — friend 닉네임 lookup (image #10 critique 회수)
-        name = self._lookup_friend_name(friend_id)
-        self._chat_header.set_chat(name, "최근에 접속함")
+        self._on_chat_selected("friend", friend_id)
 
     def _append_dm_message(
         self,
