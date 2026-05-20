@@ -366,4 +366,9 @@ class MessageBubble(QFrame):
         툴팁으로 분리(추후 작업)한다.
         """
 
-        return ts.strftime("%H:%M")
+        # cycle 169.151 — telegram 한국어 format "오전/오후 H:MM" align
+        hour = ts.hour
+        minute = ts.minute
+        am_pm = "오전" if hour < 12 else "오후"
+        h12 = hour if 1 <= hour <= 12 else (hour - 12 if hour > 12 else 12)
+        return f"{am_pm} {h12}:{minute:02d}"

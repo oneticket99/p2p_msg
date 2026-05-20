@@ -146,8 +146,16 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
 
         # ts (right top)
-        ts_rect = QRect(rect.right() - 56, rect.top() + 14, 44, 20)
-        ts_text = entry.last_ts.strftime("%H:%M") if entry.last_ts else ""
+        ts_rect = QRect(rect.right() - 72, rect.top() + 14, 60, 20)
+        # cycle 169.151 — telegram chat list ts 한국어 format
+        if entry.last_ts:
+            h = entry.last_ts.hour
+            m = entry.last_ts.minute
+            ap = "오전" if h < 12 else "오후"
+            h12 = h if 1 <= h <= 12 else (h - 12 if h > 12 else 12)
+            ts_text = f"{ap} {h12}:{m:02d}"
+        else:
+            ts_text = ""
         painter.setPen(QPen(QColor("#A1AAB3")))  # cycle 169.109 — Figma Service text token (ts color)
         ft = QFont(); ft.setPixelSize(11)
         painter.setFont(ft)
