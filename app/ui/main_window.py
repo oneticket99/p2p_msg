@@ -1183,6 +1183,31 @@ class MainWindow(QMainWindow):
         name = self._lookup_friend_name(friend_id)
         self._chat_header.set_chat(name, "최근에 접속함")
 
+    def _append_dm_message(
+        self,
+        kind: str,
+        target_id: int,
+        sender: str,
+        text: str,
+        ts: "datetime",
+        is_self: bool,
+        reply_to: Optional[object] = None,
+    ) -> None:
+        """cycle 169.160 — DM cache append + active chat 시점 chat_view render single source.
+
+        send chain + receive callback (future cycle) 동일 helper 호출 → cache 정합.
+        """
+        key = (kind, target_id)
+        self._dm_history.setdefault(key, []).append((sender, text, ts, is_self))
+        # active chat 이면 chat_view render
+        if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
+            try:
+                self._chat_view.add_message(
+                    sender=sender, text=text, ts=ts, is_self=is_self, reply_to=reply_to,
+                )
+            except Exception as exc:  # pragma: no cover - graceful
+                log.debug("chat_view add_message 실패 — %r", exc)
+
     def _lookup_friend_name(self, friend_id: int) -> str:
         """cycle 169.154 — friend_id → nickname lookup (friend_list 안 cache 조회).
 
@@ -1615,18 +1640,25 @@ class MainWindow(QMainWindow):
             self._input_bar.clear_reply_to()
 
         ts_now = datetime.now()
-        self._chat_view.add_message(
-            sender=self._config.user_nickname,
-            text=text,
-            ts=ts_now,
-            is_self=True,
-            reply_to=reply_ctx,
-        )
-        # cycle 169.158 — DM cache append (active chat 의 self send entry)
+        # cycle 169.160 — single source helper _append_dm_message 호출 (active 시점 chat_view 동시 render)
         if self._active_chat_kind and self._active_chat_target_id is not None:
-            key = (self._active_chat_kind, self._active_chat_target_id)
-            self._dm_history.setdefault(key, []).append(
-                (self._config.user_nickname, text, ts_now, True)
+            self._append_dm_message(
+                self._active_chat_kind,
+                self._active_chat_target_id,
+                self._config.user_nickname,
+                text,
+                ts_now,
+                True,
+                reply_to=reply_ctx,
+            )
+        else:
+            # active chat 부재 fallback — 기존 chat_view direct render
+            self._chat_view.add_message(
+                sender=self._config.user_nickname,
+                text=text,
+                ts=ts_now,
+                is_self=True,
+                reply_to=reply_ctx,
             )
         self._input_edit.clear()
 
