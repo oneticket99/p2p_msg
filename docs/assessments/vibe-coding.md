@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 16:00 KST — cycle 169.60~67 chain 누계 (TURN production config CallClient _build_ice_servers + camera MediaPlayer Darwin avfoundation/Linux v4l2 + ChatListPanel inject main_window splitter migration + 검색 focus chat_header → chat_list_panel + skip 10건 회수 fake_http_worker fixture chain + reviewer 잔여 4 회수 — H-2 SMTP graceful smtp_status flag + M-1 EmailRaceVerified subclass + M-3 ActivityAction.RECLAIM_UNVERIFIED audit + L-3 edge case 3 test case-insensitive + concurrent gather + invalidate 0 rows). drift 0건 128 연속 cycle 37~169.67.
+> 최근 갱신 시점: 2026-05-20 18:30 KST — cycle 169.68~72 chain 누계 (ChatListItemDelegate custom paint avatar circle + online indicator + name elide + ts + unread badge + bubble alignment polish AlignBottom + folder list 8 default folder + L-1 jinja robust regex anchor + EmailRaceVerified race detect updated_at 5초 + FolderList main_window inject + chat_list_panel set_active_folder + pre-existing test fail 3건 회수 + asyncio import cleanup + chat_header pinned message bar + M6 WBS sqlite 인프라 + handoff §8.75 cycle 169.13~39 보충). drift 0건 133 연속 cycle 37~169.72. pytest 78 PASS + 4 skip (cycle 169.33 legacy 만).
 
 ---
 

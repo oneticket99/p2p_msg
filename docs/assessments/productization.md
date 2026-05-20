@@ -5,8 +5,8 @@ last_verified: 2026-05-20T07:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 16:00 KST — cycle 169.60~67 chain 누계
-> (TURN production + camera capture + ChatListPanel inject + 검색 focus + skip 10건 회수 + reviewer 잔여 4 회수 — H-2 SMTP graceful + M-1 EmailRaceVerified + M-3 RECLAIM_UNVERIFIED audit + L-3 edge case 3 test).
+> **최신 갱신 시점**: 2026-05-20 18:30 KST — cycle 169.68~72 chain 누계
+> (ChatListItemDelegate + bubble alignment + FolderList + L-1 jinja robust + EmailRaceVerified race detect + folder filter chain + pre-existing 3 fail 회수 + asyncio import cleanup + pinned message bar + M6 WBS sqlite + handoff §8.75 cycle 169.13~39 보충).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 

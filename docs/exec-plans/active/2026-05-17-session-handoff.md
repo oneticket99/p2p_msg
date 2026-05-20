@@ -1953,6 +1953,37 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.76 cycle 169.68~169.72 chain — telegram polish + reviewer 잔여 + WBS sqlite (2026-05-20 18:30 KST)
+
+**커밋 chain (5 commit)**:
+- `aa660cc` feat(cycle169.68): ChatListItemDelegate custom paint
+- `3044c74` feat(cycle169.69): telegram polish + jinja regex + folder list
+- `25756fa` feat(cycle169.70): EmailRaceVerified race detect + FolderList inject
+- `48d4353` feat(cycle169.71): folder filter + pre-existing fail + import cleanup
+- `18bcf06` feat(cycle169.72): pinned message bar + WBS sqlite + handoff §8.75
+
+**핵심 산출**:
+- ChatListItemDelegate 64px row + avatar circle 40px + online indicator + name 14px bold elide + last_message 12px gray + ts 11px + unread badge cyan rounded 99+ cap + divider line
+- message_bubble ts_row AlignBottom + check ✓✓ 11px bold cyan baseline
+- 신규 `app/ui/folder_list.py::FolderList` 96px + 8 default folder (모든 대화방/모니터링/업무협조/이슈알림/파티/사내동호회/안읽음/편집) + unread badge + active cyan highlight
+- gen_token_usage_30d.py L-1 jinja robust — re.compile capture group anchor + subn count
+- atomic chain `SELECT updated_at` + 5s window race detect → status `verified_race` → EmailRaceVerified raise
+- main_window splitter 4 column (sidebar_rail + FolderList + chat_list_panel + right_panel)
+- chat_list_panel set_active_folder + unread folder filter chain
+- signup_dialog placeholder 2 + main_window 보내기 tr() + test QTextEdit 변환
+- signup + login asyncio import 제거 (cycle 169.49 잔존)
+- chat_header pinned message bar — cyan border-left + 고정된 메시지 + close ✕ + signal
+- M6 WBS sqlite `data/wbs.sqlite` + `wbs_tasks` table + idx
+- handoff §8.75 cycle 169.13~169.39 27 cycle 무기록 보충
+
+**잔여 별도 cycle**:
+- A coturn install (사용자 명시 authorization 의무)
+- C 사용자 manual visual ack (클라이언트 재 빌드 후)
+- Phase 5 plan finalize (scope 거대)
+- handoff cycle 169.0~5 + 169.68~72 entry 보충
+
+---
+
 ### 8.75 cycle 169.6~169.39 cluster 보충 entry — dereliction audit M-2 회수 (2026-05-20 18:30 KST)
 
 **커버 범위**: cycle 169.6~169.12 (8.78 안 이미 entry) + **cycle 169.13~169.39 = 27 cycle 무기록 보충**.
