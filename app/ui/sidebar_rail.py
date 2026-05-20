@@ -81,20 +81,8 @@ class SidebarRail(QFrame):
             btn.setIconSize(QSize(28, 28))
             btn.setToolTip(label)
             btn.setFixedSize(56, 56)
-            btn.setStyleSheet(
-                "QToolButton#sidebarTab {"
-                " background-color: transparent;"
-                " border: none;"
-                " border-radius: 6px;"
-                "}"
-                "QToolButton#sidebarTab:hover {"
-                " background-color: rgba(0, 102, 255, 0.1);"
-                "}"
-                "QToolButton#sidebarTab:checked {"
-                " background-color: rgba(0, 102, 255, 0.2);"
-                " border-left: 3px solid #0066FF;"
-                "}"
-            )
+            # cycle 169.111 회수 — inline QSS 폐기 → base-dark.qss QSS#sidebarTab selector delegate
+            # hover/active/checked state qss chain 단일 source of truth
             btn.clicked.connect(  # type: ignore[arg-type]
                 lambda _checked, key=tab_key: self.tab_clicked.emit(key)
             )
