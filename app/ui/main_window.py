@@ -1209,6 +1209,8 @@ class MainWindow(QMainWindow):
                     sender=sender, text=text, ts=ts, is_self=is_self,
                     reply_to=reply_to, hide_sender=hide_sender,
                 )
+                # cycle 169.165 — send/receive 직후 scroll bottom 자동 (telegram align)
+                self._chat_view.scroll_to_bottom()
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("chat_view add_message 실패 — %r", exc)
 
