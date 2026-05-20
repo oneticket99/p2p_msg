@@ -1125,19 +1125,6 @@ class MainWindow(QMainWindow):
         if hasattr(self, "_input_bar"):
             self._input_bar.set_reply_to(sender, text)
 
-    @pyqtSlot(str, str)
-    def _on_bot_command_invoked(self, bot_username: str, command: str) -> None:
-        """BotPanel command click → InputBar text inject + send chain."""
-        # 한글 주석 — bot command 본문 = "/command @bot_username" pattern
-        message = f"{command} @{bot_username}"
-        try:
-            if hasattr(self, "_input_bar"):
-                self._input_bar._text_edit.setPlainText(message)
-                self._input_bar._text_edit.setFocus()
-            log.info("bot command inject — %s %s", command, bot_username)
-        except Exception as exc:  # pragma: no cover - graceful
-            log.debug("bot command inject 실패 — %r", exc)
-
     @pyqtSlot(int)
     def _on_friend_profile_open(self, friend_id: int) -> None:
         """friend chat click → ProfileView modal open (cycle 153.7 신설)."""
