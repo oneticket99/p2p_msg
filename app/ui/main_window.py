@@ -1075,8 +1075,14 @@ class MainWindow(QMainWindow):
         from app.ui.call_dialog import CallDialog
         from app.net.call_client import CallClient
         stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
+        turn_url = getattr(self._config, "turn_url", "")
+        turn_username = getattr(self._config, "turn_username", "")
+        turn_credential = getattr(self._config, "turn_credential", "")
         signaling = getattr(self, "_signaling_client", None)
-        call_client = CallClient(stun_url=stun_url, signaling_client=signaling, peer_id=from_peer)
+        call_client = CallClient(
+            stun_url=stun_url, signaling_client=signaling, peer_id=from_peer,
+            turn_url=turn_url, turn_username=turn_username, turn_credential=turn_credential,
+        )
         self._active_call_client = call_client
         # 한글 주석 — accept_offer fire (background) + CallDialog incoming=True modal
         import asyncio
@@ -1220,10 +1226,16 @@ class MainWindow(QMainWindow):
         peer = "상대 사용자"
         dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
         stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
-        # 한글 주석 — cycle 169.58 회수 — signaling_client + peer_id inject (actual SDP exchange)
+        turn_url = getattr(self._config, "turn_url", "")
+        turn_username = getattr(self._config, "turn_username", "")
+        turn_credential = getattr(self._config, "turn_credential", "")
+        # 한글 주석 — cycle 169.60 회수 — signaling_client + peer_id + TURN inject
         signaling = getattr(self, "_signaling_client", None)
         peer_id = getattr(self, "_active_peer_id", None)
-        call_client = CallClient(stun_url=stun_url, signaling_client=signaling, peer_id=peer_id)
+        call_client = CallClient(
+            stun_url=stun_url, signaling_client=signaling, peer_id=peer_id,
+            turn_url=turn_url, turn_username=turn_username, turn_credential=turn_credential,
+        )
         dialog.attach_client(call_client)
         self._active_call_client = call_client
         # 한글 주석 — 통화 시점 즉시 outgoing offer fire (peer_id 부재 시 placeholder mode)

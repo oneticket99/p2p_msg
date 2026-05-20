@@ -33,14 +33,59 @@ class CallClient:
         on_state_change: Optional[Callable[[str], None]] = None,
         signaling_client: Optional[Any] = None,
         peer_id: Optional[str] = None,
+        turn_url: str = "",
+        turn_username: str = "",
+        turn_credential: str = "",
     ) -> None:
         self._stun_url = stun_url
+        self._turn_url = turn_url
+        self._turn_username = turn_username
+        self._turn_credential = turn_credential
         self._on_state_change = on_state_change
         self._signaling = signaling_client
         self._peer_id = peer_id  # 한글 주석 — 상대 peer signaling id
         self._pc: Optional[Any] = None
         self._remote_track: Optional[Any] = None
         self._video_enabled = False
+
+    def _build_media_player(self, system: str, video: bool = False):  # type: ignore[no-untyped-def]
+        """OS-specific MediaPlayer 신설 (cycle 169.60 video capture 회수).
+
+        Darwin avfoundation video device 의 의 `default:default` (camera + mic).
+        Linux v4l2 + pulse. Windows dshow audio-only (cycle 부재 graceful).
+        """
+        if not AIORTC_AVAILABLE:
+            return None
+        try:
+            if system == "Darwin":
+                if video:
+                    return MediaPlayer("default:default", format="avfoundation",
+                                       options={"framerate": "30", "video_size": "640x480"})
+                return MediaPlayer("none:default", format="avfoundation")
+            if system == "Linux":
+                if video:
+                    return MediaPlayer("/dev/video0", format="v4l2",
+                                       options={"framerate": "30", "video_size": "640x480"})
+                return MediaPlayer("default", format="pulse")
+            return None
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[CallClient] MediaPlayer 신설 fail system=%s video=%s — %r", system, video, exc)
+            return None
+
+    def _build_ice_servers(self):  # type: ignore[no-untyped-def]
+        """STUN + TURN iceServer list 생성 (cycle 169.60 회수)."""
+        if not AIORTC_AVAILABLE:
+            return []
+        servers = [RTCIceServer(urls=[self._stun_url])]
+        if self._turn_url:
+            servers.append(
+                RTCIceServer(
+                    urls=[self._turn_url],
+                    username=self._turn_username or None,
+                    credential=self._turn_credential or None,
+                )
+            )
+        return servers
 
     def _notify(self, state: str) -> None:
         if self._on_state_change is not None:
@@ -60,7 +105,7 @@ class CallClient:
         if not AIORTC_AVAILABLE:
             log.warning("[CallClient] aiortc 부재 — offer scaffolding skip")
             return None
-        config = RTCConfiguration([RTCIceServer(urls=[self._stun_url])])
+        config = RTCConfiguration(self._build_ice_servers())
         self._pc = RTCPeerConnection(configuration=config)
         self._video_enabled = video
 
@@ -73,23 +118,22 @@ class CallClient:
             log.info("[CallClient] remote track 수신 kind=%s", track.kind)
             self._remote_track = track
 
-        # 한글 주석 — cycle 169.58 회수 — MediaPlayer device capture chain
-        # macOS avfoundation / Linux pulse / Windows dshow. graceful fallback.
+        # 한글 주석 — cycle 169.60 회수 — MediaPlayer audio + video device capture
         try:
             import platform
-            player = None
-            if platform.system() == "Darwin":
-                player = MediaPlayer("none:0", format="avfoundation",
-                                     options={"audio_device_index": "0"})
-            elif platform.system() == "Linux":
-                player = MediaPlayer("default", format="pulse")
-            if player is not None and player.audio is not None:
-                self._pc.addTrack(player.audio)
-                log.info("[CallClient] audio track 추가 PASS")
+            self._media_player = self._build_media_player(platform.system(), video=video)
+            if self._media_player is not None:
+                if self._media_player.audio is not None:
+                    self._pc.addTrack(self._media_player.audio)
+                    log.info("[CallClient] audio track 추가 PASS")
+                if video and self._media_player.video is not None:
+                    self._pc.addTrack(self._media_player.video)
+                    log.info("[CallClient] video track 추가 PASS")
             else:
-                log.info("[CallClient] audio device 부재 — silence fallback")
+                log.info("[CallClient] media device 부재 — silence/black fallback")
         except Exception as exc:  # noqa: BLE001
             log.warning("[CallClient] MediaPlayer capture 실패 — %r", exc)
+            self._media_player = None
 
         @self._pc.on("icecandidate")
         async def _on_ice(candidate):
@@ -119,7 +163,7 @@ class CallClient:
         """incoming call — remote SDP set + answer 생성."""
         if not AIORTC_AVAILABLE:
             return None
-        config = RTCConfiguration([RTCIceServer(urls=[self._stun_url])])
+        config = RTCConfiguration(self._build_ice_servers())
         self._pc = RTCPeerConnection(configuration=config)
         self._video_enabled = video
 
