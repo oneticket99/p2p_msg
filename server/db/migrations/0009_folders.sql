@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS folders (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '폴더 PK',
     folder_id CHAR(8) NOT NULL UNIQUE COMMENT 'uuid hex 8자 — client folder_id 정합',
-    owner_id INT UNSIGNED NOT NULL COMMENT 'users.id FK',
+    owner_id BIGINT UNSIGNED NOT NULL COMMENT 'users.id FK (BIGINT UNSIGNED 정합)',
     name VARCHAR(64) NOT NULL COMMENT '폴더 표시명',
     color_name VARCHAR(16) COMMENT 'red/orange/purple/green/blue/indigo/pink',
     color_hex CHAR(7) COMMENT '#RRGGBB',
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS folder_invites (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     folder_id INT UNSIGNED NOT NULL COMMENT 'folders.id FK',
     invite_token CHAR(32) NOT NULL UNIQUE COMMENT 'secrets.token_hex(16) — 공유 URL 안 token',
-    created_by INT UNSIGNED NOT NULL COMMENT 'users.id 생성자',
+    created_by BIGINT UNSIGNED NOT NULL COMMENT 'users.id 생성자 (BIGINT UNSIGNED 정합)',
     expires_at TIMESTAMP COMMENT 'NULL = 영구 link',
     use_count INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '사용 횟수',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1130,18 +1130,48 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def _on_folder_saved(self, folder_data: dict) -> None:
-        """FolderEditDialog 만들기 PASS → user_folders 안 append."""
+        """FolderEditDialog 만들기 PASS → user_folders append + REST 영속화."""
         if not hasattr(self, "_user_folders"):
             self._user_folders = []
         self._user_folders.append(folder_data)
         log.info("[main_window] folder created — name=%s", folder_data.get("name"))
+        # cycle 169.77 회수 — FolderCreateWorker REST 영속화 chain
+        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+        token = getattr(self, "_auth_token", None)
+        if not base_url or not token:
+            log.warning("[folder] base_url/token 부재 — REST 영속화 skip")
+            return
+        from app.net.folder_client import FolderCreateWorker
+        worker = FolderCreateWorker(base_url, token, folder_data, parent=self)
+        worker.finished_with_result.connect(self._on_folder_persist_finished)  # type: ignore[arg-type]
+        worker.start()
+        self._folder_worker = worker  # gc 회피
+
+    @pyqtSlot(bool, str, str, dict)
+    def _on_folder_persist_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
+        """FolderCreateWorker finished — log + folder_id 갱신."""
+        if ok:
+            log.info("[folder] REST 영속화 PASS — id=%s", data.get("id"))
+        else:
+            log.warning("[folder] REST 영속화 실패 — code=%s msg=%s", error_code, error_message)
 
     @pyqtSlot(str)
     def _on_folder_delete_requested(self, folder_id: str) -> None:
-        """folder delete request."""
+        """folder delete request + REST DELETE chain (cycle 169.77)."""
         user_folders = getattr(self, "_user_folders", [])
         self._user_folders = [f for f in user_folders if f.get("folder_id") != folder_id]
         log.info("[main_window] folder deleted — folder_id=%s", folder_id)
+        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+        token = getattr(self, "_auth_token", None)
+        if not base_url or not token:
+            return
+        from app.net.folder_client import FolderDeleteWorker
+        worker = FolderDeleteWorker(base_url, token, folder_id, parent=self)
+        worker.finished_with_result.connect(  # type: ignore[arg-type]
+            lambda ok, *_: log.info("[folder] DELETE finished ok=%s", ok)
+        )
+        worker.start()
+        self._folder_del_worker = worker
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
