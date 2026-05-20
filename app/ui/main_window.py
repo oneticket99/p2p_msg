@@ -1339,6 +1339,15 @@ class MainWindow(QMainWindow):
                     status = "online" if entry.is_online else "오프라인"
                     break
         self._chat_header.set_chat(name, status=status)
+        # cycle 169.156 — chat 전환 시점 chat_view clear (image #12 telegram 동작성)
+        # friend/bot/room 별 message history isolation — chat_view 단일 view + content swap
+        try:
+            self._chat_view.clear_messages()
+            self._active_chat_kind = kind
+            self._active_chat_target_id = target_id
+            log.info("[main_window] chat_view cleared — kind=%s target=%d", kind, target_id)
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("chat_view clear 실패 — %r", exc)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         self._input_container.setVisible(True)
 
