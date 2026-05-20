@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-20T19:55:00+09:00
+last_verified: 2026-05-20T20:30:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-20 19:55 KST — cycle 169.108~111 chain 누계 (cycle 169.108 평가 mirror sync cycle 169.103~107 + cycle 169.109 chat_list_panel delegate Figma tune ROW_HEIGHT 60 + Service text #A1AAB3 + cycle 169.110 MessageBubble radius 16 tail corner 4 + InputBar bg #131C30 padding 12 + cycle 169.111 sidebar_rail inline QSS 폐기 → base-dark.qss selector delegate)
+> **최신 갱신 시점**: 2026-05-20 20:30 KST — cycle 169.112~116 chain 누계 (cycle 169.112 macOS Info.plist privacy keys 6종 추가 TCC crash 회수 + cycle 169.113 hamburger drawer 좌측 slide-in 회수 + cycle 169.114 QPropertyAnimation 220ms slide animation + cycle 169.115 QDialog → QFrame child overlay 변환 eventFilter outside click close + cycle 169.116 drawer setGeometry x = sidebar width 햄버거 button visible retain)
 > (EmailRaceVerified test + group sender preview + commit prefix M-4 + Phase 5 finalize + telegram copycat 삭제 + sidebar+folder 통합 + FolderManageDialog + FolderEditDialog + ChatPickerDialog + folder REST 4 endpoint + 0009 migration deploy + FolderClient QThread + 색상 indicator + cycle 169.78 qa-agent FAIL CRIT-1 LEGB scope shadow 회수 + 0009 migration scp 누락 회수 + cycle 169.79 reviewer + qa 잔여 8 finding 일괄 회수 (TLS env override + atomic transaction + owner SQL + worker list cleanup + color hex regex + invite expires + url env + timeout 30s LOW-3) + cycle 169.80 MED-3 folder test coverage 3 신규 file (tests/server/test_folder_repository.py 8 + tests/server/test_folder_handlers_integration.py 7 + tests/app/net/test_folder_client.py 6 = 21 PASS + 1 skip rollback mock).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
