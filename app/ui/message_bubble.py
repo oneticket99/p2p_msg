@@ -114,11 +114,13 @@ class MessageBubble(QFrame):
         bubble_layout.setContentsMargins(8, 6, 8, 6)
         bubble_layout.setSpacing(2)
 
-        # peer 발신 시 발신자 라벨 노출
+        # peer 발신 시 발신자 라벨 노출 + cycle 169.142 — per-user palette gradient color (telegram align)
         if not is_self:
+            from app.ui.avatar_palette import palette_solid
+            sender_color = palette_solid(sender)
             sender_label = QLabel(sender, bubble)
             sender_label.setStyleSheet(
-                f"color: {self._COLOR_SENDER}; font-size: 11px; font-weight: 600;"
+                f"color: {sender_color}; font-size: 11px; font-weight: 600;"
             )
             bubble_layout.addWidget(sender_label)
 

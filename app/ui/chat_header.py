@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Optional
 
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -108,6 +109,21 @@ class ChatHeader(QFrame):
         """현 활성 chat 정보 갱신. avatar_emoji arg = legacy compat (무시)."""
         self._name_label.setText(name)
         self._status_label.setText(status)
+        # cycle 169.142 — telegram per-user palette gradient avatar bg
+        if name:
+            from app.ui.avatar_palette import palette_pair
+            c_start, c_end = palette_pair(name)
+            self._avatar_label.setStyleSheet(
+                f"background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1,"
+                f" stop:0 {c_start}, stop:1 {c_end});"
+                f" border-radius: 20px;"
+                f" color: #ffffff;"
+                f" font-size: 18px;"
+                f" font-weight: 700;"
+            )
+            initial = name[:1].upper() if name[:1].isascii() else name[:1]
+            self._avatar_label.setText(initial)
+            self._avatar_label.setPixmap(QPixmap())
 
     def clear_chat(self) -> None:
         """chat 선택 해제 — placeholder text 부재 (cycle 169.100 회수 — 사용자 directive)."""
