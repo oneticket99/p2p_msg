@@ -94,13 +94,9 @@ class SidebarRail(QFrame):
         if self._buttons:
             self._buttons["friends"].setChecked(True)
 
-        # cycle 169.74 회수 — telegram desktop image 73 align — folder list 통합 (모든 대화방 + 안읽음 + 편집)
-        layout.addSpacing(12)
-        folder_defs = [
-        ]
         # cycle 169.119 회수 — folder_defs (모든대화방/안읽음/편집) 폐기
         # 사용자 비판 image #29~32 — TAB icon (홈/설정) + folder 중복 + 정렬 불일치
-        # tab 의 의 friends/rooms/bots/settings 의 의 만 retain — 검색 + folder = drawer 또는 search dialog 의무
+        # tab friends/rooms/bots/settings 만 retain — 검색 + folder = drawer 또는 search dialog 의무
         self._folder_buttons: dict[str, QToolButton] = {}
 
         layout.addStretch(1)
