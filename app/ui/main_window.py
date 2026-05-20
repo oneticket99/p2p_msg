@@ -852,9 +852,47 @@ class MainWindow(QMainWindow):
             self._session_token = dialog.token
             self._current_user_id = dialog.user_id
             log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
+            # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
+            self._post_login_refresh()
             QMessageBox.information(
                 self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
             )
+
+    def _post_login_refresh(self) -> None:
+        """login PASS 직후 friend + room server fetch + chat_list_panel populate (cycle 169.107).
+
+        FriendsClient.list_friends + RoomsClient.list_rooms 호출 (async).
+        graceful — client 부재 시 default seed 만 표시.
+        """
+        import asyncio
+
+        async def _fetch_chain() -> None:
+            try:
+                fc = getattr(self, "_friends_client", None)
+                if fc is not None and self._session_token:
+                    try:
+                        friends = await fc.list_friends(self._session_token, status="accepted")  # type: ignore[attr-defined]
+                        self._friend_list.set_friends(friends, viewer_id=self._current_user_id or 0)
+                        log.info("[post_login] friends fetch — count=%d", len(friends))
+                    except Exception as exc:  # noqa: BLE001
+                        log.warning("[post_login] friends fetch fail — %r", exc)
+                rc = getattr(self, "_rooms_client", None)
+                if rc is not None and self._session_token:
+                    try:
+                        rooms = await rc.list_rooms(self._session_token)  # type: ignore[attr-defined]
+                        if hasattr(self, "_room_list"):
+                            self._room_list.set_rooms(rooms)
+                        log.info("[post_login] rooms fetch — count=%d", len(rooms))
+                    except Exception as exc:  # noqa: BLE001
+                        log.warning("[post_login] rooms fetch fail — %r", exc)
+            finally:
+                self._refresh_chat_list_panel()
+
+        try:
+            asyncio.ensure_future(_fetch_chain())
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[post_login] _fetch_chain spawn fail — %r", exc)
+            self._refresh_chat_list_panel()
 
     @pyqtSlot()
     def _on_open_reset(self) -> None:
@@ -1279,13 +1317,22 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
-        """ChatListPanel.chat_selected → group room 진입 또는 friend chat 진입 (cycle 169.62)."""
+        """ChatListPanel.chat_selected → group room 진입 또는 friend/bot chat 진입 (cycle 169.62)."""
         log.info("[main_window] chat_selected kind=%s target_id=%d", kind, target_id)
         if kind == "room":
             self._on_room_entered(target_id)
             return
-        # 한글 주석 — friend/bot path = 1:1 chat_view (placeholder cycle 169.62)
-        self._chat_header.set_chat(f"{kind}:{target_id}", status="online")
+        # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
+        chat_panel = getattr(self, "_chat_list_panel", None)
+        name = f"{kind}:{target_id}"
+        status = "online"
+        if chat_panel is not None:
+            for entry in getattr(chat_panel, "_entries", []):
+                if entry.kind == kind and entry.target_id == target_id:
+                    name = entry.name
+                    status = "online" if entry.is_online else "오프라인"
+                    break
+        self._chat_header.set_chat(name, status=status)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
         self._input_container.setVisible(True)
 
