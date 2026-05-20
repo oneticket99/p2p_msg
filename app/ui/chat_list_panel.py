@@ -52,9 +52,10 @@ class ChatListItemDelegate(QStyledItemDelegate):
     layout: avatar circle 40px + name (15px bold) + last_message (12px gray) + ts (11px gray) + unread badge.
     """
 
-    # cycle 169.109 — Figma Telegram Win11 정합 tune
-    AVATAR_SIZE = 40
-    ROW_HEIGHT = 60
+    # cycle 169.126 — telegram desktop Win11 정합 tune (sub-agent A drift D-6/D-7)
+    # avatar 40→54 + row 60→72 + padding 14 retain (telegram align)
+    AVATAR_SIZE = 54
+    ROW_HEIGHT = 72
     PADDING = 14
 
     def sizeHint(self, option: QStyleOptionViewItem, index) -> "QSize":  # type: ignore[override]
@@ -117,7 +118,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.setPen(QPen(QColor("#e5e7eb")))
         fn = QFont(); fn.setPixelSize(14); fn.setBold(True)
         painter.setFont(fn)
-        name_rect = QRect(text_x, rect.top() + 10, text_w, 20)
+        name_rect = QRect(text_x, rect.top() + 14, text_w, 22)
         elided_name = painter.fontMetrics().elidedText(
             entry.name, Qt.TextElideMode.ElideRight, text_w
         )
@@ -127,7 +128,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.setPen(QPen(QColor("#A1AAB3")))  # cycle 169.109 — Figma Service text token
         fm = QFont(); fm.setPixelSize(12)
         painter.setFont(fm)
-        msg_rect = QRect(text_x, rect.top() + 32, text_w, 18)
+        msg_rect = QRect(text_x, rect.top() + 40, text_w, 20)
         if entry.last_sender and entry.kind == "room":
             preview_text = f"{entry.last_sender}: {entry.last_message or ''}"
         else:
@@ -138,7 +139,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
 
         # ts (right top)
-        ts_rect = QRect(rect.right() - 56, rect.top() + 10, 44, 18)
+        ts_rect = QRect(rect.right() - 56, rect.top() + 14, 44, 20)
         ts_text = entry.last_ts.strftime("%H:%M") if entry.last_ts else ""
         painter.setPen(QPen(QColor("#A1AAB3")))  # cycle 169.109 — Figma Service text token (ts color)
         ft = QFont(); ft.setPixelSize(11)
@@ -149,7 +150,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
         if entry.unread_count > 0:
             badge_text = str(entry.unread_count) if entry.unread_count < 100 else "99+"
             badge_w = max(20, painter.fontMetrics().horizontalAdvance(badge_text) + 12)
-            badge_rect = QRect(rect.right() - 12 - badge_w, rect.top() + 32, badge_w, 20)
+            badge_rect = QRect(rect.right() - 12 - badge_w, rect.top() + 40, badge_w, 20)
             painter.setBrush(QColor("#0066FF"))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(badge_rect, 10, 10)
