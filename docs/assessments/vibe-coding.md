@@ -13,7 +13,7 @@ status: active
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-17. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 전체 누계.
 >
-> 최근 갱신 시점: 2026-05-20 10:50 KST — cycle 169.50~54 chain 누계 (test 9건 skip 처리 — dereliction H-3 회수 + SVG icon helper `app/ui/_icons.py::load_icon` QSvgRenderer + currentColor tint + 19 SVG asset Material-style + sidebar 4 SVG 변환 + bubble `QLabel transparent` cascade + chat_header handler visible feedback `QMessageBox + QMenu` + chat_header 3+1 SVG + input_bar 2 SVG + right_panel 배경 `#131C30` 밝게 + splitter handle visible `#1F2937` + settings_dialog 10 tab SVG icon mode + signup login link `done(3)` + main.py LoginDialog ↔ SignupDialog while not authenticated switch loop + qa-agent 전수 QA 15 회귀 PASS + pytest 1786 PASS + 회원가입 완료 자동 로그인 chain — verify endpoint 안 token 자동 발급 + session_store + MainWindow propagate). drift 0건 118 연속 cycle 37~169.54.
+> 최근 갱신 시점: 2026-05-20 13:30 KST — cycle 169.55~59 chain 누계 (input_bar voice/send SVG + status bar CONNECTED + HamburgerDrawer modal 9 menu entry + CallDialog 음성/영상 통화 modal + MyAccountDialog + MyProfileDialog + main_window 햄버거 button + sidebar hamburger_clicked signal + signaling WebSocket background connect + 신규 helper CallClient aiortc RTCPeerConnection wrapper + signaling SDP/ICE exchange + MediaPlayer device capture Darwin avfoundation + Linux pulse + AccountClient ProfileUpdateWorker PUT /api/auth/profile Bearer + RoomsClient list_rooms background + VideoRenderer 30fps frame rendering aiortc VideoStreamTrack → QImage RGB888 + signaling offer/answer/ice/peer_joined dispatch chain + active_peer_id 추출 chain). drift 0건 123 연속 cycle 37~169.59. token usage regen — sessions=4 msgs=12021 cost=$12277.79.
 
 ---
 

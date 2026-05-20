@@ -1953,6 +1953,35 @@ SIGNUP + SIGNUP_OTP_VERIFY + LOGIN + LOGOUT + PASSWORD_RESET_COMPLETE + DEVICE_R
 
 ## 8. 인수인계 시점 진행 상태 SNAPSHOT (2026-05-17 17:15)
 
+### 8.73 cycle 169.55~59 chain — telegram desktop align + WebRTC actual binding (2026-05-20 13:30 KST)
+
+**커밋 chain (5 commit)**:
+- `922ce38` feat(cycle169.55): input_bar voice/send SVG + status bar CONNECTED
+- `261add4` feat(cycle169.56): 미구현 영역 scaffolding (햄버거 + 통화 + 계정 + 프로필 + signaling)
+- `cdb0c49` feat(cycle169.57): 잔여 5건 binding chain — CallClient + AccountClient
+- `34fb0df` feat(cycle169.58): 본격 actual binding 5건 — WebRTC SDP/ICE + MediaPlayer + video frame + rooms REST
+- `76d5f73` feat(cycle169.59): 잔여 3건 본격 binding — signaling dispatch + video render + active peer
+
+**핵심 산출**:
+- 신규 4 widget — HamburgerDrawer + CallDialog + MyAccountDialog + MyProfileDialog
+- 신규 3 helper — CallClient (aiortc) + AccountClient (PUT) + VideoRenderer (30fps)
+- input_bar voice/send + sidebar 햄버거 + chat_header binding
+- main.py SignalingClient connect background + RoomsClient list_rooms
+- main_window 안 signaling offer/answer/ice/peer_joined dispatch slot 4종
+- WebRTC SDP exchange + ICE candidate + MediaPlayer capture (Darwin/Linux)
+- 자동 로그인 token propagate → status bar CONNECTED
+- _active_peer_id 추출 chain (room_entered + peer_joined)
+- 누계 SVG asset 22종
+
+**잔여 별도 cycle**:
+- WebRTC TURN server config (production)
+- video MediaPlayer device capture (camera)
+- group_chat_view mesh broadcast 실 fire UI test
+- main layout polish (사용자 directive 잔존)
+- HttpJsonWorker mock pattern test 갱신 (cycle 169.50 skip 9건 회수)
+
+---
+
 ### 8.72 cycle 169.50~54 chain — UI redesign + 자동 로그인 (2026-05-20 10:50 KST)
 
 **커밋 chain (5 commit)**:
