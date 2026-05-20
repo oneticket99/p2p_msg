@@ -100,6 +100,9 @@ async def register_user(
 
     if status == "verified":
         raise EmailAlreadyRegistered(f"email 중복 — {email_norm}")
+    if status == "verified_race":
+        # cycle 169.70 회수 — race detect (concurrent verify 완료 시 별도 error_code)
+        raise EmailRaceVerified(f"email race verified — {email_norm}")
     if status == "username_conflict":
         raise UsernameAlreadyTaken(f"username 중복 — {username}")
 

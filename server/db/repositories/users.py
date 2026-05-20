@@ -219,12 +219,14 @@ async def reclaim_unverified_user_atomic(
         status:
             - "reclaimed" → reclaim PASS, second = user_id
             - "absent" → row 부재 (caller 가 신규 INSERT 진입)
-            - "verified" → email_verified=1 race 차단
+            - "verified" → email_verified=1 (이전 검증 완료 사용자)
+            - "verified_race" → email_verified=1 race (updated_at 5초 이내 동시 verify, cycle 169.70)
             - "username_conflict" → 다른 user 의 username 점유
     """
 
+    # cycle 169.70 회수 — updated_at SELECT 추가 (EmailRaceVerified race detect)
     sql_select_user = (
-        "SELECT id, email_verified FROM users WHERE email = %s FOR UPDATE"
+        "SELECT id, email_verified, updated_at FROM users WHERE email = %s FOR UPDATE"
     )
     sql_select_uname = (
         "SELECT id FROM users WHERE username = %s AND id != %s LIMIT 1"
@@ -254,8 +256,20 @@ async def reclaim_unverified_user_atomic(
                     await conn.rollback()
                     return ("absent", None)
                 user_id, email_verified = int(row[0]), int(row[1])
+                updated_at = row[2] if len(row) > 2 else None
                 if email_verified:
                     await conn.rollback()
+                    # 한글 주석 — cycle 169.70 회수 — race detect — updated_at 5초 이내 시 EmailRaceVerified 분기
+                    if updated_at is not None:
+                        try:
+                            from datetime import datetime, timedelta
+                            now = datetime.now()
+                            if hasattr(updated_at, "tzinfo") and updated_at.tzinfo is not None:
+                                updated_at = updated_at.replace(tzinfo=None)
+                            if abs((now - updated_at).total_seconds()) < 5:
+                                return ("verified_race", None)
+                        except Exception:
+                            pass
                     return ("verified", None)
 
                 await cur.execute(sql_select_uname, (username, user_id))

@@ -218,6 +218,11 @@ class MainWindow(QMainWindow):
         # 한글 주석 — cycle 169.56 회수 — 햄버거 menu drawer signal
         self._sidebar_rail.hamburger_clicked.connect(self._on_hamburger_clicked)  # type: ignore[arg-type]
 
+        # 3-1b) folder list rail (cycle 169.70 신설 — telegram desktop image 73 align)
+        from app.ui.folder_list import FolderList
+        self._folder_list = FolderList(parent=splitter)
+        self._folder_list.folder_selected.connect(self._on_folder_selected)  # type: ignore[arg-type]
+
         # 3-2) 중앙 chat list — ChatListPanel (cycle 169.62 신설, telegram desktop align)
         # RoomListWidget legacy 보존 — group chat 진입 chain (room_id) backward compat.
         from app.ui.chat_list_panel import ChatListPanel
@@ -1074,6 +1079,12 @@ class MainWindow(QMainWindow):
                 except Exception as exc:  # pragma: no cover - graceful
                     log.debug("block chain 실패 — %r", exc)
             modal.accept()
+
+    @pyqtSlot(str)
+    def _on_folder_selected(self, folder_id: str) -> None:
+        """FolderList folder click (cycle 169.70 신설)."""
+        log.info("[main_window] folder_selected — folder_id=%s", folder_id)
+        # 한글 주석 — folder_id 기반 chat_list_panel filter chain (별도 cycle)
 
     @pyqtSlot(str, int)
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
