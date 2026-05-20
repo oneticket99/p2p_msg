@@ -108,11 +108,15 @@ def main() -> int:
     asyncio.set_event_loop(loop)
 
     # 4) AuthClient 초기화 — REST endpoint base URL
-    # cycle 169.35 회수 — signaling_url (ws://:8765) ≠ REST endpoint (https://:443)
-    # TOOTALK_API_BASE env 우선 + 부재 시 signaling_url 변환 fallback (개발 환경 만)
+    # cycle 169.96 회수 — 데모 서버 안 REST = nginx 443 proxy (8765 = signaling WS 단독)
+    # 정상 chain: signal_host + ":443" (HTTPS) — IP 직접 시 cert mismatch → TOOTALK_TLS_VERIFY=0 fallback
     api_base = os.environ.get("TOOTALK_API_BASE")
     if not api_base:
-        api_base = config.signaling_url.replace("ws://", "http://").replace("wss://", "https://").removesuffix("/ws")
+        # 한글 주석 — signal_host 기준 HTTPS 443 default (nginx proxy chain 정합)
+        scheme = "https" if config.signal_scheme in ("wss", "https") else "http"
+        api_base = f"{scheme}://{config.signal_host}"
+        # 한글 주석 — IP 직접 binding 의 cert subject mismatch fallback (production 도메인 명시 의무)
+        os.environ.setdefault("TOOTALK_TLS_VERIFY", "0")
     auth_client = AuthClient(api_base)
 
     # cycle 160 — ReactionsClient instantiate (graceful httpx 부재)
