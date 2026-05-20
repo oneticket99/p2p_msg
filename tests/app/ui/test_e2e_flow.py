@@ -76,7 +76,9 @@ class _OTPDialogStub:
     DialogCode = type("DC", (), {"Accepted": 1})
 
     def __init__(self, *args, **kwargs) -> None:
-        pass
+        # cycle 169.54 propagate 정합 — token + user_id field
+        self._token = "stub-tok"
+        self._user_id = 42
 
     def exec(self) -> int:
         return 1
@@ -85,11 +87,13 @@ class _OTPDialogStub:
 class TestSignupChain:
     """SignupDialog 4 input + 가입 button → register chain — sync def + asyncio.run 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_signup_register_call_chain(self, qtbot, monkeypatch) -> None:
+    def test_signup_register_call_chain(self, qtbot, monkeypatch, fake_http_worker) -> None:
+        # cycle 169.66 회수 — fake_http_worker fixture 적용
         from app.ui.signup_dialog import SignupDialog
-        client = _MockAuthClient(register_ok=True)
+        from app.net.auth_client import AuthClient
         monkeypatch.setattr("app.ui.otp_dialog.OTPDialog", _OTPDialogStub)
+        monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+        client = AuthClient(base_url="https://fake.local")
         dialog = SignupDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("user@example.com")
@@ -97,7 +101,10 @@ class TestSignupChain:
         dialog._password_edit.setText("password123")
         dialog._password_confirm_edit.setText("password123")
         dialog._on_signup_clicked()
-        assert client.register_calls == [("user@example.com", "user99", "password123")]
+        assert len(fake_http_worker.instances) == 1
+        worker = fake_http_worker.instances[0]
+        assert worker.path == "/api/auth/register"
+        assert worker.payload["email"] == "user@example.com"
 
     def test_signup_validation_short_password_blocks_call(self, qtbot, monkeypatch) -> None:
         from app.ui.signup_dialog import SignupDialog
@@ -116,17 +123,18 @@ class TestSignupChain:
 class TestLoginChain:
     """LoginDialog email + password + 로그인 button → login chain."""
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_login_success_token_capture(self, qtbot) -> None:
+    def test_login_success_token_capture(self, qtbot, fake_http_worker) -> None:
+        # cycle 169.66 회수 — fake_http_worker fixture 적용
         from app.ui.login_dialog import LoginDialog
-        client = _MockAuthClient(login_ok=True)
+        from app.net.auth_client import AuthClient
+        client = AuthClient(base_url="https://fake.local")
         dialog = LoginDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("user@example.com")
         dialog._password_edit.setText("password123")
         dialog._on_login_clicked()
-        assert client.login_calls == [("user@example.com", "password123")]
-        assert dialog.token == "tok-login"
+        assert len(fake_http_worker.instances) == 1
+        assert dialog.token == "fake-tok"
         assert dialog.user_id == 42
 
     def test_login_signup_link_done_2(self, qtbot) -> None:
@@ -156,11 +164,13 @@ class TestOTPChain:
 class TestAsyncioRunIsolatedLoop:
     """cycle 169.34 sync def + asyncio.run() 격리 loop chain — RuntimeError 부재 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_signup_no_runtime_error_chain(self, qtbot, monkeypatch) -> None:
+    def test_signup_no_runtime_error_chain(self, qtbot, monkeypatch, fake_http_worker) -> None:
+        # cycle 169.66 회수
         from app.ui.signup_dialog import SignupDialog
-        client = _MockAuthClient(register_ok=True)
+        from app.net.auth_client import AuthClient
         monkeypatch.setattr("app.ui.otp_dialog.OTPDialog", _OTPDialogStub)
+        monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+        client = AuthClient(base_url="https://fake.local")
         dialog = SignupDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("user@example.com")
@@ -168,15 +178,16 @@ class TestAsyncioRunIsolatedLoop:
         dialog._password_edit.setText("password123")
         dialog._password_confirm_edit.setText("password123")
         dialog._on_signup_clicked()
-        assert len(client.register_calls) == 1
+        assert len(fake_http_worker.instances) == 1
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_login_no_runtime_error_chain(self, qtbot) -> None:
+    def test_login_no_runtime_error_chain(self, qtbot, fake_http_worker) -> None:
+        # cycle 169.66 회수
         from app.ui.login_dialog import LoginDialog
-        client = _MockAuthClient(login_ok=True)
+        from app.net.auth_client import AuthClient
+        client = AuthClient(base_url="https://fake.local")
         dialog = LoginDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("user@example.com")
         dialog._password_edit.setText("password123")
         dialog._on_login_clicked()
-        assert len(client.login_calls) == 1
+        assert len(fake_http_worker.instances) == 1

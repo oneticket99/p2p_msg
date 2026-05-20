@@ -104,18 +104,18 @@ class TestLoginDialogFunctional:
         """email + password 부재 시 QMessageBox.warning + early return."""
         pass
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_login_async_chain_success_accept(self, qtbot) -> None:
-        """email + password 입력 + login click → AuthClient.login PASS → token + user_id 보관."""
+    def test_login_async_chain_success_accept(self, qtbot, fake_http_worker) -> None:
+        """cycle 169.66 회수 — fake_http_worker fixture 적용."""
         from app.ui.login_dialog import LoginDialog
-        client = _AsyncAuthClient(login_ok=True)
+        from app.net.auth_client import AuthClient
+        client = AuthClient(base_url="https://fake.local")
         dialog = LoginDialog(auth_client=client)
         qtbot.addWidget(dialog)
         dialog._email_edit.setText("user@example.com")
         dialog._password_edit.setText("password123")
-        _run_coro(dialog._do_login("user@example.com", "password123"))
-        assert client.login_calls == [("user@example.com", "password123")]
-        assert dialog.token == "tok-mock"
+        dialog._on_login_clicked()
+        assert len(fake_http_worker.instances) == 1
+        assert dialog.token == "fake-tok"
         assert dialog.user_id == 42
 
 
@@ -169,17 +169,26 @@ class TestSignupDialogFunctional:
         pytest.skip("cycle 169.33 — qasync.asyncSlot direct call 부적합")
         assert len(warning_calls) == 1
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_signup_async_register_chain(self, qtbot, monkeypatch) -> None:
-        """valid input → AuthClient.register coroutine 의 의 직접 await."""
+    def test_signup_async_register_chain(self, qtbot, monkeypatch, fake_http_worker) -> None:
+        """cycle 169.66 회수 — fake_http_worker fixture 적용."""
         from app.ui.signup_dialog import SignupDialog
+        from app.net.auth_client import AuthClient
         from PyQt6.QtWidgets import QMessageBox
-        client = _AsyncAuthClient(register_ok=False)
+        client = AuthClient(base_url="https://fake.local")
         dialog = SignupDialog(auth_client=client)
         qtbot.addWidget(dialog)
         monkeypatch.setattr(QMessageBox, "critical", lambda *a, **k: None)
-        _run_coro(dialog._do_signup("user@example.com", "alice", "password123"))
-        assert client.register_calls == [("user@example.com", "alice", "password123")]
+        monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
+        monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+        # fake_http_worker default response ok=True 시점 OTP path 진입 회피 — error response inject
+        fake_http_worker.queue_response({"ok": False, "error": "EMAIL_DUPLICATE", "message": "duplicate"})
+        dialog._email_edit.setText("user@example.com")
+        dialog._username_edit.setText("alice")
+        dialog._password_edit.setText("password123")
+        dialog._password_confirm_edit.setText("password123")
+        dialog._on_signup_clicked()
+        assert len(fake_http_worker.instances) == 1
+        assert fake_http_worker.instances[0].payload["username"] == "alice"
 
 
 class TestOTPDialogFunctional:
@@ -229,16 +238,25 @@ class TestOTPDialogFunctional:
         # 한글 주석 — 즉시 decrement 검증 (rollback 가능성 차단 위 ok=True mock)
         assert dialog._resend_remaining == initial - 1 or dialog._resend_remaining == initial
 
-    @pytest.mark.skip(reason="cycle 169.49 HttpJsonWorker 변환 — mock pattern 갱신 별도 cycle")
-    def test_verify_async_chain(self, qtbot, monkeypatch) -> None:
+    def test_verify_async_chain(self, qtbot, monkeypatch, fake_http_worker) -> None:
+        """cycle 169.66 회수 — fake_http_worker fixture 적용."""
         from app.ui.otp_dialog import OTPDialog
+        from app.net.auth_client import AuthClient
         from PyQt6.QtWidgets import QMessageBox
-        client = _AsyncAuthClient(verify_ok=False)
+        client = AuthClient(base_url="https://fake.local")
         dialog = OTPDialog(auth_client=client, email="user@example.com")
         qtbot.addWidget(dialog)
         monkeypatch.setattr(QMessageBox, "critical", lambda *a, **k: None)
-        _run_coro(dialog._do_verify("123456"))
-        assert client.verify_calls == [("user@example.com", "123456")]
+        fake_http_worker.queue_response({"ok": False, "error": "OTP_INVALID", "message": "fail"})
+        for i, d in enumerate("123456"):
+            dialog._boxes[i].blockSignals(True)
+            dialog._boxes[i].setText(d)
+            dialog._boxes[i].blockSignals(False)
+        dialog._on_verify_clicked()
+        assert len(fake_http_worker.instances) == 1
+        worker = fake_http_worker.instances[0]
+        assert worker.path == "/api/auth/verify"
+        assert worker.payload == {"email": "user@example.com", "code": "123456"}
 
 
 class TestPasswordResetDialogFunctional:
