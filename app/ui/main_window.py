@@ -891,9 +891,79 @@ class MainWindow(QMainWindow):
         self._friend_list.set_friends(
             self._friend_list._friends, viewer_id=viewer_id
         )
+        # cycle 169.106 회수 — friend_list 갱신 직후 chat_list_panel populate chain
+        self._refresh_chat_list_panel()
         self._stacked.setCurrentIndex(self._STACK_FRIENDS)
         log.info(
             "[main_window] friend_list page 활성 viewer_id=%d", viewer_id
+        )
+
+    def _refresh_chat_list_panel(self) -> None:
+        """친구 + 방 + 봇 data 의 ChatListEntry 변환 + chat_list_panel populate (cycle 169.106).
+
+        사용자 directive — "chatlist 는 추가된 친구 + 단톡방 + 봇톡 출력".
+        default seed (투네이션 고객센터 봇) retain + friend/room 실 data 추가.
+        """
+        from datetime import datetime
+        from app.ui.chat_list_panel import ChatListEntry
+
+        entries: list[ChatListEntry] = []
+
+        # 한글 주석 — 투네이션 고객센터 봇 default (pinned + online)
+        entries.append(
+            ChatListEntry(
+                kind="bot",
+                target_id=1,
+                name="투네이션 고객센터",
+                last_message="안녕하세요. 무엇을 도와드릴까요? 24시간 LLM 상담 chain.",
+                last_ts=datetime.now(),
+                unread_count=0,
+                is_pinned=True,
+                is_online=True,
+            )
+        )
+
+        # 한글 주석 — friend_list 안 friends → ChatListEntry kind=friend 변환
+        friends = getattr(self._friend_list, "_friends", [])
+        for fr in friends:
+            uid = getattr(fr, "user_id", None) or getattr(fr, "id", None) or 0
+            name = getattr(fr, "username", None) or getattr(fr, "display_name", None) or f"friend_{uid}"
+            online = bool(getattr(fr, "is_online", False) or getattr(fr, "online", False))
+            entries.append(
+                ChatListEntry(
+                    kind="friend",
+                    target_id=int(uid),
+                    name=str(name),
+                    last_message="",
+                    last_ts=None,
+                    unread_count=0,
+                    is_pinned=False,
+                    is_online=online,
+                )
+            )
+
+        # 한글 주석 — room_list 안 rooms → ChatListEntry kind=room 변환
+        rooms = getattr(self._room_list, "_rooms", []) if hasattr(self, "_room_list") else []
+        for rm in rooms:
+            rid = getattr(rm, "room_id", None) or getattr(rm, "id", None) or 0
+            rname = getattr(rm, "name", None) or getattr(rm, "title", None) or f"room_{rid}"
+            entries.append(
+                ChatListEntry(
+                    kind="room",
+                    target_id=int(rid),
+                    name=str(rname),
+                    last_message="",
+                    last_ts=None,
+                    unread_count=0,
+                    is_pinned=False,
+                    is_online=False,
+                )
+            )
+
+        self._chat_list_panel.set_entries(entries)
+        log.info(
+            "[main_window] chat_list_panel refresh — bot=1 friend=%d room=%d",
+            len(friends), len(rooms),
         )
 
     def _on_open_add_friend(self) -> None:
