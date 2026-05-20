@@ -199,21 +199,23 @@ class MessageBubble(QFrame):
             ts_row.addWidget(check_label, alignment=Qt.AlignmentFlag.AlignBottom)
         bubble_layout.addLayout(ts_row)
 
-        # 말풍선 스타일 — self/peer 색상 분기
+        # 말풍선 스타일 — self/peer 색상 분기 (cycle 169.110 — Figma radius 16 + corner 4 tail)
         bg = self._COLOR_SELF_BG if is_self else self._COLOR_PEER_BG
         # 한글 주석 — cycle 169.51 회수 — 사용자 directive verbatim "글자의 배경색 전부 제거".
-        # child QLabel 의 default background 가 dark default 잔존 detect → transparent 강제.
+        # cycle 169.110 — Figma 정합 — radius 16 + tail corner 4 (self bottom-right / peer bottom-left)
+        tail_corner = "border-bottom-right-radius: 4px;" if is_self else "border-bottom-left-radius: 4px;"
         bubble.setStyleSheet(
             "QFrame#messageBubble {"
             f" background-color: {bg};"
-            f" border: 1px solid {self._COLOR_BORDER};"
-            " border-radius: 8px;"
+            " border: none;"
+            " border-radius: 16px;"
+            f" {tail_corner}"
             "}"
             "QFrame#messageBubble QLabel {"
             " background-color: transparent;"
             "}"
         )
-        bubble.setMaximumWidth(380)
+        bubble.setMaximumWidth(420)
 
         outer.addWidget(bubble)
 

@@ -48,16 +48,17 @@ class InputBar(QFrame):
         self.setAcceptDrops(True)
         self.setMinimumHeight(64)
         self.setMaximumHeight(140)
+        # cycle 169.110 — Figma 정합 (background bg #131C30 + padding 12 + spacing 8)
         self.setStyleSheet(
             "QFrame#inputBar {"
-            " background-color: #0F172A;"
+            " background-color: #131C30;"
             " border-top: 1px solid #1f2937;"
             "}"
         )
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(6)
+        layout.setContentsMargins(12, 8, 12, 10)
+        layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
 
         # 한글 주석 — cycle 169.52 회수 — SVG icon 변환 (첨부 + emoji)
