@@ -230,10 +230,28 @@ class MainWindow(QMainWindow):
 
         # 3-2) 중앙 chat list — ChatListPanel (cycle 169.62 신설, telegram desktop align)
         # RoomListWidget legacy 보존 — group chat 진입 chain (room_id) backward compat.
-        from app.ui.chat_list_panel import ChatListPanel
+        from app.ui.chat_list_panel import ChatListPanel, ChatListEntry
         self._chat_list_panel = ChatListPanel(parent=splitter)
         self._chat_list_panel.chat_selected.connect(self._on_chat_selected)  # type: ignore[arg-type]
         self._sidebar_rail.tab_clicked.connect(self._chat_list_panel.set_active_tab)  # type: ignore[arg-type]
+
+        # 한글 주석 — cycle 169.99 회수 — 투네이션 고객센터 봇 default seed (사용자 directive)
+        # chatlist = 친구 + 그룹톡 + 봇톡 통합 — 기본 entry = 투네이션 고객센터 봇 (LLM 연동)
+        from datetime import datetime
+        default_entries = [
+            ChatListEntry(
+                kind="bot",
+                target_id=1,
+                name="투네이션 고객센터",
+                last_message="안녕하세요. 무엇을 도와드릴까요? 24시간 LLM 상담 chain.",
+                last_ts=datetime.now(),
+                unread_count=0,
+                is_pinned=True,
+                is_online=True,
+            ),
+        ]
+        self._chat_list_panel.set_entries(default_entries)
+        self._chat_list_panel.set_active_tab("bots")
 
         # RoomListWidget — 의 의 hide (group chat 진입 시 _on_room_entered 호출 chain backward compat)
         self._room_list = RoomListWidget(parent=self)

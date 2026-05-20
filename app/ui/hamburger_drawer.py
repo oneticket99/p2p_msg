@@ -43,6 +43,11 @@ class HamburgerDrawer(QDialog):
         self.setModal(True)
         self.setFixedWidth(320)
         self.setMinimumHeight(560)
+        # cycle 169.99 회수 — image #11 별도 OS window decoration 제거
+        # frameless + popup → 메인 window 안 sliding panel feel (telegram align)
+        from PyQt6.QtCore import Qt as _Qt
+        self.setWindowFlags(_Qt.WindowType.FramelessWindowHint | _Qt.WindowType.Popup)
+        self.setAttribute(_Qt.WidgetAttribute.WA_TranslucentBackground, False)
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
