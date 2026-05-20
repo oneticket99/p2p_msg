@@ -210,9 +210,13 @@ class MessageBubble(QFrame):
 
         # 말풍선 스타일 — self/peer 색상 분기 (cycle 169.110 — Figma radius 16 + corner 4 tail)
         bg = self._COLOR_SELF_BG if is_self else self._COLOR_PEER_BG
-        # 한글 주석 — cycle 169.51 회수 — 사용자 directive verbatim "글자의 배경색 전부 제거".
-        # cycle 169.110 — Figma 정합 — radius 16 + tail corner 4 (self bottom-right / peer bottom-left)
-        tail_corner = "border-bottom-right-radius: 4px;" if is_self else "border-bottom-left-radius: 4px;"
+        # cycle 169.172 — grouped 시 tail 부재 chain (cycle 169.144 시각 강화 — telegram align)
+        # 첫 bubble (non-grouped) = tail corner 4 (sender side)
+        # 연속 grouped bubble = 모든 corner radius 16 (tail 부재 — 통합 시각)
+        if self._grouped:
+            tail_corner = ""
+        else:
+            tail_corner = "border-bottom-right-radius: 4px;" if is_self else "border-bottom-left-radius: 4px;"
         bubble.setStyleSheet(
             "QFrame#messageBubble {"
             f" background-color: {bg};"
