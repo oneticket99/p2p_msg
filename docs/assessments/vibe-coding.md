@@ -1,11 +1,11 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-20T17:50:00+09:00
+last_verified: 2026-05-20T19:45:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.102
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.107
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite.
 > 사용자 directive 2026-05-17 — "내 바이브 코딩 능력에 대해서도 매 작업 마무리 시 정리, 매번 전체 업데이트".
