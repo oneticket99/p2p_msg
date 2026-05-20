@@ -121,13 +121,22 @@ async def mark_email_verified(pool: Any, user_id: int) -> None:
 
 
 async def update_last_login(pool: Any, user_id: int) -> None:
-    """로그인 PASS 시점 의 last_login_at = NOW() 갱신."""
+    """로그인 PASS 시점 last_login_at = NOW() 갱신.
 
+    cycle 169.102 회수 — MariaDB 11.8 안 OperationalError 1020 graceful skip
+    (Record has changed since last read — concurrent UPDATE race + login 자체 PASS 보장 의무).
+    """
+    import logging
+    log = logging.getLogger(__name__)
     sql = "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = %s"
-    async with pool.acquire() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute(sql, (user_id,))
-        await conn.commit()
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(sql, (user_id,))
+            await conn.commit()
+    except Exception as exc:  # noqa: BLE001
+        # 한글 주석 — last_login_at 갱신 fail = login chain 차단 부재 → warn + continue
+        log.warning("[update_last_login] graceful skip user_id=%d — %r", user_id, exc)
 
 
 async def get_user_by_username_excluding(
