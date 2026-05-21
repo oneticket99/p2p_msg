@@ -372,5 +372,6 @@ class ChatListPanel(QFrame):
             item.setData(Qt.ItemDataRole.UserRole + 2, entry)
             self._list.addItem(item)
             visible += 1
+        # cycle 169.313 — 사용자 directive "친구리스트 어떤 경우에도 사라지면 안돼" — _list 영구 setVisible(True)
         self._empty_label.setVisible(visible == 0)
-        self._list.setVisible(visible > 0)
+        self._list.setVisible(True)
