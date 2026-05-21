@@ -55,21 +55,23 @@ if [ -f "$HANDOFF" ]; then
   fi
 fi
 
-# report 출력 (severity WARN — 강제 BLOCK 부재, 사용자 명시 ack 시 강화)
+# report 출력 — cycle 169.212 — stderr redirect (claude session Stop hook stderr capture 정합)
 if [ "$WARN_COUNT" -gt 0 ]; then
-  echo "🔴 dereliction-detector 자동 check BLOCK — ${WARN_COUNT}건 detect (HEAD=$HEAD_SHA)"
-  echo ""
-  for v in "${VIOLATIONS[@]}"; do
-    echo "  - $v"
-  done
-  echo ""
-  echo "회수 chain ([[feedback-no-autonomy-dereliction-prevention]] + [[feedback-dereliction-auto-spawn-mandatory]] 정합):"
-  echo "  1. main session 안 dereliction-detector-agent 즉시 spawn (run_in_background=true)"
-  echo "  2. background 결과 wait + 회수 chain dispatch"
-  echo "  3. 사용자 ack 의무 항목 분리 + verbatim trigger"
-  echo ""
-  echo "사용자 directive 2026-05-21 — 매 작업 완료 보고마다 dereliction-detector spawn 의무."
-  echo "cycle 168.3 + cycle 169.189 강화."
+  {
+    echo "🔴 dereliction-detector 자동 check BLOCK — ${WARN_COUNT}건 detect (HEAD=$HEAD_SHA)"
+    echo ""
+    for v in "${VIOLATIONS[@]}"; do
+      echo "  - $v"
+    done
+    echo ""
+    echo "회수 chain ([[feedback-no-autonomy-dereliction-prevention]] + [[feedback-dereliction-auto-spawn-mandatory]] 정합):"
+    echo "  1. main session 안 dereliction-detector-agent 즉시 spawn (run_in_background=true)"
+    echo "  2. background 결과 wait + 회수 chain dispatch"
+    echo "  3. 사용자 ack 의무 항목 분리 + verbatim trigger"
+    echo ""
+    echo "사용자 directive 2026-05-21 — 매 작업 완료 보고마다 dereliction-detector spawn 의무."
+    echo "cycle 168.3 + cycle 169.189 + cycle 169.212 강화."
+  } 1>&2
   # cycle 169.189 — exit 2 block 강화 (사용자 directive — Stop hook 의 main session 의 spawn 강제)
   exit 2
 fi
