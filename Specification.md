@@ -2,6 +2,7 @@
 title: "TooTalk 요구사항 명세 (Specification)"
 owner: oneticket99
 last_verified: 2026-05-17
+last_updated: 2026-05-21
 status: active
 ---
 

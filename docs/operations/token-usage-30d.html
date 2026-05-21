@@ -210,18 +210,18 @@
 <header>
   <h1>TooTalk · Claude Code 토큰 사용량 보고서 (최근 30일)</h1>
   <p>모델별 / 일별 / 캐시 적중률 / 비용 추정 — 데이터 출처는 로컬 session jsonl 누계 집계</p>
-  <p class="gen">생성 시각: 2026-05-21 03:55:07 KST· 집계 윈도우: 2026-04-21 03:55:07 ~ 2026-05-21 03:55:07</p>
+  <p class="gen">생성 시각: 2026-05-21 10:17:26 KST· 집계 윈도우: 2026-04-21 10:17:26 ~ 2026-05-21 10:17:26</p>
 </header>
 
 <div class="grid">
   <div class="kpi accent">
     <div class="label">총 토큰</div>
-    <div class="value">7,188,239,279</div>
+    <div class="value">7,238,131,718</div>
     <div class="sub">input + output + cache 합산</div>
   </div>
   <div class="kpi">
     <div class="label">총 assistant 메시지</div>
-    <div class="value">14,565</div>
+    <div class="value">14,635</div>
     <div class="sub">jsonl entry 의 usage 보유 행</div>
   </div>
   <div class="kpi">
@@ -232,12 +232,12 @@
   <div class="kpi">
     <div class="label">활성 일수</div>
     <div class="value">5</div>
-    <div class="sub">일평균 1,437,647,855 token</div>
+    <div class="sub">일평균 1,447,626,343 token</div>
   </div>
   <div class="kpi warn">
     <div class="label">추정 비용</div>
-    <div class="value">$15,462.88</div>
-    <div class="sub">일평균 $3,092.58</div>
+    <div class="value">$15,608.60</div>
+    <div class="sub">일평균 $3,121.72</div>
   </div>
   <div class="kpi ok">
     <div class="label">캐시 적중률</div>
@@ -274,7 +274,7 @@
         <th>날짜 (KST)</th><th>메시지</th><th>input</th><th>output</th>
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody><tr><td>2026-05-17</td><td class='num'>3,887</td><td class='num'>17,019</td><td class='num'>6,321,289</td><td class='num'>22,126,743</td><td class='num'>1,679,367,902</td><td class='num strong'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td class='num'>4,427</td><td class='num'>7,244</td><td class='num'>3,103,770</td><td class='num'>50,088,706</td><td class='num'>2,107,369,810</td><td class='num strong'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td class='num'>3,004</td><td class='num'>14,117</td><td class='num'>4,548,852</td><td class='num'>54,532,495</td><td class='num'>1,647,136,008</td><td class='num strong'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td class='num'>2,357</td><td class='num'>5,070</td><td class='num'>2,929,386</td><td class='num'>50,204,806</td><td class='num'>1,228,934,025</td><td class='num strong'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td class='num'>890</td><td class='num'>3,853</td><td class='num'>1,178,540</td><td class='num'>17,300,331</td><td class='num'>313,049,313</td><td class='num strong'>331,532,037</td><td class='num cost'>$882.40</td></tr></tbody>
+      <tbody><tr><td>2026-05-17</td><td class='num'>3,887</td><td class='num'>17,019</td><td class='num'>6,321,289</td><td class='num'>22,126,743</td><td class='num'>1,679,367,902</td><td class='num strong'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td class='num'>4,427</td><td class='num'>7,244</td><td class='num'>3,103,770</td><td class='num'>50,088,706</td><td class='num'>2,107,369,810</td><td class='num strong'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td class='num'>3,004</td><td class='num'>14,117</td><td class='num'>4,548,852</td><td class='num'>54,532,495</td><td class='num'>1,647,136,008</td><td class='num strong'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td class='num'>2,357</td><td class='num'>5,070</td><td class='num'>2,929,386</td><td class='num'>50,204,806</td><td class='num'>1,228,934,025</td><td class='num strong'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td class='num'>960</td><td class='num'>4,063</td><td class='num'>1,290,077</td><td class='num'>20,933,854</td><td class='num'>359,196,482</td><td class='num strong'>381,424,476</td><td class='num cost'>$1,028.12</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -288,7 +288,7 @@
         <th>모델</th><th>메시지</th><th>input</th><th>output</th>
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>점유율</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody><tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>14,555</td><td class='num'>47,303</td><td class='num'>18,081,837</td><td class='num'>194,253,081</td><td class='num'>6,975,857,058</td><td class='num strong'>7,188,239,279</td><td class='num'>100.00%</td><td class='num cost'>$15,462.88</td></tr><tr><td><span class='chip chip-<synthetic>'><synthetic></span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr></tbody>
+      <tbody><tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>14,625</td><td class='num'>47,513</td><td class='num'>18,193,374</td><td class='num'>197,886,604</td><td class='num'>7,022,004,227</td><td class='num strong'>7,238,131,718</td><td class='num'>100.00%</td><td class='num cost'>$15,608.60</td></tr><tr><td><span class='chip chip-<synthetic>'><synthetic></span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -301,7 +301,7 @@
       <thead><tr>
         <th>날짜 (KST)</th><th>모델</th><th>메시지</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody><tr><td>2026-05-17</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,886</td><td class='num'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,426</td><td class='num'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,002</td><td class='num'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>2,353</td><td class='num'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>888</td><td class='num'>331,532,037</td><td class='num cost'>$882.40</td></tr></tbody>
+      <tbody><tr><td>2026-05-17</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,886</td><td class='num'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,426</td><td class='num'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,002</td><td class='num'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>2,353</td><td class='num'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>958</td><td class='num'>381,424,476</td><td class='num cost'>$1,028.12</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -315,7 +315,7 @@
         <th>session</th><th>첫 활동 (KST)</th><th>마지막 활동 (KST)</th>
         <th>모델</th><th>메시지</th><th>총 토큰</th>
       </tr></thead>
-      <tbody><tr><td><code>558cd683</code></td><td>2026-05-17 09:04</td><td>2026-05-17 11:42</td><td>claude-opus-4-7</td><td class='num'>618</td><td class='num'>190,750,068</td></tr><tr><td><code>7b82be3a</code></td><td>2026-05-17 11:42</td><td>2026-05-17 14:51</td><td>claude-opus-4-7</td><td class='num'>1,070</td><td class='num'>467,082,608</td></tr><tr><td><code>3b1201b7</code></td><td>2026-05-17 14:52</td><td>2026-05-18 13:40</td><td><synthetic>, claude-opus-4-7</td><td class='num'>3,249</td><td class='num'>1,532,231,784</td></tr><tr><td><code>553f4dc7</code></td><td>2026-05-18 13:40</td><td>2026-05-21 03:54</td><td><synthetic>, claude-opus-4-7</td><td class='num'>9,628</td><td class='num'>4,998,174,819</td></tr></tbody>
+      <tbody><tr><td><code>558cd683</code></td><td>2026-05-17 09:04</td><td>2026-05-17 11:42</td><td>claude-opus-4-7</td><td class='num'>618</td><td class='num'>190,750,068</td></tr><tr><td><code>7b82be3a</code></td><td>2026-05-17 11:42</td><td>2026-05-17 14:51</td><td>claude-opus-4-7</td><td class='num'>1,070</td><td class='num'>467,082,608</td></tr><tr><td><code>3b1201b7</code></td><td>2026-05-17 14:52</td><td>2026-05-18 13:40</td><td><synthetic>, claude-opus-4-7</td><td class='num'>3,249</td><td class='num'>1,532,231,784</td></tr><tr><td><code>553f4dc7</code></td><td>2026-05-18 13:40</td><td>2026-05-21 10:16</td><td><synthetic>, claude-opus-4-7</td><td class='num'>9,698</td><td class='num'>5,048,067,258</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -345,7 +345,7 @@
       <tr><th>usage 보유 file</th><td>151</td></tr>
       <tr><th>파싱 assistant message</th><td>14,618</td></tr>
       <tr><th>스킵 라인</th><td>0</td></tr>
-      <tr><th>집계 윈도우 (KST)</th><td>2026-04-21 03:55:07 ~ 2026-05-21 03:55:07</td></tr>
+      <tr><th>집계 윈도우 (KST)</th><td>2026-04-21 10:17:26 ~ 2026-05-21 10:17:26</td></tr>
       <tr><th>privacy 보장</th><td>prompt 본문 / message text 노출 없음. token count + timestamp + model 만 추출.</td></tr>
       <tr><th>raw json 출처</th><td><code>docs/operations/token-usage-30d.json</code> 동시 재 산출 (machine-readable mirror)</td></tr>
     </tbody>
@@ -358,7 +358,7 @@
 
 <script>
 // 집계 데이터 inline — directive 외부 API 호출 금지 정합
-const D = {"dates": ["2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21"], "total": [1707832953, 2160569530, 1706231472, 1282073287, 331532037], "input": [17019, 7244, 14117, 5070, 3853], "output": [6321289, 3103770, 4548852, 2929386, 1178540], "cache_create": [22126743, 50088706, 54532495, 50204806, 17300331], "cache_read": [1679367902, 2107369810, 1647136008, 1228934025, 313049313], "cost": [3408.2802, 4333.1094, 3834.5639, 3004.5212, 882.4035], "model_labels": ["claude-opus-4-7", "<synthetic>"], "model_totals": [7188239279, 0], "model_costs": [15462.8782, 0.0]};
+const D = {"dates": ["2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21"], "total": [1707832953, 2160569530, 1706231472, 1282073287, 381424476], "input": [17019, 7244, 14117, 5070, 4063], "output": [6321289, 3103770, 4548852, 2929386, 1290077], "cache_create": [22126743, 50088706, 54532495, 50204806, 20933854], "cache_read": [1679367902, 2107369810, 1647136008, 1228934025, 359196482], "cost": [3408.2802, 4333.1094, 3834.5639, 3004.5212, 1028.1212], "model_labels": ["claude-opus-4-7", "<synthetic>"], "model_totals": [7238131718, 0], "model_costs": [15608.5959, 0.0]};
 
 // 색상 팔레트 — Toonation 브랜드 + 모델 식별
 const COLORS = {
