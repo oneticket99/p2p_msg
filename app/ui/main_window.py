@@ -2109,13 +2109,41 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_remote_request(self) -> None:
-        """원격 요청 — Phase 5 차별화 entry (사용자 directive image #93)."""
-        log.info("[remote] 원격 요청 click — Phase 5 placeholder")
+        """원격 요청 → RemoteCallDialog (outgoing mode) — cycle 169.338 사용자 directive."""
+        try:
+            from app.ui.remote_call_dialog import RemoteCallDialog
+            peer = "상대 사용자"
+            clp = getattr(self, "_chat_list_panel", None)
+            kind = getattr(self, "_active_chat_kind", None)
+            tid = getattr(self, "_active_chat_target_id", None)
+            if clp is not None and kind is not None:
+                for e in getattr(clp, "_entries", []):
+                    if e.kind == kind and e.target_id == tid:
+                        peer = e.name or peer
+                        break
+            dialog = RemoteCallDialog(peer_name=peer, mode="request", parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("RemoteCallDialog request 실패 — %r", exc)
 
     @pyqtSlot()
     def _on_remote_connect(self) -> None:
-        """원격 연결 — Phase 5 차별화 entry (사용자 directive image #93)."""
-        log.info("[remote] 원격 연결 click — Phase 5 placeholder")
+        """원격 연결 → RemoteCallDialog (incoming mode) — cycle 169.338 사용자 directive."""
+        try:
+            from app.ui.remote_call_dialog import RemoteCallDialog
+            peer = "상대 사용자"
+            clp = getattr(self, "_chat_list_panel", None)
+            kind = getattr(self, "_active_chat_kind", None)
+            tid = getattr(self, "_active_chat_target_id", None)
+            if clp is not None and kind is not None:
+                for e in getattr(clp, "_entries", []):
+                    if e.kind == kind and e.target_id == tid:
+                        peer = e.name or peer
+                        break
+            dialog = RemoteCallDialog(peer_name=peer, mode="incoming", parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("RemoteCallDialog connect 실패 — %r", exc)
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:
