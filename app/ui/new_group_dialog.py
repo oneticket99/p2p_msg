@@ -152,14 +152,19 @@ class NewGroupDialog(QDialog):
         title_row.addStretch(1)
         layout.addLayout(title_row)
 
-        # 검색 input
+        # cycle 169.352 — 사용자 directive image #118 — 이모지 차단 + SVG icon 대체
         search_edit = QLineEdit()
-        search_edit.setPlaceholderText("🔍  검색")
+        search_edit.setPlaceholderText("검색")
         search_edit.setStyleSheet(
             "QLineEdit { color: #f3f4f6; background-color: #1F2937;"
-            " border: 1px solid #374151; border-radius: 8px; padding: 8px; }"
+            " border: 1px solid #374151; border-radius: 8px; padding: 8px 8px 8px 32px; }"
         )
         search_edit.textChanged.connect(self._on_search)  # type: ignore[arg-type]
+        # SVG search icon LeadingPosition prepend
+        from PyQt6.QtGui import QAction
+        search_action = QAction(self)
+        search_action.setIcon(load_icon("search", size=16, color="#9ca3af"))
+        search_edit.addAction(search_action, QLineEdit.ActionPosition.LeadingPosition)
         layout.addWidget(search_edit)
 
         # selected chip area

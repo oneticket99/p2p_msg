@@ -1822,6 +1822,14 @@ class MainWindow(QMainWindow):
         dialog.show()
         dialog.raise_()
         dialog.setFocus()
+        # cycle 169.351 — child widget visible 강제 (QStackedWidget 등 nested widget 시점 obscure 차단)
+        log.warning("[dialog_centered] dialog.isVisible=%s size=%dx%d pos=(%d,%d) children=%d",
+                    dialog.isVisible(), dialog.width(), dialog.height(),
+                    dialog.x(), dialog.y(), len(dialog.findChildren(QWidget)))
+        for child in dialog.findChildren(QWidget):
+            child.show()
+        dialog.update()
+        dialog.repaint()
         loop.exec()
         dialog.hide()
         dialog.setParent(None)  # cycle 169.307 — dialog widget tree 분리 (close 後 main_window layout 회복)
