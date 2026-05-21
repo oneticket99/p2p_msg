@@ -1784,21 +1784,30 @@ class MainWindow(QMainWindow):
         result = dialog._embed_result
         backdrop.hide()
         backdrop.deleteLater()
-        # cycle 169.308 — close 後 splitter + chat_list_panel + inner _list 강제 visibility + render
-        if hasattr(self, "_chat_list_panel"):
-            self._chat_list_panel.show()
-            inner_list = getattr(self._chat_list_panel, "_list", None)
+        # cycle 169.311 — close 後 strict restore + debug log
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None:
+            entries_count = len(getattr(clp, "_entries", []))
+            log.warning(
+                "[dialog_close] chat_list_panel entries=%d visible=%s parent=%s",
+                entries_count, clp.isVisible(), clp.parent().__class__.__name__ if clp.parent() else None,
+            )
+            clp.show()
+            inner_list = getattr(clp, "_list", None)
             if inner_list is not None:
                 inner_list.show()
-            # 한글 주석 — _render() 재호출 의 entries 의 visible re-allocate
-            if hasattr(self._chat_list_panel, "_render"):
+                inner_list.setVisible(True)
+            empty_label = getattr(clp, "_empty_label", None)
+            if hasattr(clp, "_render"):
                 try:
-                    self._chat_list_panel._render()
+                    clp._render()
                 except Exception:
                     pass
-            self._chat_list_panel.update()
+            clp.update()
+            clp.repaint()
         if self.centralWidget():
             self.centralWidget().update()
+            self.centralWidget().repaint()
         self.update()
         return result
 
