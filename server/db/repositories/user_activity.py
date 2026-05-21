@@ -238,6 +238,11 @@ async def create_session(
     if not ip_address:
         raise ValueError("ip_address 의무")
 
+    # cycle 169.256 — INSERT user_sessions + UPDATE users 별개 transaction 분리 (deadlock 회수).
+    # 한글 주석: 동시 login 2회 fire 시점 single transaction 안 INSERT (user_sessions lock) +
+    # UPDATE (users lock) cross deadlock 발생 root cause. 별개 transaction 분리 시점
+    # user_sessions INSERT 즉시 commit → middleware fallback chain 의 row lookup 동작 retain.
+    # UPDATE users 의 race fail 시점 graceful skip.
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
             await cur.execute(
@@ -245,9 +250,16 @@ async def create_session(
                 (user_id, session_token_hash, ip_address, user_agent),
             )
             new_id = cur.lastrowid
-            await cur.execute(_UPDATE_USERS_LAST_LOGIN, (ip_address, user_id))
-            await conn.commit()
-            return int(new_id)
+            await conn.commit()  # INSERT commit 우선 — middleware fallback row retain 강제
+    # 한글 주석 — UPDATE users 별개 tx (graceful skip — deadlock 발생 시점 retain 회피)
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(_UPDATE_USERS_LAST_LOGIN, (ip_address, user_id))
+                await conn.commit()
+    except Exception:  # noqa: BLE001
+        pass  # UPDATE users race fail 시점 graceful — INSERT 의 row 의 retain 가 핵심
+    return int(new_id)
 
 
 async def update_session_last_active(
