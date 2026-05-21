@@ -1684,8 +1684,12 @@ class MainWindow(QMainWindow):
         drawer = HamburgerDrawer(username=username, parent=self)
         drawer.profile_clicked.connect(self._on_drawer_profile)  # type: ignore[arg-type]
         drawer.settings_clicked.connect(self._on_drawer_settings)  # type: ignore[arg-type]
-        drawer.calls_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
+        # cycle 169.320 — drawer 5 signal 전 connect (image #84 사용자 directive)
+        drawer.new_group_clicked.connect(self._on_drawer_new_group)  # type: ignore[arg-type]
+        drawer.new_channel_clicked.connect(self._on_drawer_new_channel)  # type: ignore[arg-type]
         drawer.contacts_clicked.connect(self._on_drawer_contacts)  # type: ignore[arg-type]
+        drawer.calls_clicked.connect(self._on_drawer_calls)  # type: ignore[arg-type]
+        drawer.saved_clicked.connect(self._on_drawer_saved)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
         # cycle 169.116 회수 — sidebar_rail (96px) 의 의 reserve — 햄버거 button click 가능
         # drawer x anchor = sidebar width — sidebar_rail visible retain
@@ -1890,8 +1894,58 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_contacts(self) -> None:
-        """연락처 dialog open — 기존 friend_list 강제 active."""
-        self._sidebar_rail.set_active_tab("friends")
+        """연락처 dialog — ContactsDialog open chain (cycle 169.320)."""
+        try:
+            from app.ui.contacts_dialog import ContactsDialog
+            entries = list(getattr(self._chat_list_panel, "_entries", []))
+            contacts = [
+                {"name": e.name, "email": getattr(e, "email", "")}
+                for e in entries if getattr(e, "kind", "") == "friend"
+            ]
+            dialog = ContactsDialog(contacts=contacts, parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("ContactsDialog open 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_drawer_new_group(self) -> None:
+        """그룹 만들기 dialog (cycle 169.320 image #84)."""
+        try:
+            from app.ui.new_group_dialog import NewGroupDialog
+            dialog = NewGroupDialog(parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("NewGroupDialog open 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_drawer_new_channel(self) -> None:
+        """채널 만들기 dialog (cycle 169.320 image #84)."""
+        try:
+            from app.ui.new_channel_dialog import NewChannelDialog
+            dialog = NewChannelDialog(parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("NewChannelDialog open 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_drawer_calls(self) -> None:
+        """전화 history dialog (cycle 169.320 image #84)."""
+        try:
+            from app.ui.calls_dialog import CallsDialog
+            dialog = CallsDialog(calls=[], parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("CallsDialog open 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_drawer_saved(self) -> None:
+        """저장한 메시지 dialog (cycle 169.320 image #84)."""
+        try:
+            from app.ui.saved_messages_dialog import SavedMessagesDialog
+            dialog = SavedMessagesDialog(messages=[], parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("SavedMessagesDialog open 실패 — %r", exc)
 
     @pyqtSlot()
     def _on_drawer_logout(self) -> None:
