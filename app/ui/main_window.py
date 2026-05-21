@@ -1972,6 +1972,13 @@ class MainWindow(QMainWindow):
             if not base_url or not token:
                 log.warning("[profile] base_url/token 부재 — PUT skip")
                 return
+            # cycle 169.390 — local cache 즉시 반영 (사용자 critique image #155/156 visual reflect 부재 회수)
+            new_name = (payload.get("display_name") or "").strip()
+            if new_name and hasattr(self, "_config"):
+                try:
+                    setattr(self._config, "user_nickname", new_name)
+                except Exception:
+                    pass
             worker = ProfileUpdateWorker(base_url, token, payload, parent=self)
             worker.finished_with_result.connect(self._on_profile_update_finished)  # type: ignore[arg-type]
             worker.start()
