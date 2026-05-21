@@ -34,6 +34,8 @@ a = Analysis(
         (str(ROOT / "app" / "assets" / "sounds"), "app/assets/sounds"),
         (str(ROOT / "app" / "assets" / "themes"), "app/assets/themes"),
         (str(ROOT / "app" / "sound" / "wav"), "app/sound/wav"),
+        # cycle 169.226 — i18n translations qm bundle (5 locale: en/ja/ko/zh-CN/zh-TW)
+        (str(ROOT / "app" / "i18n" / "translations"), "app/i18n/translations"),
     ],
     hiddenimports=[
         # qasync + aiortc 누락 hidden dependency 명시
