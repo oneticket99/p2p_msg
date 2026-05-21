@@ -151,6 +151,7 @@ def main() -> int:
             current_dialog = "login"
             session_token: Optional[str] = None
             session_user_id: Optional[int] = None
+            session_email: Optional[str] = None
             while not authenticated:
                 if current_dialog == "login":
                     login = LoginDialog(auth_client=auth_client)
@@ -164,6 +165,7 @@ def main() -> int:
                         return 0
                     session_token = login.token
                     session_user_id = login.user_id
+                    session_email = login.email
                     authenticated = True
                 else:  # signup
                     signup = SignupDialog(auth_client=auth_client)
@@ -195,9 +197,10 @@ def main() -> int:
             window._current_user_id = session_user_id
         if session_token is not None:
             # cycle 169.276 — attr name 정합 (사용자 critique bot 401 ROOT CAUSE 회수)
-            # 직전 main_window._session_token retain expected (cycle 169.228 chain). _auth_token retain 부재.
             window._session_token = session_token  # type: ignore[attr-defined]
             window._auth_token = session_token  # type: ignore[attr-defined]  # legacy retain
+        if session_email:
+            window._current_email = session_email  # type: ignore[attr-defined]  # cycle 169.279
         # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
         if authenticated:
             window._status_bar.set_connection_state("CONNECTED")

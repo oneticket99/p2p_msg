@@ -48,6 +48,8 @@ class LoginDialog(QDialog):
         self._client = auth_client
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
+        # cycle 169.279 — email retain (MyProfileDialog 의 의 사용자 directive image #51)
+        self._email: Optional[str] = None
 
         self.setWindowTitle(f"TooTalk · {_tr('로그인')}")
         self.setMinimumWidth(420)
@@ -143,6 +145,10 @@ class LoginDialog(QDialog):
         return self._token
 
     @property
+    def email(self) -> Optional[str]:
+        return self._email
+
+    @property
     def user_id(self) -> Optional[int]:
         return self._user_id
 
@@ -172,6 +178,7 @@ class LoginDialog(QDialog):
         if ok:
             self._token = data.get("token")
             self._user_id = data.get("user_id")
+            self._email = data.get("email", "")
             # cycle 169.271 — token capture log (사용자 critique bot 401 client side root cause)
             log.warning(
                 "[login_dialog] token_present=%s token_len=%d user_id=%s",

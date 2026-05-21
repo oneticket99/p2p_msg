@@ -41,6 +41,7 @@ class MyProfileDialog(QDialog):
         birthdate: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
+        # 한글 주석 — cycle 169.279 email retain (사용자 critique image #51 — login email)
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 내 프로필")
         self.setModal(True)
@@ -56,9 +57,12 @@ class MyProfileDialog(QDialog):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
-        # cycle 169.277 — outer wrap QFrame (border + 통일 retain)
+        # cycle 169.278 — outer wrap QFrame objectName specific selector (child border inherit 차단)
         wrap = QFrame()
-        wrap.setStyleSheet("QFrame { background-color: #131C30; border: 1px solid #1f2937; }")
+        wrap.setObjectName("myProfileWrap")
+        wrap.setStyleSheet(
+            "QFrame#myProfileWrap { background-color: #131C30; border: 1px solid #1f2937; }"
+        )
         outer.addWidget(wrap)
         outer = QVBoxLayout(wrap)
         outer.setContentsMargins(0, 0, 0, 0)

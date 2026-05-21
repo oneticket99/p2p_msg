@@ -1685,21 +1685,14 @@ class MainWindow(QMainWindow):
         사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
         의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
-        from PyQt6.QtCore import Qt as _Qt, QEventLoop
+        # cycle 169.280 — Qt.Widget flag chain 폐기 (visual OS-level retain — main client area inside absolute pos fit)
         from PyQt6.QtWidgets import QFrame
-        # 한글 주석 — backdrop dim layer (main rect 전체 의 0.5 alpha black)
         backdrop = QFrame(self)
         backdrop.setStyleSheet("QFrame { background-color: rgba(0, 0, 0, 140); }")
         backdrop.setGeometry(self.rect())
         backdrop.show()
-        backdrop.raise_()
-        # 한글 주석 — child widget overlay (OS-level top-level 강제 폐기)
-        # cycle 169.268 — hide/setParent/setWindowFlags/show chain 의무 — Qt internal cache reset
-        dialog.hide()
-        dialog.setParent(self)
-        dialog.setWindowFlags(_Qt.WindowType.Widget)
-        dialog.setAttribute(_Qt.WidgetAttribute.WA_WindowPropagation, True)
-        parent_rect = self.rect()
+        # 한글 주석 — main client area absolute pos fit (geometry = chrome 제외)
+        parent_rect = self.geometry()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
         if dialog.width() > max_w:
@@ -1707,44 +1700,24 @@ class MainWindow(QMainWindow):
         if dialog.height() > max_h:
             dialog.setFixedHeight(max_h)
         dw, dh = dialog.width(), dialog.height()
-        x = (parent_rect.width() - dw) // 2
-        y = (parent_rect.height() - dh) // 2
+        x = parent_rect.x() + (parent_rect.width() - dw) // 2
+        y = parent_rect.y() + (parent_rect.height() - dh) // 2
+        x = max(parent_rect.x() + 20, min(x, parent_rect.x() + parent_rect.width() - dw - 20))
+        y = max(parent_rect.y() + 20, min(y, parent_rect.y() + parent_rect.height() - dh - 20))
         dialog.move(x, y)
-        # 한글 주석 — manual modal event loop
-        loop = QEventLoop()
-        dialog._embed_result = 0
-        orig_accept = dialog.accept
-        orig_reject = dialog.reject
-        def _accept():
-            dialog._embed_result = 1
-            try:
-                orig_accept()
-            except Exception:
-                pass
-            loop.quit()
-        def _reject():
-            dialog._embed_result = 0
-            try:
-                orig_reject()
-            except Exception:
-                pass
-            loop.quit()
-        dialog.accept = _accept
-        dialog.reject = _reject
-        dialog.show()
-        dialog.raise_()  # dialog 의 z-order 위 backdrop
-        loop.exec()
-        dialog.hide()
+        result = dialog.exec()
         backdrop.hide()
         backdrop.deleteLater()
-        return dialog._embed_result
+        return result
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
         """내 프로필 dialog open."""
         from app.ui.my_profile_dialog import MyProfileDialog
         username = getattr(self._config, "user_nickname", "사용자")
-        dialog = MyProfileDialog(username=username, parent=self)
+        # cycle 169.279 — login email retain (사용자 critique image #51)
+        email = getattr(self, "_current_email", "") or ""
+        dialog = MyProfileDialog(username=username, email=email, parent=self)
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
 

@@ -252,7 +252,9 @@ async def handle_login(request: web.Request) -> web.Response:
     await _create_session_row(request, user_id=user_id, token=token)
     await _audit(request, user_id=user_id, action=ActivityAction.LOGIN)
 
-    return web.json_response({"ok": True, "user_id": user_id, "token": token})
+    # cycle 169.279 — login response 의 email retain (사용자 critique image #51 회수)
+    email_resp = str(payload.get("email", "")).strip().lower()
+    return web.json_response({"ok": True, "user_id": user_id, "token": token, "email": email_resp})
 
 
 async def handle_logout(request: web.Request) -> web.Response:
