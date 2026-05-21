@@ -1735,27 +1735,42 @@ class MainWindow(QMainWindow):
         x = (parent_rect.width() - dw) // 2
         y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
-        # manual modal event loop (Qt.Widget flag 의 exec() 호출 불가)
+        # cycle 169.302 — signal connect chain (bound method override snapshot 회피)
         loop = QEventLoop()
         dialog._embed_result = 0
-        orig_accept = dialog.accept
-        orig_reject = dialog.reject
-        def _accept():
+        accepted_sig = getattr(dialog, "accepted", None)
+        rejected_sig = getattr(dialog, "rejected", None)
+        def _on_accepted():
             dialog._embed_result = 1
-            try:
-                orig_accept()
-            except Exception:
-                pass
             loop.quit()
-        def _reject():
+        def _on_rejected():
             dialog._embed_result = 0
-            try:
-                orig_reject()
-            except Exception:
-                pass
             loop.quit()
-        dialog.accept = _accept
-        dialog.reject = _reject
+        if accepted_sig is not None and hasattr(accepted_sig, "connect"):
+            accepted_sig.connect(_on_accepted)
+        if rejected_sig is not None and hasattr(rejected_sig, "connect"):
+            rejected_sig.connect(_on_rejected)
+        # 한글 주석 — QDialog fallback (signal 부재 시 method override)
+        if accepted_sig is None:
+            orig_accept = dialog.accept
+            def _accept():
+                dialog._embed_result = 1
+                try:
+                    orig_accept()
+                except Exception:
+                    pass
+                loop.quit()
+            dialog.accept = _accept
+        if rejected_sig is None:
+            orig_reject = dialog.reject
+            def _reject():
+                dialog._embed_result = 0
+                try:
+                    orig_reject()
+                except Exception:
+                    pass
+                loop.quit()
+            dialog.reject = _reject
         dialog.show()
         dialog.raise_()
         loop.exec()

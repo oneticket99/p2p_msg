@@ -165,28 +165,31 @@ def build_state_from_player(player: Optional[SoundPlayer]) -> SettingsState:
 
 
 class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
-    """cycle 169.300 — QDialog → QWidget base 변경 (macOS PyQt6 의 QDialog OS-level top-level 강제 회피).
+    """cycle 169.300/302 — QDialog → QWidget base + accepted/rejected signal.
 
-    사용자 critique 회수 (image #67/68 등): settings dialog visual outside protrude root cause.
-    QWidget overlay 의 main_window child 의 strict retain 강제.
-
-    accept()/reject() manual implement — `_exec_dialog_centered` 의 manual modal loop chain.
+    사용자 critique 회수 (image #70/71): close 시점 backdrop dim retain root cause.
+    bound method signal connect 의 snapshot retain → _exec_dialog_centered override 부재 →
+    signal emit chain 으로 dynamic dispatch.
     """
 
-    # 한글 주석 — QDialog 등가 DialogCode polyfill
+    from PyQt6.QtCore import pyqtSignal as _pyqtSignal
+    # 한글 주석 — close/cancel/save 의 signal emit chain (_exec_dialog_centered 안 connect)
+    accepted = _pyqtSignal()
+    rejected = _pyqtSignal()
+
     class DialogCode:
         Accepted = 1
         Rejected = 0
 
     def setModal(self, _flag: bool) -> None:
-        """QWidget 의 setModal 부재 polyfill — _exec_dialog_centered loop 의 manual modal blocking 의무."""
+        """QWidget 의 setModal 부재 polyfill."""
 
     def accept(self) -> None:
-        """QDialog 등가 accept — _exec_dialog_centered loop.quit chain 안 override retain."""
+        self.accepted.emit()
         self.hide()
 
     def reject(self) -> None:
-        """QDialog 등가 reject."""
+        self.rejected.emit()
         self.hide()
 
     def __init__(
