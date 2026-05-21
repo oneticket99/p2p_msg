@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._icons import load_icon, load_pixmap
+from app.i18n.labels import tr as _tr
 
 
 class HamburgerDrawer(QFrame):
@@ -87,14 +88,15 @@ class HamburgerDrawer(QFrame):
         outer.addWidget(header)
 
         # 한글 주석 — 9 menu entry
+        # cycle 169.364 — labels.tr() chain binding (사용자 critique image #121 한국어 retain)
         menu_defs = [
-            ("account", "내 프로필", self.profile_clicked),
-            ("friends", "그룹 만들기", self.new_group_clicked),
-            ("notification", "채널 만들기", self.new_channel_clicked),
-            ("account", "연락처", self.contacts_clicked),
-            ("phone", "전화", self.calls_clicked),
-            ("data", "저장한 메시지", self.saved_clicked),
-            ("settings", "설정", self.settings_clicked),
+            ("account", _tr("내_프로필"), self.profile_clicked),
+            ("friends", _tr("그룹_만들기"), self.new_group_clicked),
+            ("notification", _tr("채널_만들기"), self.new_channel_clicked),
+            ("account", _tr("연락처"), self.contacts_clicked),
+            ("phone", _tr("전화"), self.calls_clicked),
+            ("data", _tr("저장한_메시지"), self.saved_clicked),
+            ("settings", _tr("설정"), self.settings_clicked),
         ]
         for icon_name, label, signal in menu_defs:
             btn = self._build_menu_entry(icon_name, label)
@@ -108,7 +110,7 @@ class HamburgerDrawer(QFrame):
         night_icon = QLabel()
         night_icon.setPixmap(load_pixmap("theme", size=20, color="#9ca3af"))
         night_layout.addWidget(night_icon)
-        night_label = QLabel("야간 모드")
+        night_label = QLabel(_tr("야간_모드"))
         night_label.setStyleSheet("color: #e5e7eb; font-size: 14px;")
         night_layout.addWidget(night_label, stretch=1)
         self._night_check = QCheckBox()
@@ -120,7 +122,7 @@ class HamburgerDrawer(QFrame):
         outer.addStretch(1)
 
         # 한글 주석 — 로그아웃 button (하단)
-        logout_btn = self._build_menu_entry("more", "로그아웃")
+        logout_btn = self._build_menu_entry("more", _tr("로그아웃"))
         logout_btn.clicked.connect(self.logout_clicked.emit)  # type: ignore[arg-type]
         outer.addWidget(logout_btn)
 
