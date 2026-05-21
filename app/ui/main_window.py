@@ -1076,12 +1076,12 @@ class MainWindow(QMainWindow):
             self._chat_header.clear_chat()
         elif tab_key == "settings":
             # cycle 169.193 — 편집 tab = FolderManageDialog modal (telegram 폴더 편집 — 사용자 directive 회수)
-            # SettingsDialog 폐기 chain (이전 디렉션 회수)
+            # cycle 169.230 — dialog main 안 centered + height clamp
             try:
                 from app.ui.folder_manage_dialog import FolderManageDialog
                 user_folders = getattr(self, "_user_folders", [])
                 dialog = FolderManageDialog(user_folders=user_folders, parent=self)
-                dialog.exec()
+                self._exec_dialog_centered(dialog)
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("FolderManageDialog open 실패 graceful — %r", exc)
             self._sidebar_rail.set_active_tab("friends")
@@ -1437,13 +1437,14 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def _on_folder_create_requested(self) -> None:
         """새 폴더 만들기 → FolderEditDialog popup (cycle 169.75)."""
+        # cycle 169.230 — FolderEditDialog main 안 centered exec (image #31 회수)
         from app.ui.folder_edit_dialog import FolderEditDialog
         dialog = FolderEditDialog(parent=self)
         dialog.folder_saved.connect(self._on_folder_saved)  # type: ignore[arg-type]
         dialog.chat_picker_requested.connect(  # type: ignore[arg-type]
             lambda mode: self._open_chat_picker(dialog, mode)
         )
-        dialog.exec()
+        self._exec_dialog_centered(dialog)
 
     def _open_chat_picker(self, edit_dialog, mode: str) -> None:
         """FolderEditDialog 안 대화방 추가 click → ChatPickerDialog."""
@@ -1668,6 +1669,22 @@ class MainWindow(QMainWindow):
         drawer.closed.connect(_on_drawer_closed)  # type: ignore[arg-type]
         self._active_drawer = drawer
 
+    def _exec_dialog_centered(self, dialog) -> int:
+        """cycle 169.230 — dialog main window 안 center + parent height clamp.
+
+        사용자 directive image #31 — modal main 영역 안 embed + main scroll 의무.
+        FramelessWindowHint dialog 의 OS top-level 회피 + parent rect 안 centering.
+        """
+        parent_rect = self.geometry()
+        max_h = max(parent_rect.height() - 40, 400)
+        if dialog.height() > max_h:
+            dialog.setFixedHeight(max_h)
+        dw, dh = dialog.width(), dialog.height()
+        x = parent_rect.x() + (parent_rect.width() - dw) // 2
+        y = parent_rect.y() + (parent_rect.height() - dh) // 2
+        dialog.move(x, y)
+        return dialog.exec()
+
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
         """내 프로필 dialog open."""
@@ -1675,7 +1692,7 @@ class MainWindow(QMainWindow):
         username = getattr(self._config, "user_nickname", "사용자")
         dialog = MyProfileDialog(username=username, parent=self)
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
-        dialog.exec()
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot()
     def _on_profile_edit_requested(self) -> None:
