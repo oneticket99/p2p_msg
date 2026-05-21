@@ -118,7 +118,8 @@ class SidebarRail(QFrame):
             layout.removeWidget(btn)
             btn.deleteLater()
         self._folder_buttons.clear()
-        # 한글 주석 — 신규 folder button 추가 (편집 tab 之前 insert)
+        # 한글 주석 — 신규 folder button 추가 (편집 tab 之前 insert) — cycle 169.374 image #130 정합
+        # folder SVG icon (top) + name label (bottom) — QToolButton ToolButtonTextUnderIcon style
         for folder in folders or []:
             fid = str(folder.get("folder_id", ""))
             name = folder.get("name", "?")
@@ -127,13 +128,17 @@ class SidebarRail(QFrame):
             btn = QToolButton()
             btn.setObjectName("sidebarFolder")
             btn.setCheckable(True)
-            btn.setText(name[:2])
+            btn.setIcon(load_icon("folder", size=22, color="#9ca3af"))
+            btn.setIconSize(QSize(22, 22))
+            btn.setText(name[:6])
             btn.setToolTip(name)
-            btn.setFixedSize(56, 56)
+            btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+            btn.setFixedSize(64, 60)
             btn.setStyleSheet(
                 "QToolButton {"
                 " color: #9ca3af; background-color: transparent;"
-                " border: none; border-radius: 6px; font-size: 12px; font-weight: 600;"
+                " border: none; border-radius: 6px; font-size: 10px; font-weight: 500;"
+                " padding-top: 4px; padding-bottom: 2px;"
                 "}"
                 "QToolButton:hover { background-color: rgba(0, 102, 255, 0.1); color: #e5e7eb; }"
                 "QToolButton:checked { background-color: rgba(0, 102, 255, 0.2); color: #0066FF; }"
