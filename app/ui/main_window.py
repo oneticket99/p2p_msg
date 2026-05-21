@@ -1518,7 +1518,14 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "_user_folders"):
             self._user_folders = []
         self._user_folders.append(folder_data)
-        log.info("[main_window] folder created — name=%s", folder_data.get("name"))
+        # cycle 169.385 — included_chats debug log (사용자 critique image #148 folder filter fail 회수)
+        log.warning(
+            "[folder_saved] name=%s included=%d excluded=%d included_data=%s",
+            folder_data.get("name"),
+            len(folder_data.get("included_chats", [])),
+            len(folder_data.get("excluded_chats", [])),
+            folder_data.get("included_chats", [])[:3],
+        )
         # cycle 169.373 — sidebar_rail folder entry 동적 갱신 (사용자 critique image #129)
         if hasattr(self, "_sidebar_rail") and hasattr(self._sidebar_rail, "set_folder_entries"):
             try:

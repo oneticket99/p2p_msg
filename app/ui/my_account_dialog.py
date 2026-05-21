@@ -50,22 +50,19 @@ class MyAccountDialog(QDialog):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # 한글 주석 — header (back + 정보 + QR + X)
+        # cycle 169.385 — header (title left + close X right) — 다른 dialog 표준 정합 사용자 critique image #149/150
         header = QFrame()
         header.setFixedHeight(56)
         header.setStyleSheet("background-color: #1F2937;")
         h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(12, 8, 12, 8)
-        back_btn = QPushButton()
-        back_btn.setIcon(load_icon("more", size=20, color="#9ca3af"))
-        back_btn.setFixedSize(36, 36)
-        back_btn.setFlat(True)
-        back_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
-        h_layout.addWidget(back_btn)
+        h_layout.setContentsMargins(20, 8, 12, 8)
         title = QLabel("정보")
-        title.setStyleSheet("color: #e5e7eb; font-size: 16px; font-weight: 600;")
+        title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
         h_layout.addWidget(title)
         h_layout.addStretch(1)
+        from app.ui._close_button import make_close_button
+        close_btn = make_close_button(self.reject, self)
+        h_layout.addWidget(close_btn)
         outer.addWidget(header)
 
         # 한글 주석 — scroll area (content)
