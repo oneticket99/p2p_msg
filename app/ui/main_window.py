@@ -1091,6 +1091,10 @@ class MainWindow(QMainWindow):
                 log.debug("FolderManageDialog open 실패 graceful — %r", exc)
             self._sidebar_rail.set_active_tab("friends")
             self._on_sidebar_tab_clicked("friends")
+            # cycle 169.305 — 사용자 critique image #74/75 — dialog close 後 chat_list_panel 의 visibility 강제 retain
+            if hasattr(self, "_chat_list_panel"):
+                self._chat_list_panel.show()
+                self._chat_list_panel.update()
 
     @pyqtSlot(str)
     def _on_input_message_sent(self, text: str) -> None:
@@ -1779,6 +1783,11 @@ class MainWindow(QMainWindow):
         result = dialog._embed_result
         backdrop.hide()
         backdrop.deleteLater()
+        # cycle 169.305 — close 後 main central widget 의 visibility restore 강제 (사용자 critique image #74/75)
+        if hasattr(self, "_chat_list_panel"):
+            self._chat_list_panel.show()
+            self._chat_list_panel.update()
+        self.update()
         return result
 
     @pyqtSlot()
