@@ -46,8 +46,9 @@ HANDOFF="${CLAUDE_PROJECT_DIR}/docs/exec-plans/active/2026-05-17-session-handoff
 if [ -f "$HANDOFF" ]; then
   TEST_TRIGGER_LINE=$(grep -n "사용자 manual test\|test 진입 시점" "$HANDOFF" 2>/dev/null | head -1 | cut -d: -f1 || echo 0)
   if [ "${TEST_TRIGGER_LINE:-0}" -gt 0 ]; then
-    # 한글 주석 — 평가 manifest 안 test trigger 명시 — 추가 cycle 진행 detect (heuristic)
-    RECENT_FEAT_COMMITS=$(git log --oneline -n "$N_RECENT" --grep="feat(cycle1" 2>/dev/null | wc -l | tr -d ' ')
+    # cycle 169.215 — hook detect logic fix — `--grep` 의 의 의 5건 match retain 회피
+    # 최근 N commit 의 subject 만 grep + count
+    RECENT_FEAT_COMMITS=$(git log -n "$N_RECENT" --pretty=%s 2>/dev/null | grep -c "feat(cycle1" || true)
     if [ "$RECENT_FEAT_COMMITS" -ge 3 ]; then
       VIOLATIONS+=("[manual test trigger] test 진입 시점 명시 후 $RECENT_FEAT_COMMITS feat cycle 추가 진행 — 사용자 ack 부재 blind work 가능성")
       WARN_COUNT=$((WARN_COUNT + 1))
