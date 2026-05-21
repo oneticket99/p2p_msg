@@ -1,8 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""MyProfileDialog — telegram desktop 내 프로필 modal (cycle 169.186 telegram rewrite).
+"""MyProfileDialog — telegram desktop 내 프로필 modal (cycle 169.243 telegram align rewrite).
 
-avatar 폐기 + 단순 list row pattern + crash 회수 (load_pixmap chain 폐기).
-사용자 image #22 align — title + name + entry list.
+사용자 critique 회수 (cycle 169.243):
+- image #4 텔레그램 ref ↔ image #5 TooTalk 현 mismatch
+- header zone (큰 dark zone) — large avatar center top + name + 온라인 status + edit/close icon top-right
+- body zone (lighter slate) — info row 의 value bold + label subtitle pattern
+- footer zone — 스토리 placeholder
+
+avatar 복원 (cycle 169.182 폐기 후 cycle 169.243 사용자 directive 회수).
 """
 
 from __future__ import annotations
@@ -20,9 +25,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.ui._icons import load_pixmap
+
 
 class MyProfileDialog(QDialog):
-    """내 프로필 — telegram align simple list modal."""
+    """내 프로필 — telegram align (image #4 ref)."""
 
     edit_requested = pyqtSignal()
 
@@ -42,30 +49,33 @@ class MyProfileDialog(QDialog):
             Qt.WindowType.Dialog
             | Qt.WindowType.FramelessWindowHint
         )
-        self.setFixedSize(380, 480)
+        self.setFixedSize(420, 600)
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # 한글 주석 — header title + close X (cycle 169.186 — telegram simple)
+        # 한글 주석 — header zone (large avatar + name + 온라인 + edit/close 우측 상단)
         header = QFrame()
-        header.setFixedHeight(52)
         header.setStyleSheet("background-color: #1F2937;")
-        h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(16, 0, 8, 0)
-        h_layout.setSpacing(0)
-        title = QLabel("내 프로필")
-        title.setStyleSheet("color: #e5e7eb; font-size: 16px; font-weight: 600;")
-        h_layout.addWidget(title)
-        h_layout.addStretch(1)
-        edit_btn = QPushButton("편집")
+        header.setFixedHeight(260)
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(0)
+
+        # 한글 주석 — top icon row (edit pencil + close X 우측 상단)
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(8, 8, 8, 0)
+        top_row.setSpacing(4)
+        top_row.addStretch(1)
+        edit_btn = QPushButton("✎")
+        edit_btn.setFixedSize(36, 36)
         edit_btn.setStyleSheet(
-            "QPushButton { background-color: transparent; border: none; color: #0066FF; font-size: 14px; padding: 6px 10px; }"
-            " QPushButton:hover { color: #1a75ff; }"
+            "QPushButton { background-color: transparent; border: none; color: #9ca3af; font-size: 18px; }"
+            " QPushButton:hover { color: #e5e7eb; }"
         )
         edit_btn.clicked.connect(self.edit_requested.emit)  # type: ignore[arg-type]
-        h_layout.addWidget(edit_btn)
+        top_row.addWidget(edit_btn)
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(36, 36)
         close_btn.setStyleSheet(
@@ -73,48 +83,76 @@ class MyProfileDialog(QDialog):
             " QPushButton:hover { color: #e5e7eb; }"
         )
         close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
-        h_layout.addWidget(close_btn)
+        top_row.addWidget(close_btn)
+        header_layout.addLayout(top_row)
+
+        # 한글 주석 — large avatar center top (drawer + MyAccount + MyProfile 동일 source)
+        avatar = QLabel()
+        avatar.setFixedSize(120, 120)
+        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar.setPixmap(load_pixmap("avatar", size=80, color="#ffffff"))
+        avatar.setStyleSheet("background-color: #0066FF; border-radius: 60px;")
+        header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        header_layout.addSpacing(12)
+
+        # 한글 주석 — name (h1 bold center)
+        name_label = QLabel(username or "사용자")
+        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
+        header_layout.addWidget(name_label)
+
+        # 한글 주석 — 온라인 status (Toonation BI #0066FF)
+        status_label = QLabel("온라인")
+        status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        status_label.setStyleSheet("color: #0066FF; font-size: 13px;")
+        header_layout.addWidget(status_label)
+
+        header_layout.addStretch(1)
         outer.addWidget(header)
 
-        # 한글 주석 — body (name + info rows)
+        # 한글 주석 — body zone (info rows — value bold + label subtitle)
         body = QFrame()
         body.setStyleSheet("background-color: #131C30;")
         b_layout = QVBoxLayout(body)
-        b_layout.setContentsMargins(24, 32, 24, 24)
-        b_layout.setSpacing(8)
+        b_layout.setContentsMargins(24, 20, 24, 16)
+        b_layout.setSpacing(4)
 
-        # name large (avatar 폐기 — 사용자 directive cycle 169.182)
-        name_label = QLabel(username or "사용자")
-        name_label.setStyleSheet("color: #e5e7eb; font-size: 24px; font-weight: 700;")
-        b_layout.addWidget(name_label)
-
-        # @username
-        if username:
-            uname_label = QLabel(f"@{username}")
-            uname_label.setStyleSheet("color: #9ca3af; font-size: 13px;")
-            b_layout.addWidget(uname_label)
-
-        b_layout.addSpacing(24)
-
-        # info rows (label + value 단일 column)
+        # info rows (텔레그램 ref order — 전화번호 + 사용자명 + 생년월일 + 이메일)
         for label_text, value in [
             ("전화번호", phone or "부재"),
-            ("이메일", email or "부재"),
+            ("사용자명", f"@{username}" if username else "부재"),
             ("생년월일", birthdate or "부재"),
+            ("이메일", email or "부재"),
         ]:
             self._build_info_row(b_layout, label_text, value)
 
         b_layout.addStretch(1)
+
+        # 한글 주석 — footer (story placeholder — 텔레그램 align)
+        footer = QFrame()
+        footer.setStyleSheet("background-color: #131C30; border-top: 1px solid #1f2937;")
+        f_layout = QVBoxLayout(footer)
+        f_layout.setContentsMargins(24, 16, 24, 16)
+        story_label = QLabel("회원님의 스토리가 여기에 표시됩니다.")
+        story_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        story_label.setStyleSheet("color: #6b7280; font-size: 12px;")
+        f_layout.addWidget(story_label)
+        b_layout.addWidget(footer)
+
         outer.addWidget(body, stretch=1)
 
     def _build_info_row(self, layout: QVBoxLayout, label_text: str, value: str) -> None:
-        """단일 info row — label + value (vertical stack)."""
+        """텔레그램 align info row — value bold + label subtitle (수직 stack)."""
         wrap = QFrame()
         wrap_layout = QVBoxLayout(wrap)
         wrap_layout.setContentsMargins(0, 8, 0, 8)
         wrap_layout.setSpacing(2)
+        # 한글 주석 — value (bold + 청색 시점 사용자명 entry)
+        is_username = label_text == "사용자명" and value.startswith("@")
         val = QLabel(value)
-        val.setStyleSheet("color: #e5e7eb; font-size: 15px;")
+        val_color = "#0066FF" if is_username else "#e5e7eb"
+        val.setStyleSheet(f"color: {val_color}; font-size: 16px; font-weight: 600;")
         wrap_layout.addWidget(val)
         lbl = QLabel(label_text)
         lbl.setStyleSheet("color: #9ca3af; font-size: 12px;")
