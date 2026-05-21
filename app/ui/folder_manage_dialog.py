@@ -85,7 +85,8 @@ class FolderManageDialog(QDialog):
         # folder icon hero
         hero = QLabel()
         hero.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        hero.setPixmap(load_pixmap("folder", size=72, color="#22D3EE"))
+        # cycle 169.380 — sidebar tab icon color 동일 #9ca3af (사용자 directive image #135)
+        hero.setPixmap(load_pixmap("folder", size=72, color="#9ca3af"))
         c_layout.addWidget(hero)
 
         intro = QLabel("대화방을 모은 폴더를 여럿 만들고 신속하게 대화를 전환하세요.")
@@ -105,40 +106,22 @@ class FolderManageDialog(QDialog):
             row = self._build_folder_row(folder)
             c_layout.addWidget(row)
 
-        # 새 폴더 만들기 button
-        new_btn = QPushButton("  + 새 폴더 만들기")
-        new_btn.setFixedHeight(40)
+        # cycle 169.380 — 새 폴더 만들기 button = Toonation BI filled (사용자 directive image #138)
+        new_btn = QPushButton("+ 새 폴더 만들기")
+        new_btn.setFixedHeight(44)
         new_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         new_btn.setStyleSheet(
             "QPushButton {"
-            " color: #0066FF; background: transparent; border: none;"
-            " text-align: left; padding-left: 12px; font-size: 14px; font-weight: 600;"
+            " color: #ffffff; background-color: #0066FF; border: 0;"
+            " border-radius: 8px; font-size: 14px; font-weight: 600;"
             "}"
-            " QPushButton:hover { background-color: rgba(0,102,255,0.08); }"
+            "QPushButton:hover { background-color: #0052cc; }"
+            "QPushButton:pressed { background-color: #003fa6; }"
         )
         new_btn.clicked.connect(self.folder_create_requested.emit)  # type: ignore[arg-type]
         c_layout.addWidget(new_btn)
 
-        c_layout.addSpacing(16)
-
-        # 탭 뷰 section
-        tab_label = QLabel("탭 뷰")
-        tab_label.setStyleSheet("color: #22D3EE; font-size: 12px; font-weight: 700;")
-        c_layout.addWidget(tab_label)
-
-        self._tab_group = QButtonGroup(self)
-        left_radio = QRadioButton("좌측 탭")
-        left_radio.setChecked(True)
-        left_radio.setStyleSheet("color: #e5e7eb; font-size: 14px;")
-        top_radio = QRadioButton("상단 탭")
-        top_radio.setStyleSheet("color: #e5e7eb; font-size: 14px;")
-        self._tab_group.addButton(left_radio, 0)
-        self._tab_group.addButton(top_radio, 1)
-        c_layout.addWidget(left_radio)
-        c_layout.addWidget(top_radio)
-        left_radio.toggled.connect(lambda checked: checked and self.tab_view_changed.emit("left"))  # type: ignore[arg-type]
-        top_radio.toggled.connect(lambda checked: checked and self.tab_view_changed.emit("top"))  # type: ignore[arg-type]
-
+        # cycle 169.380 — 탭 뷰 section 제거 (사용자 directive image #137)
         c_layout.addStretch(1)
         scroll.setWidget(content)
         outer.addWidget(scroll, stretch=1)
@@ -150,7 +133,9 @@ class FolderManageDialog(QDialog):
         r_layout = QHBoxLayout(row)
         r_layout.setContentsMargins(12, 8, 12, 8)
         icon = QLabel()
-        icon.setPixmap(load_pixmap("folder", size=24, color="#0066FF"))
+        # cycle 169.380 — folder row icon color = folder.color_name (생성 시점 selected_color 반영) 사용자 critique image #136
+        folder_color = folder.get("color_name") or "#9ca3af"
+        icon.setPixmap(load_pixmap("folder", size=24, color=folder_color))
         icon.setFixedWidth(32)
         r_layout.addWidget(icon)
         col = QVBoxLayout()

@@ -154,7 +154,9 @@ class SidebarRail(QFrame):
             btn = QToolButton()
             btn.setObjectName("sidebarFolder")
             btn.setCheckable(True)
-            btn.setIcon(load_icon("folder", size=22, color="#9ca3af"))
+            # cycle 169.380 — folder color 반영 (사용자 critique image #136 — 만든 폴더 색상)
+            folder_color = folder.get("color_name") or "#9ca3af"
+            btn.setIcon(load_icon("folder", size=22, color=folder_color))
             btn.setIconSize(QSize(22, 22))
             btn.setText(self._wrap_label(name))
             btn.setToolTip(name)
