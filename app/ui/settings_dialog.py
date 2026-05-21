@@ -197,41 +197,239 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
 
         initial = build_state_from_player(sound_player)
 
-        # 한글 주석 — cycle 169.52 회수 — SVG icon 변환 + tab West + label 한글 short
-        from PyQt6.QtCore import QSize
-        from PyQt6.QtWidgets import QTabWidget
-        from app.ui._icons import load_icon
+        # cycle 169.257 — telegram align 95% rewrite (사용자 critique image #17/18)
+        self.setFixedSize(420, 720)
+        self._initial = initial
+        from app.ui._icons import load_icon, load_pixmap
+        from app.ui._avatar_helper import make_initial_pixmap
+        from PyQt6.QtWidgets import (
+            QFrame, QHBoxLayout, QPushButton, QSlider, QScrollArea, QCheckBox
+        )
+        from PyQt6.QtCore import Qt as _Qt
+
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
-        self._tabs = QTabWidget(self)
-        self._tabs.setTabPosition(QTabWidget.TabPosition.West)
-        self._tabs.setIconSize(QSize(20, 20))
-        outer.addWidget(self._tabs, stretch=1)
-
-        # 10 section build + SVG icon 변환
-        tab_defs = [
-            (self._build_account_tab(), "account", _tr("계정")),
-            (self._build_privacy_tab(), "privacy", _tr("보안")),
-            (self._build_notification_tab(initial), "notification", _tr("알림")),
-            (self._build_data_tab(), "data", _tr("데이터")),
-            (self._build_theme_tab(), "theme", _tr("테마")),
-            (self._build_locale_tab(), "locale", _tr("언어")),
-            (self._build_device_tab(), "device", _tr("디바이스")),
-            (self._build_folder_tab(), "folder", _tr("폴더")),
-            (self._build_advanced_tab(), "settings", _tr("고급")),
-            (self._build_about_tab(), "info", _tr("정보")),
-        ]
-        for widget, icon_name, label in tab_defs:
-            self._tabs.addTab(widget, load_icon(icon_name, size=20, color="#9ca3af"), label)
-
-        # OK / 취소 버튼 (기존 sound binding 보존 — _on_accept 호출 chain)
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        # header zone
+        header_zone = QFrame()
+        header_zone.setStyleSheet("QFrame { background-color: #1F2937; }")
+        hz = QVBoxLayout(header_zone)
+        hz.setContentsMargins(20, 16, 8, 20)
+        hz.setSpacing(6)
+        top_row = QHBoxLayout()
+        title_lbl = QLabel(_tr("설정"))
+        title_lbl.setStyleSheet("color: #ffffff; font-size: 17px; font-weight: 700;")
+        top_row.addWidget(title_lbl)
+        top_row.addStretch(1)
+        close_btn = QPushButton("✕")
+        close_btn.setFixedSize(32, 32)
+        close_btn.setStyleSheet(
+            "QPushButton { background-color: transparent; border: none; color: #9ca3af; font-size: 16px; }"
+            " QPushButton:hover { color: #e5e7eb; }"
         )
-        buttons.accepted.connect(self._on_accept)  # type: ignore[arg-type]
-        buttons.rejected.connect(self.reject)  # type: ignore[arg-type]
-        outer.addWidget(buttons)
+        close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        top_row.addWidget(close_btn)
+        hz.addLayout(top_row)
+        hz.addSpacing(8)
+
+        identity_row = QHBoxLayout()
+        identity_row.setSpacing(16)
+        username = "guest"
+        avatar_lbl = QLabel()
+        avatar_lbl.setFixedSize(72, 72)
+        avatar_lbl.setPixmap(make_initial_pixmap(username, size=72))
+        avatar_lbl.setStyleSheet("border-radius: 36px;")
+        identity_row.addWidget(avatar_lbl)
+        info_col = QVBoxLayout()
+        info_col.setSpacing(4)
+        name_lbl = QLabel(username)
+        name_lbl.setStyleSheet("color: #ffffff; font-size: 18px; font-weight: 600;")
+        info_col.addWidget(name_lbl)
+        phone_lbl = QLabel("+82 10 0000 0000")
+        phone_lbl.setStyleSheet("color: #e5e7eb; font-size: 13px;")
+        info_col.addWidget(phone_lbl)
+        uname_lbl = QLabel(f"@{username}")
+        uname_lbl.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        info_col.addWidget(uname_lbl)
+        identity_row.addLayout(info_col, stretch=1)
+        hz.addLayout(identity_row)
+        outer.addWidget(header_zone)
+
+        # menu list
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("QScrollArea { background-color: #131C30; border: none; }")
+        body = QWidget()
+        body.setStyleSheet("background-color: #131C30;")
+        bl = QVBoxLayout(body)
+        bl.setContentsMargins(0, 8, 0, 16)
+        bl.setSpacing(0)
+
+        menu_defs = [
+            ("account", _tr("내 계정"), self._open_account, None),
+            ("notification", _tr("알림 및 소리"), self._open_notification, None),
+            ("privacy", _tr("개인 정보 및 보안"), self._open_privacy, None),
+            ("settings", _tr("대화방 설정"), self._open_advanced, None),
+            ("folder", _tr("대화방 폴더"), self._open_folder, None),
+            ("data", _tr("고급"), self._open_data, None),
+            ("phone", _tr("스피커 및 카메라"), self._open_device, None),
+            ("more", _tr("배터리 및 애니메이션"), self._open_advanced, None),
+            ("locale", _tr("언어"), self._open_locale, "한국어"),
+        ]
+        for icon_name, lbl_text, slot, right_lbl in menu_defs:
+            bl.addWidget(self._build_menu_row(icon_name, lbl_text, slot, right_lbl))
+
+        divider = QFrame()
+        divider.setFixedHeight(8)
+        divider.setStyleSheet("background-color: #0F172A;")
+        bl.addWidget(divider)
+
+        # toggle + slider
+        toggle_row = QFrame()
+        tr_l = QHBoxLayout(toggle_row)
+        tr_l.setContentsMargins(20, 14, 20, 14)
+        eye_icon = QLabel()
+        eye_icon.setPixmap(load_pixmap("theme", size=20, color="#9ca3af"))
+        tr_l.addWidget(eye_icon)
+        tr_l.addSpacing(16)
+        tr_lbl = QLabel(_tr("기본 인터페이스 비율"))
+        tr_lbl.setStyleSheet("color: #e5e7eb; font-size: 15px;")
+        tr_l.addWidget(tr_lbl, stretch=1)
+        ui_check = QCheckBox()
+        ui_check.setChecked(True)
+        tr_l.addWidget(ui_check)
+        bl.addWidget(toggle_row)
+
+        slider_row = QFrame()
+        sl_l = QHBoxLayout(slider_row)
+        sl_l.setContentsMargins(56, 0, 20, 14)
+        slider = QSlider(_Qt.Orientation.Horizontal)
+        slider.setRange(80, 150)
+        slider.setValue(110)
+        sl_l.addWidget(slider, stretch=1)
+        val_lbl = QLabel("110%")
+        val_lbl.setStyleSheet("color: #0066FF; font-size: 13px; font-weight: 600; min-width: 44px;")
+        sl_l.addWidget(val_lbl)
+        slider.valueChanged.connect(lambda v: val_lbl.setText(f"{v}%"))  # type: ignore[arg-type]
+        bl.addWidget(slider_row)
+
+        divider2 = QFrame()
+        divider2.setFixedHeight(8)
+        divider2.setStyleSheet("background-color: #0F172A;")
+        bl.addWidget(divider2)
+
+        footer_defs = [
+            ("more", _tr("정보"), self._open_about, None),
+            ("data", _tr("저장 공간"), self._open_data, None),
+            ("settings", _tr("고급 설정"), self._open_advanced, None),
+        ]
+        for icon_name, lbl_text, slot, right_lbl in footer_defs:
+            bl.addWidget(self._build_menu_row(icon_name, lbl_text, slot, right_lbl))
+
+        bl.addStretch(1)
+        scroll.setWidget(body)
+        outer.addWidget(scroll, stretch=1)
+
+        # action row
+        action_row = QFrame()
+        action_row.setStyleSheet("background-color: #1F2937;")
+        al = QHBoxLayout(action_row)
+        al.setContentsMargins(16, 12, 16, 12)
+        al.addStretch(1)
+        cancel_btn = QPushButton(_tr("취소"))
+        cancel_btn.setStyleSheet(
+            "QPushButton { background-color: transparent; color: #9ca3af; border: none; padding: 6px 16px; font-size: 14px; }"
+            " QPushButton:hover { color: #e5e7eb; }"
+        )
+        cancel_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        al.addWidget(cancel_btn)
+        ok_btn = QPushButton("OK")
+        ok_btn.setStyleSheet(
+            "QPushButton { background-color: #0066FF; color: #ffffff; border: none; padding: 6px 20px; border-radius: 6px; font-weight: 600; }"
+            " QPushButton:hover { background-color: #1a75ff; }"
+        )
+        ok_btn.clicked.connect(self._on_accept)  # type: ignore[arg-type]
+        al.addWidget(ok_btn)
+        outer.addWidget(action_row)
+
+    def _build_menu_row(self, icon_name, label_text, slot, right_label=None):
+        from PyQt6.QtWidgets import QPushButton, QHBoxLayout
+        from app.ui._icons import load_pixmap
+        row = QPushButton()
+        row.setFixedHeight(52)
+        row.setStyleSheet(
+            "QPushButton { background-color: transparent; border: none; text-align: left; }"
+            " QPushButton:hover { background-color: rgba(255,255,255,0.04); }"
+        )
+        row.setCursor(Qt.CursorShape.PointingHandCursor)
+        if slot is not None:
+            row.clicked.connect(slot)  # type: ignore[arg-type]
+        h = QHBoxLayout(row)
+        h.setContentsMargins(20, 0, 20, 0)
+        h.setSpacing(20)
+        icon_lbl = QLabel()
+        icon_lbl.setPixmap(load_pixmap(icon_name, size=22, color="#9ca3af"))
+        icon_lbl.setFixedWidth(22)
+        h.addWidget(icon_lbl)
+        text_lbl = QLabel(label_text)
+        text_lbl.setStyleSheet("color: #e5e7eb; font-size: 15px;")
+        h.addWidget(text_lbl, stretch=1)
+        if right_label:
+            right_lbl = QLabel(right_label)
+            right_lbl.setStyleSheet("color: #0066FF; font-size: 14px;")
+            h.addWidget(right_lbl)
+        return row
+
+    def _show_subpage(self, title, widget):
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout as QVB, QHBoxLayout, QPushButton, QFrame
+        sub = QDialog(self)
+        sub.setWindowTitle(f"TooTalk · {title}")
+        sub.setModal(True)
+        sub.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        sub.setFixedSize(420, 720)
+        v = QVB(sub)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(0)
+        hdr = QFrame()
+        hdr.setStyleSheet("background-color: #1F2937;")
+        hl = QHBoxLayout(hdr)
+        hl.setContentsMargins(8, 8, 8, 8)
+        back = QPushButton("←")
+        back.setFixedSize(36, 36)
+        back.setStyleSheet(
+            "QPushButton { background-color: transparent; border: none; color: #9ca3af; font-size: 18px; }"
+            " QPushButton:hover { color: #e5e7eb; }"
+        )
+        back.clicked.connect(sub.reject)  # type: ignore[arg-type]
+        hl.addWidget(back)
+        title_lbl = QLabel(title)
+        title_lbl.setStyleSheet("color: #ffffff; font-size: 17px; font-weight: 600;")
+        hl.addWidget(title_lbl)
+        hl.addStretch(1)
+        v.addWidget(hdr)
+        v.addWidget(widget, stretch=1)
+        sub.exec()
+
+    def _open_account(self):
+        self._show_subpage(_tr("내 계정"), self._build_account_tab())
+    def _open_notification(self):
+        self._show_subpage(_tr("알림 및 소리"), self._build_notification_tab(self._initial))
+    def _open_privacy(self):
+        self._show_subpage(_tr("개인 정보 및 보안"), self._build_privacy_tab())
+    def _open_folder(self):
+        self._show_subpage(_tr("대화방 폴더"), self._build_folder_tab())
+    def _open_data(self):
+        self._show_subpage(_tr("고급"), self._build_data_tab())
+    def _open_device(self):
+        self._show_subpage(_tr("스피커 및 카메라"), self._build_device_tab())
+    def _open_locale(self):
+        self._show_subpage(_tr("언어"), self._build_locale_tab())
+    def _open_advanced(self):
+        self._show_subpage(_tr("고급 설정"), self._build_advanced_tab())
+    def _open_about(self):
+        self._show_subpage(_tr("정보"), self._build_about_tab())
 
     # ------------------------------------------------------------------
     # 10 section tab builders (cycle 153.5 신설)
