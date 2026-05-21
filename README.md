@@ -308,6 +308,28 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.212 (2026-05-21 11:21 KST) — hook_dereliction_check.sh stderr redirect (claude Stop hook display 정합)
+- cycle 169.211 (2026-05-21 11:07 KST) — 평가 4 file fingerprint sync (cycle 169.206~210 5 cycle drift 회수)
+- cycle 169.210 (2026-05-21 11:07 KST) — bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive)
+- cycle 169.209 (2026-05-21 11:03 KST) — bot LLM ContentTypeError 회수 (graceful HTTP status + JSON parse 분기)
+- cycle 169.208 (2026-05-21 11:01 KST) — PORTABLE_HARNESS.md GPLv3 항목 제거 (사용자 directive)
+- cycle 169.207 (2026-05-21 10:59 KST) — DESIGN.md + html §11.10/11.11 sweep + PORTABLE_HARNESS.md 신설
+- cycle 169.206 (2026-05-21 10:52 KST) — handoff §8.79 cycle 194~205 9 entry append + parallel execution strict 가드레일
+- cycle 169.205 (2026-05-21 10:49 KST) — 평가 4 file fingerprint sync (cycle 169.196~204 9 cycle drift 회수)
+- cycle 169.202~204 (2026-05-21 10:48 KST) — default chat retain + bot LLM 응답 chain + avatar 단색 (4 critique batch)
+- cycle 169.201 (2026-05-21 10:45 KST) — FolderManageDialog + FolderEditDialog frameless modal 변환
+- cycle 169.199 (2026-05-21 10:29 KST) — FRONTEND.md + html partial sweep — UI redesign 70+ sub-cycle reflect (@doc-gardener)
+- cycle 169.197~198 (2026-05-21 10:26 KST) — Specification + ARCHITECTURE partial sweep (@doc-gardener)
+- cycle 169.196 (2026-05-21 10:18 KST) — Structure.md partial sweep — cycle 169.x UI redesign reflect (@doc-gardener)
+- cycle 169.195 (2026-05-21 10:18 KST) — 평가 4 file fingerprint sync + token regen (6h staleness 회수)
+- cycle 169.194 (2026-05-21 10:16 KST) — handoff §8.79 cycle 169.177~193 17 entry append (@history)
+- cycle 169.193 (2026-05-21 04:13 KST) — 편집 tab → FolderManageDialog (telegram 폴더 편집 align — 사용자 directive 회수)
+- cycle 169.191~192 (2026-05-21 04:12 KST) — chat_header label transparent bg + input_bar pill bg align
+- cycle 169.188 (2026-05-21 04:06 KST) — 평가 4 file 6 영역 본격 sweep — cycle 169.117~187 70 cycle drift 회수 (@doc-gardener)
+- cycle 169.190 (2026-05-21 03:55 KST) — 평가 4 file + token-usage sync — cycle 169.117~188 70 cycle 본격 sweep (@assess)
+- cycle 169.189 (2026-05-21 03:53 KST) — dereliction-detector 자동 spawn 강제 chain 신설
+- cycle 169.190 (2026-05-21 03:53 KST) — History.md 역순 prepend — cycle 169.132~187 entry (@history)
+- cycle 169.189 (2026-05-21 03:52 KST) — README 변경 이력 53 entry prepend + 30 행 상한 trim (@release)
 - cycle 169.187 (2026-05-21 03:47 KST) — 평가 4 file fingerprint sync (cycle 169.182~186 5 cycle drift 회수)
 - cycle 169.186 (2026-05-21 03:46 KST) — MyProfileDialog crash 회수 + telegram simple rewrite
 - cycle 169.185 (2026-05-21 03:42 KST) — sidebar TAB_DEFS 2 entry (home + phone icon 폐기) — 사용자 directive
@@ -316,28 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.182 (2026-05-21 03:32 KST) — chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입
 - cycle 169.181 (2026-05-21 03:25 KST) — 평가 4 file fingerprint sync (cycle 169.176~180 5 cycle drift 회수)
 - cycle 169.180 (2026-05-21 03:24 KST) — bubble ts inline overlay (telegram D-15 align)
-- cycle 169.179 (2026-05-21 03:22 KST) — chat_view day separator (date 변경 시 label inject — telegram align)
-- cycle 169.178 (2026-05-21 03:20 KST) — chat_header status color cyan → gray (telegram image #6 align)
-- cycle 169.177 (2026-05-21 03:18 KST) — handoff §8.79 cycle 169.162~176 append (15 entry, @history)
-- cycle 169.176 (2026-05-21 03:16 KST) — chat_view scroll offset per-chat retain (telegram align)
-- cycle 169.175 (2026-05-21 03:14 KST) — 평가 4 file fingerprint sync (cycle 169.169~174 6 cycle drift 회수)
-- cycle 169.174 (2026-05-21 03:13 KST) — chat_list bump_entry on send (preview + ts + sort 정렬)
-- cycle 169.173 (2026-05-21 03:12 KST) — chat_list unread badge reset on chat_selected (telegram align)
-- cycle 169.172 (2026-05-21 03:11 KST) — bubble grouped tail 부재 chain (telegram 시각 강화)
-- cycle 169.171 (2026-05-21 03:09 KST) — search bar pill radius 18 + bg seamless (image #14 align)
-- cycle 169.170 (2026-05-21 03:08 KST) — hamburger drawer header Toonation BI gradient (telegram D-37)
-- cycle 169.169 (2026-05-21 03:06 KST) — top bar 3 영역 한 라인 통합 — bg #0A1019 + height 60 (image #13/14)
-- cycle 169.168 (2026-05-21 03:02 KST) — 평가 4 file fingerprint sync (cycle 169.162~167 6 cycle drift 회수)
-- cycle 169.167 (2026-05-21 03:01 KST) — chat_list highlight sync (programmatic 진입 path 정합)
-- cycle 169.166 (2026-05-21 02:59 KST) — `_profile_message_clicked` → `_on_chat_selected` redirect (single source)
-- cycle 169.165 (2026-05-21 02:58 KST) — `_append_dm_message` render 직후 scroll bottom 자동
-- cycle 169.164 (2026-05-21 02:56 KST) — chat 전환 시 scroll bottom + replay sender suppress propagate
-- cycle 169.163 (2026-05-21 02:48 KST) — 1:1 chat sender label suppress (telegram image #6 align)
-- cycle 169.162 (2026-05-21 02:45 KST) — handoff §8.79 append cycle 169.145~161 + 17 entry critique (@history)
-- cycle 169.161 (2026-05-21 02:42 KST) — 평가 4 file fingerprint sync (cycle 169.154~160 7 cycle drift 회수)
-- cycle 169.160 (2026-05-21 02:41 KST) — `_append_dm_message` single source helper + send chain refactor
-- cycle 169.159 (2026-05-21 02:40 KST) — chat_header status fallback "최근에 접속함" telegram align
-- cycle 169.158 (2026-05-21 02:38 KST) — self send → DM cache append chain
 
 ---
 
