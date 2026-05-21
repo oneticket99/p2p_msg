@@ -3,7 +3,6 @@ title: "Portable Harness — Claude Code 거버넌스 + Hook + Skill + Sub-agent
 owner: oneticket99
 last_updated: 2026-05-21
 status: active
-license: GPLv3
 ---
 
 # Portable Harness — 공용 한벌
@@ -250,9 +249,3 @@ tools/gen_token_usage_30d.py       # 평가 자동 trigger
 - `~/.claude/projects/<project_slug>/memory/MEMORY.md` — 가드레일 인덱스
 - `.claude/agents/` — agent 사양
 - `tools/` — Hook script + 자동화
-
----
-
-## 14. 라이선스
-
-GPLv3 — 본 문서 + 운영 chain 모두 자유 재사용. 출처 표기 의무 (TooTalk / oneticket99).
