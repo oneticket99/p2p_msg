@@ -260,9 +260,9 @@ cycle 16 Phase 1 코드 진입 이후 본격 코드 작성 chain. 현 누계 = p
 
 **한계 노출**: LLM (Claude) 의 자체 검열 의 의무 시점 = push 직전 lint 검증. 가드레일 본 영역 강화 의무 — PreToolUse hook + chat pre-send filter hook 강제 활성 sketch.
 
-### 3.5 ~~Test 진입~~ — pytest 1817 + drift 0건 158 연속 cycle 37~169.187
+### 3.5 ~~Test 진입~~ — pytest 1817 + drift 0건 185 연속 cycle 37~169.214
 
-pytest 누계 = 1817 PASS. Phase 1 (cycle 16~36) 12 → Phase 2 (cycle 24~46) 290 → Phase 3 (cycle 65~99) 642 → Phase 4 (cycle 100~117) 144 → Phase 4 후속 + Phase 5 (cycle 119~148) 585 → cycle 149~169.187 신규 144. integration test + Playwright + unit test + dual chain smoke + signaling rooms persist e2e + OBS WebSocket v5 actual + emoji moderation admin + remote coord transform + cycle 169.x UI 의 누계.
+pytest 누계 = 1817 PASS. Phase 1 (cycle 16~36) 12 → Phase 2 (cycle 24~46) 290 → Phase 3 (cycle 65~99) 642 → Phase 4 (cycle 100~117) 144 → Phase 4 후속 + Phase 5 (cycle 119~148) 585 → cycle 149~169.214 신규 144. integration test + Playwright + unit test + dual chain smoke + signaling rooms persist e2e + OBS WebSocket v5 actual + emoji moderation admin + remote coord transform + cycle 169.x UI 의 누계 + 편집 tab FolderManageDialog redirect + bot LLM ContentTypeError graceful 의 회귀 검증.
 
 ### 3.6 ~~self-hosted runner 등록 미완~~ ✅ 해소 (사이클 5 + cycle 142~143)
 
@@ -278,7 +278,7 @@ GPLv3 확정 + LICENSE 저장소 루트 + visibility 전환 정책 명시 + Phas
 
 ### 3.9 1차 dogfooding 부재
 
-cycle 169.x UI Toonation BI 통합 telegram align 95% 도달 단 실 사용자 dogfooding 부재. Phase 5 마무리 후 1주 retention + NPS 측정 + UX feedback 회수 chain 진입 의무.
+cycle 169.x UI Toonation BI 통합 telegram align 96% 도달 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 단 실 사용자 dogfooding 부재. Phase 5 마무리 후 1주 retention + NPS 측정 + UX feedback 회수 chain 진입 의무.
 
 ### 3.10 사용자 직접 prerequisite 잔존
 
@@ -322,11 +322,11 @@ cycle 169.x UI Toonation BI 통합 telegram align 95% 도달 단 실 사용자 d
 
 ### 4.4 cycle 169.x 의 image-driven critique pattern
 
-사용자 directive 의 image attach 의 verbatim 회수 본격 패턴 진입 (cycle 169.117~187 70 sub-cycle 누계). image #1~22 누계 critique pattern:
+사용자 directive 의 image attach 의 verbatim 회수 본격 패턴 진입 (cycle 169.117~215 115 sub-cycle 누계). image #1~22 누계 critique pattern:
 
 - **directive 의 hierarchical 분해** — image attach + 단일 directive ("이렇게 align 해") → LLM 의 sub-cycle 분리 + 단일 file 단 commit + push + 평가 fingerprint sync 매 5 cycle
-- **explicit confirm + ack chain** — 사용자 ack (Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입) 명시 후만 GO
-- **granular sub-cycle 분리** — Phase A entry 1 / Phase F entry 2 / cycle 169.182 chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입 의 3 batch — 단일 cycle 안 3 batch 의 명시 분리
+- **explicit confirm + ack chain** — 사용자 ack (Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 + 편집 tab FolderManageDialog redirect + bot LLM 응답 chain + OpenAI 우선 provider) 명시 후만 GO
+- **granular sub-cycle 분리** — Phase A entry 1 / Phase F entry 2 / cycle 169.182 chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입 의 3 batch + cycle 169.202~204 4 critique batch — 단일 cycle 안 3~4 batch 의 명시 분리
 
 ---
 
