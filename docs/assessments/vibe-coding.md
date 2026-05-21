@@ -208,7 +208,27 @@ Phase F 이후 telegram align deeper integration 47 sub-cycle 진입:
 - **sidebar TAB_DEFS 2 entry** (cycle 169.185) — home + phone icon 폐기
 - **MyProfileDialog crash 회수 + telegram simple rewrite** (cycle 169.186)
 
-47 sub-cycle 누계 + telegram align 95% 도달 + 사용자 ack 의 explicit confirm chain 정합 + UI Toonation BI gradient + 단순화 (sidebar 2 entry + chat_header 3 action + chat_list 통합 filter).
+47 sub-cycle 누계 + telegram align 96% 도달 + 사용자 ack 의 explicit confirm chain 정합 + UI Toonation BI gradient + 단순화 (sidebar 2 entry + chat_header 3 action + chat_list 통합 filter).
+
+### 2.29 cycle 169.193 편집 tab → FolderManageDialog redirect (telegram 폴더 편집 align directive 회수)
+
+사용자 directive — "편집 tab → FolderManageDialog" (telegram 폴더 편집 align). LLM 의 sidebar 5번째 entry "편집" 의 SVG icon 명시 (cycle 169.152) → 사용자 critique = 편집 tab 의 본질 = FolderManageDialog 진입. LLM 의 즉시 redirect 회수 + commit + push 5 분 단축. critique → cycle entry → file 단 작업 + commit + push patten 정합.
+
+### 2.30 cycle 169.201 + 169.202~204 folder modal frameless + default chat retain + bot LLM 응답 chain + system prompt knowledge source + avatar 단색 (4 critique batch)
+
+사용자 directive 4 critique batch — FolderManageDialog + FolderEditDialog frameless modal 변환 (169.201) + default chat retain (169.202 entry 1) + bot LLM 응답 chain + system prompt knowledge source (169.203) + avatar 단색 (169.204). LLM 의 batch 회수 + 단일 cycle 안 4 critique 의 명시 분리 + commit + push 즉시. critique-driven cycle entry 패턴 성숙.
+
+### 2.31 cycle 169.207 PORTABLE_HARNESS.md 신설 (공용 한벌 — 사용자 directive)
+
+사용자 directive — PORTABLE_HARNESS.md 신설 (공용 한벌). 본 저장소 의 패턴 + 가드레일 + sub-agent 운영서 의 다른 저장소 재 사용 base 명문화. cycle 169.208 GPLv3 항목 제거 directive (라이선스 결정 본 저장소 한정) → 다른 저장소 재 사용 시 라이선스 별개 결정. portable harness 의 namespace 분리 인지.
+
+### 2.32 cycle 169.209~210 bot LLM ContentTypeError graceful + OpenAI 우선 provider chain (사용자 directive)
+
+사용자 directive — bot LLM provider 우선순위 swap (OpenAI 우선). cycle 169.209 LLM 의 ContentTypeError 회수 (graceful HTTP status + JSON parse 분기) → cycle 169.210 사용자 critique = provider 우선순위 swap. LLM 의 즉시 GO + 비용 최적화 base 진입. provider chain 의 user-controlled fallback 패턴.
+
+### 2.33 cycle 169.189 dereliction-detector 자동 spawn 강제 chain 신설
+
+사용자 directive 의 직접 명시 부재 단 LLM 의 reasonable default 발견 — dereliction-detector 의 자동 spawn 강제 chain 신설 (5+ cycle 누적 자동 detect). cycle 168 의 dereliction-detector-agent 신설 (manual spawn) → cycle 169.189 의 hook-driven auto spawn. cycle 169.212 stderr redirect + cycle 169.215 false positive 회수 (feat grep logic) 의 hook self-correction chain.
 
 ---
 
@@ -216,7 +236,7 @@ Phase F 이후 telegram align deeper integration 47 sub-cycle 진입:
 
 ### 3.1 Directive 우선순위 pivot 빈도
 
-본 저장소 진행 중 pivot 패턴 (누계 169.188 cycle 시점 100+ pivot). cycle 169.x 의 image #1~22 critique 누계 = pivot 빈도 ▲ 단 directive 의 explicit confirm + 단일 cycle 진입 patten 정합 (granular sub-cycle 분리).
+본 저장소 진행 중 pivot 패턴 (누계 169.215 cycle 시점 120+ pivot). cycle 169.x 의 image #1~22 critique 누계 + 편집 tab redirect + 4 critique batch (cycle 169.202~204) + OpenAI provider swap = pivot 빈도 ▲ 단 directive 의 explicit confirm + 단일 cycle 진입 패턴 정합 (granular sub-cycle 분리).
 
 **LLM 컨텍스트 fragmentation 위험** 잔존. 단 사용자 자체 인지 (vibe-coding §3.1 추적 = 메타 의무) + cycle 169.x 의 granular sub-cycle 분리 = pivot 영향 최소화.
 
