@@ -1713,13 +1713,14 @@ class MainWindow(QMainWindow):
         dialog.hide()
         dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
+        # cycle 169.295 — dialog 자체 의 setFixedSize retain 유지 (adjustSize/sizeHint expand 회피)
         parent_rect = self.rect()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
-        dialog.adjustSize()
-        target_w = min(dialog.sizeHint().width(), max_w)
-        target_h = min(dialog.sizeHint().height(), max_h)
-        dialog.setFixedSize(target_w, target_h)
+        # 한글 주석 — dialog의 setFixedSize value 의 sizeHint 보다 작 → strict clamp
+        dlg_w = min(dialog.width(), max_w)
+        dlg_h = min(dialog.height(), max_h)
+        dialog.setFixedSize(dlg_w, dlg_h)
         dw, dh = dialog.width(), dialog.height()
         x = (parent_rect.width() - dw) // 2
         y = (parent_rect.height() - dh) // 2
