@@ -1,7 +1,15 @@
+---
+title: ARCHITECTURE.md — TooTalk (p2p_msg) 시스템 아키텍처 정책
+owner: doc-gardener-agent
+last_updated: 2026-05-21
+last_verified: 2026-05-21
+status: active
+---
+
 # ARCHITECTURE.md — TooTalk (p2p_msg) 시스템 아키텍처 정책
 
 > 본 문서는 TooTalk(코드명 `p2p_msg`) 의 **시스템 아키텍처 정책 문서** 다.
-> 모듈 경계·계층 분리·데이터 흐름·환경변수 외부화·Phase 진화 경로 측면 결정을 한 곳에 모은다.
+> 모듈 경계·계층 분리·데이터 흐름·환경변수 외부화·Phase 진화 경로 면 결정을 한 곳에 모은다.
 > 정본 정합: [CLAUDE_HARNESS_IMPORTANT.md](CLAUDE_HARNESS_IMPORTANT.md) §E (코딩 불변 규칙) · §K (루트 18 동결).
 > 저장소 맵: [AGENTS.md](AGENTS.md) · 실행계획: [docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md](docs/exec-plans/active/2026-05-17-tootalk-phase1-mvp.md).
 
