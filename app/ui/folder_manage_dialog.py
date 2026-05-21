@@ -66,11 +66,9 @@ class FolderManageDialog(QDialog):
         title.setStyleSheet("color: #e5e7eb; font-size: 16px; font-weight: 700;")
         h_layout.addWidget(title)
         h_layout.addStretch(1)
-        close_btn = QPushButton("✕")
-        close_btn.setFixedSize(32, 32)
-        close_btn.setFlat(True)
-        close_btn.setStyleSheet("color: #9ca3af; font-size: 16px; border: none;")
-        close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        # cycle 169.324 — 공통 close button factory (telegram align)
+        from app.ui._close_button import make_close_button
+        close_btn = make_close_button(self.reject, self)
         h_layout.addWidget(close_btn)
         outer.addWidget(header)
 

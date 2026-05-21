@@ -21,6 +21,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.ui._close_button import make_close_button
+
 
 class CallsDialog(QDialog):
     """전화 history dialog — 최근 통화 list."""
@@ -56,15 +58,8 @@ class CallsDialog(QDialog):
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
         header_row.addWidget(title)
         header_row.addStretch(1)
-        close_btn = QPushButton("✕")
-        close_btn.setFixedSize(32, 32)
-        close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        close_btn.setStyleSheet(
-            "QPushButton { color: #f3f4f6; background-color: #1F2937;"
-            " border: 1px solid #374151; border-radius: 16px; font-size: 16px; font-weight: bold; }"
-            "QPushButton:hover { background-color: #2c3a52; color: #ffffff; }"
-        )
-        close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        # cycle 169.324 — 공통 close button factory (telegram align)
+        close_btn = make_close_button(self.reject, self)
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 

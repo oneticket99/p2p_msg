@@ -241,13 +241,9 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
         title_lbl.setStyleSheet("color: #ffffff; font-size: 17px; font-weight: 700;")
         top_row.addWidget(title_lbl)
         top_row.addStretch(1)
-        close_btn = QPushButton("✕")
-        close_btn.setFixedSize(32, 32)
-        close_btn.setStyleSheet(
-            "QPushButton { background-color: transparent; border: none; color: #9ca3af; font-size: 16px; }"
-            " QPushButton:hover { color: #e5e7eb; }"
-        )
-        close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        # cycle 169.324 — 공통 close button factory (telegram align)
+        from app.ui._close_button import make_close_button
+        close_btn = make_close_button(self.reject, self)
         top_row.addWidget(close_btn)
         hz.addLayout(top_row)
         hz.addSpacing(8)
