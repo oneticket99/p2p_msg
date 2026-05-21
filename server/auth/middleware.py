@@ -54,23 +54,25 @@ async def auth_middleware(
         raise web.HTTPInternalServerError(reason="session_store 부재")
 
     user_id = session_store.get(token)
+    # cycle 169.259 — debug log 추가 (사용자 critique bot 401 retain root cause trace)
+    import hashlib
+    token_hash_full = hashlib.sha256(token.encode("utf-8")).hexdigest()
     if user_id is None:
+        log.info(
+            "[auth] in-memory miss token_hash=%s path=%s",
+            token_hash_full[:12], request.path,
+        )
         # cycle 169.246 — in-memory miss 시점 user_sessions row fallback lookup.
-        # 한글 주석: server restart 후 in-memory session_store reset 단 user_sessions
-        # row 안 token_hash retain → DB lookup + in-memory rehydrate chain. Phase 1
-        # in-memory persistence 한계 회수 (사용자 비판 image #6 HTTP 401 retain).
         pool = request.app.get("db_pool")
         if pool is not None:
             try:
-                import hashlib
-                token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
                 async with pool.acquire() as conn:
                     async with conn.cursor() as cur:
                         await cur.execute(
                             "SELECT user_id FROM user_sessions "
                             "WHERE session_token_hash = %s "
                             "AND disconnected_at IS NULL LIMIT 1",
-                            (token_hash,),
+                            (token_hash_full,),
                         )
                         row = await cur.fetchone()
                         if row:
@@ -78,13 +80,21 @@ async def auth_middleware(
                             session_store[token] = user_id  # rehydrate
                             log.info(
                                 "[auth] session rehydrate token_hash=%s user_id=%d",
-                                token_hash[:8],
-                                user_id,
+                                token_hash_full[:12], user_id,
+                            )
+                        else:
+                            log.warning(
+                                "[auth] user_sessions row 부재 token_hash=%s",
+                                token_hash_full[:12],
                             )
             except Exception as exc:  # pragma: no cover - graceful
                 log.warning("[auth] session fallback lookup 실패: %r", exc)
 
         if user_id is None:
+            log.warning(
+                "[auth] HTTPUnauthorized token_hash=%s path=%s",
+                token_hash_full[:12], request.path,
+            )
             raise web.HTTPUnauthorized(reason="세션 토큰 무효")
 
     request["user_id"] = user_id

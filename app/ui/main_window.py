@@ -1670,18 +1670,25 @@ class MainWindow(QMainWindow):
         self._active_drawer = drawer
 
     def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.230 — dialog main window 안 center + parent height clamp.
+        """cycle 169.258 — dialog 의 main window client area 안 강제 fit (사용자 critique image #19/20 회수).
 
-        사용자 directive image #31 — modal main 영역 안 embed + main scroll 의무.
-        FramelessWindowHint dialog 의 OS top-level 회피 + parent rect 안 centering.
+        width + height 둘 다 parent client rect 안 clamp + position 의 main window edge 부재.
         """
         parent_rect = self.geometry()
+        # 한글 주석 — width / height 둘 다 clamp (사용자 critique main 외부 protrude 부재)
+        max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
+        if dialog.width() > max_w:
+            dialog.setFixedWidth(max_w)
         if dialog.height() > max_h:
             dialog.setFixedHeight(max_h)
         dw, dh = dialog.width(), dialog.height()
+        # 한글 주석 — position clamp — main window edge 부재 강제
         x = parent_rect.x() + (parent_rect.width() - dw) // 2
         y = parent_rect.y() + (parent_rect.height() - dh) // 2
+        # 한글 주석 — top/left edge fit clamp + bottom/right edge fit clamp
+        x = max(parent_rect.x() + 20, min(x, parent_rect.x() + parent_rect.width() - dw - 20))
+        y = max(parent_rect.y() + 20, min(y, parent_rect.y() + parent_rect.height() - dh - 20))
         dialog.move(x, y)
         return dialog.exec()
 
