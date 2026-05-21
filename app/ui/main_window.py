@@ -254,6 +254,17 @@ class MainWindow(QMainWindow):
                 is_pinned=True,
                 is_online=True,
             ),
+            # cycle 169.323 — 사용자 directive image #86 — "저장한 메시지" 친구 list entry (telegram saved messages 정합)
+            ChatListEntry(
+                kind="saved",
+                target_id=0,
+                name="저장한 메시지",
+                last_message="나에게 메모 + 파일 보관",
+                last_ts=datetime.now(),
+                unread_count=0,
+                is_pinned=True,
+                is_online=True,
+            ),
         ]
         self._chat_list_panel.set_entries(default_entries)
         # cycle 169.136 — 채팅 통합 (telegram align) — default tab "friends" = 채팅
@@ -1957,13 +1968,16 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_saved(self) -> None:
-        """저장한 메시지 dialog (cycle 169.320 image #84)."""
+        """저장한 메시지 → 친구 list 안 saved entry select + chat view focus (cycle 169.323 image #86 사용자 directive)."""
         try:
-            from app.ui.saved_messages_dialog import SavedMessagesDialog
-            dialog = SavedMessagesDialog(messages=[], parent=self)
-            self._exec_dialog_centered(dialog)
+            # 한글 주석 — chat_list_panel 안 saved entry highlight + chat_view 안 saved chat open
+            if hasattr(self, "_chat_list_panel"):
+                self._chat_list_panel.set_active_tab("friends")
+                self._chat_list_panel.set_current_chat("saved", 0)
+            # 한글 주석 — chat_view focus 이동 chain (sidebar chat tab + saved chat 진입)
+            self._on_chat_selected("saved", 0)
         except Exception as exc:
-            log.warning("SavedMessagesDialog open 실패 — %r", exc)
+            log.warning("저장한 메시지 진입 실패 — %r", exc)
 
     @pyqtSlot()
     def _on_drawer_logout(self) -> None:

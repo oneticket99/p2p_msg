@@ -348,7 +348,8 @@ class ChatListPanel(QFrame):
         if self._active_folder == "unread" and entry.unread_count <= 0:
             return False
         if self._active_tab == "friends":
-            return entry.kind in ("friend", "room", "bot")
+            # cycle 169.323 — saved kind 추가 (사용자 directive image #86)
+            return entry.kind in ("friend", "room", "bot", "saved")
         if self._active_tab == "rooms":
             return entry.kind == "friend"
         if self._active_tab == "bots":
