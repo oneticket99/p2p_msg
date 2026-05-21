@@ -82,6 +82,15 @@ def _matches_toonation_dispatch(user_message: str) -> bool:
     return any(kw.lower() in msg_lower for kw in _TOONATION_DISPATCH_KEYWORDS)
 
 
+def _load_rag_corpus() -> str:
+    """cycle 169.293 — Toonation RAG corpus 본문 inject (사용자 directive 회수)."""
+    try:
+        from app.bot.rag_corpus import get_corpus_snippet
+        return get_corpus_snippet()
+    except Exception:  # pragma: no cover - graceful
+        return ""
+
+
 def default_system_prompt() -> str:
     """Toonation 고객센터 봇 의 default system prompt.
 
@@ -95,9 +104,16 @@ def default_system_prompt() -> str:
     실 jailbreak detector = 별개 cycle.
     """
 
+    corpus = _load_rag_corpus()
+    rag_block = (
+        "\n**RAG corpus (사용자 directive cycle 169.293 — 우선 숙지 의무)**:\n"
+        f"{corpus}\n"
+        "**위 corpus 의 내용 = 1차 응답 source. corpus 외 = 2차 references (namu.wiki + help.toon.at).**\n\n"
+    ) if corpus else ""
     return (
         "당신은 Toonation 의 공식 고객센터 봇 (TooTalk 메신저 의 default contact bot) 입니다.\n"
         "\n"
+        + rag_block +
         "**브랜드 명칭 strict 의무 (cycle 169.289 사용자 directive)**:\n"
         "- 영문 공식 명칭 = Toonation (다른 표기 절대 금지: Tuneation / Tooneation / Toonacion 등 hallucination 차단).\n"
         "- 한글 공식 명칭 = 투네이션.\n"

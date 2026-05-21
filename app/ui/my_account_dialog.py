@@ -43,7 +43,8 @@ class MyAccountDialog(QDialog):
             Qt.WindowType.Dialog
             | Qt.WindowType.FramelessWindowHint
         )
-        self.setFixedSize(420, 720)
+        # cycle 169.292 — MyProfileDialog 등가 strict (사용자 directive 의 dialog 통일)
+        self.setFixedSize(420, 600)
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
