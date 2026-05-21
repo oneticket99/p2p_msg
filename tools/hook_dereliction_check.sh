@@ -10,6 +10,17 @@ set +u  # 한글 주석 — CLAUDE_PROJECT_DIR 부재 graceful path (terminal �
 CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$CLAUDE_PROJECT_DIR" || exit 0
 
+# cycle 169.367 — stop_hook_active flag 시점 즉시 exit 0 (Claude Code harness 9 consecutive block cap 회피)
+# Stop hook stdin = JSON {"stop_hook_active": bool, ...} — flag true 시점 detect 의무 skip
+if [ -t 0 ]; then
+    : # 한글 주석 — terminal 직접 fire — stdin 부재 skip
+else
+    STDIN_JSON="$(cat 2>/dev/null || echo '{}')"
+    if echo "$STDIN_JSON" | grep -q '"stop_hook_active"\s*:\s*true'; then
+        exit 0
+    fi
+fi
+
 # 한글 주석 — 최근 N commit 범위 (default 5)
 N_RECENT="${DERELICTION_RECENT_COMMITS:-5}"
 HEAD_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
