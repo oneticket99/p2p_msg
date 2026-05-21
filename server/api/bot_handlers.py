@@ -289,8 +289,13 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
     if not has_system:
         try:
             from app.bot.customer_service_bot import default_system_prompt
+            import time as _time
             sys_prompt = default_system_prompt()
-            messages = [BotMessage(role=BotRole.SYSTEM, content=sys_prompt)] + list(messages)
+            messages = [BotMessage(
+                role=BotRole.SYSTEM,
+                content=sys_prompt,
+                timestamp_ms=int(_time.time() * 1000),
+            )] + list(messages)
             log.info("[bot_chat] system prompt prepend — len=%d chars", len(sys_prompt))
         except Exception as exc:
             log.warning("[bot_chat] system prompt prepend 실패 — %r", exc)
