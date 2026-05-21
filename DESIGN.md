@@ -477,6 +477,30 @@ app/main.py qt_app 초기화
 
 cycle 160 = dark mode 우선 actual + light mode skeleton 만. cycle 161+ light theme `base-light.qss` 신설 + 자동 감지 (`palette().windowText().lightness() < 128`) actual binding.
 
+### 11.10 cycle 169.x UI Toonation BI 통합 redesign (cycle 169.117~206 90+ sub-cycle)
+
+telegram desktop Win11 align + Toonation BI 통합 chain reflect.
+
+- **sidebar 2 entry** — 모든 대화방 (chat_bubble.svg) + 편집 (edit.svg sliders) — width 72 + icon 24
+- **top bar 3 영역 통합** — sidebar hamburger / chat_list search pill / chat_header — height 60 + bg `#0A1019` + vertical center align
+- **chat_header simple** — avatar 폐기 + nickname only + status 한국어 (`최근에 접속함` / `온라인`) + transparent bg
+- **chat_list "채팅" tab 통합** — friend + room + bot kind 전수 visible + 단색 avatar `#0066FF` (gradient 폐기)
+- **chat_view 회수 chain** — clear_messages + DM history client cache replay + scroll offset per-chat retain + day separator 라벨 (오늘 / 어제 / YYYY년 M월 D일)
+- **message_bubble grouping** — 동일 sender 연속 시 sender label + tail corner 부재 + ts inline overlay (negative margin + color 분기: self `#A9D4FF` / peer `#A1AAB3`)
+- **input_bar composite pill** — emoji left + text + attach right (single QFrame `#1a2335` radius 22) + voice/send mutual toggle (text 빈 = mic / text 있음 = send circle `#0066FF`)
+- **hamburger drawer** — Toonation BI vertical gradient header (`#0066FF` → `#001A4D`) + 9 menu entry + slide-in 220ms
+- **dialog modal pattern** — MyProfileDialog + FolderManageDialog + FolderEditDialog 의 `Qt.WindowType.Dialog | FramelessWindowHint` + `setModal(True)` 일괄
+- **편집 tab** — `_on_sidebar_tab_clicked("settings")` branch → `FolderManageDialog` redirect (telegram folder edit align)
+- **default chat 진입** — startup `_post_login_refresh` 후 active chat retain + 부재 시 투네이션 고객센터 bot kind 진입 (chat_header 즉시 출력)
+- **bot LLM 응답 chain** — `_send_bot_message` async helper (POST `/api/bot/chat`) + reply → `_append_dm_message` chain + system prompt knowledge source (`help.toon.at/hc/ko` + `namu.wiki/w/Toonation`)
+
+### 11.11 dialog modal 통합 패턴 (cycle 169.121 + 169.201)
+
+- `setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)` + `setModal(True)` + `setFixedSize(W, H)`
+- `WA_TranslucentBackground=False` retain (배경 retain)
+- frame chrome 폐기 = OS title bar 없음 + outside click close (drawer eventFilter pattern)
+- 적용 대상 = `MyProfileDialog` (380×480) + `FolderManageDialog` (520×720) + `FolderEditDialog` (480×720) + 4 dialog batch (Welcome / Login / Signup / OTP — cycle 169.92~93 retain)
+
 ---
 
 ## 12. 참조

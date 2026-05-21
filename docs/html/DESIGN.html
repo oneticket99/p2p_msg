@@ -647,6 +647,31 @@ pytest -m "integration or e2e or not (integration or e2e)"
 
 <p>cycle 160 = dark mode 우선 actual + light mode skeleton 만. cycle 161+ light theme <code>base-light.qss</code> 신설 + 자동 감지 (<code>palette().windowText().lightness() &lt; 128</code>) actual binding.</p>
 
+<h3>11.10 cycle 169.x UI Toonation BI 통합 redesign (cycle 169.117~206 90+ sub-cycle)</h3>
+<p>telegram desktop Win11 align + Toonation BI 통합 chain reflect.</p>
+<ul>
+  <li><strong>sidebar 2 entry</strong> — 모든 대화방 (chat_bubble.svg) + 편집 (edit.svg sliders) — width 72 + icon 24</li>
+  <li><strong>top bar 3 영역 통합</strong> — sidebar hamburger / chat_list search pill / chat_header — height 60 + bg <code>#0A1019</code> + vertical center align</li>
+  <li><strong>chat_header simple</strong> — avatar 폐기 + nickname only + status 한국어 (<code>최근에 접속함</code> / <code>온라인</code>) + transparent bg</li>
+  <li><strong>chat_list "채팅" tab 통합</strong> — friend + room + bot kind 전수 visible + 단색 avatar <code>#0066FF</code> (gradient 폐기)</li>
+  <li><strong>chat_view 회수 chain</strong> — clear_messages + DM history client cache replay + scroll offset per-chat retain + day separator 라벨</li>
+  <li><strong>message_bubble grouping</strong> — 동일 sender 연속 시 sender label + tail corner 부재 + ts inline overlay (negative margin + color 분기)</li>
+  <li><strong>input_bar composite pill</strong> — emoji left + text + attach right (single QFrame <code>#1a2335</code> radius 22) + voice/send mutual toggle</li>
+  <li><strong>hamburger drawer</strong> — Toonation BI vertical gradient header (<code>#0066FF</code> → <code>#001A4D</code>) + 9 menu entry + slide-in 220ms</li>
+  <li><strong>dialog modal pattern</strong> — MyProfileDialog + FolderManageDialog + FolderEditDialog 의 frameless modal 일괄</li>
+  <li><strong>편집 tab</strong> — <code>_on_sidebar_tab_clicked("settings")</code> branch → <code>FolderManageDialog</code> redirect</li>
+  <li><strong>default chat 진입</strong> — startup 직후 active chat retain + 부재 시 투네이션 고객센터 bot 진입</li>
+  <li><strong>bot LLM 응답 chain</strong> — <code>_send_bot_message</code> async helper (POST <code>/api/bot/chat</code>) + system prompt knowledge source (<code>help.toon.at</code> + <code>namu.wiki/w/Toonation</code>)</li>
+</ul>
+
+<h3>11.11 dialog modal 통합 패턴 (cycle 169.121 + 169.201)</h3>
+<ul>
+  <li><code>setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)</code> + <code>setModal(True)</code> + <code>setFixedSize(W, H)</code></li>
+  <li><code>WA_TranslucentBackground=False</code> retain (배경 retain)</li>
+  <li>frame chrome 폐기 = OS title bar 없음 + outside click close (drawer eventFilter pattern)</li>
+  <li>적용 대상 = MyProfileDialog (380×480) + FolderManageDialog (520×720) + FolderEditDialog (480×720) + 4 dialog batch (Welcome / Login / Signup / OTP)</li>
+</ul>
+
 <hr>
 
 <h2>12. 참조</h2>
