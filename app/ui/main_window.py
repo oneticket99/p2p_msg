@@ -1233,6 +1233,60 @@ class MainWindow(QMainWindow):
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("chat_view add_message 실패 — %r", exc)
 
+    async def _fetch_dm_history(self, friend_id: int) -> None:
+        """cycle 169.225 — friend DM room resolve + message history fetch chain.
+
+        1. GET /api/auth/dm/{friend_id}/room → room_id resolve (cycle 169.222 endpoint)
+        2. list_messages(room_id, limit=50) → MessagePayload list
+        3. active chat retain 시점 chat_view re-populate
+
+        graceful — server 부재 시 DM cache replay retain.
+        """
+        import aiohttp
+        from datetime import datetime
+        try:
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            token = getattr(self._state, "bearer_token", None) or ""
+            if not token:
+                return
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                # step 1 — DM room resolve
+                async with session.get(
+                    f"{api_base}/api/auth/dm/{friend_id}/room",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        return
+                    dm = await resp.json()
+                    room_id = dm.get("room_id")
+                if not room_id:
+                    return
+                # step 2 — messages list (cycle 142 endpoint)
+                async with session.get(
+                    f"{api_base}/api/rooms/{room_id}/messages?limit=50&offset=0",
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as resp:
+                    if resp.status != 200:
+                        return
+                    page = await resp.json()
+                    raw_messages = page.get("messages", [])
+            # step 3 — active chat retain 시점 chat_view re-populate
+            if self._active_chat_kind == "friend" and self._active_chat_target_id == friend_id:
+                self._chat_view.clear_messages()
+                for m in raw_messages:
+                    sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
+                    text = m.get("text", "")
+                    ts_ms = m.get("ts_ms") or 0
+                    ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
+                    is_self = m.get("sender_id") == getattr(self._state, "user_id", -1)
+                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
+                self._chat_view.scroll_to_bottom()
+                log.info("[dm_history] friend=%d room=%d msgs=%d replay PASS", friend_id, room_id, len(raw_messages))
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug("[dm_history] fetch 실패 — %r", exc)
+
     async def _fetch_user_status(self, user_id: int) -> None:
         """cycle 169.221 — friend last_seen REST fetch (cycle 169.216 endpoint).
 
@@ -1477,9 +1531,11 @@ class MainWindow(QMainWindow):
                     break
         self._chat_header.set_chat(name, status=status)
         # cycle 169.221 — friend kind 시점 last_seen REST fetch (cycle 169.216 endpoint 연동)
+        # cycle 169.225 — DM history fetch (cycle 169.222 DM room resolve + list_messages)
         if kind == "friend" and target_id > 0:
             import asyncio
             asyncio.ensure_future(self._fetch_user_status(target_id))
+            asyncio.ensure_future(self._fetch_dm_history(target_id))
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
             # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)
