@@ -49,12 +49,18 @@ class MyProfileDialog(QDialog):
             | Qt.WindowType.FramelessWindowHint
         )
         self.setFixedSize(420, 600)
-        # cycle 169.274 — 사용자 directive image #38 회수 — outer border line 추가 (설정 modal 의 통일성)
-        self.setStyleSheet(
-            "QDialog { background-color: #131C30; border: 1px solid #1f2937; }"
-        )
+        # cycle 169.277 — 사용자 directive image #38/50 회수 — outer QFrame wrap + border (설정 modal 통일)
+        # QDialog stylesheet border 의 child widget retain 안 의 의 visual retain 부재 — outer QFrame wrap chain.
+        self.setStyleSheet("QDialog { background-color: transparent; }")
 
         outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        # cycle 169.277 — outer wrap QFrame (border + 통일 retain)
+        wrap = QFrame()
+        wrap.setStyleSheet("QFrame { background-color: #131C30; border: 1px solid #1f2937; }")
+        outer.addWidget(wrap)
+        outer = QVBoxLayout(wrap)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 

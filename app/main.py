@@ -194,7 +194,10 @@ def main() -> int:
         if session_user_id is not None:
             window._current_user_id = session_user_id
         if session_token is not None:
-            window._auth_token = session_token  # type: ignore[attr-defined]
+            # cycle 169.276 — attr name 정합 (사용자 critique bot 401 ROOT CAUSE 회수)
+            # 직전 main_window._session_token retain expected (cycle 169.228 chain). _auth_token retain 부재.
+            window._session_token = session_token  # type: ignore[attr-defined]
+            window._auth_token = session_token  # type: ignore[attr-defined]  # legacy retain
         # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
         if authenticated:
             window._status_bar.set_connection_state("CONNECTED")
