@@ -1098,6 +1098,9 @@ class MainWindow(QMainWindow):
                 from app.ui.folder_manage_dialog import FolderManageDialog
                 user_folders = getattr(self, "_user_folders", [])
                 dialog = FolderManageDialog(user_folders=user_folders, parent=self)
+                # cycle 169.369 — folder_create_requested connect chain (사용자 critique image #123/124 '+ 새 폴더 만들기' 무반응 회수)
+                dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
+                dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
                 self._exec_dialog_centered(dialog)
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("FolderManageDialog open 실패 graceful — %r", exc)
