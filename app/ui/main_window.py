@@ -1338,6 +1338,14 @@ class MainWindow(QMainWindow):
         graceful exception (server fail 시 system message render).
         """
         import time, aiohttp
+        # cycle 169.288 — typing indicator 표시 (사용자 directive image #58/62)
+        from app.ui.typing_indicator import TypingIndicator
+        typing = TypingIndicator(parent=self._chat_view._content)
+        try:
+            self._chat_view._messages_layout.addWidget(typing)
+            self._chat_view._scroll_to_bottom_once()
+        except Exception:  # pragma: no cover - graceful
+            pass
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
             token = getattr(self, "_session_token", None) or ""
@@ -1375,6 +1383,14 @@ class MainWindow(QMainWindow):
         except Exception as exc:  # pragma: no cover - graceful
             log.warning("[bot_chat] LLM 호출 실패 — %r", exc)
             reply = f"⚠️ 서버 연결 실패 — {exc.__class__.__name__}. 데모 서버 점검 중일 수 있습니다."
+        finally:
+            # cycle 169.288 — typing indicator 제거 (응답 도착 또는 graceful 분기 모두)
+            try:
+                typing.stop()
+                typing.setParent(None)
+                typing.deleteLater()
+            except Exception:  # pragma: no cover - graceful
+                pass
         self._append_dm_message(
             "bot", 1, "투네이션 고객센터", reply, datetime.now(), is_self=False,
         )
@@ -1685,18 +1701,18 @@ class MainWindow(QMainWindow):
         사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
         의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
-        # cycle 169.285 — child widget overlay 강제 retain (사용자 directive image #59/60/61 회수)
-        # Qt.SubWindow flag + setParent(self) + manual modal event loop의 main window inside child
+        # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame
-        # backdrop dim layer (main rect 전체 alpha black)
         backdrop = QFrame(self)
         backdrop.setStyleSheet("QFrame { background-color: rgba(0, 0, 0, 140); }")
         backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
-        # child widget overlay (OS-level top-level 폐기)
-        dialog.setParent(self, _Qt.WindowType.SubWindow | _Qt.WindowType.FramelessWindowHint)
+        # 한글 주석 — hide 직후 setParent + setWindowFlags(Qt.Widget) 의 Qt OS-level cache reset 강제
+        dialog.hide()
+        dialog.setParent(self)
+        dialog.setWindowFlags(_Qt.WindowType.Widget)
         parent_rect = self.rect()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
@@ -1708,7 +1724,7 @@ class MainWindow(QMainWindow):
         x = (parent_rect.width() - dw) // 2
         y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
-        # manual modal event loop (OS-level top-level 회피 의 trade-off — exec() 사용 불가)
+        # manual modal event loop (Qt.Widget flag 의 exec() 호출 불가)
         loop = QEventLoop()
         dialog._embed_result = 0
         orig_accept = dialog.accept
