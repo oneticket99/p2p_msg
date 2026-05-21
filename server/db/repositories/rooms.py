@@ -170,6 +170,23 @@ async def get_room_by_code(pool: Any, room_code: str) -> Optional[RoomRow]:
     return RoomRow(*row)
 
 
+async def find_or_create_dm_room(pool: Any, user_a: int, user_b: int) -> int:
+    """cycle 169.222 — 1:1 DM room 의 의 lookup or insert chain.
+
+    user_a + user_b 의 sorted tuple → room_code `dm-{min}-{max}` 의 deterministic.
+    rooms 의 kind="direct" + room_code unique 의 의 의 의 retrieve 또는 신설.
+    """
+    if user_a == user_b:
+        raise ValueError("DM room user_a == user_b 불가")
+    small, large = sorted((user_a, user_b))
+    room_code = f"dm-{small}-{large}"
+    existing = await get_room_by_code(pool, room_code)
+    if existing:
+        return existing.id
+    # 신설 — owner = 작은 user_id (deterministic)
+    return await insert_room(pool, room_code=room_code, owner_id=small, kind="direct")
+
+
 async def list_rooms_by_owner(pool: Any, owner_id: int) -> List[RoomRow]:
     """owner_id 의 활성 룸 list (status=active, 최신순)."""
 
