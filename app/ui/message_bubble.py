@@ -165,7 +165,7 @@ class MessageBubble(QFrame):
         text_color = "#ffffff" if is_self else "#e5e7eb"
         text_label.setStyleSheet(
             f"color: {text_color};"
-            " font-size: 13px;"
+            " font-size: 14px;"
             " font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR',"
             " 'Malgun Gothic', sans-serif;"
         )

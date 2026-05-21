@@ -80,9 +80,10 @@ class MyAccountDialog(QDialog):
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # cycle 169.242 — avatar 통일 (drawer + MyAccount 동일 source — bg #0066FF + 흰색 SVG)
-        avatar.setPixmap(load_pixmap("avatar", size=80, color="#ffffff"))
-        avatar.setStyleSheet("background-color: #0066FF; border-radius: 60px;")
+        # cycle 169.249 — nickname initials + palette_solid hash 랜덤 bg (사용자 directive image #7/8/9)
+        from app.ui._avatar_helper import make_initial_pixmap
+        avatar.setPixmap(make_initial_pixmap(username, size=120))
+        avatar.setStyleSheet("border-radius: 60px;")
         c_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         name_label = QLabel(username or "사용자")

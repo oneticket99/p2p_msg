@@ -92,16 +92,21 @@ class ChatListItemDelegate(QStyledItemDelegate):
             self.AVATAR_SIZE,
             self.AVATAR_SIZE,
         )
-        # cycle 169.204 — 사용자 directive — gradient 폐기 → 단색 Toonation BI #0066FF
-        painter.setBrush(QColor("#0066FF"))
+        # cycle 169.249 — palette_solid hash 의 deterministic 랜덤 bg (사용자 directive image #9)
+        from app.ui.avatar_palette import palette_solid
+        from app.ui._avatar_helper import get_initials
+        bg_color = palette_solid(entry.name or "?")
+        painter.setBrush(QColor(bg_color))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(avatar_rect)
-        # avatar initial char (white over gradient)
-        initial = (entry.name[:1] if entry.name else "?").upper()
+        # cycle 169.248 — nickname 앞 1~2 글자 (한글 2자 / 영문 2자 대문자) 사용자 directive image #7/8
+        initials = get_initials(entry.name or "?")
         painter.setPen(QPen(QColor("#ffffff")))
-        f = QFont(); f.setPixelSize(16); f.setBold(True)
+        f = QFont()
+        f.setPixelSize(14 if len(initials) >= 2 else 16)
+        f.setBold(True)
         painter.setFont(f)
-        painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initial)
+        painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
 
         # online indicator (right-bottom)
         if entry.is_online:

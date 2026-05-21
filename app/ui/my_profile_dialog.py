@@ -86,12 +86,13 @@ class MyProfileDialog(QDialog):
         top_row.addWidget(close_btn)
         header_layout.addLayout(top_row)
 
-        # 한글 주석 — large avatar center top (drawer + MyAccount + MyProfile 동일 source)
+        # 한글 주석 — large avatar center top + nickname initials + palette_solid 랜덤 bg (cycle 169.249)
+        from app.ui._avatar_helper import make_initial_pixmap
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setPixmap(load_pixmap("avatar", size=80, color="#ffffff"))
-        avatar.setStyleSheet("background-color: #0066FF; border-radius: 60px;")
+        avatar.setPixmap(make_initial_pixmap(username, size=120))
+        avatar.setStyleSheet("border-radius: 60px;")
         header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         header_layout.addSpacing(12)
