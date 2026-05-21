@@ -121,7 +121,8 @@ class MyAccountDialog(QDialog):
         # cycle 169.266 — 이메일 icon 회수 (notification bell → mail 의미) + 사용자 directive horizontal row
         self._name_edit = self._build_field_row(c_layout, "이름", username, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
-        self._email_edit = self._build_field_row(c_layout, "이메일", email, "data")
+        # cycle 169.384 — 이메일 row 제거 (email = ID retain 사용자 directive image #145/146)
+        self._email_value = email
 
         c_layout.addStretch(1)
 
@@ -178,7 +179,7 @@ class MyAccountDialog(QDialog):
             {
                 "name": self._name_edit.text(),
                 "phone": self._phone_edit.text(),
-                "email": self._email_edit.text(),
+                "email": self._email_value,
                 "bio": self._bio_edit.toPlainText(),
             }
         )
