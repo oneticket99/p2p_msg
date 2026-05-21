@@ -63,6 +63,43 @@ docker compose exec mariadb mariadb -u tootalk -p tootalk -e "SHOW TABLES;"
 4. `letsencrypt/` 의 TLS 인증서 = volume mount 만 (image 외부).
 5. `tootalk-internal` 네트워크 = nginx 외 의 모든 service 통신 격리.
 
+## Bot LLM provider 설정 (cycle 169.210 사용자 directive — OpenAI 우선)
+
+투네이션 고객센터 봇 + 기타 LLM 응답 chain 활성 의무.
+
+### provider 우선순위 (server/main.py)
+
+1. **OpenAI** (`OPENAI_API_KEY` 설정 시점) — 사용자 directive 우선 GO
+2. **Anthropic** (`ANTHROPIC_API_KEY` 설정 + OpenAI 부재 시점) — fallback
+3. **Mock** (모두 부재 시점) — deterministic echo (개발 전용, production 안 실 답변 부재)
+
+### 환경 변수 설정 chain
+
+```bash
+# 1) .env.production 안 OPENAI_API_KEY 직접 입력
+echo "OPENAI_API_KEY=sk-..." >> .env.production
+# 2) docker compose stack 재기동 (env 반영)
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env.production up -d --force-recreate server
+# 3) provider 활성 verify
+docker compose logs server | grep "Bot LLM provider"
+# expected: "Bot LLM provider = OpenAIProvider (OPENAI_API_KEY 활성, 사용자 directive cycle 169.210)"
+```
+
+### bot smoke test (HTTP 401 차단 후 사용자 manual)
+
+cycle 169.228 `self._session_token` chain 회수 직후 manual verify 의무:
+
+1. TooTalk client 실행 → 로그인
+2. sidebar 안 "투네이션 고객센터" entry click
+3. 질문 입력 (예: "후원 이용 방법") + Enter
+4. 200 응답 retain 확인 (이전 cycle 169.228 fix 직전 = HTTP 401 차단)
+
+응답 부재 시점 server 로그 inspect:
+
+```bash
+docker compose logs server | grep -E "Bot LLM|HTTP 401|provider"
+```
+
 ## 참조
 
 - [Phase 4 infra setup plan](../docs/exec-plans/active/2026-05-22-phase4-infra-setup.md)
