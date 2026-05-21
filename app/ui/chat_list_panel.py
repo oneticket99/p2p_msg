@@ -98,7 +98,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
             painter.setBrush(QColor("#0066FF"))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawEllipse(avatar_rect)
-            icon_size = 24
+            icon_size = 34
             pix = load_pixmap("data", size=icon_size, color="#ffffff")
             cx = avatar_rect.center().x() - icon_size // 2
             cy = avatar_rect.center().y() - icon_size // 2
@@ -115,7 +115,7 @@ class ChatListItemDelegate(QStyledItemDelegate):
             initials = get_initials(entry.name or "?")
             painter.setPen(QPen(QColor("#ffffff")))
             f = QFont()
-            f.setPixelSize(14 if len(initials) >= 2 else 16)
+            f.setPixelSize(20 if len(initials) >= 2 else 24)
             f.setBold(True)
             painter.setFont(f)
             painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
