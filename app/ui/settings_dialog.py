@@ -238,18 +238,60 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
     # ------------------------------------------------------------------
 
     def _build_account_tab(self) -> "QWidget":
-        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QWidget
+        """cycle 169.255 — telegram align compact layout (사용자 critique image #15 회수).
+
+        QFormLayout default = label-value vertical gap 大 → QVBoxLayout 안 stacked row pattern
+        (label 12px gray + value 14px white 의 단일 pair). placeholder "cycle 154 entry" 폐기.
+        """
+        from PyQt6.QtWidgets import QTextEdit, QWidget, QVBoxLayout
+        from app.ui._avatar_helper import make_initial_pixmap
         w = QWidget()
-        form = QFormLayout(w)
-        form.setContentsMargins(20, 20, 20, 20)
-        form.addRow(_tr("이메일"), QLabel("user@example.com"))
-        form.addRow(_tr("username"), QLabel("@username"))
+        outer = QVBoxLayout(w)
+        outer.setContentsMargins(24, 24, 24, 24)
+        outer.setSpacing(16)
+
+        # 한글 주석 — avatar (telegram align — center top of account tab)
+        avatar_label = QLabel()
+        avatar_label.setPixmap(make_initial_pixmap("guest", size=96))
+        avatar_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        outer.addWidget(avatar_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # 한글 주석 — info rows (value bold + label subtitle)
+        for label_text, value_widget in [
+            (_tr("이메일"), QLabel("user@example.com")),
+            (_tr("username"), QLabel("@username")),
+        ]:
+            self._build_setting_row(outer, label_text, value_widget)
+
+        # 한글 주석 — bio textarea (separate row)
+        bio_label = QLabel(_tr("bio"))
+        bio_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        outer.addWidget(bio_label)
         bio = QTextEdit()
         bio.setMaximumHeight(80)
         bio.setPlaceholderText(_tr("자기소개"))
-        form.addRow(_tr("bio"), bio)
-        form.addRow(QLabel(_tr("프로필 사진 — cycle 154 entry")))
+        outer.addWidget(bio)
+
+        outer.addStretch(1)
         return w
+
+    def _build_setting_row(self, layout, label_text: str, value_widget) -> None:
+        """telegram align row — value (14px bold) 위 + label (12px gray) 아래.
+
+        cycle 169.255 — QFormLayout 폐기 + 수동 stacked row.
+        """
+        from PyQt6.QtWidgets import QFrame, QVBoxLayout
+        wrap = QFrame()
+        v = QVBoxLayout(wrap)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(2)
+        if isinstance(value_widget, QLabel):
+            value_widget.setStyleSheet("color: #e5e7eb; font-size: 14px; font-weight: 600;")
+        v.addWidget(value_widget)
+        lbl = QLabel(label_text)
+        lbl.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        v.addWidget(lbl)
+        layout.addWidget(wrap)
 
     def _build_privacy_tab(self) -> "QWidget":
         from PyQt6.QtWidgets import QSpinBox, QWidget

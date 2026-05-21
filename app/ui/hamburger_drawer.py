@@ -68,19 +68,20 @@ class HamburgerDrawer(QFrame):
         h_layout = QVBoxLayout(header)
         h_layout.setContentsMargins(20, 20, 20, 12)
         h_layout.setSpacing(4)
-        # cycle 169.249/251 — nickname initials avatar + palette_solid bg + name center align
+        # cycle 169.254 — avatar 좌측 정렬 + name avatar 기준 center (사용자 directive image #14)
         from app.ui._avatar_helper import make_initial_pixmap
         avatar = QLabel()
         avatar.setFixedSize(48, 48)
         avatar.setPixmap(make_initial_pixmap(username, size=48))
         avatar.setStyleSheet("border-radius: 24px;")
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        h_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignHCenter)
+        h_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignLeft)
         name_label = QLabel(username)
-        # cycle 169.251 — name avatar 기준 가운데 정렬 (사용자 directive)
+        # cycle 169.254 — fixedWidth=avatar(48) + AlignCenter → name 의 horizontal center = avatar center column align
         name_label.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600;")
+        name_label.setFixedWidth(48)
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        h_layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        h_layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignLeft)
         # cycle 169.119 — 이모지 상태 설정 폐기 (사용자 directive)
         outer.addWidget(header)
 
