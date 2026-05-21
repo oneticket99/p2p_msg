@@ -2018,7 +2018,16 @@ class MainWindow(QMainWindow):
         log.info("ChatHeader 통화 click — CallDialog 진입")
         from app.ui.call_dialog import CallDialog
         from app.net.call_client import CallClient
+        # cycle 169.331 — active chat 의 peer name lookup (사용자 critique image #94/95)
         peer = "상대 사용자"
+        active_kind = getattr(self, "_active_chat_kind", None)
+        active_target = getattr(self, "_active_chat_target_id", None)
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None and active_kind is not None:
+            for entry in getattr(clp, "_entries", []):
+                if entry.kind == active_kind and entry.target_id == active_target:
+                    peer = entry.name or peer
+                    break
         dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
         stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
         turn_url = getattr(self._config, "turn_url", "")
