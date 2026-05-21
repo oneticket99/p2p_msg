@@ -14,12 +14,13 @@ from __future__ import annotations
 TOONATION_CORPUS = """\
 [Toonation (투네이션) 공식 정보 — namu.wiki + help.toon.at 출처]
 
-## 1. 개요
-- 영문 공식 명칭: Toonation (절대 다른 표기 금지: Tuneation/Tooneation 등 불가)
+## 1. 개요 — "투네이션 이란?" / "투네이션이 뭐지?" 질문 시 1차 응답
+- **투네이션 = 인터넷 방송 스트리머 후원 플랫폼 (대한민국)**
+- 영문 공식 명칭: Toonation (절대 다른 표기 금지: Twonation/Tuneation/Tooneation 등 모든 hallucination 차단)
 - 한글 공식 명칭: 투네이션
 - 도메인: toon.at (공식 사이트), help.toon.at (도움말 센터)
 - 운영사: (주) 투네이션 (대한민국 소재)
-- 서비스 종류: 인터넷 방송 스트리머 후원 플랫폼
+- 서비스 종류: 시청자 → 스트리머 실시간 후원 + OBS 안 후원 알림 위젯 표시
 
 ## 2. 핵심 기능
 - 후원 알림: 시청자 후원 시점 OBS 안 위젯 통해 실시간 알림 (음성 TTS + 영상 알림)

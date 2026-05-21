@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T19:00:00+09:00
+last_verified: 2026-05-21T19:20:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-21 19:00 KST — cycle 169.328 fingerprint sync. cycle 169.322~328 7 sub-cycle drift 회수 (저장한 메시지 친구 list saved entry chain + saved kind avatar Toonation BI bg + data SVG icon + drawer close + chat focus 이동 + 공통 close button factory 7 dialog 일괄 적용 + avatar font/icon size 키우기 + CallDialog frameless + _exec_dialog_centered chain + CallDialog avatar palette_solid 공통화 + saved 시점 data icon 분기).<br>**이전 갱신**: 2026-05-21 18:50 KST — cycle 169.321 fingerprint sync. cycle 169.311~321 11 sub-cycle drift 회수.
+> **최신 갱신 시점**: 2026-05-21 19:20 KST — cycle 169.335 fingerprint sync. cycle 169.330~335 6 sub-cycle drift 회수 (chat_header monitor icon + remote dropdown + RemoteRequestDialog/RemoteConnectDialog + `_on_header_call` peer name lookup + my_account input field bg/border 강화 + NewGroupDialog wizard 2 step + group_created chain + GroupInfoDialog + group/channel dropdown 6 entry + CallSoundPlayer setLoopCount enum int convert).<br>**이전 갱신**: 2026-05-21 19:00 KST — cycle 169.328 fingerprint sync. cycle 169.322~328 7 sub-cycle drift 회수.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 149 sub-cycle 누계 (cycle 169.117~328). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 156 sub-cycle 누계 (cycle 169.117~335). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -197,6 +197,12 @@ status: active
 - **cycle 169.326**: avatar icon 24→34 + initials font 14/16→20/24 키우기 (사용자 directive image #90)
 - **cycle 169.327**: CallDialog frameless + 420x600 + `_exec_dialog_centered` chain (main center + backdrop + ESC) — main outside protrude 차단 (사용자 directive image #91)
 - **cycle 169.328**: CallDialog avatar chat_list entry 등가 공통화 — palette_solid + initials chain + saved 시점 data icon 분기 (사용자 directive image #92)
+- **cycle 169.330**: chat_header 4 button (search + phone + monitor + more) — monitor SVG 신설 + remote_clicked signal + dropdown menu (원격 요청 + 원격 연결 2 action) — Phase 5 차별화 entry 사용자 directive image #93
+- **cycle 169.331**: `_on_header_call` peer name → active chat entry lookup ('상대 사용자' hardcoded 폐기) + RemoteRequestDialog + RemoteConnectDialog 신설 (PermissionRequest/PermissionGrant chain + telegram align 420x600 + remote module 기존 binding) 사용자 directive image #94/95
+- **cycle 169.332**: my_account input field bg #1F2937 + border 1px #374151 + focus #0066FF strict visible 입력 가능 시각 인지 강화 (사용자 critique image #96)
+- **cycle 169.333**: NewGroupDialog wizard 2 step rewrite — step 1 (camera circle + 그룹명 + 다음) → step 2 (참가자 추가 검색 + chip + 친구 list scrollable + 만들기) + group_created chain (ChatListEntry kind=group entries insert + chat focus + roster broadcast placeholder) + `_matches_tab` group/channel kind 추가 (사용자 directive image #97~101 telegram wizard align)
+- **cycle 169.334**: `_on_header_menu` kind 분기 dropdown — group/channel = telegram 6 entry (알림 끄기 + 정보 보기 + 관리 + 설문 만들기 + 대화 비우기 + 삭제하고 나가기) + `_on_chat_clear` + `_on_chat_leave` handler + GroupInfoDialog 신설 (큰 avatar + 4 action button row + 참가자 list 의 add button 우측 + member row scroll) — 사용자 directive image #102/103
+- **cycle 169.335**: CallSoundPlayer.play_loop setLoopCount Loop.Infinite enum → int convert (PyQt6 TypeError 회수 — ringback wav 재생 부재 사용자 critique image #104)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 

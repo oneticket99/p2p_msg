@@ -272,14 +272,14 @@ class CallDialog(QDialog):
         self.accepted_signal.emit()
 
     def _on_end(self) -> None:
-        """종료 / 거절."""
+        """종료 / 거절 — cycle 169.336 end wav play 後 dialog close (사용자 directive 08_call_ended_soft.wav)."""
         self._timer.stop()
-        # 한글 주석 — cycle 169.91 — ring loop stop + end tone 1회
+        # 한글 주석 — ring loop stop + end tone 1회 + 1.5s delay 後 reject (wav destroy 회피)
         if getattr(self, "_sound", None) is not None:
             self._sound.stop_loop()
             self._sound.play_once("end")
         self.ended_signal.emit()
-        self.reject()
+        QTimer.singleShot(1500, self.reject)
 
     def _on_mute_toggle(self, checked: bool) -> None:
         """음소거 toggle."""

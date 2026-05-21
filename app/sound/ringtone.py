@@ -38,6 +38,10 @@ CALL_SOUNDS = {
     "ringtone": "05_incoming_call_ringtone_extra_fast_loop_15s.wav",
     # 한글 주석 — 03_outgoing_call_cute_melodic_fast_loop_12s.wav = 귀여운 variant (사용자 선택 옵션)
     "ringback_cute": "03_outgoing_call_cute_melodic_fast_loop_12s.wav",
+    # cycle 169.336 — 사용자 directive 07/08/09 wav binding
+    "connect": "07_call_connected_chime.wav",
+    "end": "08_call_ended_soft.wav",
+    "failed": "09_call_failed_or_busy.wav",
 }
 
 
