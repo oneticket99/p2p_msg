@@ -68,6 +68,32 @@ _TOONATION_DISPATCH_KEYWORDS: Final[tuple] = (
 )
 
 
+def _identity_override_reply(user_message: str) -> Optional[str]:
+    """identity 질문 detect 시점 LLM 우회 강제 응답 (cycle 169.340).
+
+    사용자 critique image #107 — system prompt 의 의 LLM training data override 부재 회수.
+    pattern match → 강제 응답 return, LLM call 우회.
+    """
+    if not user_message:
+        return None
+    msg = user_message.strip().lower()
+    # 한글 주석 — identity 확인 질문 keyword pattern
+    identity_patterns = [
+        "투네이션 고객센터", "고객센터 맞", "고객센터야", "고객센터인가",
+        "너 누구", "넌 누구", "누구야", "누구세요", "누구신",
+        "봇이야", "봇이냐", "봇이세요", "ai 야", "ai야",
+        "정체", "신원", "어떤 봇",
+    ]
+    matched = any(p in msg for p in identity_patterns)
+    if matched:
+        return (
+            "네, 투네이션 고객센터입니다. "
+            "후원 / 정산 / OBS 설정 / 사기 신고 / 환불 5 영역 안내 가능합니다. "
+            "무엇을 도와드릴까요?"
+        )
+    return None
+
+
 def _matches_toonation_dispatch(user_message: str) -> bool:
     """user_message 의 의 ToonationClient dispatch keyword match 여부.
 
@@ -311,6 +337,12 @@ class CustomerServiceBot:
             raise ValueError(f"user_id 양수 의무 — {user_id}")
         if not user_message:
             raise ValueError("user_message 빈 문자열 불가")
+
+        # cycle 169.340 — identity 질문 detect 시점 LLM 우회 강제 응답 (사용자 critique image #107)
+        # LLM own training data ("나는 AI") override 차단 의무 — system prompt 부족 회수
+        identity_override = _identity_override_reply(user_message)
+        if identity_override is not None:
+            return BotMessage(role=BotRole.ASSISTANT, content=identity_override)
         if not self._gate.allow(user_id):
             raise ValueError(
                 f"rate limit 초과 — user_id={user_id} "
