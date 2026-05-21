@@ -1077,8 +1077,8 @@ class MainWindow(QMainWindow):
         """
         if tab_key == "friends":
             # cycle 169.185 — "모든 대화방" 통합 view (default — chat_list 친구+방+봇 통합)
+            # cycle 169.283 — 사용자 critique image #55/56/57 회수 — chat_header clear 폐기 (active chat retain)
             self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-            self._chat_header.clear_chat()
         elif tab_key == "settings":
             # cycle 169.193 — 편집 tab = FolderManageDialog modal (telegram 폴더 편집 — 사용자 directive 회수)
             # cycle 169.230 — dialog main 안 centered + height clamp
@@ -1685,30 +1685,55 @@ class MainWindow(QMainWindow):
         사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
         의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
-        # cycle 169.280 — Qt.Widget flag chain 폐기 (visual OS-level retain — main client area inside absolute pos fit)
+        # cycle 169.285 — child widget overlay 강제 retain (사용자 directive image #59/60/61 회수)
+        # Qt.SubWindow flag + setParent(self) + manual modal event loop의 main window inside child
+        from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame
+        # backdrop dim layer (main rect 전체 alpha black)
         backdrop = QFrame(self)
         backdrop.setStyleSheet("QFrame { background-color: rgba(0, 0, 0, 140); }")
         backdrop.setGeometry(self.rect())
         backdrop.show()
-        # 한글 주석 — main client area absolute pos fit (geometry = chrome 제외)
-        parent_rect = self.geometry()
+        backdrop.raise_()
+        # child widget overlay (OS-level top-level 폐기)
+        dialog.setParent(self, _Qt.WindowType.SubWindow | _Qt.WindowType.FramelessWindowHint)
+        parent_rect = self.rect()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
-        # 한글 주석 — actual size 의 sizeHint resolve 후 clamp (cycle 169.282)
         dialog.adjustSize()
-        actual_w = dialog.sizeHint().width()
-        actual_h = dialog.sizeHint().height()
-        target_w = min(actual_w, max_w)
-        target_h = min(actual_h, max_h)
+        target_w = min(dialog.sizeHint().width(), max_w)
+        target_h = min(dialog.sizeHint().height(), max_h)
         dialog.setFixedSize(target_w, target_h)
         dw, dh = dialog.width(), dialog.height()
-        x = parent_rect.x() + (parent_rect.width() - dw) // 2
-        y = parent_rect.y() + (parent_rect.height() - dh) // 2
-        x = max(parent_rect.x() + 20, min(x, parent_rect.x() + parent_rect.width() - dw - 20))
-        y = max(parent_rect.y() + 20, min(y, parent_rect.y() + parent_rect.height() - dh - 20))
+        x = (parent_rect.width() - dw) // 2
+        y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
-        result = dialog.exec()
+        # manual modal event loop (OS-level top-level 회피 의 trade-off — exec() 사용 불가)
+        loop = QEventLoop()
+        dialog._embed_result = 0
+        orig_accept = dialog.accept
+        orig_reject = dialog.reject
+        def _accept():
+            dialog._embed_result = 1
+            try:
+                orig_accept()
+            except Exception:
+                pass
+            loop.quit()
+        def _reject():
+            dialog._embed_result = 0
+            try:
+                orig_reject()
+            except Exception:
+                pass
+            loop.quit()
+        dialog.accept = _accept
+        dialog.reject = _reject
+        dialog.show()
+        dialog.raise_()
+        loop.exec()
+        dialog.hide()
+        result = dialog._embed_result
         backdrop.hide()
         backdrop.deleteLater()
         return result
