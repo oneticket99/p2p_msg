@@ -199,7 +199,7 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         initial = build_state_from_player(sound_player)
 
         # cycle 169.257 — telegram align 95% rewrite (사용자 critique image #17/18)
-        self.setFixedSize(420, 720)
+        # cycle 169.296 — duplicate setFixedSize 폐기 (line 197 의 strict retain)
         self._initial = initial
         from app.ui._icons import load_icon, load_pixmap
         from app.ui._avatar_helper import make_initial_pixmap
@@ -414,7 +414,7 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         sub.setWindowTitle(f"TooTalk · {title}")
         sub.setModal(True)
         sub.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
-        sub.setFixedSize(420, 720)
+        sub.setFixedSize(420, 600)
         v = QVB(sub)
         v.setContentsMargins(0, 0, 0, 0)
         v.setSpacing(0)
