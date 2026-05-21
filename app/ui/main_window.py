@@ -1704,8 +1704,13 @@ class MainWindow(QMainWindow):
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame
+        # cycle 169.298 — backdrop autoFillBackground strict (사용자 critique 부재 retain 회수)
         backdrop = QFrame(self)
-        backdrop.setStyleSheet("QFrame { background-color: rgba(0, 0, 0, 140); }")
+        backdrop.setObjectName("dialogBackdrop")
+        backdrop.setAutoFillBackground(True)
+        backdrop.setStyleSheet(
+            "QFrame#dialogBackdrop { background-color: rgba(0, 0, 0, 160); }"
+        )
         backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
