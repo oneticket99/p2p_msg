@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.309)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.359 의 등가 렌더링.
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.365 의 등가 렌더링.
      cycle 169.213~231 19 sub-cycle drift 회수 + telegram align 96% 도달 + drift 0건 185 연속.
-     last_verified = 2026-05-21T20:35:00+09:00.
+     last_verified = 2026-05-21T22:55:00+09:00.
      cycle 169.213~231 핵심: README + History prepend + handoff §8.79 7 entry + hook feat grep logic 회수 + last_seen REST + last_seen fetch chain + DM room resolver + DM history fetch chain + rooms.py BPE 회수 + i18n qm frozen bundle 5 locale + drawer header gradient 폐기 단색 Toonation BI + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + height clamp.
      기술 9.7 / 시장 6.1 / 차별화 9.9 / 가치 7.3 / 수익화 5.6 / 운영 9.94 / 가드레일 10.0 / 정합 9.96 / 보안 9.4 = 종합 10.0. -->
 <style>
@@ -56,7 +56,7 @@
   <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
     문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
-    최신 갱신 = 2026-05-21 20:35 KST — cycle 169.359 본격 6 영역 full sweep.
+    최신 갱신 = 2026-05-21 22:55 KST — cycle 169.365 본격 6 영역 full sweep.
     cycle 169.213~231 19 sub-cycle drift 회수 · telegram align 96% 도달.
     drift 0건 185 연속 cycle 37~169.214 · sub-agent 누계 93종 · pytest 1817 PASS.
   </div>
@@ -79,7 +79,7 @@
 </nav>
 
 <h2 id="sec1">1. 총평 (TL;DR)</h2>
-<p><strong>현재 단계</strong>: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 180 sub-cycle 누계 (cycle 169.117~321). 제품화 가능성 = <span class="pill">인프라 완비 + CI 검증 + telegram align 96% + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token 회수 + design critique 우선 가드레일 + dialog main center + 1차 dogfooding readiness</span> / Phase 5 마무리 후 Phase 6 화상통화 진입 대기.</p>
+<p><strong>현재 단계</strong>: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 186 sub-cycle 누계 (cycle 169.117~321). 제품화 가능성 = <span class="pill">인프라 완비 + CI 검증 + telegram align 96% + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token 회수 + design critique 우선 가드레일 + dialog main center + 1차 dogfooding readiness</span> / Phase 5 마무리 후 Phase 6 화상통화 진입 대기.</p>
 <table>
   <thead><tr><th>항목</th><th>점수 (10점)</th><th>직전 → 현재</th><th>근거</th></tr></thead>
   <tbody>
@@ -187,7 +187,7 @@
   <li>visibility public → private 전환 옵션 (Phase 완료 시점)</li>
 </ul>
 
-<h3>2.14 cycle 169.117~321 UI Toonation BI 통합 redesign 180 sub-cycle 누계 (신규 cycle 169.359)</h3>
+<h3>2.14 cycle 169.117~321 UI Toonation BI 통합 redesign 186 sub-cycle 누계 (신규 cycle 169.365)</h3>
 <p>cycle 169.117~321 131 sub-cycle chain — directive image #1~34 verbatim 누계 + 사용자 ack (Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + 편집 tab FolderManageDialog + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm 5 locale + drawer 단색 + bearer_token 회수 + design critique 우선 가드레일 + dialog main center + height clamp). 핵심 Phase:</p>
 <ul>
   <li><strong>cycle 169.117~120</strong> — drawer toggle + sidebar folder_defs 폐기 + 이모지 상태설정 제거</li>
@@ -218,7 +218,7 @@
   <li><strong>cycle 169.227</strong> — hamburger drawer header gradient 폐기 → 단색 Toonation BI <code>#0066FF</code> (사용자 directive)</li>
   <li><strong>cycle 169.228</strong> — bearer_token chain 회수 (self._session_token 정합 / HTTP 401 차단)</li>
   <li><strong>cycle 169.229~230</strong> — design critique 최우선 가드레일 + dialog main center + height clamp (사용자 비판 회수)</li>
-  <li><strong>cycle 169.359</strong> — 평가 4 file fingerprint sync cycle 169.223~230 8 cycle drift</li>
+  <li><strong>cycle 169.365</strong> — 평가 4 file fingerprint sync cycle 169.223~230 8 cycle drift</li>
 </ul>
 <p>전체 pytest = 1817 PASS. drift 0건 185 연속 cycle 37~169.214. telegram align 96% 도달. sub-agent 누계 93종. cycle 169.213~231 19 cycle burst velocity = average 3~4 commit / hour.</p>
 
@@ -374,7 +374,7 @@
     <tr><td>0</td><td>_append_dm_message single source + DM cache + scroll bottom + sender label suppress</td><td class="good">✅ (cycle 169.157~166)</td></tr>
     <tr><td>0</td><td>input_bar composite pill + telegram image #3 정합 + circle send</td><td class="good">✅ (cycle 169.137 + 148~150)</td></tr>
     <tr><td>0</td><td>MyProfileDialog crash 회수 + telegram simple rewrite</td><td class="good">✅ (cycle 169.121 + 186)</td></tr>
-    <tr><td>0</td><td>평가 4 file 매 cycle 6 영역 sweep</td><td class="good">✅ 본 cycle 169.359</td></tr>
+    <tr><td>0</td><td>평가 4 file 매 cycle 6 영역 sweep</td><td class="good">✅ 본 cycle 169.365</td></tr>
     <tr><td>0</td><td>last_seen REST + client fetch chain (Phase 5 binding)</td><td class="good">✅ (cycle 169.216 + 169.221)</td></tr>
     <tr><td>0</td><td>DM room resolver server-side + client DM history fetch chain</td><td class="good">✅ (cycle 169.222 + 169.225)</td></tr>
     <tr><td>0</td><td>rooms.py BPE chain 회수 (docstring 4회+ chain)</td><td class="good">✅ (cycle 169.222.1)</td></tr>
@@ -472,7 +472,7 @@
     <tr><td>1주 retention (내부 pilot)</td><td>≥ 60%</td><td>미측정</td></tr>
     <tr><td>CI 3 workflow GREEN 비율</td><td>100%</td><td class="good">100% (cycle 143~215)</td></tr>
     <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td class="good">100%</td></tr>
-    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td class="good">51+ active (cycle 169.359 — design-critique-first-priority 신설)</td></tr>
+    <tr><td>가드레일 영구 메모리</td><td>10종+</td><td class="good">51+ active (cycle 169.365 — design-critique-first-priority 신설)</td></tr>
     <tr><td>pytest 누계 PASS</td><td>≥ 500</td><td class="good">1817 PASS</td></tr>
     <tr><td>OTP 발송 → 수신 latency</td><td>≤ 30초</td><td class="good">cycle 129~130 production-ready</td></tr>
     <tr><td>mail-tester score (SMTP)</td><td>≥ 7/10</td><td class="good">Gmail Authentication-Results pass</td></tr>
@@ -508,7 +508,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-21 20:35 KST · cycle 169.359 본격 6 영역 full sweep · cycle 169.213~231 19 sub-cycle drift 회수 · drift 0건 185 연속 · sub-agent 누계 93종 · pytest 1817 PASS · telegram align 96%.
+  최신 갱신: 2026-05-21 22:55 KST · cycle 169.365 본격 6 영역 full sweep · cycle 169.213~231 19 sub-cycle drift 회수 · drift 0건 185 연속 · sub-agent 누계 93종 · pytest 1817 PASS · telegram align 96%.
 </footer>
 
 </body>

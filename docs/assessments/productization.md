@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T20:35:00+09:00
+last_verified: 2026-05-21T22:55:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 180 sub-cycle 누계 (cycle 169.117~359). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 186 sub-cycle 누계 (cycle 169.117~365). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -227,6 +227,10 @@ status: active
 - **cycle 169.357**: 6 dialog setWindowTitle labels.tr() chain wrap (NewGroup + NewChannel + Contacts + Calls + GroupInfo + RemoteCall)
 - **cycle 169.358**: LoginDialog `_tr()` chain labels.tr() 우선 lookup + Qt fallback + labels.py 4 locale entry 25종 추가 (투턱 로그인 + email + password + 비밀번호 + 로그인 + 취소 + 회원가입 + 검색 + 만들기 + 메시지 + 통화 등) 사용자 critique English 부재 회수
 - **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog `_tr` debug log (locale + key + val capture chain)
+- **cycle 169.360~362**: 평가 4 file fingerprint sync cycle 169.353~359 + markdownlint MD037 회수 (`_tr()` underscore backtick wrap)
+- **cycle 169.363**: SignupDialog + OTPDialog `_tr()` chain labels.tr() 우선 lookup + Qt fallback dual chain + labels.py 4 locale entry 14종 추가 (회원가입 flow + OTP 인증 + 비밀번호 재설정 + 검증 + 재 송신 + 이전 + 비밀번호 갱신 등)
+- **cycle 169.364**: HamburgerDrawer 7 menu + 야간 모드 + 로그아웃 labels.tr() binding + labels.py 4 locale 13종 추가 (내 프로필 + 그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지 + 설정 + 야간 모드 + 로그아웃 + 메시지 작성 등) 사용자 critique image #121 drawer 한국어 retain 회수
+- **cycle 169.365**: ConfirmDialog 신설 (frameless 420x220 + labels.tr() chain + main center via `_exec_dialog_centered`) + logout QMessageBox 폐기 + labels 예/아니오/로그아웃 메시지 4 locale 추가 사용자 critique image #122 모달 popup 의무 + i18n 부재 회수
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
