@@ -1949,12 +1949,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
-        """내 프로필 dialog open."""
+        """내 프로필 dialog open. cycle 169.394 — _current_user_* lookup chain 추가 (사용자 critique image #160)."""
         from app.ui.my_profile_dialog import MyProfileDialog
-        username = getattr(self._config, "user_nickname", "사용자")
-        # cycle 169.279 — login email retain (사용자 critique image #51)
+        username = getattr(self, "_current_user_nickname", None) or getattr(self._config, "user_nickname", "사용자")
         email = getattr(self, "_current_email", "") or ""
-        dialog = MyProfileDialog(username=username, email=email, parent=self)
+        phone = getattr(self, "_current_user_phone", "") or ""
+        birthdate = getattr(self, "_current_user_birthdate", "") or ""
+        dialog = MyProfileDialog(
+            username=username, email=email, phone=phone, birthdate=birthdate, parent=self,
+        )
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
 
