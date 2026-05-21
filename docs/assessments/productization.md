@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T20:05:00+09:00
+last_verified: 2026-05-21T20:35:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 173 sub-cycle 누계 (cycle 169.117~352). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 180 sub-cycle 누계 (cycle 169.117~359). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -219,7 +219,14 @@ status: active
 - **cycle 169.349**: folder dialog 폭 20% 감소 (420→336) — 사용자 directive image #117
 - **cycle 169.350**: NewGroupDialog/NewChannelDialog camera_btn.setIcon QPixmap→QIcon (load_pixmap→load_icon) TypeError 회수 — 그룹 만들기 click 부재 사용자 critique 회수
 - **cycle 169.351**: dialog open 後 child widget visible 강제 chain (findChildren + show + update + repaint) — QStackedWidget 등 nested widget 시점 obscure 차단 + debug log
-- **cycle 169.352**: NewGroupDialog/NewChannelDialog 🔍 이모지 → search SVG icon QAction LeadingPosition 대체 + padding-left 32 (사용자 critique image #118 이모지 차단 의무)
+- **cycle 169.352**: NewGroupDialog/NewChannelDialog 이모지 → search SVG icon QAction LeadingPosition 대체 + padding-left 32 (사용자 critique image #118 이모지 차단 의무)
+- **cycle 169.353**: 평가 4 file fingerprint sync cycle 169.344~352 9 cycle drift 회수
+- **cycle 169.354**: i18n 전수 sweep — 138 file scan + 127 unique UI literal extract (setText/setPlaceholderText/QLabel/QPushButton/QMessageBox/addAction call site) + labels.py 신설 (LABELS_KO dict + tr() fallback chain) + labels_extract.json full catalog 사용자 directive image #119/120
+- **cycle 169.355**: labels.py 4 locale 본격 binding — LABELS_EN/ZH_CN/ZH_TW/JA 핵심 entry + set_locale/get_locale singleton + tr() locale 인자 fallback chain
+- **cycle 169.356**: WelcomeDialog _tr() chain 강화 — labels.tr() 우선 lookup + QCoreApplication.translate fallback dual chain + _on_locale_click 안 labels.set_locale 호출 (4 locale 동적 갱신)
+- **cycle 169.357**: 6 dialog setWindowTitle labels.tr() chain wrap (NewGroup + NewChannel + Contacts + Calls + GroupInfo + RemoteCall)
+- **cycle 169.358**: LoginDialog _tr() chain labels.tr() 우선 lookup + Qt fallback + labels.py 4 locale entry 25종 추가 (투턱_로그인 + email_password + 비밀번호 + 로그인 + 취소 + 회원가입 + 검색 + 만들기 + 메시지 + 통화 등) 사용자 critique English 부재 회수
+- **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog _tr() debug log (locale + key + val capture chain)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
