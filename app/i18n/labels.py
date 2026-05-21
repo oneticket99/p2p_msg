@@ -1,0 +1,148 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""TooTalk i18n label catalog — cycle 169.354 sweep.
+
+127 unique UI literal extract from app/ 안 setText/setPlaceholderText/QLabel/
+QPushButton/QMessageBox/addAction call site. 추후 cycle 안 binding chain:
+- 각 hardcoded literal → labels.LABEL_KEY reference 교체
+- ko/en/zh-CN/zh-TW/ja 4 locale ts file entry 추가
+- PyQt6 QTranslator + tr() chain 강화
+"""
+
+from __future__ import annotations
+
+
+# 한글 주석 — 기본 ko 라벨 dict — key → ko text
+LABELS_KO: dict[str, str] = {
+    "새_폴더_만들기": "  + 새 폴더 만들기",  # app/ui/folder_manage_dialog.py:109
+    "thumbnail_부재": "(thumbnail 부재)",  # app/ui/admin/emoji_moderation_dialog.py:415
+    "미선택": "(미선택)",  # app/ui/admin/emoji_moderation_dialog.py:367, app/ui/admin/emoji_moderation_dialog.py:404, app/ui/admin/emoji_moderation_dialog.py:468
+    "pack_등록": "+ pack 등록",  # app/ui/emoji_picker.py:162
+    "6자리_otp_3분_유효": "6자리 OTP (3분 유효)",  # app/ui/password_reset_dialog.py:65
+    "8_128자": "8~128자",  # app/ui/password_reset_dialog.py:70
+    "dmca_신고_takedown": "DMCA 신고 (takedown)",  # app/ui/admin/emoji_moderation_dialog.py:381
+    "otp_발송": "OTP 발송",  # app/ui/password_reset_dialog.py:54
+    "tootalk_그룹_만들기": "TooTalk · 그룹 만들기",  # app/ui/new_group_dialog.py:41
+    "tootalk_그룹_정보": "TooTalk · 그룹 정보",  # app/ui/group_info_dialog.py:51
+    "tootalk_내_계정": "TooTalk · 내 계정",  # app/ui/my_account_dialog.py:39
+    "tootalk_내_프로필": "TooTalk · 내 프로필",  # app/ui/my_profile_dialog.py:46
+    "tootalk_새_폴더": "TooTalk · 새 폴더",  # app/ui/folder_edit_dialog.py:57
+    "tootalk_연락처": "TooTalk · 연락처",  # app/ui/contacts_dialog.py:36
+    "tootalk_원격_연결": "TooTalk · 원격 연결",  # app/ui/remote_control_dialog.py:186
+    "tootalk_원격_요청": "TooTalk · 원격 요청",  # app/ui/remote_control_dialog.py:53
+    "tootalk_전화": "TooTalk · 전화",  # app/ui/calls_dialog.py:35
+    "tootalk_채널_만들기": "TooTalk · 채널 만들기",  # app/ui/new_channel_dialog.py:41
+    "tootalk_친구_추가": "TooTalk · 친구 추가",  # app/ui/add_friend_dialog.py:112
+    "tootalk_폴더": "TooTalk · 폴더",  # app/ui/folder_manage_dialog.py:43
+    "tootalk_비밀번호_재설정": "TooTalk 비밀번호 재설정",  # app/ui/password_reset_dialog.py:36
+    "tootalk_업데이트": "TooTalk 업데이트",  # app/ui/update_dialog.py:108
+    "emoji_팩_moderation_관리자_cycle_144": "emoji 팩 moderation 관리자 (cycle 144)",  # app/ui/admin/emoji_moderation_dialog.py:348
+    "pending_팩_queue": "pending 팩 queue",  # app/ui/admin/emoji_moderation_dialog.py:363
+    "답장": "↳ 답장",  # app/ui/message_bubble.py:350
+    "signal_protocol_활성": "✅ Signal Protocol 활성",  # app/ui/settings_dialog.py:539
+    "전달_cycle_155": "➡ 전달 (cycle 155+)",  # app/ui/message_bubble.py:353
+    "거부_reject": "거부 (reject)",  # app/ui/admin/emoji_moderation_dialog.py:380
+    "거절": "거절",  # app/ui/friend_list.py:151, app/ui/remote_call_dialog.py:119, app/ui/remote_control_dialog.py:240
+    "검색": "검색",  # app/ui/new_channel_dialog.py:167, app/ui/add_friend_dialog.py:133, app/ui/chat_list_panel.py:229
+    "결정_사유_dmca_notice": "결정 사유 + DMCA notice",  # app/ui/admin/emoji_moderation_dialog.py:374
+    "고정된_메시지": "고정된 메시지",  # app/ui/chat_header.py:139
+    "구독자_추가": "구독자 추가",  # app/ui/new_channel_dialog.py:156, app/ui/new_channel_dialog.py:280
+    "권한_mode": "권한 mode",  # app/ui/remote_control_dialog.py:101
+    "그룹_관리": "그룹 관리",  # app/ui/main_window.py:2210
+    "그룹_만들기": "그룹 만들기",  # app/ui/new_group_dialog.py:67
+    "그룹_정보_보기": "그룹 정보 보기",  # app/ui/main_window.py:2209
+    "그룹명": "그룹명",  # app/ui/new_group_dialog.py:103
+    "나이와_직업_도시_따위를_자유롭게_소개하세요": "나이와 직업, 도시 따위를 자유롭게 소개하세요.",  # app/ui/my_account_dialog.py:108
+    "나중에": "나중에",  # app/ui/update_dialog.py:123
+    "내_폴더": "내 폴더",  # app/ui/folder_manage_dialog.py:100
+    "다음": "다음",  # app/ui/new_channel_dialog.py:136, app/ui/new_group_dialog.py:125
+    "닫기": "닫기",  # app/ui/add_friend_dialog.py:157
+    "대기_중_원격_요청": "대기 중 원격 요청",  # app/ui/remote_control_dialog.py:217
+    "대상_사용자": "대상 사용자",  # app/ui/remote_control_dialog.py:84
+    "대화_내용_비우기": "대화 내용 비우기",  # app/ui/main_window.py:2212
+    "대화_목록의_폴더_색상": "대화 목록의 폴더 색상",  # app/ui/folder_edit_dialog.py:126
+    "대화방을_모은_폴더를_여럿_만들고_신속하게_대화를_전환하세요": "대화방을 모은 폴더를 여럿 만들고 신속하게 대화를 전환하세요.",  # app/ui/folder_manage_dialog.py:91
+    "만들기": "만들기",  # app/ui/new_channel_dialog.py:212, app/ui/folder_edit_dialog.py:188, app/ui/new_group_dialog.py:204
+    "메뉴": "메뉴",  # app/ui/sidebar_rail.py:61
+    "메시지_작성_중": "메시지 작성 중",  # app/ui/typing_indicator.py:46
+    "메시지_작성_중_2": "메시지 작성 중.",  # app/ui/typing_indicator.py:33
+    "메시지를_입력하세요": "메시지를 입력하세요…",  # app/ui/group_chat_view.py:171
+    "멤버_보기": "멤버 보기",  # app/ui/group_chat_view.py:133
+    "미입력_시_사용자명_사용": "미입력 시 사용자명 사용",  # app/ui/add_friend_dialog.py:150
+    "별명_선택": "별명 (선택):",  # app/ui/add_friend_dialog.py:148
+    "보내기": "보내기",  # app/ui/group_chat_view.py:174
+    "비밀번호_갱신": "비밀번호 갱신",  # app/ui/password_reset_dialog.py:76
+    "사용자명_2자_이상": "사용자명 (2자 이상)",  # app/ui/add_friend_dialog.py:131
+    "삭제": "삭제",  # app/ui/friend_list.py:165
+    "삭제하고_나가기": "삭제하고 나가기",  # app/ui/main_window.py:2214
+    "새_폴더": "새 폴더",  # app/ui/folder_edit_dialog.py:83
+    "설문_만들기": "설문 만들기",  # app/ui/main_window.py:2211
+    "수락": "수락",  # app/ui/call_dialog.py:139, app/ui/friend_list.py:146
+    "수신_통화": "수신 통화…",  # app/ui/call_dialog.py:108
+    "승인": "승인",  # app/ui/remote_call_dialog.py:109, app/ui/remote_control_dialog.py:231
+    "승인_approve": "승인 (approve)",  # app/ui/admin/emoji_moderation_dialog.py:379
+    "실패": "실패",  # app/ui/file_progress_widget.py:188
+    "알림_끄기": "알림 끄기",  # app/ui/main_window.py:2207, app/ui/main_window.py:2222
+    "야간_모드": "야간 모드",  # app/ui/hamburger_drawer.py:111
+    "언어_선택_language": "언어 선택 / Language / 语言 / 言語",  # app/ui/settings_locale.py:96
+    "언어_설정_language": "언어 설정 / Language / 语言 / 言語",  # app/ui/settings_locale.py:93
+    "업데이트": "업데이트",  # app/ui/update_dialog.py:122
+    "연결됨": "연결됨",  # app/ui/call_dialog.py:266
+    "연락처": "연락처",  # app/ui/contacts_dialog.py:58
+    "영상_부재": "영상 부재",  # app/ui/call_dialog.py:70
+    "영상_수신_대기": "영상 수신 대기…",  # app/ui/call_dialog.py:295
+    "예_obs_설정_도움_요청": "예: OBS 설정 도움 요청",  # app/ui/remote_control_dialog.py:131
+    "온라인": "온라인",  # app/ui/my_account_dialog.py:95, app/ui/my_profile_dialog.py:116
+    "완료": "완료",  # app/ui/file_progress_widget.py:181
+    "요청_보내기": "요청 보내기",  # app/ui/remote_control_dialog.py:139
+    "요청_사유": "요청 사유",  # app/ui/remote_control_dialog.py:127
+    "원격_연결": "원격 연결",  # app/ui/main_window.py:2148, app/ui/remote_control_dialog.py:208
+    "원격_요청": "원격 요청",  # app/ui/main_window.py:2147, app/ui/remote_control_dialog.py:75
+    "유효_시간_초": "유효 시간 (초)",  # app/ui/remote_control_dialog.py:114
+    "이_폴더의_일부_그룹_및_채널_접근을_다른_사용자와_공유합니다": "이 폴더의 일부 그룹 및 채널 접근을 다른 사용자와 공유합니다.",  # app/ui/folder_edit_dialog.py:171
+    "이메일_또는_유저_id": "이메일 또는 유저 ID",  # app/ui/contacts_dialog.py:70
+    "이전": "이전",  # app/ui/password_reset_dialog.py:74
+    "자기소개": "자기소개",  # app/ui/my_account_dialog.py:104
+    "저장": "저장",  # app/ui/my_account_dialog.py:129
+    "전화": "전화",  # app/ui/calls_dialog.py:57
+    "정보": "정보",  # app/ui/my_account_dialog.py:65
+    "제외할_대화방": "제외할 대화방",  # app/ui/folder_edit_dialog.py:113
+    "종료": "종료",  # app/ui/call_dialog.py:155
+    "차단_해제": "차단 해제",  # app/ui/friend_list.py:174
+    "참가자_추가": "참가자 추가",  # app/ui/new_group_dialog.py:146, app/ui/new_group_dialog.py:277
+    "채널_만들기": "채널 만들기",  # app/ui/new_channel_dialog.py:67
+    "채널_설명_선택": "채널 설명 (선택)",  # app/ui/new_channel_dialog.py:111
+    "채널_소개": "채널 소개",  # app/ui/new_channel_dialog.py:115
+    "채널명": "채널명",  # app/ui/new_channel_dialog.py:100
+    "채팅": "채팅",  # app/ui/friend_list.py:160
+    "채팅_나가기": "채팅 나가기",  # app/ui/main_window.py:2224
+    "채팅_정보": "채팅 정보",  # app/ui/main_window.py:2221
+    "초대": "초대",  # app/ui/invite_dialog.py:180
+    "최근_통화": "최근 통화",  # app/ui/calls_dialog.py:67
+    "추가": "추가",  # app/ui/contacts_dialog.py:76
+    "추방": "추방",  # app/ui/member_list.py:120
+    "취소": "취소",  # app/ui/new_channel_dialog.py:128, app/ui/new_channel_dialog.py:204, app/ui/chat_picker_dialog.py:72
+    "친구_목록_client_미초기화_사전_주입_의무": "친구 목록 client 미초기화 — 사전 주입 의무",  # app/ui/invite_dialog.py:235
+    "친구_추가": "친구 추가",  # app/ui/add_friend_dialog.py:160
+    "탭_뷰": "탭 뷰",  # app/ui/folder_manage_dialog.py:125
+    "투턱": "투턱",  # app/ui/welcome_dialog.py:114
+    "포함할_대화방": "포함할 대화방",  # app/ui/folder_edit_dialog.py:100
+    "폴더": "폴더",  # app/ui/folder_manage_dialog.py:66
+    "폴더_공유": "폴더 공유",  # app/ui/folder_edit_dialog.py:157
+    "폴더명": "폴더명",  # app/ui/folder_edit_dialog.py:88
+    "폴더명_입력": "폴더명 입력…",  # app/ui/folder_edit_dialog.py:92
+    "폴더에_표시하지_않을_대화방_혹은_유형을_정하세요": "폴더에 표시하지 않을 대화방 혹은 유형을 정하세요.",  # app/ui/folder_edit_dialog.py:118
+    "폴더에_표시할_대화방_혹은_대화방_유형을_정하세요": "폴더에 표시할 대화방 혹은 대화방 유형을 정하세요.",  # app/ui/folder_edit_dialog.py:105
+    "확인": "확인",  # app/ui/chat_picker_dialog.py:76, app/ui/settings_locale.py:108
+    "회원님의_스토리가_여기에_표시됩니다": "회원님의 스토리가 여기에 표시됩니다.",  # app/ui/my_profile_dialog.py:147
+    "복사": "📋 복사",  # app/ui/message_bubble.py:352
+    "emoji_검색": "🔍 emoji 검색",  # app/ui/emoji_picker.py:134
+    "검색_2": "🔍 검색",  # app/ui/chat_picker_dialog.py:54
+    "초대_링크_생성": "🔗  초대 링크 생성",  # app/ui/folder_edit_dialog.py:160
+    "삭제_2": "🗑 삭제",  # app/ui/message_bubble.py:355
+    "반응_추가": "😀 반응 추가",  # app/ui/message_bubble.py:351
+}
+
+
+def tr(key: str, locale: str = "ko") -> str:
+    """label key → locale 별 text (현재 ko 기본 + en/zh/ja placeholder fallback)."""
+    return LABELS_KO.get(key, key)
