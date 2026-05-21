@@ -111,10 +111,10 @@ class MyAccountDialog(QDialog):
 
         c_layout.addSpacing(12)
 
-        # 이름 + phone + username 3 row
+        # cycle 169.266 — 이메일 icon 회수 (notification bell → mail 의미) + 사용자 directive horizontal row
         self._name_edit = self._build_field_row(c_layout, "이름", username, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
-        self._email_edit = self._build_field_row(c_layout, "이메일", email, "notification")
+        self._email_edit = self._build_field_row(c_layout, "이메일", email, "data")
 
         c_layout.addStretch(1)
 
@@ -139,23 +139,28 @@ class MyAccountDialog(QDialog):
         outer.addWidget(scroll, stretch=1)
 
     def _build_field_row(self, layout: QVBoxLayout, label_text: str, value: str, icon_name: str) -> QLineEdit:
-        """단일 input row — icon + label + lineedit."""
+        """cycle 169.266 — 사용자 directive image #28/29/30 회수.
+
+        horizontal row layout: icon (좌측) + label (중앙) + lineedit (우측 stretch).
+        """
         row = QHBoxLayout()
+        row.setContentsMargins(0, 8, 0, 8)
+        row.setSpacing(12)
         icon = QLabel()
         icon.setPixmap(load_pixmap(icon_name, size=20, color="#9ca3af"))
         icon.setFixedWidth(24)
         row.addWidget(icon)
-        col = QVBoxLayout()
         lbl = QLabel(label_text)
-        lbl.setStyleSheet("color: #9ca3af; font-size: 11px;")
-        col.addWidget(lbl)
+        lbl.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        lbl.setFixedWidth(80)
+        row.addWidget(lbl)
         edit = QLineEdit(value)
         edit.setStyleSheet(
             "QLineEdit { background-color: transparent; border: none;"
-            " color: #e5e7eb; font-size: 14px; }"
+            " color: #e5e7eb; font-size: 14px; padding: 4px; }"
+            " QLineEdit:focus { border-bottom: 1px solid #0066FF; }"
         )
-        col.addWidget(edit)
-        row.addLayout(col, stretch=1)
+        row.addWidget(edit, stretch=1)
         layout.addLayout(row)
         return edit
 
