@@ -1675,12 +1675,18 @@ class MainWindow(QMainWindow):
         self._active_drawer = drawer
 
     def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.261 — dialog 의 main window OS frame 安 강제 fit (사용자 critique image #24 회수).
+        """cycle 169.264 — dialog 의 main window child overlay retain (사용자 directive image #25 회수).
 
-        frameGeometry() 의 OS frame 包含 retain — dialog 의 top edge 안 OS frame title bar 위 protrude 부재.
+        QDialog 의 OS top-level retain 폐기 → setParent(self, Qt.SubWindow) retain — main window 의
+        child widget visually inside retain. exec() modal blocking 동작 retain.
         """
-        parent_rect = self.frameGeometry()
-        # 한글 주석 — width / height 둘 다 clamp (사용자 critique main 외부 protrude 부재)
+        from PyQt6.QtCore import Qt as _Qt
+        # 한글 주석 — child overlay pattern: parent = main_window + Qt.SubWindow flag 시점 OS-level top-level 부재
+        dialog.setParent(self, _Qt.WindowType.SubWindow)
+        # 한글 주석 — overlay 의 stacking order 최상위 retain (raise_)
+        dialog.raise_()
+        parent_rect = self.rect()
+        # 한글 주석 — width + height 의 main rect 안 fit clamp
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
         if dialog.width() > max_w:
@@ -1688,12 +1694,9 @@ class MainWindow(QMainWindow):
         if dialog.height() > max_h:
             dialog.setFixedHeight(max_h)
         dw, dh = dialog.width(), dialog.height()
-        # 한글 주석 — position clamp — main window edge 부재 강제
-        x = parent_rect.x() + (parent_rect.width() - dw) // 2
-        y = parent_rect.y() + (parent_rect.height() - dh) // 2
-        # 한글 주석 — top/left edge fit clamp + bottom/right edge fit clamp
-        x = max(parent_rect.x() + 20, min(x, parent_rect.x() + parent_rect.width() - dw - 20))
-        y = max(parent_rect.y() + 20, min(y, parent_rect.y() + parent_rect.height() - dh - 20))
+        # 한글 주석 — main window local coord 안 center pos (child widget pos)
+        x = (parent_rect.width() - dw) // 2
+        y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
         return dialog.exec()
 
