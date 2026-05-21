@@ -38,6 +38,11 @@ class MyAccountDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 내 계정")
         self.setModal(True)
+        # cycle 169.242 — frameless modal (사용자 critique image #2 회수 — 별도 window 의 차단)
+        self.setWindowFlags(
+            Qt.WindowType.Dialog
+            | Qt.WindowType.FramelessWindowHint
+        )
         self.setFixedSize(420, 720)
 
         outer = QVBoxLayout(self)
@@ -75,8 +80,9 @@ class MyAccountDialog(QDialog):
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setPixmap(load_pixmap("avatar", size=80, color="#67E8F9"))
-        avatar.setStyleSheet("background-color: #1F2937; border-radius: 60px;")
+        # cycle 169.242 — avatar 통일 (drawer + MyAccount 동일 source — bg #0066FF + 흰색 SVG)
+        avatar.setPixmap(load_pixmap("avatar", size=80, color="#ffffff"))
+        avatar.setStyleSheet("background-color: #0066FF; border-radius: 60px;")
         c_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         name_label = QLabel(username or "사용자")
@@ -86,7 +92,8 @@ class MyAccountDialog(QDialog):
 
         status_label = QLabel("온라인")
         status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        status_label.setStyleSheet("color: #22D3EE; font-size: 13px;")
+        # cycle 169.242 — 온라인 status color 통일 (Toonation BI #0066FF)
+        status_label.setStyleSheet("color: #0066FF; font-size: 13px;")
         c_layout.addWidget(status_label)
 
         c_layout.addSpacing(12)
