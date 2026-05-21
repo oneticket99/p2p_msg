@@ -58,6 +58,31 @@ async def list_folders(pool: Any, owner_id: int) -> List[FolderRow]:
     return [FolderRow(*row) for row in rows]
 
 
+async def list_folder_chats(pool: Any, folder_pk: int) -> dict:
+    """cycle 169.387 — folder_chats list fetch (included + excluded 분리).
+
+    사용자 critique image #148 회수 — server response 안 included_chats / excluded_chats
+    field 부재 root cause. folder_chats JOIN chain 활성.
+    """
+    sql = (
+        "SELECT chat_kind, chat_target_id, mode FROM folder_chats "
+        "WHERE folder_id = %s"
+    )
+    included: list = []
+    excluded: list = []
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (folder_pk,))
+            rows = await cur.fetchall()
+    for kind, tid, mode in rows or []:
+        entry = {"kind": kind, "target_id": int(tid)}
+        if mode == "exclude":
+            excluded.append(entry)
+        else:
+            included.append(entry)
+    return {"included_chats": included, "excluded_chats": excluded}
+
+
 async def delete_folder(pool: Any, folder_id: str, owner_id: int) -> bool:
     sql = "DELETE FROM folders WHERE folder_id = %s AND owner_id = %s"
     async with pool.acquire() as conn:

@@ -171,10 +171,14 @@ class MyAccountDialog(QDialog):
         return edit
 
     def _on_save(self) -> None:
-        """저장 button — save_requested signal emit."""
+        """저장 button — save_requested signal emit.
+
+        cycle 169.387 — review finding 회수 (사용자 critique image #152 HTTP 400 display_name 부재).
+        server PUT /api/auth/profile = display_name / username key expect.
+        """
         self.save_requested.emit(
             {
-                "name": self._name_edit.text(),
+                "display_name": self._name_edit.text(),
                 "phone": self._phone_edit.text(),
                 "email": self._email_value,
                 "bio": self._bio_edit.toPlainText(),

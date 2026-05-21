@@ -67,17 +67,22 @@ async def handle_list_folders(request: web.Request) -> web.Response:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
     pool = request.app["db_pool"]
     rows = await folder_repo.list_folders(pool, owner_id=user_id)
+    # cycle 169.387 — included_chats / excluded_chats field 추가 (review finding 회수 image #148)
+    folders_payload = []
+    for r in rows:
+        chats = await folder_repo.list_folder_chats(pool, folder_pk=r.id)
+        folders_payload.append({
+            "folder_id": r.folder_id,
+            "name": r.name,
+            "color_name": r.color_name,
+            "color_hex": r.color_hex,
+            "chat_count": r.chat_count,
+            "included_chats": chats["included_chats"],
+            "excluded_chats": chats["excluded_chats"],
+        })
     return web.json_response({
         "ok": True,
-        "folders": [
-            {
-                "folder_id": r.folder_id,
-                "name": r.name,
-                "color_name": r.color_name,
-                "color_hex": r.color_hex,
-                "chat_count": r.chat_count,
-            } for r in rows
-        ],
+        "folders": folders_payload,
     })
 
 
