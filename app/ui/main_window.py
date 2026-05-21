@@ -1688,9 +1688,12 @@ class MainWindow(QMainWindow):
         backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
-        # 한글 주석 — child widget overlay (OS-level top-level 폐기)
+        # 한글 주석 — child widget overlay (OS-level top-level 강제 폐기)
+        # cycle 169.268 — hide/setParent/setWindowFlags/show chain 의무 — Qt internal cache reset
+        dialog.hide()
         dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
+        dialog.setAttribute(_Qt.WidgetAttribute.WA_WindowPropagation, True)
         parent_rect = self.rect()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
