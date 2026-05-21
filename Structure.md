@@ -2,6 +2,7 @@
 title: "TooTalk 저장소 구조"
 owner: oneticket99
 last_verified: 2026-05-17
+last_updated: 2026-05-21
 status: active
 ---
 
@@ -148,13 +149,53 @@ p2p_msg/
 │   │   ├── image_processor.py
 │   │   ├── peer.py
 │   │   └── protocol.py
-│   └── ui/
+│   └── ui/                       # 사이클 23~169.193 — 47 widget/dialog (Phase 1 5 → Phase 5 47 누계)
 │       ├── __init__.py
-│       ├── chat_view.py
+│       ├── _http_worker.py            # REST QThread worker
+│       ├── _icons.py                  # 사이클 169.x — material icon QPainter SVG render
+│       ├── _video_renderer.py         # Phase 4 call dialog 의 video frame render
+│       ├── add_friend_dialog.py
+│       ├── admin/                     # 관리자 console 5 widget
+│       ├── avatar_palette.py          # 사이클 169.142~150 — per-user hash gradient (chat_list delegate bind)
+│       ├── call_dialog.py             # Phase 4 음성/영상 통화
+│       ├── chat_header.py             # 사이클 169.182 — avatar 폐기 + nickname only + transparent bg
+│       ├── chat_history_policy.py     # 사이클 169.176 — DM history client cache + scroll offset per-chat retain
+│       ├── chat_list_panel.py         # 사이클 169.169~184 — "채팅" tab 통합 filter (friend+room+bot) + bump_entry + unread badge
+│       ├── chat_picker_dialog.py
+│       ├── chat_view.py               # 사이클 169.157~180 — DM cache replay + bubble grouped tail 부재 + ts inline overlay + day separator
+│       ├── emoji_picker.py
+│       ├── error_messages.py
 │       ├── file_progress_widget.py
-│       ├── main_window.py
-│       ├── message_bubble.py
-│       └── status_bar.py
+│       ├── folder_edit_dialog.py
+│       ├── folder_list.py
+│       ├── folder_manage_dialog.py    # 사이클 169.193 — 편집 tab → FolderManageDialog (telegram folder edit align)
+│       ├── friend_list.py
+│       ├── group_chat_view.py
+│       ├── hamburger_drawer.py        # 사이클 169.117~170 — drawer frameless + Toonation BI gradient header
+│       ├── input_bar.py               # 사이클 169.137~192 — composite pill + circle send + bg align
+│       ├── invite_dialog.py
+│       ├── login_dialog.py
+│       ├── main_window.py             # 사이클 169.x — 3 zone bg #0A1019 통합 top + sidebar + chat area
+│       ├── member_list.py
+│       ├── message_bubble.py          # 사이클 169.172~180 — grouped tail 부재 + ts inline overlay + day separator
+│       ├── my_account_dialog.py
+│       ├── my_profile_dialog.py       # 사이클 169.186 — telegram simple rewrite + avatar 폐기 (crash 회수)
+│       ├── otp_dialog.py
+│       ├── password_reset_dialog.py
+│       ├── profile_view.py
+│       ├── reactions_poller.py
+│       ├── room_list.py
+│       ├── settings_dialog.py
+│       ├── settings_locale.py
+│       ├── sidebar_rail.py            # 사이클 169.185 — TAB_DEFS 2 entry (모든 대화방 chat_bubble + 편집 sliders, home/phone 폐기)
+│       ├── signup_dialog.py
+│       ├── sound_player.py
+│       ├── status_bar.py
+│       ├── theme.py
+│       ├── theme_picker.py
+│       ├── update_checker.py
+│       ├── update_dialog.py
+│       └── welcome_dialog.py
 ├── docs/
 │   └── exec-plans/
 │       └── active/
