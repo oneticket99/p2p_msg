@@ -1711,7 +1711,8 @@ class MainWindow(QMainWindow):
         의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
-        from PyQt6.QtCore import Qt as _Qt, QEventLoop
+        from PyQt6.QtCore import Qt as _Qt, QEventLoop, QEvent
+        from PyQt6.QtGui import QKeyEvent, QMouseEvent
         from PyQt6.QtWidgets import QFrame, QSplitter as _QSplitter
         # cycle 169.312 — splitter sizes snapshot (dialog open 시점 chat_list panel collapse 회피)
         _central = self.centralWidget()
@@ -1733,6 +1734,12 @@ class MainWindow(QMainWindow):
         backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
+        # cycle 169.321 — backdrop click reject chain (사용자 directive image #85 — close button 부재 시 fallback)
+        def _backdrop_click(event):
+            if event.button() == _Qt.MouseButton.LeftButton:
+                if hasattr(dialog, "reject"):
+                    dialog.reject()
+        backdrop.mousePressEvent = _backdrop_click  # type: ignore[assignment]
         dialog.hide()
         dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
@@ -1790,8 +1797,19 @@ class MainWindow(QMainWindow):
                     pass
                 loop.quit()
             dialog.reject = _reject
+        # cycle 169.321 — ESC key handler (FramelessWindowHint 시점 의 QDialog 기본 ESC 회복)
+        _orig_keyPress = getattr(dialog, "keyPressEvent", None)
+        def _key_press(event):
+            if event.key() == _Qt.Key.Key_Escape:
+                if hasattr(dialog, "reject"):
+                    dialog.reject()
+                return
+            if _orig_keyPress is not None:
+                _orig_keyPress(event)
+        dialog.keyPressEvent = _key_press  # type: ignore[assignment]
         dialog.show()
         dialog.raise_()
+        dialog.setFocus()
         loop.exec()
         dialog.hide()
         dialog.setParent(None)  # cycle 169.307 — dialog widget tree 분리 (close 後 main_window layout 회복)

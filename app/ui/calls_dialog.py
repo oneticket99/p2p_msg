@@ -56,12 +56,13 @@ class CallsDialog(QDialog):
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
         header_row.addWidget(title)
         header_row.addStretch(1)
-        close_btn = QPushButton("×")
-        close_btn.setFixedSize(28, 28)
+        close_btn = QPushButton("✕")
+        close_btn.setFixedSize(32, 32)
         close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         close_btn.setStyleSheet(
-            "QPushButton { color: #9ca3af; background: transparent; border: 0; font-size: 20px; }"
-            "QPushButton:hover { color: #f3f4f6; }"
+            "QPushButton { color: #f3f4f6; background-color: #1F2937;"
+            " border: 1px solid #374151; border-radius: 16px; font-size: 16px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #2c3a52; color: #ffffff; }"
         )
         close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
         header_row.addWidget(close_btn)
