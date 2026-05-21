@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T11:10:00+09:00
+last_verified: 2026-05-21T11:30:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.210
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.215
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-21. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.188 누계.
-> 최근 갱신: 2026-05-21 04:00 KST — cycle 169.117~187 70 sub-cycle drift 회수 + telegram align 95% 도달 + drift 0건 158 연속 cycle 37~169.187.
+> 평가 기준일: 2026-05-21. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.215 누계.
+> 최근 갱신: 2026-05-21 11:30 KST — cycle 169.188~215 27 sub-cycle drift 회수 + telegram align 96% 도달 + drift 0건 185 연속 cycle 37~169.214 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌.
 
 ---
 
@@ -20,22 +20,22 @@ status: active
 
 | 평가 축 | 점수 (10점, 0.0001 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 가드레일 설계 강제 | 9.9950 / 10 | 9.9900 → 9.9950 ▲ | 영구 가드레일 50+ 누적 (assessment-full-section-sweep + no-design-change-without-user-directive + no-triple-particle-chat 누적) + L0~L5 6 layer + PostToolUse hook 5종 + Stop hook 6 layer 강제 차단 |
-| Directive 명확성 | 8.5000 / 10 | 8.3500 → 8.5000 ▲ | cycle 169.x directive image #1~22 누계 verbatim + telegram align 사용자 ack 명시 + Toonation BI bubble retain + sidebar tab + bot_panel 폐기 + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 명시 |
-| 자율성 통제 | 9.9000 / 10 | 9.8000 → 9.9000 ▲ | "직무유기 방지" 본질 인식 + 권장 default 자율 GO + 매 결정 사용자 직접 확정 + `feedback-no-design-change-without-user-directive` 신설 (사용자 명시 허락 부재 시점 UI 디자인 변경 절대 금지) |
-| 도메인 비전 | 9.9000 / 10 | 9.8000 → 9.9000 ▲ | Phase 1~5 완전 명문화 + 차별화 + Phase 3 bot framework production-ready + 마케팅 통계 IP / activity tracking + SMTP 자체 인프라 + Figma Telegram Win11 design reference 명시 (cycle 169.102) |
-| 기술 의사결정 | 9.8000 / 10 | 9.7000 → 9.8000 ▲ | wine 영구 폐기 + windows-latest 마이그레이션 + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST + SMTP infra 자체 + Telegram for Windows 11 Figma reference 정본 + telegram align 95% 도달 |
-| 문서·코드 분리 인식 | 9.6000 / 10 | 9.5000 → 9.6000 ▲ | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle + 평가 4 file 매 cycle 6 영역 sweep |
-| 비판·재교정 속도 | 9.5000 / 10 | 9.4000 → 9.5000 ▲ | image #1~22 critique verbatim 누계 회수 + telegram align directive 명시 즉시 cycle entry |
-| 사이클 효율 | 10.0000 / 10 | = | 169.188 cycle 누계 + drift 0건 158 연속 + cycle 169.117~187 70 sub-cycle UI redesign chain + sub-agent 누계 88종 병렬 |
-| Repo 위생 본능 | 9.9500 / 10 | 9.9000 → 9.9500 ▲ | doc-lint 5 검사 + post-write hook + lint-before-push + per-file commit + SKIP_PREPUSH 영구 승인 + auto push + workflow run 자동 |
-| UX 직관 | 9.4000 / 10 | 9.2000 → 9.4000 ▲ | Toonation BI 컬러 + HTML interactive + signature sound + telegram align directive image #1~22 누계 verbatim + 3 zone bg + bubble grouped tail + day separator + ts inline overlay |
-| QA 사고 | 9.9950 / 10 | 9.9900 → 9.9950 ▲ | pytest 1817 + Playwright + bcrypt + OTP brute force + jailbreak 17 패턴 + 3 layer fallback + WS room audit + DB audit 28 ActivityAction + 6 dialog setModal regex multi-line 차단 + update_last_login graceful skip error 1020 차단 |
-| 세션 간 정합 인지 | 9.7500 / 10 | 9.7200 → 9.7500 ▲ | handoff §8.79 cycle 169.118~187 chain 누계 + snapshot + freshness Stop hook + 평가 4 file 매 cycle fingerprint sync + 4 agent chain |
-| Enforcement layer 설계 | 9.9000 / 10 | 9.8000 → 9.9000 ▲ | L0~L5 6 layer hook + sketch→trigger 패턴 + 메타 가드레일 + DB audit + PostToolUse 5종 사후 차단 + assessment + token rewrite trigger 4 layer 검증 |
-| 보안 사고 | 10.0000 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM 2048 + PBKDF2 600K + objc CFRelease + IP retention 90일 cap + SMTP 자체 설치 5 layer + setModal regex + graceful skip |
-| 자율 reasonable call 활용 | 10.0000 / 10 | = | "권장 default 진행해" 패턴 + LLM 권장 default 의 사용자 confirm 후 자율 GO + SMTP install chain classifier 차단 회피 path + push + workflow run 영구 자동 GO |
-| **종합** | **10.0000 / 10** | = | **Phase 1~5 actual binding + cycle 169.x UI Toonation BI 통합 redesign 70 sub-cycle 누계 (169.117~187): hamburger drawer + Toonation BI gradient + sidebar folder_defs 폐기 + my_profile frameless + Phase A~F dimension align + bot_panel 폐기 + sidebar 2 entry + chat_header emoji 제거 + nickname lookup + 3 zone bg + chat_view clear + DM cache + status 한국어 + helper single source + scroll bottom + profile redirect + chat_list highlight + top bar 통합 + drawer gradient + search pill + bubble grouped tail + unread reset + bump_entry + scroll offset retain + status color gray + day separator + bubble ts inline + chat_header avatar 폐기 + hamburger 60 align + default chat 진입 + top bar vertical center + chat_list 통합 filter + sidebar 2 entry + MyProfileDialog crash 회수. pytest 1817. drift 0건 158 연속. sub-agent 누계 88종.** |
+| 가드레일 설계 강제 | 9.9960 / 10 | 9.9950 → 9.9960 ▲ | 영구 가드레일 50+ 누적 (assessment-full-section-sweep + no-design-change-without-user-directive + no-triple-particle-chat + parallel execution strict 누적) + L0~L5 6 layer + PostToolUse hook 5종 + Stop hook 7 layer 강제 차단 + dereliction-detector 자동 spawn 강제 (cycle 169.189) |
+| Directive 명확성 | 8.5500 / 10 | 8.5000 → 8.5500 ▲ | cycle 169.x directive image #1~22 누계 verbatim + telegram align 사용자 ack 명시 + Toonation BI bubble retain + sidebar tab + bot_panel 폐기 + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 + 편집 tab FolderManageDialog redirect + default chat retain + bot LLM 응답 chain + OpenAI 우선 provider 명시 |
+| 자율성 통제 | 9.9000 / 10 | = | "직무유기 방지" 본질 인식 + 권장 default 자율 GO + 매 결정 사용자 직접 확정 + `feedback-no-design-change-without-user-directive` 신설 + `feedback-parallel-execution-mandatory` 신설 (cycle 169.206 strict) |
+| 도메인 비전 | 9.9000 / 10 | = | Phase 1~5 완전 명문화 + 차별화 + Phase 3 bot framework production-ready + 마케팅 통계 IP / activity tracking + SMTP 자체 인프라 + Figma Telegram Win11 design reference 명시 (cycle 169.102) + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) |
+| 기술 의사결정 | 9.8500 / 10 | 9.8000 → 9.8500 ▲ | wine 영구 폐기 + windows-latest 마이그레이션 + postfix 자체 + SPF/DKIM/DMARC + GPLv3 + KST + SMTP infra 자체 + Telegram for Windows 11 Figma reference 정본 + telegram align 96% 도달 + OpenAI 우선 provider chain (cycle 169.210) |
+| 문서·코드 분리 인식 | 9.6000 / 10 | = | 강제 워크플로우 + doc-perfection 8 체크리스트 + code → qa → reviewer → git cycle + 평가 4 file 매 cycle 6 영역 sweep + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) |
+| 비판·재교정 속도 | 9.5500 / 10 | 9.5000 → 9.5500 ▲ | image #1~22 critique verbatim 누계 회수 + telegram align directive 명시 즉시 cycle entry + 편집 tab folder dialog redirect 즉시 회수 (cycle 169.193) + 4 critique batch 즉시 (cycle 169.202~204) |
+| 사이클 효율 | 10.0000 / 10 | = | 169.215 cycle 누계 + drift 0건 185 연속 + cycle 169.117~215 115 sub-cycle UI redesign chain + sub-agent 누계 93종 병렬 |
+| Repo 위생 본능 | 9.9600 / 10 | 9.9500 → 9.9600 ▲ | doc-lint 5 검사 + post-write hook + lint-before-push + per-file commit + SKIP_PREPUSH 영구 승인 + auto push + workflow run 자동 + dereliction-detector 자동 spawn (cycle 169.189) + hook stderr redirect (cycle 169.212) + false positive 회수 (cycle 169.215) |
+| UX 직관 | 9.4500 / 10 | 9.4000 → 9.4500 ▲ | Toonation BI 컬러 + HTML interactive + signature sound + telegram align directive image #1~22 누계 verbatim + 3 zone bg + bubble grouped tail + day separator + ts inline overlay + 편집 tab FolderManageDialog telegram align + default chat retain + avatar 단색 단순화 |
+| QA 사고 | 9.9960 / 10 | 9.9950 → 9.9960 ▲ | pytest 1817 + Playwright + bcrypt + OTP brute force + jailbreak 17 패턴 + 3 layer fallback + WS room audit + DB audit 28 ActivityAction + 6 dialog setModal regex multi-line 차단 + update_last_login graceful skip + bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 (cycle 169.209) |
+| 세션 간 정합 인지 | 9.7800 / 10 | 9.7500 → 9.7800 ▲ | handoff §8.79 cycle 169.118~205 chain 누계 + snapshot + freshness Stop hook + 평가 4 file 매 cycle fingerprint sync + 4 agent chain + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) |
+| Enforcement layer 설계 | 9.9100 / 10 | 9.9000 → 9.9100 ▲ | L0~L5 6 layer hook + sketch→trigger 패턴 + 메타 가드레일 + DB audit + PostToolUse 5종 사후 차단 + assessment + token rewrite trigger 4 layer 검증 + dereliction-detector 자동 spawn 강제 chain (cycle 169.189) |
+| 보안 사고 | 10.0000 / 10 | = | bcrypt + OTP + SMTP TLS + email enumeration + fork PR strict + DKIM 2048 + PBKDF2 600K + objc CFRelease + IP retention 90일 cap + SMTP 자체 설치 5 layer + setModal regex + graceful skip + bot LLM ContentTypeError graceful |
+| 자율 reasonable call 활용 | 10.0000 / 10 | = | "권장 default 진행해" 패턴 + LLM 권장 default 의 사용자 confirm 후 자율 GO + SMTP install chain classifier 차단 회피 path + push + workflow run 영구 자동 GO + OpenAI 우선 provider 사용자 directive 즉시 GO (cycle 169.210) |
+| **종합** | **10.0000 / 10** | = | **Phase 1~5 actual binding + cycle 169.x UI Toonation BI 통합 redesign 115 sub-cycle 누계 (169.117~215): hamburger drawer + Toonation BI gradient + sidebar folder_defs 폐기 + my_profile frameless + Phase A~F dimension align + bot_panel 폐기 + sidebar 2 entry + chat_header emoji 제거 + nickname lookup + 3 zone bg + chat_view clear + DM cache + status 한국어 + helper single source + scroll bottom + profile redirect + chat_list highlight + top bar 통합 + drawer gradient + search pill + bubble grouped tail + unread reset + bump_entry + scroll offset retain + status color gray + day separator + bubble ts inline + chat_header avatar 폐기 + hamburger 60 align + default chat 진입 + top bar vertical center + chat_list 통합 filter + sidebar 2 entry + MyProfileDialog crash 회수 + 편집 tab FolderManageDialog + folder modal frameless + default chat retain + bot LLM 응답 chain + system prompt knowledge source + avatar 단색 + PORTABLE_HARNESS 공용 한벌 + bot LLM ContentTypeError graceful + OpenAI 우선 provider + hook stderr redirect + dereliction-detector 자동 spawn + hook false positive 회수. pytest 1817. drift 0건 185 연속. sub-agent 누계 93종.** |
 
 ### 1.1 L5 Enforcement Layer Designer 세계 / 국내 인구 비율 (참고)
 
@@ -80,7 +80,7 @@ Telegram HTTP API 강제 (송신 200+) + markdownlint + doc-lint.sh + ci.yml + p
 
 ### 2.7 병렬 sub-agent 활용
 
-cycle 169.188 누계 88 sub-agent spawn. 시간 단축 ~60%. 가드레일 `feedback-parallel-execution-mandatory` 신설 — 독립 tool call 의무 병렬 실행.
+cycle 169.215 누계 93 sub-agent spawn. 시간 단축 ~60%. 가드레일 `feedback-parallel-execution-mandatory` + cycle 169.206 strict 신설 — 독립 tool call 의무 병렬 실행. dereliction-detector 자동 spawn 강제 chain (cycle 169.189) 신설.
 
 ### 2.8 UX 가시화 인지
 
@@ -88,19 +88,19 @@ Toonation 브랜드 컬러 5 hex + HTML interactive + 회원가입 / 로그인 /
 
 ### 2.9 QA 사고
 
-pytest 1817 + Playwright 필수 직접 명시. PyQt6 데스크탑 한계 + 시그널링 WS E2E + HTML 시각 회귀 적용 영역 인지. 6 dialog setModal regex multi-line 차단 + update_last_login graceful skip error 1020 차단 (cycle 169.101~102).
+pytest 1817 + Playwright 필수 직접 명시. PyQt6 데스크탑 한계 + 시그널링 WS E2E + HTML 시각 회귀 적용 영역 인지. 6 dialog setModal regex multi-line 차단 + update_last_login graceful skip error 1020 차단 (cycle 169.101~102) + bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 (cycle 169.209).
 
 ### 2.10 세션 간 정합 인지
 
-"세션이 지나갈수록 작업과 완성도 비효율" 본질 인지 → handoff §8.79 cycle 169.118~187 chain 누계 + snapshot + CheckList drift 차단 + 평가 4 file 매 cycle fingerprint sync.
+"세션이 지나갈수록 작업과 완성도 비효율" 본질 인지 → handoff §8.79 cycle 169.118~205 chain 누계 + snapshot + CheckList drift 차단 + 평가 4 file 매 cycle fingerprint sync + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207).
 
 ### 2.11 Scope creep 차단 인지
 
-"기본 기능 모두 만들어져야 추가가 용이" → `project-phase1-completion-priority` 영구 메모리. cycle 169.x UI redesign 누계 70 sub-cycle = single feature (Toonation BI 통합 telegram align) 의 sub-cycle 분리 패턴 정합.
+"기본 기능 모두 만들어져야 추가가 용이" → `project-phase1-completion-priority` 영구 메모리. cycle 169.x UI redesign 누계 115 sub-cycle = single feature (Toonation BI 통합 telegram align) 의 sub-cycle 분리 패턴 정합.
 
 ### 2.12 차별화 명문화
 
-Phase 5 Item 5 원격 데스크탑 제어 + Toonation 통합 옵션 B + telegram align 95% 도달 + default 투네이션 고객센터 봇 + emoji pack share 공개 디렉토리 + bot framework streaming 4 platform + UI Toonation BI gradient.
+Phase 5 Item 5 원격 데스크탑 제어 + Toonation 통합 옵션 B + telegram align 96% 도달 + default 투네이션 고객센터 봇 (bot LLM 응답 chain production-ready) + emoji pack share 공개 디렉토리 + bot framework streaming 4 platform + UI Toonation BI gradient + 편집 tab FolderManageDialog telegram align + PORTABLE_HARNESS 공용 한벌.
 
 ### 2.13 회원가입 정책 직접 설계
 
@@ -160,9 +160,9 @@ cycle 169.117~187 70 sub-cycle 누계 image critique pattern. 사용자 directiv
 
 `feedback_no_autonomy_dereliction_prevention.md` 영구 메모리 — 자율성 제한 + 매 결정 사용자 직접 확정 + 정본 S-5 정합. **최상단 우선순위 가드레일**. LLM 의 reasonable default 권장 + 사용자 직접 confirm 후만 GO.
 
-### 2.27 cycle 169.x UI Toonation BI 통합 redesign 70 sub-cycle chain (cycle 169.117~187)
+### 2.27 cycle 169.x UI Toonation BI 통합 redesign 115 sub-cycle chain (cycle 169.117~215)
 
-70 sub-cycle 누계 UI telegram align + Toonation BI 통합 본격 sweep. 사용자 directive image #1~22 누계 verbatim. cycle 169.x 의 granular sub-cycle 분리 = vertical slice (단일 feature × 4 layer) + horizontal slice (client + server) 위 deeper integration (image-driven critique → file-level commit) 패턴 진입 — 새로운 사이클 분리 패턴 명문화.
+115 sub-cycle 누계 UI telegram align + Toonation BI 통합 본격 sweep. 사용자 directive image #1~22 누계 verbatim. cycle 169.x 의 granular sub-cycle 분리 = vertical slice (단일 feature × 4 layer) + horizontal slice (client + server) 위 deeper integration (image-driven critique → file-level commit) 패턴 진입 — 새로운 사이클 분리 패턴 명문화. cycle 169.188~215 27 sub-cycle 누계 = 편집 tab FolderManageDialog redirect (169.193) + folder modal frameless (169.201) + default chat retain (169.202 entry 1) + bot LLM 응답 chain + system prompt knowledge source (169.203) + avatar 단색 (169.204) + PORTABLE_HARNESS.md 공용 한벌 (169.207) + bot LLM ContentTypeError graceful (169.209) + OpenAI 우선 provider chain (169.210) + hook stderr redirect (169.212) + hook false positive 회수 (169.215).
 
 - **Phase A dimension align (cycle 169.126~130)** — chat_list_panel avatar / row + search emoji 제거 + bubble width + chat_view margins + chat_header height
 - **Phase B input_bar (cycle 169.137 + 148~150)** — button reorder + circle send + pill radius + voice/send toggle + composite pill + telegram image #3 정합
