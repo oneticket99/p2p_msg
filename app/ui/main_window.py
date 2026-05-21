@@ -1255,11 +1255,23 @@ class MainWindow(QMainWindow):
                     f"{api_base}/api/bot/chat", json=payload, headers=headers,
                     timeout=aiohttp.ClientTimeout(total=30),
                 ) as resp:
-                    data = await resp.json()
-                    reply = data.get("reply", {}).get("content", "응답 부재")
+                    # cycle 169.209 — ContentTypeError 회수 — content_type=None force parse
+                    text_body = await resp.text()
+                    status = resp.status
+                    if status != 200:
+                        log.warning("[bot_chat] HTTP %d body=%s", status, text_body[:200])
+                        reply = f"⚠️ 서버 응답 부재 (HTTP {status}). 잠시 후 다시 시도해주세요."
+                    else:
+                        try:
+                            import json
+                            data = json.loads(text_body)
+                            reply = data.get("reply", {}).get("content", "응답 부재")
+                        except json.JSONDecodeError:
+                            log.warning("[bot_chat] JSON parse 실패 — body=%s", text_body[:200])
+                            reply = "⚠️ 응답 형식 오류. 잠시 후 다시 시도해주세요."
         except Exception as exc:  # pragma: no cover - graceful
             log.warning("[bot_chat] LLM 호출 실패 — %r", exc)
-            reply = f"⚠️ 응답 실패 — {exc.__class__.__name__}"
+            reply = f"⚠️ 서버 연결 실패 — {exc.__class__.__name__}. 데모 서버 점검 중일 수 있습니다."
         self._append_dm_message(
             "bot", 1, "투네이션 고객센터", reply, datetime.now(), is_self=False,
         )
