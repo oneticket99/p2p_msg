@@ -102,6 +102,13 @@ def main() -> int:
         log.debug("locale pref 로딩 실패 — env fallback (%r)", locale_exc)
         chosen_locale = resolve_locale()
     installed = install_qt_translator(qt_app, locale=chosen_locale)
+    # cycle 169.359 — labels singleton global state 갱신 (사용자 directive — 각 언어 클릭 시점 singleton)
+    try:
+        from app.i18n.labels import set_locale as _labels_set_locale
+        _labels_set_locale(chosen_locale)
+        log.info("[i18n] labels singleton _CURRENT_LOCALE → %s", chosen_locale)
+    except Exception as labels_exc:
+        log.debug("labels set_locale graceful skip — %r", labels_exc)
     log.info("i18n QTranslator — locale=%s installed=%s", chosen_locale, installed)
 
     loop = qasync.QEventLoop(qt_app)

@@ -31,7 +31,22 @@ from app.ui.error_messages import translate_error
 from app.ui._http_worker import HttpJsonWorker
 
 log = logging.getLogger(__name__)
-_tr = lambda src: QCoreApplication.translate("MainWindow", src)
+# cycle 169.358 — labels.tr() 우선 lookup + Qt fallback (사용자 critique English 부재 회수)
+from app.i18n import labels as _i18n_labels
+
+
+def _tr(src: str) -> str:
+    import re as _re
+    slug = _re.sub(r"[^가-힣A-Za-z0-9]+", "_", src)[:40].strip("_").lower()
+    cur_loc = _i18n_labels.get_locale()
+    val = _i18n_labels.tr(slug)
+    log.warning(
+        "[i18n_login_dbg] locale=%s src=%r slug=%r val=%r",
+        cur_loc, src, slug, val,
+    )
+    if val != slug:
+        return val
+    return QCoreApplication.translate("MainWindow", src)
 
 _ICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
 
