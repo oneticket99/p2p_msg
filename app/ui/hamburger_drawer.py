@@ -44,7 +44,8 @@ class HamburgerDrawer(QFrame):
 
     def __init__(self, username: str = "사용자", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setFixedWidth(320)
+        # cycle 169.303 — width 320 → 256 (사용자 directive 20% 감소)
+        self.setFixedWidth(256)
         self.setMinimumHeight(560)
         # 한글 주석 — child overlay 의 의 bg solid + raise_() 의무
         self.setAutoFillBackground(True)
@@ -154,13 +155,34 @@ class HamburgerDrawer(QFrame):
         return super().eventFilter(obj, event)
 
     def close_drawer(self) -> None:
-        """drawer close + parent event filter remove + closed signal emit."""
+        """cycle 169.303 — slide-out animation (역방향) + close.
+
+        사용자 directive — 외부 click / hamburger re-click 시점 slide-out animation 재생 후 close.
+        """
+        from PyQt6.QtCore import QPropertyAnimation, QPoint, QEasingCurve
+        # 한글 주석 — 중복 close 차단 (animation 중 재진입 회피)
+        if getattr(self, "_closing", False):
+            return
+        self._closing = True
         parent = self.parent()
         if parent is not None:
             parent.removeEventFilter(self)
-        self.hide()
-        self.closed.emit()
-        self.deleteLater()
+        current_pos = self.pos()
+        end_pos = QPoint(current_pos.x() - self.width(), current_pos.y())
+        anim = QPropertyAnimation(self, b"pos", self)
+        anim.setDuration(180)
+        anim.setStartValue(current_pos)
+        anim.setEndValue(end_pos)
+        anim.setEasingCurve(QEasingCurve.Type.InCubic)
+
+        def _on_finished():
+            self.hide()
+            self.closed.emit()
+            self.deleteLater()
+
+        anim.finished.connect(_on_finished)  # type: ignore[arg-type]
+        anim.start()
+        self._slide_out_anim = anim  # GC 차단
 
     def keyPressEvent(self, event):
         """ESC key → close (cycle 169.115)."""

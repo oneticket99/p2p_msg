@@ -1687,7 +1687,8 @@ class MainWindow(QMainWindow):
         # drawer x anchor = sidebar width — sidebar_rail visible retain
         central = self.centralWidget() if self.centralWidget() else self
         sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
-        drawer.setGeometry(sidebar_w, 0, 320, central.height())
+        # cycle 169.303 — drawer width 320 → 256 (사용자 directive 20% 감소)
+        drawer.setGeometry(sidebar_w, 0, 256, central.height())
         drawer.exec()  # show + raise + setFocus
         # 한글 주석 — close 시점 ref clear
         def _on_drawer_closed():
