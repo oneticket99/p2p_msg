@@ -1709,22 +1709,25 @@ class MainWindow(QMainWindow):
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame
-        # cycle 169.298 — backdrop autoFillBackground strict (사용자 critique 부재 retain 회수)
-        backdrop = QFrame(self)
+        # cycle 169.298/306 — backdrop도 centralWidget의 child (splitter cover only)
+        backdrop_parent = self.centralWidget() if self.centralWidget() else self
+        backdrop = QFrame(backdrop_parent)
         backdrop.setObjectName("dialogBackdrop")
         backdrop.setAutoFillBackground(True)
         backdrop.setStyleSheet(
             "QFrame#dialogBackdrop { background-color: rgba(0, 0, 0, 160); }"
         )
-        backdrop.setGeometry(self.rect())
+        backdrop.setGeometry(backdrop_parent.rect())
         backdrop.show()
         backdrop.raise_()
-        # 한글 주석 — hide 직후 setParent + setWindowFlags(Qt.Widget) 의 Qt OS-level cache reset 강제
+        # cycle 169.306 — dialog parent의 centralWidget로 변경 (splitter sibling retain 부재)
+        # 사용자 critique image #76 — dialog close 後 splitter 의 chat_list_panel visual 부재 root cause
         dialog.hide()
-        dialog.setParent(self)
+        parent_for_dialog = self.centralWidget() if self.centralWidget() else self
+        dialog.setParent(parent_for_dialog)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
         # cycle 169.299 — debug log 추가 (사용자 critique 의 실 size capture)
-        parent_rect = self.rect()
+        parent_rect = parent_for_dialog.rect()
         log.warning(
             "[dialog_centered] parent_rect=%dx%d dialog initial=%dx%d cls=%s",
             parent_rect.width(), parent_rect.height(),
