@@ -1695,10 +1695,13 @@ class MainWindow(QMainWindow):
         parent_rect = self.geometry()
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
-        if dialog.width() > max_w:
-            dialog.setFixedWidth(max_w)
-        if dialog.height() > max_h:
-            dialog.setFixedHeight(max_h)
+        # 한글 주석 — actual size 의 sizeHint resolve 후 clamp (cycle 169.282)
+        dialog.adjustSize()
+        actual_w = dialog.sizeHint().width()
+        actual_h = dialog.sizeHint().height()
+        target_w = min(actual_w, max_w)
+        target_h = min(actual_h, max_h)
+        dialog.setFixedSize(target_w, target_h)
         dw, dh = dialog.width(), dialog.height()
         x = parent_rect.x() + (parent_rect.width() - dw) // 2
         y = parent_rect.y() + (parent_rect.height() - dh) // 2
