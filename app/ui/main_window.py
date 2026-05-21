@@ -1503,7 +1503,8 @@ class MainWindow(QMainWindow):
             else:
                 edit_dialog.add_excluded_chats(chats)
         picker.chats_selected.connect(_on_selected)  # type: ignore[arg-type]
-        picker.exec()
+        # cycle 169.370 — _exec_dialog_centered chain (main center modal + backdrop + ESC)
+        self._exec_dialog_centered(picker)
 
     @pyqtSlot(dict)
     def _on_folder_saved(self, folder_data: dict) -> None:
