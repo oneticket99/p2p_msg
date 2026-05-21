@@ -296,6 +296,7 @@ class MainWindow(QMainWindow):
         self._chat_header = ChatHeader(parent=right_panel)
         self._chat_header.search_clicked.connect(self._on_header_search)  # type: ignore[arg-type]
         self._chat_header.call_clicked.connect(self._on_header_call)  # type: ignore[arg-type]
+        self._chat_header.remote_clicked.connect(self._on_header_remote)  # type: ignore[arg-type]
         self._chat_header.menu_clicked.connect(self._on_header_menu)  # type: ignore[arg-type]
         self._chat_header.sidebar_toggled.connect(self._on_header_sidebar_toggle)  # type: ignore[arg-type]
         right_layout.addWidget(self._chat_header)
@@ -2040,6 +2041,34 @@ class MainWindow(QMainWindow):
             log.warning("[call] create_offer schedule fail — %r", exc)
         # cycle 169.327 — _exec_dialog_centered chain (main outside protrude 차단 + backdrop + ESC)
         self._exec_dialog_centered(dialog)
+
+    @pyqtSlot()
+    def _on_header_remote(self) -> None:
+        """원격 제어 icon → dropdown menu (원격 요청 + 원격 연결) — cycle 169.330 사용자 directive image #93."""
+        from PyQt6.QtWidgets import QMenu
+        from PyQt6.QtGui import QCursor
+        menu = QMenu(self)
+        menu.setStyleSheet(
+            "QMenu { background-color: #131C30; color: #e5e7eb; border: 1px solid #1f2937; padding: 4px; }"
+            "QMenu::item { padding: 8px 16px; border-radius: 4px; }"
+            "QMenu::item:selected { background-color: #1F2937; }"
+        )
+        # 한글 주석 — 원격 요청 + 원격 연결 2 action
+        act_request = menu.addAction("원격 요청")
+        act_connect = menu.addAction("원격 연결")
+        act_request.triggered.connect(self._on_remote_request)  # type: ignore[arg-type]
+        act_connect.triggered.connect(self._on_remote_connect)  # type: ignore[arg-type]
+        menu.exec(QCursor.pos())
+
+    @pyqtSlot()
+    def _on_remote_request(self) -> None:
+        """원격 요청 — Phase 5 차별화 entry (사용자 directive image #93)."""
+        log.info("[remote] 원격 요청 click — Phase 5 placeholder")
+
+    @pyqtSlot()
+    def _on_remote_connect(self) -> None:
+        """원격 연결 — Phase 5 차별화 entry (사용자 directive image #93)."""
+        log.info("[remote] 원격 연결 click — Phase 5 placeholder")
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:

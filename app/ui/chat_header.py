@@ -33,6 +33,7 @@ class ChatHeader(QFrame):
 
     search_clicked = pyqtSignal()
     call_clicked = pyqtSignal()
+    remote_clicked = pyqtSignal()  # cycle 169.330 — 원격 제어 icon click (사용자 directive image #93)
     menu_clicked = pyqtSignal()
     sidebar_toggled = pyqtSignal()  # cycle 169.61 — telegram desktop sidebar toggle
     pinned_dismissed = pyqtSignal()  # cycle 169.72 — pinned message close click
@@ -79,6 +80,8 @@ class ChatHeader(QFrame):
         for icon_name, signal_attr in [
             ("search", "search_clicked"),
             ("phone", "call_clicked"),
+            # cycle 169.330 — 원격 제어 icon (사용자 directive image #93 — Phase 5 친구간 데스크탑 제어 entry)
+            ("monitor", "remote_clicked"),
             ("more", "menu_clicked"),
         ]:
             btn = QPushButton()
