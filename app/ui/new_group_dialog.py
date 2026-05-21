@@ -27,7 +27,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._close_button import make_close_button
-from app.ui._icons import load_pixmap
+from app.ui._icons import load_icon
 
 
 class NewGroupDialog(QDialog):
@@ -91,7 +91,7 @@ class NewGroupDialog(QDialog):
         row = QHBoxLayout()
         camera_btn = QPushButton()
         camera_btn.setFixedSize(72, 72)
-        camera_btn.setIcon(load_pixmap("attach", size=32, color="#ffffff"))
+        camera_btn.setIcon(load_icon("attach", size=32, color="#ffffff"))
         camera_btn.setStyleSheet(
             "QPushButton { background-color: #0066FF; border: 0; border-radius: 36px; }"
             "QPushButton:hover { background-color: #0052cc; }"
