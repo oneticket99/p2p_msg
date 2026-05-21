@@ -81,22 +81,53 @@ async def _create_session_row(
     user_id: int,
     token: str,
 ) -> None:
-    """user_sessions row 생성 — pool 부재 시 graceful skip."""
+    """user_sessions row 생성 — pool 부재 시 graceful skip + deadlock retry chain.
+
+    cycle 169.252 — 사용자 directive image #6 bot HTTP 401 retain root cause 회수:
+    동시 login 2회 fire 시점 user_sessions INSERT + users UPDATE single transaction race
+    → MariaDB deadlock (1213) 차단 → session_store retain 但 user_sessions row 부재 →
+    server restart 후 middleware fallback chain 의 row lookup 실패 → 401 retain.
+
+    fix = 3회 backoff retry (1213 deadlock + 1020 record changed).
+    """
 
     pool = request.app.get("db_pool")
     if pool is None:
         return
-    try:
-        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-        await create_session(
-            pool,
-            user_id=user_id,
-            session_token_hash=token_hash,
-            ip_address=extract_client_ip(request) or "0.0.0.0",
-            user_agent=request.headers.get("User-Agent", "")[:255] or None,
-        )
-    except Exception as exc:  # noqa: BLE001
-        log.warning("session 생성 실패 (user_id=%d): %s", user_id, exc)
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    ip = extract_client_ip(request) or "0.0.0.0"
+    user_agent = request.headers.get("User-Agent", "")[:255] or None
+
+    import asyncio
+    for attempt in range(3):
+        try:
+            await create_session(
+                pool,
+                user_id=user_id,
+                session_token_hash=token_hash,
+                ip_address=ip,
+                user_agent=user_agent,
+            )
+            return
+        except Exception as exc:  # noqa: BLE001
+            # 한글 주석 — MariaDB error code 1213 (Deadlock) + 1020 (Record changed) retry chain.
+            err_str = str(exc)
+            is_retryable = (
+                "1213" in err_str
+                or "Deadlock" in err_str
+                or "1020" in err_str
+                or "Record has changed" in err_str
+            )
+            if is_retryable and attempt < 2:
+                backoff = 0.05 * (2 ** attempt)  # 50ms / 100ms exponential
+                log.info(
+                    "[session] retry %d/3 user_id=%d (backoff=%.3fs): %s",
+                    attempt + 1, user_id, backoff, exc,
+                )
+                await asyncio.sleep(backoff)
+                continue
+            log.warning("session 생성 실패 (user_id=%d): %s", user_id, exc)
+            return
 
 
 async def _read_json(request: web.Request) -> dict[str, Any]:
