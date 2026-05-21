@@ -1809,11 +1809,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_settings(self) -> None:
-        """설정 dialog open — 기존 settings_dialog 진입."""
+        """설정 dialog open — cycle 169.301 _exec_dialog_centered chain (QWidget base 정합)."""
         try:
             from app.ui.settings_dialog import SettingsDialog
             dialog = SettingsDialog(parent=self)
-            dialog.exec()
+            self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("SettingsDialog 진입 실패 — %r", exc)
 
