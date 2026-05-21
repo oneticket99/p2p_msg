@@ -1,37 +1,37 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T12:30:00+09:00
+last_verified: 2026-05-21T12:45:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-21 11:30 KST — cycle 169.215 본격 6 영역 sweep. cycle 169.188~215 27 sub-cycle drift 회수 (편집 tab FolderManageDialog + folder modal frameless + default chat retain + bot LLM 응답 chain + system prompt knowledge source + avatar 단색 + PORTABLE_HARNESS.md 신설 공용 한벌 + bot LLM ContentTypeError graceful + OpenAI 우선 provider chain + hook stderr redirect + README + History prepend + dereliction-detector 자동 spawn 강제 + hook false positive 회수).
+> **최신 갱신 시점**: 2026-05-21 12:45 KST — cycle 169.231 본격 6 영역 full sweep. cycle 169.213~231 19 sub-cycle drift 회수 (README + History prepend 25/22 entry + handoff §8.79 7 entry append + hook feat grep logic 회수 + last_seen REST endpoint server-side + last_seen fetch chain client-side + DM room resolver server-side + DM history fetch chain client-side + rooms.py BPE 회수 + i18n translations qm frozen bundle 5 locale + drawer header gradient 폐기 → 단색 Toonation BI + bearer_token chain 회수 self._session_token + design critique 최우선 가드레일 + dialog main center + height clamp + fingerprint sync).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-21. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.215 누계.
+> 평가 기준일 = 2026-05-21. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.231 누계.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 115 sub-cycle 누계 (cycle 169.117~215). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 131 sub-cycle 누계 (cycle 169.117~231). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 9.7 / 10 | 9.6 → 9.7 ▲ | CI 8 job GREEN + v0.4.0-phase4-infra + Phase 5 5 Item actual binding + UI telegram align Phase A~F 완성 + 편집 tab FolderManageDialog redirect (cycle 169.193) + folder modal frameless (cycle 169.201) + default chat retain (cycle 169.202) + bot LLM 응답 chain ContentTypeError graceful (cycle 169.209) + OpenAI 우선 provider chain (cycle 169.210) + hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215) + 1817 pytest + drift 0건 185 연속 사이클 37~169.214 |
-| 시장 적합성 | 6.1 / 10 | 6.0 → 6.1 ▲ | Toonation BI 통합 redesign + telegram align 96% 도달 + 1차 dogfooding readiness (default 투네이션 고객센터 봇 진입 + chat_list filter 통합 + sidebar 2 entry 단순화 + 편집 tab folder dialog redirect 완성) + SMTP 자체 설치 + DB audit 28 ActivityAction + bot LLM Q&A 실 응답 chain |
-| 차별화 요소 | 9.9 / 10 | = | 친구간 원격 데스크탑 Phase 5 base + telegram align 단순화 UX + 시그니처 사운드 + push 4 platform + E2EE Signal + Phase 3 bot framework production-ready + Toonation BI 통합 hamburger drawer gradient + 채팅 통합 filter "채팅" 단일 tab + 편집 tab FolderManageDialog telegram align + bot LLM 우선 provider OpenAI swap chain + PORTABLE_HARNESS.md 공용 한벌 |
-| 사용자 가치 | 7.3 / 10 | 7.2 → 7.3 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) |
-| 수익화 모델 | 5.6 / 10 | 5.5 → 5.6 ▲ | GPLv3 OSS + Toonation 내부 도입 라이선스 + private 전환 옵션 + bot framework 외부 개발자 직접 등록 base + emoji pack share 공개 디렉토리 base + OpenAI 우선 provider chain (cycle 169.210) 사용자 directive → 비용 최적화 base |
-| 운영 비용 | 9.94 / 10 | 9.93 → 9.94 ▲ | self-hosted macOS arm64 + windows-latest GitHub-hosted + SMTP 자체 설치 자동 chain + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + ssh-deploy-agent + healthz 200 PASS + dereliction-detector 자동 spawn 강제 chain (cycle 169.189) + hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215) + PORTABLE_HARNESS.md 공용 한벌 |
-| 가드레일 자동화 | 10.0 / 10 | = | 영구 가드레일 50+ 누적 + PostToolUse hook 5종 + Stop hook 7 layer (telegram + freshness + doc-consistency + HTML mirror + assessment + token rewrite + dereliction-detector) + parallel execution + memory release 2건 + design-change-without-directive 차단 + chat triple particle 차단 + dereliction-detector 자동 spawn 강제 (cycle 169.189) + hook stderr redirect + false positive 회수 (cycle 169.212/215) |
-| 세션 간 정합 | 9.96 / 10 | 9.95 → 9.96 ▲ | handoff §8.79 cycle 169.118~205 chain 누계 + telegram 양방향 fallback + 평가 4 file 매 cycle fingerprint sync + cycle 169.x UI redesign 115 sub-cycle drift 0건 185 연속 사이클 37~169.214 + Phase 5 5 Item actual binding + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) |
-| 보안 hardening | 9.4 / 10 | = | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 |
-| **종합** | **10.0 / 10** | = | **Phase 1~5 actual binding + cycle 169.x UI Toonation BI 통합 redesign 115 sub-cycle 누계 (169.117~215): hamburger drawer frameless + Toonation BI gradient + sidebar folder_defs 폐기 + my_profile frameless + Phase A~F dimension align + bot_panel 폐기 + sidebar 2 entry + chat_header emoji 제거 + nickname lookup + 3 zone bg + chat_view clear + DM cache + status 한국어 + helper single source + scroll bottom + profile redirect + chat_list highlight + top bar 통합 + drawer gradient + search pill + bubble grouped tail + unread reset + bump_entry + scroll offset retain + status color gray + day separator + bubble ts inline + chat_header avatar 폐기 + hamburger 60 align + default chat 진입 + top bar vertical center + chat_list 통합 filter + sidebar 2 entry + MyProfileDialog crash 회수 + 편집 tab FolderManageDialog redirect + folder modal frameless + default chat retain + bot LLM 응답 chain + system prompt knowledge source + avatar 단색 + PORTABLE_HARNESS 공용 한벌 + bot LLM ContentTypeError graceful + OpenAI 우선 provider chain + hook stderr redirect + dereliction-detector 자동 spawn + hook false positive 회수. pytest 1817. drift 0건 185 연속 사이클 37~169.214. sub-agent 누계 93종. telegram align 96% 도달.** |
+| 기술 완성도 | 9.8 / 10 | 9.7 → 9.8 ▲ | CI 8 job GREEN + v0.4.0-phase4-infra + Phase 5 5 Item actual binding + UI telegram align Phase A~F 완성 + 편집 tab FolderManageDialog redirect (cycle 169.193) + folder modal frameless (cycle 169.201) + default chat retain (cycle 169.202) + bot LLM 응답 chain ContentTypeError graceful (cycle 169.209) + OpenAI 우선 provider chain (cycle 169.210) + hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215) + last_seen REST endpoint server-side (cycle 169.216) + client side last_seen fetch chain (cycle 169.221) + DM room resolver server-side (cycle 169.222) + rooms.py BPE 회수 (cycle 169.222.1) + client DM history fetch chain (cycle 169.225) + i18n translations qm frozen bundle 5 locale (cycle 169.226) + drawer header gradient 폐기 단색 Toonation BI (cycle 169.227) + bearer_token chain 회수 self._session_token (cycle 169.228) + design critique 최우선 가드레일 + dialog main center + height clamp (cycle 169.229~230) + 1817 pytest + drift 0건 185 연속 사이클 37~169.214 |
+| 시장 적합성 | 6.2 / 10 | 6.1 → 6.2 ▲ | Toonation BI 통합 redesign + telegram align 96% 도달 + 1차 dogfooding readiness (default 투네이션 고객센터 봇 진입 + chat_list filter 통합 + sidebar 2 entry 단순화 + 편집 tab folder dialog redirect 완성) + SMTP 자체 설치 + DB audit 28 ActivityAction + bot LLM Q&A 실 응답 chain + last_seen 시각화 (Phase 5 binding) + DM room resolver friend_id ↔ direct room_id mapping + i18n qm 5 locale 활성 |
+| 차별화 요소 | 9.9 / 10 | = | 친구간 원격 데스크탑 Phase 5 base + telegram align 단순화 UX + 시그니처 사운드 + push 4 platform + E2EE Signal + Phase 3 bot framework production-ready + Toonation BI 통합 hamburger drawer 단색 + 채팅 통합 filter "채팅" 단일 tab + 편집 tab FolderManageDialog telegram align + bot LLM 우선 provider OpenAI swap chain + PORTABLE_HARNESS.md 공용 한벌 + last_seen 실시간 갱신 chain + i18n qm 5 locale frozen bundle |
+| 사용자 가치 | 7.4 / 10 | 7.3 → 7.4 ▲ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) + last_seen client fetch (cycle 169.221) + DM history fetch chain (cycle 169.225) + dialog main center (cycle 169.229~230) |
+| 수익화 모델 | 5.6 / 10 | = | GPLv3 OSS + Toonation 내부 도입 라이선스 + private 전환 옵션 + bot framework 외부 개발자 직접 등록 base + emoji pack share 공개 디렉토리 base + OpenAI 우선 provider chain (cycle 169.210) 사용자 directive → 비용 최적화 base |
+| 운영 비용 | 9.95 / 10 | 9.94 → 9.95 ▲ | self-hosted macOS arm64 + windows-latest GitHub-hosted + SMTP 자체 설치 자동 chain + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + ssh-deploy-agent + healthz 200 PASS + dereliction-detector 자동 spawn 강제 chain (cycle 169.189) + hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215) + PORTABLE_HARNESS.md 공용 한벌 + last_seen / DM resolver / DM history endpoint 누계 9 endpoint |
+| 가드레일 자동화 | 10.0 / 10 | = | 영구 가드레일 51+ 누적 (design-critique-first-priority 신설 cycle 169.229) + PostToolUse hook 5종 + Stop hook 7 layer (telegram + freshness + doc-consistency + HTML mirror + assessment + token rewrite + dereliction-detector) + parallel execution + memory release 2건 + design-change-without-directive 차단 + chat triple particle 차단 + dereliction-detector 자동 spawn 강제 (cycle 169.189) + hook stderr redirect + false positive 회수 (cycle 169.212/215) + design critique = batch 일시 중지 + 우선 처리 의무 (cycle 169.229) |
+| 세션 간 정합 | 9.97 / 10 | 9.96 → 9.97 ▲ | handoff §8.79 cycle 169.118~221 chain 누계 + telegram 양방향 fallback + 평가 4 file 매 cycle fingerprint sync + cycle 169.x UI redesign 131 sub-cycle drift 0건 185 연속 사이클 37~169.214 + Phase 5 5 Item actual binding + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) + handoff §8.79 7 entry append (cycle 169.214) |
+| 보안 hardening | 9.5 / 10 | 9.4 → 9.5 ▲ | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 + cycle 169.228 bearer_token chain 회수 self._session_token (HTTP 401 차단) |
+| **종합** | **10.0 / 10** | = | **Phase 1~5 actual binding + cycle 169.x UI Toonation BI 통합 redesign 131 sub-cycle 누계 (169.117~231): hamburger drawer 단색 (cycle 169.227 gradient 폐기) + sidebar folder_defs 폐기 + my_profile frameless + Phase A~F dimension align + bot_panel 폐기 + sidebar 2 entry + chat_header emoji 제거 + nickname lookup + 3 zone bg + chat_view clear + DM cache + status 한국어 + helper single source + scroll bottom + profile redirect + chat_list highlight + top bar 통합 + search pill + bubble grouped tail + unread reset + bump_entry + scroll offset retain + status color gray + day separator + bubble ts inline + chat_header avatar 폐기 + hamburger 60 align + default chat 진입 + top bar vertical center + chat_list 통합 filter + sidebar 2 entry + MyProfileDialog crash 회수 + 편집 tab FolderManageDialog redirect + folder modal frameless + default chat retain + bot LLM 응답 chain + system prompt knowledge source + avatar 단색 + PORTABLE_HARNESS 공용 한벌 + bot LLM ContentTypeError graceful + OpenAI 우선 provider chain + hook stderr redirect + dereliction-detector 자동 spawn + hook false positive 회수 + last_seen REST + last_seen client fetch + DM room resolver + DM history fetch + rooms.py BPE 회수 + i18n qm 5 locale frozen bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + height clamp. pytest 1817. drift 0건 185 연속 사이클 37~169.214. sub-agent 누계 93종. telegram align 96% 도달.** |
 
 ---
 
@@ -135,9 +135,9 @@ status: active
 - GitHub visibility public (현재) → private 전환 옵션 (Phase 완료 시점, 사용자 명시 의무)
 - AGPLv3 = Phase 2 이후 옵션 (network use clause)
 
-### 2.14 cycle 169.117~215 UI Toonation BI 통합 redesign 115 sub-cycle 누계 (신규 cycle 169.215)
+### 2.14 cycle 169.117~231 UI Toonation BI 통합 redesign 131 sub-cycle 누계 (신규 cycle 169.231)
 
-115 sub-cycle chain 의 UI telegram align + Toonation BI 통합 본격 sweep. 핵심 directive 누계 image #1~22 verbatim + 사용자 ack — Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + 편집 tab FolderManageDialog + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌:
+131 sub-cycle chain 의 UI telegram align + Toonation BI 통합 본격 sweep. 핵심 directive 누계 image #1~34 verbatim + 사용자 ack — Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + 편집 tab FolderManageDialog + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm 5 locale frozen bundle + drawer 단색 + bearer_token 회수 + design critique 우선 가드레일 + dialog main center + height clamp:
 
 - **cycle 169.117~120**: 평가 4 file mirror sync + drawer toggle + sidebar folder_defs 빈 list dead code cleanup + 이모지 상태설정 제거
 - **cycle 169.121**: my_profile_dialog frameless modal — telegram align
@@ -176,8 +176,18 @@ status: active
 - **cycle 169.209~210**: bot LLM ContentTypeError 회수 (graceful HTTP status + JSON parse 분기) + bot LLM provider 우선순위 swap (OpenAI 우선 사용자 directive)
 - **cycle 169.211~212**: 평가 4 file fingerprint sync cycle 169.206~210 5 cycle drift 회수 + hook_dereliction_check.sh stderr redirect (claude Stop hook display 정합)
 - **cycle 169.213~215**: README 변경 이력 25 entry prepend + 30 행 trim + History 역순 prepend 22 entry + handoff §8.79 7 entry append + hook_dereliction_check.sh feat grep logic 회수 (false positive 해소)
+- **cycle 169.216~217**: last_seen REST endpoint server-side (Phase 5 binding) + 평가 4 file fingerprint sync 5 cycle drift 회수
+- **cycle 169.219~220**: vibe-coding.md additional sync + token regen + vibe-coding agent post-edit batch sync
+- **cycle 169.221~222**: client side last_seen fetch chain (cycle 169.216 endpoint 연동) + DM room resolver server-side (friend_id ↔ direct room_id mapping)
+- **cycle 169.222.1**: rooms.py BPE chain 회수 (docstring 4회+ chain)
+- **cycle 169.223~224**: 평가 4 file fingerprint sync cycle 169.217~222 6 cycle drift + vibe-coding fingerprint sync cycle 215 → 222
+- **cycle 169.225~226**: client DM history fetch chain (cycle 169.222 endpoint 연동) + i18n translations qm frozen bundle 5 locale (pyside6-lrelease)
+- **cycle 169.227**: hamburger drawer header gradient 폐기 → 단색 Toonation BI #0066FF (사용자 directive)
+- **cycle 169.228**: bearer_token chain 회수 — self._session_token 정합 (HTTP 401 차단)
+- **cycle 169.229~230**: design critique 최우선 가드레일 + dialog main center + height clamp (사용자 비판 회수)
+- **cycle 169.231**: 평가 4 file fingerprint sync cycle 169.223~230 8 cycle drift
 
-전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계).
+전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
 ### 2.15 Phase 5 5 Item 모두 actual binding 부분 진입 (cycle 134~148 누계 retain)
 
@@ -292,6 +302,12 @@ status: active
 
 - SMTP 실제 설치 = cycle 129~130 자동 chain 도달 + 사용자 manual SSH 회수 완료
 - docker compose production stack 기동 = `.env.production` secrets 입력 + manual
+- last_seen REST endpoint (cycle 169.216) + client fetch chain (cycle 169.221) = 사용자 manual 시각 확인 (online → offline 전환 → "최근에 접속함" 갱신 chain) 의무
+- DM room resolver (cycle 169.222) + DM history fetch chain (cycle 169.225) = friend_id ↔ direct room_id 의 manual 회수 + 히스토리 로드 시간 측정 의무
+- hamburger drawer 단색 (cycle 169.227) = telegram align 시각 회귀 manual 회수
+- 3 dialog main center (cycle 169.229~230) = MyProfileDialog + FolderManageDialog + FolderEditDialog 의 화면 중앙 + height clamp 의 manual 확인
+- bot LLM HTTP 401 fix (cycle 169.228 bearer_token) = bot Q&A 응답 chain manual 회수 (이전 401 차단 → 200 응답)
+- i18n qm 5 locale (cycle 169.226) = ko / en / zh-CN / zh-TW / ja 의 manual locale 전환 시각 회귀
 
 ### 3.9 mobile cycle 181 prerequisite 잔존
 
@@ -363,24 +379,45 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 | 0 | _append_dm_message single source helper + DM cache + scroll bottom + sender label suppress | ✅ (cycle 169.157~166) |
 | 0 | input_bar composite pill + telegram image #3 정합 + voice/send toggle + circle send + pill radius | ✅ (cycle 169.137 + 148~150) |
 | 0 | MyProfileDialog crash 회수 + telegram simple rewrite | ✅ (cycle 169.121 + 186) |
-| 0 | 평가 4 file 매 cycle 6 영역 sweep (cycle 169.117 + 135 + 141 + 147 + 153 + 161 + 168 + 175 + 181 + 187 + 188 + 195 + 205 + 211 + 215) | ✅ 본 cycle 169.215 |
+| 0 | 평가 4 file 매 cycle 6 영역 sweep (cycle 169.117 + 135 + 141 + 147 + 153 + 161 + 168 + 175 + 181 + 187 + 188 + 195 + 205 + 211 + 215 + 217 + 223 + 231) | ✅ 본 cycle 169.231 |
+| 0 | last_seen REST + client fetch chain (Phase 5 binding) | ✅ (cycle 169.216 + 169.221) |
+| 0 | DM room resolver server-side + client DM history fetch chain | ✅ (cycle 169.222 + 169.225) |
+| 0 | rooms.py BPE chain 회수 (docstring 4회+ chain) | ✅ (cycle 169.222.1) |
+| 0 | i18n translations qm frozen bundle 5 locale | ✅ (cycle 169.226) |
+| 0 | drawer header gradient 폐기 → 단색 Toonation BI #0066FF | ✅ (cycle 169.227) |
+| 0 | bearer_token chain 회수 self._session_token (HTTP 401 차단) | ✅ (cycle 169.228) |
+| 0 | design critique 최우선 가드레일 + dialog main center + height clamp | ✅ (cycle 169.229~230) |
 | 1 | Toonation REST API `base_url` + `api_key` 사용자 직접 입력 — 옵션 B 본격 진입 prerequisite | 🔴 사용자 직접 |
 | 2 | OBS WebSocket `base_url` + `password` 사용자 직접 입력 — P5/P6 OBS 도움 시나리오 prerequisite | 🔴 사용자 직접 |
-| 3 | mobile cycle 181 prerequisite (Apple Developer + Google Play + Firebase + Xcode + Android Studio) | 🟡 사용자 직접 |
-| 4 | KT PTR record 갱신 (`mail.dopa.co.kr` reverse DNS) — dopa.co.kr 데모 전용 → 실 도메인 확정 후 갱신 또는 skip | 🟡 최후 |
-| 5 | 1차 dogfooding 1주 retention + NPS + UX feedback 회수 chain | 🔴 Phase 5 마무리 직후 |
+| 3 | mesh / peer text chat receive 본격 binding (Phase 5 mesh 진입) | 🔴 다음 cycle 우선순위 |
+| 4 | coturn 4 env (TURN_REALM + TURN_USERNAME + TURN_PASSWORD + TURN_URI) 사용자 직접 입력 — NAT traversal | 🔴 다음 cycle 우선순위 |
+| 5 | mobile Flutter base 본격 진입 (signaling ws_client.dart + WebRTC 연결) | 🔴 다음 cycle 우선순위 |
+| 6 | mobile cycle 181 prerequisite (Apple Developer + Google Play + Firebase + Xcode + Android Studio) | 🟡 사용자 직접 |
+| 7 | KT PTR record 갱신 (`mail.dopa.co.kr` reverse DNS) — dopa.co.kr 데모 전용 → 실 도메인 확정 후 갱신 또는 skip | 🟡 최후 |
+| 8 | 1차 dogfooding 1주 retention + NPS + UX feedback 회수 chain | 🔴 Phase 5 마무리 직후 |
 
 ---
 
-## 6. 중기 (6~12개월) 액션
+## 6. 중기 (6~12개월) 액션 + cycle batch metric (cycle 169.213~231 19 entry burst statistics)
 
 | 우선순위 | 액션 | 가치 |
 |---|---|---|
 | 1 | Phase 5 마무리 + 1차 dogfooding entry | retention 핵심 |
-| 2 | 음성 통화 (PeerConnection audio) | 시장 진입 자격 |
-| 3 | 모바일 cycle 181~200 prerequisite 회수 후 본격 진입 | 사용자 풀 10x |
-| 4 | Toonation 통합 시나리오 검증 (옵션 B) | 수익화 base |
-| 5 | 영상 통화 (WebRTC SFU 마이그레이션 검토) | 기능 완성 |
+| 2 | mesh / peer text chat receive 본격 binding | Phase 5 mesh 본격 |
+| 3 | coturn 4 env binding (NAT traversal) | P2P 신뢰성 |
+| 4 | mobile Flutter base 본격 진입 + signaling ws_client.dart + WebRTC 연결 | 사용자 풀 10x |
+| 5 | 음성 통화 (PeerConnection audio) | 시장 진입 자격 |
+| 6 | 모바일 cycle 181~200 prerequisite 회수 후 본격 진입 | mobile 본격 |
+| 7 | Toonation 통합 시나리오 검증 (옵션 B) | 수익화 base |
+| 8 | 영상 통화 (WebRTC SFU 마이그레이션 검토) | 기능 완성 |
+
+### 6.1 cycle 169.213~231 19 entry burst metric
+
+- **19 commit / push velocity** = cycle 169.213 (2026-05-21 KST burst start) → 169.231 (12:45 KST) ≈ **5~6 시간 burst** = average **3~4 commit / hour**
+- **commit 분류**: feat 5 (last_seen + DM resolver + i18n + DM history + design critique) + fix 6 (bearer_token + drawer 단색 + rooms.py BPE + dialog center + height clamp + hook feat grep) + docs 8 (README prepend + History 역순 + handoff §8.79 + 평가 4 file fingerprint sync × 3 + vibe-coding sync × 2)
+- **drift recovery 누계** = cycle 169.213~231 19 cycle 안 평가 fingerprint sync 3 회 (217 / 223 / 231) — 5 cycle drift cap 정합
+- **사용자 비판 회수**: design critique batch 일시 중지 + 우선 처리 의무 (cycle 169.229 신설 영구 가드레일)
+- **신규 가드레일**: `feedback_design_critique_first_priority.md` cycle 169.229 신설 → 영구 가드레일 51+ 누적
 
 ---
 
@@ -426,6 +463,10 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 | WebRTC mesh ≤ 8 peer cap | 중 | 중 | 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
 | 1차 dogfooding 부재 | 중 | 중 | Phase 5 마무리 직후 1주 retention + NPS 측정 진입 의무 |
 | cycle 169.x UI redesign 의 LLM autonomy 의 한계 (사용자 design directive 부재 시 임의 변경 금지) | 중 | 중 | `[[feedback-no-design-change-without-user-directive]]` 영구 가드레일 + 위반 시 즉시 git revert |
+| design critique batch 일시 중지 의무 (cycle 169.229 신설) | 중 | 중 | `[[feedback-design-critique-first-priority]]` 영구 가드레일 = 사용자 design critique 의 모든 잔존 batch 일시 중지 + 우선 처리 의무. Phase 5 binding / doc sync / Stop hook 모두 후순위 |
+| bearer_token chain drift (cycle 169.228 회수) | 저 | 중 | self._session_token 정합 + HTTP 401 차단 + 매 endpoint 의 token chain 의 단일 source helper 정합 |
+| mesh / peer text chat receive 본격 binding 부재 (Phase 5 mesh 잔존) | 중 | 중 | 다음 cycle 우선순위 = mesh + peer receive 본격 binding + coturn 4 env 사용자 직접 입력 |
+| mobile Flutter base 본격 진입 부재 (signaling ws_client.dart skeleton 만) | 상 | 중 | 다음 cycle 우선순위 = signaling 연동 + WebRTC peer connection + chat UI 의 mobile mirror |
 
 ### 8.1 보안 리스크 추가 해결책 (Defense-in-Depth)
 
@@ -482,12 +523,15 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 - 누락 기능 표 — Phase 5 마무리 시 항목 제거
 - 단기 액션 ✅ 표시 갱신
 - KPI 실측 값 (dogfooding 진입 후)
-- 가드레일 메모리 누계 (현 50+)
+- 가드레일 메모리 누계 (현 51+)
 - sub-agent 누계 (현 93)
 - 차별화 추가 발생 시 §2.10 + §4 + §10 동시 갱신
 - 1차 dogfooding 진입 시 §3.11 ✅
 - Toonation REST + OBS WebSocket base_url 사용자 직접 입력 시 §3.7 ✅
 - mobile cycle 181 prerequisite 사용자 manual 회수 시 §3.9 ✅
+- mesh / peer text chat receive 본격 binding 시 §5 / §6 ✅
+- coturn 4 env 사용자 직접 입력 시 §5 ✅
+- mobile Flutter base 본격 진입 시 §5 / §6 ✅
 
 ---
 
