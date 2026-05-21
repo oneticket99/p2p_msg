@@ -56,6 +56,11 @@ class FolderEditDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 새 폴더")
         self.setModal(True)
+        # cycle 169.201 — frameless modal 의무 (사용자 directive cycle 169.121 pattern align)
+        self.setWindowFlags(
+            Qt.WindowType.Dialog
+            | Qt.WindowType.FramelessWindowHint
+        )
         self.setFixedSize(480, 720)
         self._existing = existing or {}
         self._included_chats: list = list(self._existing.get("included_chats", []))

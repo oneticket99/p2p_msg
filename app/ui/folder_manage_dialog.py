@@ -42,6 +42,12 @@ class FolderManageDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 폴더")
         self.setModal(True)
+        # cycle 169.201 — frameless modal 의무 (사용자 directive cycle 169.121 pattern align)
+        from PyQt6.QtCore import Qt
+        self.setWindowFlags(
+            Qt.WindowType.Dialog
+            | Qt.WindowType.FramelessWindowHint
+        )
         self.setFixedSize(520, 720)
         self._user_folders = user_folders or []
 
