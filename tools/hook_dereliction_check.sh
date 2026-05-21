@@ -21,6 +21,19 @@ else
     fi
 fi
 
+# cycle 169.368 — HEAD-based TTL skip — 동일 HEAD 안 1회 fire 후 동일 turn repeat 차단
+# Claude Code 9 consecutive block cap 회피 — 사용자 ack manifest 의무 retain (handoff 안 ack 키워드)
+TTL_MARKER="${CLAUDE_PROJECT_DIR}/.claude/dereliction_last_fire.txt"
+mkdir -p "${CLAUDE_PROJECT_DIR}/.claude" 2>/dev/null || true
+CUR_HEAD="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+if [ -f "$TTL_MARKER" ]; then
+    LAST_HEAD="$(cat "$TTL_MARKER" 2>/dev/null || echo '')"
+    if [ "$LAST_HEAD" = "$CUR_HEAD" ]; then
+        exit 0  # 한글 주석 — 동일 HEAD = 직전 fire 후 commit 부재 → repeat block 차단
+    fi
+fi
+echo "$CUR_HEAD" > "$TTL_MARKER" 2>/dev/null || true
+
 # 한글 주석 — 최근 N commit 범위 (default 5)
 N_RECENT="${DERELICTION_RECENT_COMMITS:-5}"
 HEAD_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
