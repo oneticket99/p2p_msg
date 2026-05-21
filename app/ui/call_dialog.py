@@ -50,7 +50,9 @@ class CallDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"TooTalk · {'영상' if video_enabled else '음성'} 통화")
         self.setModal(True)
-        self.setFixedSize(420, 560)
+        # cycle 169.327 — telegram align frameless + main center (사용자 directive image #91)
+        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        self.setFixedSize(420, 600)
         self._peer_name = peer_name
         self._video_enabled = video_enabled
         self._incoming = incoming
@@ -73,14 +75,27 @@ class CallDialog(QDialog):
         self._video_frame.setVisible(video_enabled)
         outer.addWidget(self._video_frame, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — 큰 avatar placeholder
+        # 한글 주석 — cycle 169.328 chat_list entry 등가 avatar (사용자 directive image #92)
+        # palette_solid + initials chain (kind="saved" 시점 data icon 분기)
         self._avatar_widget = QLabel()
         self._avatar_widget.setFixedSize(160, 160)
         self._avatar_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._avatar_widget.setPixmap(load_pixmap("avatar", size=120, color="#67E8F9"))
-        self._avatar_widget.setStyleSheet(
-            "background-color: #1F2937; border-radius: 80px;"
-        )
+        if peer_name == "저장한 메시지":
+            from PyQt6.QtGui import QPainter, QColor, QPixmap
+            pix = QPixmap(160, 160)
+            pix.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pix)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.setBrush(QColor("#0066FF"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(0, 0, 160, 160)
+            icon_pix = load_pixmap("data", size=80, color="#ffffff")
+            painter.drawPixmap(40, 40, icon_pix)
+            painter.end()
+            self._avatar_widget.setPixmap(pix)
+        else:
+            from app.ui._avatar_helper import make_initial_pixmap
+            self._avatar_widget.setPixmap(make_initial_pixmap(peer_name or "?", size=160))
         outer.addWidget(self._avatar_widget, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # 한글 주석 — peer 사용자명

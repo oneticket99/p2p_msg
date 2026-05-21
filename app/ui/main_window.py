@@ -2038,7 +2038,8 @@ class MainWindow(QMainWindow):
             asyncio.ensure_future(call_client.create_offer(video=False))
         except Exception as exc:
             log.warning("[call] create_offer schedule fail — %r", exc)
-        dialog.exec()
+        # cycle 169.327 — _exec_dialog_centered chain (main outside protrude 차단 + backdrop + ESC)
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:
