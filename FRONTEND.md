@@ -529,4 +529,4 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 
 ---
 
-마지막 갱신: 2026-05-17 (FRONTEND.md 초안 — Phase 1 스켈레톤 UI 표준 정의)
+마지막 갱신: 2026-05-21 (cycle 169.199 — §16 UI Toonation BI 통합 redesign 70+ sub-cycle reflect — sidebar_rail 2 entry + top_bar 60 #0A1019 + chat_header avatar 폐기 + chat_list "채팅" tab 통합 + chat_view day separator/DM cache replay/scroll offset retain + message_bubble grouped tail 부재/ts inline overlay/avatar palette gradient + input_bar composite pill + hamburger_drawer frameless gradient + my_profile_dialog telegram simple rewrite + FolderManageDialog telegram folder edit align)

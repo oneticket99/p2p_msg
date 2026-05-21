@@ -795,7 +795,200 @@ flowchart TB
 
 <hr>
 
-<h2>16. 참조</h2>
+<h2>16. UI Toonation BI 통합 redesign — cycle 169.25 ~ 169.196 (70+ sub-cycle 누계 박제)</h2>
+
+<p>본 §16 = cycle 169.25 ~ 169.196 동안 70+ sub-cycle 누계 — TooTalk 메인 윈도우 의 sidebar_rail + top_bar + chat_header + chat_list + chat_view + message_bubble + input_bar + hamburger_drawer + my_profile_dialog + FolderManageDialog 의 Toonation BI 통합 redesign 박제. cycle 169.25 직전 §14 wireframe (1280×800 기본 + side panel 280 + chat area 1000) → cycle 169.196 직후 Telegram for Windows 11 reference 정합 의 3-pane composite (sidebar_rail 72 + chat_list 280 + chat_view stretch) 의 전환 본문.</p>
+
+<h3>16.1 sidebar_rail — 좌측 72px (cycle 169.30~169.180)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>width</td><td><strong>72 px</strong></td><td>fixed (resize 차단)</td></tr>
+<tr><td>bg</td><td><code>#0A1019</code></td><td>Toonation deep navy 변형 (top_bar + 동일 tone)</td></tr>
+<tr><td>entry 수</td><td><strong>2</strong></td><td>모든 대화방 chat_bubble + 편집 sliders</td></tr>
+<tr><td>icon size</td><td>28 px</td><td>Material Symbols Outlined 폰트 weight 400</td></tr>
+<tr><td>icon color (default)</td><td><code>#9CA3AF</code></td><td>gray-400</td></tr>
+<tr><td>icon color (active)</td><td><code>#0066FF</code></td><td>Toonation primary</td></tr>
+<tr><td>활성 표시</td><td>left rail 3px <code>#0066FF</code></td><td>active indicator</td></tr>
+</tbody>
+</table>
+
+<h4>16.1.1 sidebar_rail entry 정본</h4>
+<ul>
+  <li><code>chat_bubble</code> — <strong>모든 대화방</strong> (friend + group + bot 통합 — cycle 169.65 chat_list filter "채팅" tab 정합)</li>
+  <li><code>sliders</code> — <strong>편집</strong> (FolderManageDialog spawn — telegram folder edit align)</li>
+</ul>
+
+<blockquote>
+<p>⚠️ cycle 169.30 이전 5 entry (friend / chat / room / bot / 설정) → cycle 169.96 직후 2 entry 통합. friend + bot + room → chat_bubble 단일 entry 흡수. 설정 → hamburger_drawer 이관.</p>
+</blockquote>
+
+<h3>16.2 top_bar — 높이 60px (cycle 169.40~169.150)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>height</td><td><strong>60 px</strong></td><td>sidebar_rail + chat_list + chat_view 동일 통합</td></tr>
+<tr><td>bg</td><td><code>#0A1019</code></td><td>Toonation deep navy 통합 (3 영역 동색)</td></tr>
+<tr><td>좌측 (hamburger)</td><td>햄버거 icon 24px + click → hamburger_drawer 펼침</td><td>자세한 §16.8</td></tr>
+<tr><td>중앙 (검색)</td><td>search bar — placeholder "검색" + bg <code>#1F2937</code> + border-radius 8 + height 36</td><td>telegram align</td></tr>
+<tr><td>우측 (profile)</td><td>avatar 32 + nickname 14 + dropdown 화살표 + click → my_profile_dialog</td><td>자세한 §16.9</td></tr>
+</tbody>
+</table>
+
+<h3>16.3 chat_header — avatar 폐기 + nickname only (cycle 169.55~169.110)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>height</td><td>60 (top_bar + 동일)</td><td>단일 row</td></tr>
+<tr><td><strong>avatar</strong></td><td><strong>폐기</strong></td><td>cycle 169.55 — avatar 잔존 → 폐기 (telegram align — chat_header 안 avatar 부재 정합)</td></tr>
+<tr><td>nickname</td><td>16px font-weight 600 color <code>#F3F4F6</code></td><td>단일 좌측 정렬</td></tr>
+<tr><td>status</td><td>"온라인" / "오프라인" / "마지막 접속 N분 전" — <strong>한국어</strong> 12px color <code>#9CA3AF</code> gray</td><td>cycle 169.65 — 영문 → 한국어 통합</td></tr>
+<tr><td>우측 actions</td><td>검색 / 더보기 icon 20 color <code>#9CA3AF</code></td><td>telegram align</td></tr>
+</tbody>
+</table>
+
+<h3>16.4 chat_list — "채팅" tab 통합 filter (cycle 169.65~169.120)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>width</td><td><strong>280 px</strong></td><td>sidebar_rail 72 직후</td></tr>
+<tr><td>bg</td><td><code>#0F172A</code></td><td>sidebar_rail 보다 한 단계 밝은 navy</td></tr>
+<tr><td>tab 수</td><td><strong>단일</strong> ("채팅")</td><td>cycle 169.65 — friend + room + bot 3 tab → "채팅" 단일 통합. filter dropdown 으로 sub-category 진입</td></tr>
+<tr><td>filter 옵션</td><td>모든 / 친구 / 그룹 / 봇 / 안 읽음</td><td>dropdown click → 해당 sub-list rendering</td></tr>
+<tr><td>item height</td><td>68 px</td><td>avatar 44 + nickname 15 + last_message 13 + ts 12</td></tr>
+<tr><td>item hover bg</td><td><code>#1F2937</code></td><td>호버 상태</td></tr>
+<tr><td>item active bg</td><td><code>#1E3A8A</code> 25% opacity</td><td>선택 chat</td></tr>
+</tbody>
+</table>
+
+<h3>16.5 chat_view — day separator + DM cache replay + scroll offset retain (cycle 169.80~169.170)</h3>
+
+<table>
+<thead><tr><th>기능</th><th>동작</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>day separator</td><td>날짜 변경 시점 horizontal divider + 한국어 라벨 ("2026-05-21 목요일")</td><td>telegram align — cycle 169.80 신설</td></tr>
+<tr><td>DM cache replay</td><td>chat 진입 시 cache file (<code>~/.tootalk/cache/dm_{peer_id}.json</code>) 안 last 100 msg 즉시 replay → 서버 sync overlay</td><td>cycle 169.95 — cold start 안 빈 chat 차단</td></tr>
+<tr><td>scroll offset retain</td><td>chat 이탈 → 재진입 시 마지막 scroll position 복원</td><td>cycle 169.110 — 사용자 위치 박제</td></tr>
+<tr><td>auto scroll</td><td>신규 메시지 도착 시 사용자 가 bottom 위치일 때만 auto. scroll 중일 때 차단 + 신규 알림 badge</td><td>§2.10 정합 + cycle 169.130 강화</td></tr>
+</tbody>
+</table>
+
+<h3>16.6 message_bubble — grouped tail 부재 + ts inline overlay + avatar palette gradient (cycle 169.90~169.180)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td><strong>grouped tail</strong></td><td><strong>부재</strong></td><td>cycle 169.90 — telegram 의 tail (∇ pointer) 폐기. 단순 rounded rect 통합</td></tr>
+<tr><td>연속 메시지 grouping</td><td>동일 sender + 60초 안 = avatar 부재 + tighter margin</td><td>cycle 169.105</td></tr>
+<tr><td>ts inline overlay</td><td>버블 우측 하단 안 ts (HH:MM) overlay — bg semi-transparent <code>rgba(0,0,0,0.3)</code> + 흰색 텍스트 11px</td><td>cycle 169.120 — 가독성 회복</td></tr>
+<tr><td>avatar palette gradient</td><td>avatar bg = peer_id hash → 6 gradient (azure / coral / mint / amber / violet / rose) 안 자동 분배</td><td>cycle 169.150 — telegram nickname 컬러 align</td></tr>
+<tr><td>avatar size</td><td>36 px circular</td><td>bubble 좌측 + 내 메시지 부재</td></tr>
+<tr><td>bubble 모서리</td><td>border-radius <strong>12 px</strong></td><td>tail 부재 통합</td></tr>
+</tbody>
+</table>
+
+<h3>16.7 input_bar — composite pill + voice/send toggle + emoji/attach inline (cycle 169.100~169.190)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>모양</td><td>composite <strong>pill</strong> (border-radius 24 + 단일 row)</td><td>cycle 169.100 — 분리 위젯 → 통합 pill</td></tr>
+<tr><td>좌측 inline</td><td>emoji icon 22 + attach icon 22 (clip)</td><td>text input 좌측</td></tr>
+<tr><td>중앙</td><td>text input (QTextEdit) — bg transparent + placeholder "메시지"</td><td>telegram align</td></tr>
+<tr><td>우측 toggle</td><td><strong>voice / send 동적 토글</strong></td><td>text 가 비었을 때 = mic icon (voice memo) + text 가 있을 때 = paper plane icon (send) — cycle 169.115 신설</td></tr>
+<tr><td>height</td><td>56 px (단일 라인) → 192 px 자동 확장 (다중 라인)</td><td>§7 정합</td></tr>
+</tbody>
+</table>
+
+<h3>16.8 hamburger_drawer — Toonation BI gradient header (cycle 169.130~169.180)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>frameless</td><td><code>WA_TranslucentBackground</code> + <code>FramelessWindowHint</code></td><td>cycle 169.130 — title bar 폐기</td></tr>
+<tr><td>width</td><td>320 px</td><td>left slide-in</td></tr>
+<tr><td>header</td><td><strong>gradient</strong> <code>#0066FF</code> → <code>#22D3EE</code> (Toonation primary → 네온 시안) 안 mascot 안내</td><td>cycle 169.150 — Toonation BI gradient 통합</td></tr>
+<tr><td>mascot</td><td><code>toona_sakamoto.png</code> 96 px + "투턱" 18px bold</td><td>header 안</td></tr>
+<tr><td>메뉴 entry</td><td>새 채팅 / 그룹 만들기 / 설정 / 로그아웃 / 정보</td><td>cycle 169.170 — 5 entry 통합</td></tr>
+</tbody>
+</table>
+
+<h3>16.9 my_profile_dialog — telegram simple rewrite (cycle 169.135~169.180)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>모양</td><td>telegram align — <strong>simple rewrite</strong></td><td>cycle 169.135 — 과도한 form 폐기 + 단순 정보 + 편집 단일 row</td></tr>
+<tr><td>avatar</td><td>80 px circular + 우측 하단 camera badge (change)</td><td>center align</td></tr>
+<tr><td>nickname</td><td>22 px font-weight 700 center</td><td>단일 row</td></tr>
+<tr><td>status</td><td>"온라인" 14 color <code>#22D3EE</code> (Toonation 네온 시안)</td><td>center align</td></tr>
+<tr><td>info row</td><td>username / email / 가입일 / status 메시지 (4 row) — 회색 라벨 + 흰색 값</td><td>telegram align</td></tr>
+<tr><td>actions</td><td>"프로필 편집" + "로그아웃" (2 button — primary + danger)</td><td>bottom row</td></tr>
+</tbody>
+</table>
+
+<h3>16.10 FolderManageDialog — telegram folder edit align (cycle 169.160~169.196)</h3>
+
+<table>
+<thead><tr><th>영역</th><th>값</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>spawn</td><td>sidebar_rail "편집" (sliders) entry click</td><td>cycle 169.160 — 편집 tab → FolderManageDialog 통합</td></tr>
+<tr><td>모양</td><td>telegram folder edit align</td><td>단순 list + 드래그 reorder + "+" 신규</td></tr>
+<tr><td>folder entry</td><td>icon + name + include/exclude rules + delete</td><td>row click → 편집 panel</td></tr>
+<tr><td>include rules</td><td>친구 list multi-select / 그룹 list multi-select / 봇 list multi-select</td><td>telegram align</td></tr>
+<tr><td>exclude rules</td><td>음소거 chat / 보관 chat</td><td>telegram align</td></tr>
+<tr><td>적용</td><td>sidebar_rail chat_list filter 안 folder tab 추가</td><td>telegram align</td></tr>
+</tbody>
+</table>
+
+<h3>16.11 §15 색상 변수 retain (9 hex)</h3>
+
+<p>cycle 169.25 ~ 169.196 redesign 안 §15 Toonation BI 색상 변수 <strong>9 hex</strong> retain 의무 — 본 §16 의 새 UI 영역도 §15 의 hex 만 사용:</p>
+
+<table>
+<thead><tr><th>hex</th><th>활용 영역 (cycle 169.x)</th></tr></thead>
+<tbody>
+<tr><td><code>#0066FF</code></td><td>input_bar send button + sidebar_rail active icon + hamburger gradient start</td></tr>
+<tr><td><code>#0052FF</code></td><td>hover/active 상태</td></tr>
+<tr><td><code>#0F172A</code></td><td>chat_list bg (sidebar_rail 보다 한 단계 밝은 navy)</td></tr>
+<tr><td><code>#0A1019</code></td><td>sidebar_rail bg + top_bar bg (cycle 169.40 신규 deep variant — <code>#0F172A</code> 보다 한 단계 어두운 navy. §15.2 sub-variant 등재 권장)</td></tr>
+<tr><td><code>#FFFFFF</code></td><td>bubble_other 텍스트 + chat_header nickname</td></tr>
+<tr><td><code>#22D3EE</code></td><td>my_profile_dialog status + hamburger gradient end + ACK 진행</td></tr>
+<tr><td><code>#67E8F9</code></td><td>다크 모드 ACK 누계</td></tr>
+<tr><td><code>#1E293B</code></td><td>input bar bg variant</td></tr>
+<tr><td><code>#F3F4F6</code></td><td>chat_header nickname color (gray-100)</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>9 hex retain — cycle 169.40 의 <code>#0A1019</code> deep variant 1건 추가 권장. §15.2 다음 갱신 cycle 안 등재 의무.</p>
+</blockquote>
+
+<h3>16.12 cycle 169.x 누계 — 결정 chain 박제</h3>
+
+<table>
+<thead><tr><th>cycle</th><th>sub-decision</th></tr></thead>
+<tbody>
+<tr><td>169.30 ~ 169.40</td><td>sidebar_rail width 72 fixed + 2 entry 통합</td></tr>
+<tr><td>169.40 ~ 169.55</td><td>top_bar height 60 + bg <code>#0A1019</code> 3 영역 통합</td></tr>
+<tr><td>169.55 ~ 169.65</td><td>chat_header avatar 폐기 + nickname only + status 한국어</td></tr>
+<tr><td>169.65 ~ 169.80</td><td>chat_list "채팅" tab 단일 통합 + filter dropdown</td></tr>
+<tr><td>169.80 ~ 169.110</td><td>chat_view day separator + DM cache replay + scroll offset retain</td></tr>
+<tr><td>169.90 ~ 169.150</td><td>message_bubble grouped tail 폐기 + ts inline overlay + avatar palette gradient</td></tr>
+<tr><td>169.100 ~ 169.190</td><td>input_bar composite pill + voice/send toggle</td></tr>
+<tr><td>169.130 ~ 169.180</td><td>hamburger_drawer frameless + Toonation BI gradient header</td></tr>
+<tr><td>169.135 ~ 169.180</td><td>my_profile_dialog telegram simple rewrite</td></tr>
+<tr><td>169.160 ~ 169.196</td><td>FolderManageDialog telegram folder edit align</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>17. 참조</h2>
 
 <table>
 <thead>
@@ -819,7 +1012,7 @@ flowchart TB
 
 <hr>
 
-<p>마지막 갱신: 2026-05-17 (FRONTEND.html 전체 rewrite — §15 Toonation 브랜드 컬러 가이드 통합 + §16 참조 재번호)</p>
+<p>마지막 갱신: 2026-05-21 (cycle 169.199 — §16 UI Toonation BI 통합 redesign 70+ sub-cycle reflect — sidebar_rail 2 entry + top_bar 60 #0A1019 + chat_header avatar 폐기 + chat_list "채팅" tab 통합 + chat_view day separator/DM cache replay/scroll offset retain + message_bubble grouped tail 부재/ts inline overlay/avatar palette gradient + input_bar composite pill + hamburger_drawer frameless gradient + my_profile_dialog telegram simple rewrite + FolderManageDialog telegram folder edit align)</p>
 
 </body>
 </html>
