@@ -1939,13 +1939,51 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_new_group(self) -> None:
-        """그룹 만들기 dialog (cycle 169.320 image #84)."""
+        """그룹 만들기 wizard (cycle 169.333 image #97~101 telegram align)."""
         try:
             from app.ui.new_group_dialog import NewGroupDialog
-            dialog = NewGroupDialog(parent=self)
+            # 한글 주석 — chat_list_panel 의 friends 추출 (room/saved/bot 제외)
+            friends_data: list[dict] = []
+            clp = getattr(self, "_chat_list_panel", None)
+            if clp is not None:
+                for e in getattr(clp, "_entries", []):
+                    if getattr(e, "kind", "") == "friend":
+                        friends_data.append({
+                            "target_id": e.target_id,
+                            "name": e.name,
+                            "last_seen": "온라인" if e.is_online else "최근에 접속함",
+                        })
+            dialog = NewGroupDialog(friends=friends_data, parent=self)
+            dialog.group_created.connect(self._on_group_created)  # type: ignore[arg-type]
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("NewGroupDialog open 실패 — %r", exc)
+
+    @pyqtSlot(str, list)
+    def _on_group_created(self, name: str, member_ids: list) -> None:
+        """그룹 생성 callback — ChatListEntry kind=group 추가 + chat 진입 + roster broadcast placeholder (cycle 169.333)."""
+        from app.ui.chat_list_panel import ChatListEntry
+        from datetime import datetime
+        # 한글 주석 — group_id placeholder (negative range 의 server-side 부재 시점)
+        gid = -abs(hash(name) % 100000) - 1
+        entry = ChatListEntry(
+            kind="group",
+            target_id=gid,
+            name=name,
+            last_message="그룹을 만들었습니다.",
+            last_ts=datetime.now(),
+            unread_count=0,
+            is_pinned=False,
+            is_online=False,
+        )
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None:
+            entries = list(getattr(clp, "_entries", []))
+            entries.insert(0, entry)
+            clp.set_entries(entries)
+        log.info("[group_created] name=%s member_count=%d gid=%d", name, len(member_ids), gid)
+        # 한글 주석 — 그룹 chat 진입 chain
+        self._on_chat_selected("group", gid)
 
     @pyqtSlot()
     def _on_drawer_new_channel(self) -> None:

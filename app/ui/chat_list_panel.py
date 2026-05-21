@@ -361,7 +361,8 @@ class ChatListPanel(QFrame):
             return False
         if self._active_tab == "friends":
             # cycle 169.323 — saved kind 추가 (사용자 directive image #86)
-            return entry.kind in ("friend", "room", "bot", "saved")
+            # cycle 169.333 — group / channel kind 추가 (telegram wizard align)
+            return entry.kind in ("friend", "room", "bot", "saved", "group", "channel")
         if self._active_tab == "rooms":
             return entry.kind == "friend"
         if self._active_tab == "bots":
