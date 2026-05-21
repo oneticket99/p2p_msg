@@ -97,7 +97,12 @@ class CallSoundPlayer:
         if effect is None:
             return
         try:
-            effect.setLoopCount(QSoundEffect.Loop.Infinite)  # type: ignore[attr-defined]
+            # cycle 169.335 — PyQt6 의 setLoopCount(int) expected — Loop.Infinite enum value 의 int convert
+            try:
+                infinite_value = int(QSoundEffect.Loop.Infinite.value)  # type: ignore[attr-defined]
+            except (AttributeError, TypeError):
+                infinite_value = -2  # 한글 주석 — Qt6 QSoundEffect Infinite 의 magic int
+            effect.setLoopCount(infinite_value)
             effect.setVolume(self.volume)
             effect.play()
             self._current_loop = key
