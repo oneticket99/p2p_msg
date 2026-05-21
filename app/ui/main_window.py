@@ -1675,14 +1675,20 @@ class MainWindow(QMainWindow):
         self._active_drawer = drawer
 
     def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.265 — dialog 의 main window child overlay + manual modal event loop.
+        """cycle 169.267 — child overlay + backdrop dim + manual modal event loop.
 
-        사용자 directive image #25/27 회수 — QDialog OS top-level retain 폐기 →
-        setParent + Qt.Widget flag + manual QEventLoop modal blocking. dialog 안
-        main window 의 inside child widget retain visually.
+        사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
+        의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
-        # 한글 주석 — child widget overlay pattern (OS-level top-level 절대 폐기)
+        from PyQt6.QtWidgets import QFrame
+        # 한글 주석 — backdrop dim layer (main rect 전체 의 0.5 alpha black)
+        backdrop = QFrame(self)
+        backdrop.setStyleSheet("QFrame { background-color: rgba(0, 0, 0, 140); }")
+        backdrop.setGeometry(self.rect())
+        backdrop.show()
+        backdrop.raise_()
+        # 한글 주석 — child widget overlay (OS-level top-level 폐기)
         dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
         parent_rect = self.rect()
@@ -1696,7 +1702,7 @@ class MainWindow(QMainWindow):
         x = (parent_rect.width() - dw) // 2
         y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
-        # 한글 주석 — manual modal event loop (QDialog.exec OS-level retain 회피)
+        # 한글 주석 — manual modal event loop
         loop = QEventLoop()
         dialog._embed_result = 0
         orig_accept = dialog.accept
@@ -1718,9 +1724,11 @@ class MainWindow(QMainWindow):
         dialog.accept = _accept
         dialog.reject = _reject
         dialog.show()
-        dialog.raise_()
+        dialog.raise_()  # dialog 의 z-order 위 backdrop
         loop.exec()
         dialog.hide()
+        backdrop.hide()
+        backdrop.deleteLater()
         return dialog._embed_result
 
     @pyqtSlot()
