@@ -274,7 +274,7 @@ class MainWindow(QMainWindow):
         right_panel = QWidget(splitter)
         right_panel.setObjectName("rightPanel")
         right_panel.setStyleSheet(
-            "QWidget#rightPanel { background-color: #131C30; }"
+            "QWidget#rightPanel { background-color: #1a2335; }"
         )
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
@@ -2340,10 +2340,13 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_open_settings_dialog(self) -> None:
-        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영."""
+        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영.
+
+        cycle 169.250 — _exec_dialog_centered apply (main embed center + 사용자 critique image #10 회수).
+        """
 
         dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
-        result = dialog.exec()
+        result = self._exec_dialog_centered(dialog)
         log.debug("SettingsDialog 종료 — result=%s", result)
 
     @pyqtSlot()

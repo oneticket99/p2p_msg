@@ -48,7 +48,11 @@ class HamburgerDrawer(QFrame):
         self.setMinimumHeight(560)
         # 한글 주석 — child overlay 의 의 bg solid + raise_() 의무
         self.setAutoFillBackground(True)
-        self.setStyleSheet("QFrame { background-color: #0F172A; border-right: 1px solid #1f2937; }")
+        # cycle 169.248 — objectName specific selector (child QFrame 의 border-right inherit 차단 회수 사용자 critique image #5/6)
+        self.setObjectName("hamburgerDrawer")
+        self.setStyleSheet(
+            "QFrame#hamburgerDrawer { background-color: #0F172A; border-right: 1px solid #1f2937; }"
+        )
         # 한글 주석 — parent 의 의 event filter — outside click → close
         if parent is not None:
             parent.installEventFilter(self)

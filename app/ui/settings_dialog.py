@@ -188,6 +188,12 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         self.setMinimumSize(720, 560)
         # 한글 주석 — cycle 169.57 회수 — 모든 dialog modal 강제 (사용자 directive)
         self.setModal(True)
+        # cycle 169.250 — frameless modal + main embed (사용자 critique image #10 회수 — 별도 window 차단)
+        from PyQt6.QtCore import Qt as _Qt
+        self.setWindowFlags(
+            _Qt.WindowType.Dialog
+            | _Qt.WindowType.FramelessWindowHint
+        )
 
         initial = build_state_from_player(sound_player)
 
