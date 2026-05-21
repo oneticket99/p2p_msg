@@ -211,6 +211,30 @@ def main() -> int:
         # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
         if authenticated:
             window._status_bar.set_connection_state("CONNECTED")
+        # cycle 169.375 — login 직後 folder list fetch chain (사용자 directive — 폴더 server 저장 retain)
+        if authenticated and session_token:
+            try:
+                from app.net.folder_client import FolderListWorker
+                folder_worker = FolderListWorker(api_base, session_token, parent=window)
+
+                def _on_folder_list_finished(ok, error_code, error_message, data):
+                    if not ok:
+                        log.warning("[folder] list fetch fail — code=%s msg=%s", error_code, error_message)
+                        return
+                    folders = data.get("folders", []) if isinstance(data, dict) else []
+                    window._user_folders = list(folders)
+                    log.info("[folder] list fetch PASS — count=%d", len(folders))
+                    if hasattr(window, "_sidebar_rail") and hasattr(window._sidebar_rail, "set_folder_entries"):
+                        window._sidebar_rail.set_folder_entries(folders)
+
+                folder_worker.finished_with_result.connect(_on_folder_list_finished)  # type: ignore[arg-type]
+                if not hasattr(window, "_folder_workers"):
+                    window._folder_workers = []
+                window._folder_workers.append(folder_worker)
+                folder_worker.finished.connect(lambda w=folder_worker: window._folder_workers.remove(w))  # type: ignore[arg-type]
+                folder_worker.start()
+            except Exception as exc:
+                log.debug("folder list fetch chain fail — %r", exc)
         window.show()
 
         # 한글 주석 — cycle 169.58 회수 — RoomsClient instantiate + list_rooms background fire

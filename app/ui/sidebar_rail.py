@@ -42,8 +42,8 @@ class SidebarRail(QFrame):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setObjectName("sidebarRail")
-        # cycle 169.138 — sub-agent A drift D-1 — width 96 → 72 (telegram desktop align)
-        self.setFixedWidth(72)
+        # cycle 169.374 — width 72 → 80 (icon + text label 정합, 사용자 directive image #130)
+        self.setFixedWidth(80)
 
         # cycle 169.182 — top bar 한 라인 align (image #15 critique)
         # hamburger row top = height 60 (chat_list search + chat_header 정합)
@@ -81,13 +81,22 @@ class SidebarRail(QFrame):
             btn = QToolButton()
             btn.setObjectName("sidebarTab")
             btn.setCheckable(True)
-            # cycle 169.138 — sub-agent A drift D-4 — icon size 28→24 (telegram align)
-            btn.setIcon(load_icon(icon_name, size=24, color="#9ca3af"))
-            btn.setIconSize(QSize(24, 24))
+            # cycle 169.138 — icon size 28→24 + cycle 169.374 image #130 — text label 표시
+            btn.setIcon(load_icon(icon_name, size=22, color="#9ca3af"))
+            btn.setIconSize(QSize(22, 22))
+            btn.setText(label[:6])
             btn.setToolTip(label)
-            btn.setFixedSize(56, 56)
-            # cycle 169.111 회수 — inline QSS 폐기 → base-dark.qss QSS#sidebarTab selector delegate
-            # hover/active/checked state qss chain 단일 source of truth
+            btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+            btn.setFixedSize(64, 60)
+            btn.setStyleSheet(
+                "QToolButton#sidebarTab {"
+                " color: #9ca3af; background-color: transparent;"
+                " border: none; border-radius: 6px; font-size: 10px; font-weight: 500;"
+                " padding-top: 4px; padding-bottom: 2px;"
+                "}"
+                "QToolButton#sidebarTab:hover { background-color: rgba(0, 102, 255, 0.1); color: #e5e7eb; }"
+                "QToolButton#sidebarTab:checked { background-color: rgba(0, 102, 255, 0.2); color: #0066FF; }"
+            )
             btn.clicked.connect(  # type: ignore[arg-type]
                 lambda _checked, key=tab_key: self.tab_clicked.emit(key)
             )
