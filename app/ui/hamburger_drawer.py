@@ -57,14 +57,9 @@ class HamburgerDrawer(QFrame):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # cycle 169.170 — telegram D-37 align — header Toonation BI gradient
+        # cycle 169.227 — gradient 폐기 → 단색 Toonation BI #0066FF (사용자 directive image #34)
         header = QFrame()
-        header.setStyleSheet(
-            "background-color: qlineargradient("
-            "x1:0, y1:0, x2:0, y2:1,"
-            " stop:0 #0066FF, stop:1 #001A4D"
-            ");"
-        )
+        header.setStyleSheet("background-color: #0066FF;")
         header.setFixedHeight(120)
         h_layout = QVBoxLayout(header)
         h_layout.setContentsMargins(20, 20, 20, 12)
