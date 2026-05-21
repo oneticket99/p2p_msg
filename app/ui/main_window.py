@@ -1708,7 +1708,13 @@ class MainWindow(QMainWindow):
         """
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
-        from PyQt6.QtWidgets import QFrame
+        from PyQt6.QtWidgets import QFrame, QSplitter as _QSplitter
+        # cycle 169.312 — splitter sizes snapshot (dialog open 시점 chat_list panel collapse 회피)
+        _central = self.centralWidget()
+        _splitter_sizes: list[int] = []
+        if isinstance(_central, _QSplitter):
+            _splitter_sizes = _central.sizes()
+            log.warning("[dialog_open] splitter sizes captured=%s", _splitter_sizes)
         # cycle 169.307 — main_window child overlay (centralWidget = splitter, child 시점 panel add 깨짐 회수)
         backdrop = QFrame(self)
         backdrop.setObjectName("dialogBackdrop")
@@ -1805,6 +1811,13 @@ class MainWindow(QMainWindow):
                     pass
             clp.update()
             clp.repaint()
+        # cycle 169.312 — splitter sizes restore (chat_list panel width 0 collapse 차단)
+        if _splitter_sizes:
+            _central2 = self.centralWidget()
+            if isinstance(_central2, _QSplitter):
+                _central2.setSizes(_splitter_sizes)
+                log.warning("[dialog_close] splitter sizes restored=%s actual=%s",
+                            _splitter_sizes, _central2.sizes())
         if self.centralWidget():
             self.centralWidget().update()
             self.centralWidget().repaint()
