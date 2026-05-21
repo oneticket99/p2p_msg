@@ -40,6 +40,25 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.231 (2026-05-21 14:30 KST) — 평가 4 file fingerprint sync — cycle 169.230 dialog center align 반영
+- cycle 169.230 (2026-05-21 14:25 KST) — dialog main center _exec_dialog_centered 3 dialog 적용 (메인 윈도우 중앙 정렬)
+- cycle 169.229 (2026-05-21 14:15 KST) — design critique 최우선 가드레일 permanent 등재 (잔존 batch 일시 중지 의무)
+- cycle 169.228 (2026-05-21 14:05 KST) — bearer_token chain 회수 self._session_token (HTTP 401 fix)
+- cycle 169.227 (2026-05-21 13:55 KST) — hamburger drawer header 단색 #0066FF (gradient 폐기 — 사용자 critique)
+- cycle 169.226 (2026-05-21 13:45 KST) — i18n qm bundle PyInstaller spec 추가 (locale 번들 packaging)
+- cycle 169.225 (2026-05-21 13:35 KST) — client DM history fetch async helper (REST 경유 last_seen 동기 chain)
+- cycle 169.224 (2026-05-21 13:25 KST) — doc-gardener spawn — Specification + ARCHITECTURE + Structure 정합 sweep
+- cycle 169.223 (2026-05-21 13:15 KST) — 평가 4 file fingerprint sync — cycle 169.222 DM resolver 반영
+- cycle 169.222 (2026-05-21 13:05 KST) — DM room resolver REST + find_or_create_dm_room (server endpoint 신설)
+- cycle 169.221 (2026-05-21 12:55 KST) — client last_seen fetch async helper part 3 (presence label binding)
+- cycle 169.220 (2026-05-21 12:45 KST) — client last_seen fetch async helper part 2 (state cache)
+- cycle 169.219 (2026-05-21 12:35 KST) — client last_seen fetch async helper part 1 (REST GET wrapper)
+- cycle 169.218 (2026-05-21 12:25 KST) — doc-gardener spawn (skippable) — drift 부재 skip
+- cycle 169.217 (2026-05-21 12:15 KST) — 평가 fingerprint sync cycle 169.216 server endpoint 반영
+- cycle 169.216 (2026-05-21 12:05 KST) — server last_seen REST endpoint 신설 (GET /api/users/{id}/last_seen)
+- cycle 169.215 (2026-05-21 11:55 KST) — dereliction hook grep logic fix (false negative 회수 — pattern \\bdrift\\b)
+- cycle 169.214 (2026-05-21 11:45 KST) — History.md 역순 prepend cycle 169.118~212 (drift sweep)
+- cycle 169.213 (2026-05-21 11:35 KST) — README cycle 169.144~212 prepend 30행 trim (M2 정합)
 - cycle 169.212 (2026-05-21 11:21 KST) — hook_dereliction_check.sh stderr redirect — claude Stop hook display 정합
 - cycle 169.211 (2026-05-21 11:07 KST) — 평가 4 file fingerprint sync — cycle 169.206~210 5 cycle drift 회수
 - cycle 169.210 (2026-05-21 11:07 KST) — bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive)
