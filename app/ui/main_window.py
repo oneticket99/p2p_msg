@@ -1987,13 +1987,48 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_new_channel(self) -> None:
-        """채널 만들기 dialog (cycle 169.320 image #84)."""
+        """채널 만들기 wizard (cycle 169.348 image #97~101 등가)."""
         try:
             from app.ui.new_channel_dialog import NewChannelDialog
-            dialog = NewChannelDialog(parent=self)
+            friends_data: list[dict] = []
+            clp = getattr(self, "_chat_list_panel", None)
+            if clp is not None:
+                for e in getattr(clp, "_entries", []):
+                    if getattr(e, "kind", "") == "friend":
+                        friends_data.append({
+                            "target_id": e.target_id,
+                            "name": e.name,
+                            "last_seen": "온라인" if e.is_online else "최근에 접속함",
+                        })
+            dialog = NewChannelDialog(friends=friends_data, parent=self)
+            dialog.channel_created.connect(self._on_channel_created)  # type: ignore[arg-type]
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("NewChannelDialog open 실패 — %r", exc)
+
+    @pyqtSlot(str, str, list)
+    def _on_channel_created(self, name: str, desc: str, subscriber_ids: list) -> None:
+        """채널 생성 callback — ChatListEntry kind=channel insert + chat focus (cycle 169.348)."""
+        from app.ui.chat_list_panel import ChatListEntry
+        from datetime import datetime
+        cid = -abs(hash(name) % 100000) - 100001
+        entry = ChatListEntry(
+            kind="channel",
+            target_id=cid,
+            name=name,
+            last_message=desc or "채널이 생성되었습니다.",
+            last_ts=datetime.now(),
+            unread_count=0,
+            is_pinned=False,
+            is_online=False,
+        )
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None:
+            entries = list(getattr(clp, "_entries", []))
+            entries.insert(0, entry)
+            clp.set_entries(entries)
+        log.info("[channel_created] name=%s subscriber_count=%d cid=%d", name, len(subscriber_ids), cid)
+        self._on_chat_selected("channel", cid)
 
     @pyqtSlot()
     def _on_drawer_calls(self) -> None:
