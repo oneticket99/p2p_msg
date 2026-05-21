@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T23:15:00+09:00
+last_verified: 2026-05-21T23:25:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 192 sub-cycle 누계 (cycle 169.117~371). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 199 sub-cycle 누계 (cycle 169.117~378). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -237,6 +237,12 @@ status: active
 - **cycle 169.369**: FolderManageDialog 편집 tab entry folder_create_requested + folder_delete_requested signal connect chain — '+ 새 폴더 만들기' click 무반응 회수 사용자 critique image #123/124
 - **cycle 169.370**: ChatPickerDialog rewrite — ChatListItemDelegate 재사용 (avatar circle + name + last message entry 등가 format) + frameless 420x600 + SVG search icon + close X + i18n labels (포함할/제외할 대화방 + 확인) + _exec_dialog_centered chain 사용자 critique image #125
 - **cycle 169.371**: FolderEditDialog add_included_chats/add_excluded_chats ChatListEntry dataclass → JSON serializable dict convert (_entry_to_dict static) — FolderCreateWorker json.dumps TypeError → fatal abort crash 회수
+- **cycle 169.372**: 평가 4 file fingerprint sync cycle 169.366~371 6 cycle drift 회수
+- **cycle 169.373**: sidebar_rail set_folder_entries API 신설 (folder dynamic button rebuild + folder_selected emit chain) + main_window _on_folder_saved sidebar refresh + active FolderManageDialog close chain 사용자 critique image #127/129
+- **cycle 169.374~375**: sidebar folder vertical layout (icon + label ToolButtonTextUnderIcon) + width 72→80 + login 직後 FolderListWorker fetch chain 사용자 directive image #130 + 서버 저장 폴더 restore
+- **cycle 169.376**: sidebar 편집 button 최하단 position 의무 (folder = 편집 button 之前 insert) 사용자 critique image #131
+- **cycle 169.377**: sidebar tab/folder label _wrap_label helper (4 char 초과 띄어쓰기 break 또는 mid-split) + 72x72 button size 사용자 critique image #132 elided '모…방' 회수
+- **cycle 169.378**: chat_list_panel set_user_folders API + _matches_tab user folder included/excluded_chats filter chain — folder click → folder 내 entries 만 visible 사용자 critique image #134
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
