@@ -1246,7 +1246,8 @@ class MainWindow(QMainWindow):
         from datetime import datetime
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            token = getattr(self._state, "bearer_token", None) or ""
+            # cycle 169.228 — self._session_token 정합 회수 (cycle 169.221/222/225 chain)
+            token = getattr(self, "_session_token", None) or ""
             if not token:
                 return
             headers = {"Authorization": f"Bearer {token}"}
@@ -1296,7 +1297,7 @@ class MainWindow(QMainWindow):
         import aiohttp
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            token = getattr(self._state, "bearer_token", None) or ""
+            token = getattr(self, "_session_token", None) or ""
             if not token:
                 return
             headers = {"Authorization": f"Bearer {token}"}
@@ -1334,7 +1335,7 @@ class MainWindow(QMainWindow):
         import time, aiohttp
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            token = getattr(self._state, "bearer_token", None) or ""
+            token = getattr(self, "_session_token", None) or ""
             headers = {"Authorization": f"Bearer {token}"} if token else {}
             payload = {
                 "messages": [
