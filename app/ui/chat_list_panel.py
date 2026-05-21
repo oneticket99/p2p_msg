@@ -266,6 +266,7 @@ class ChatListPanel(QFrame):
         self._filter_text: str = ""
         self._active_tab: str = "friends"
         self._active_folder: str = "all"  # cycle 169.71
+        self._user_folders: list[dict] = []  # cycle 169.378 — folder filter chain (사용자 critique image #134)
 
     def set_active_tab(self, tab_key: str) -> None:
         """sidebar_rail tab_clicked signal 연결 — list re-render."""
@@ -275,6 +276,11 @@ class ChatListPanel(QFrame):
     def set_active_folder(self, folder_id: str) -> None:
         """FolderList folder_selected signal 연결 (cycle 169.71)."""
         self._active_folder = folder_id
+        self._render()
+
+    def set_user_folders(self, folders: list) -> None:
+        """cycle 169.378 — user folder metadata cache (사용자 critique image #134 폴더 filter 의무)."""
+        self._user_folders = list(folders or [])
         self._render()
 
     def set_entries(self, entries: list[ChatListEntry]) -> None:
@@ -359,6 +365,21 @@ class ChatListPanel(QFrame):
         """
         if self._active_folder == "unread" and entry.unread_count <= 0:
             return False
+        # cycle 169.378 — user folder filter (사용자 critique image #134)
+        # active_folder 의 user_folders 안 folder_id match 시점 → included_chats 안 entry 만 visible
+        if self._active_folder not in ("all", "unread"):
+            for folder in self._user_folders:
+                if str(folder.get("folder_id", "")) == self._active_folder:
+                    included = folder.get("included_chats", []) or []
+                    excluded = folder.get("excluded_chats", []) or []
+                    inc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in included if isinstance(c, dict)}
+                    exc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in excluded if isinstance(c, dict)}
+                    entry_pair = (entry.kind, entry.target_id)
+                    if entry_pair in exc_pairs:
+                        return False
+                    if inc_pairs and entry_pair not in inc_pairs:
+                        return False
+                    break
         if self._active_tab == "friends":
             # cycle 169.323 — saved kind 추가 (사용자 directive image #86)
             # cycle 169.333 — group / channel kind 추가 (telegram wizard align)

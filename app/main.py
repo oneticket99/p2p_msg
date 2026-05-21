@@ -226,6 +226,10 @@ def main() -> int:
                     log.info("[folder] list fetch PASS — count=%d", len(folders))
                     if hasattr(window, "_sidebar_rail") and hasattr(window._sidebar_rail, "set_folder_entries"):
                         window._sidebar_rail.set_folder_entries(folders)
+                    # cycle 169.378 — chat_list_panel folder metadata sync (startup retain)
+                    clp = getattr(window, "_chat_list_panel", None)
+                    if clp is not None and hasattr(clp, "set_user_folders"):
+                        clp.set_user_folders(folders)
 
                 folder_worker.finished_with_result.connect(_on_folder_list_finished)  # type: ignore[arg-type]
                 if not hasattr(window, "_folder_workers"):

@@ -1522,6 +1522,13 @@ class MainWindow(QMainWindow):
                 self._sidebar_rail.set_folder_entries(self._user_folders)
             except Exception as exc:
                 log.debug("sidebar_rail set_folder_entries fail — %r", exc)
+        # cycle 169.378 — chat_list_panel folder metadata sync (사용자 critique image #134 filter 의무)
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None and hasattr(clp, "set_user_folders"):
+            try:
+                clp.set_user_folders(self._user_folders)
+            except Exception as exc:
+                log.debug("chat_list_panel set_user_folders fail — %r", exc)
         # cycle 169.373 — active FolderManageDialog close chain (사용자 critique image #127)
         active_folder_dialog = getattr(self, "_active_folder_dialog", None)
         if active_folder_dialog is not None:
