@@ -48,7 +48,8 @@ class FolderManageDialog(QDialog):
             Qt.WindowType.Dialog
             | Qt.WindowType.FramelessWindowHint
         )
-        self.setFixedSize(520, 720)
+        # cycle 169.292 — MyProfileDialog 등가 strict
+        self.setFixedSize(420, 600)
         self._user_folders = user_folders or []
 
         outer = QVBoxLayout(self)

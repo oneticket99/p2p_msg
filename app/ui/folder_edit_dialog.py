@@ -61,7 +61,8 @@ class FolderEditDialog(QDialog):
             Qt.WindowType.Dialog
             | Qt.WindowType.FramelessWindowHint
         )
-        self.setFixedSize(480, 720)
+        # cycle 169.292 — MyProfileDialog 등가 strict
+        self.setFixedSize(420, 600)
         self._existing = existing or {}
         self._included_chats: list = list(self._existing.get("included_chats", []))
         self._excluded_chats: list = list(self._existing.get("excluded_chats", []))
