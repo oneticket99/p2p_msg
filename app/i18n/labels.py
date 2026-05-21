@@ -143,6 +143,91 @@ LABELS_KO: dict[str, str] = {
 }
 
 
-def tr(key: str, locale: str = "ko") -> str:
-    """label key → locale 별 text (현재 ko 기본 + en/zh/ja placeholder fallback)."""
-    return LABELS_KO.get(key, key)
+# 한글 주석 — cycle 169.355 — 4 locale lookup dict (placeholder — 추후 자동 번역 chain 의무)
+LABELS_EN: dict[str, str] = {
+    "친구와_직접_연결_p2p_메신저": "P2P Messenger — Direct Friend Connection",
+    "원격_데스크탑_도움_gplv3_oss": "Remote Desktop Help + GPLv3 OSS",
+    "시작하기": "Get Started",
+    "tootalk_그룹_만들기": "TooTalk · Create Group",
+    "tootalk_채널_만들기": "TooTalk · Create Channel",
+    "tootalk_연락처": "TooTalk · Contacts",
+    "tootalk_전화": "TooTalk · Calls",
+    "tootalk_원격_요청": "TooTalk · Remote Request",
+    "tootalk_원격_수신": "TooTalk · Remote Incoming",
+    "tootalk_내_프로필": "TooTalk · My Profile",
+    "tootalk_그룹_정보": "TooTalk · Group Info",
+    "tootalk_음성_통화": "TooTalk · Voice Call",
+    "tootalk_영상_통화": "TooTalk · Video Call",
+    "투네이션_고객센터": "Toonation Customer Service",
+    "온라인": "Online",
+}
+LABELS_ZH_CN: dict[str, str] = {
+    "친구와_직접_연결_p2p_메신저": "P2P 即时通讯 — 朋友直接连接",
+    "원격_데스크탑_도움_gplv3_oss": "远程桌面帮助 + GPLv3 OSS",
+    "시작하기": "开始",
+    "tootalk_그룹_만들기": "TooTalk · 创建群组",
+    "tootalk_채널_만들기": "TooTalk · 创建频道",
+    "tootalk_연락처": "TooTalk · 联系人",
+    "tootalk_전화": "TooTalk · 通话",
+    "투네이션_고객센터": "Toonation 客服",
+    "온라인": "在线",
+}
+LABELS_ZH_TW: dict[str, str] = {
+    "친구와_직접_연결_p2p_메신저": "P2P 即時通訊 — 朋友直接連線",
+    "원격_데스크탑_도움_gplv3_oss": "遠端桌面協助 + GPLv3 OSS",
+    "시작하기": "開始",
+    "tootalk_그룹_만들기": "TooTalk · 建立群組",
+    "tootalk_채널_만들기": "TooTalk · 建立頻道",
+    "투네이션_고객센터": "Toonation 客服",
+    "온라인": "線上",
+}
+LABELS_JA: dict[str, str] = {
+    "친구와_직접_연결_p2p_메신저": "P2P メッセンジャー — 友達と直接接続",
+    "원격_데스크탑_도움_gplv3_oss": "リモートデスクトップ支援 + GPLv3 OSS",
+    "시작하기": "始める",
+    "tootalk_그룹_만들기": "TooTalk · グループ作成",
+    "tootalk_채널_만들기": "TooTalk · チャンネル作成",
+    "tootalk_연락처": "TooTalk · 連絡先",
+    "tootalk_전화": "TooTalk · 通話",
+    "투네이션_고객센터": "Toonation カスタマーサポート",
+    "온라인": "オンライン",
+}
+
+
+_LOCALE_DICT = {
+    "ko": LABELS_KO,
+    "en": LABELS_EN,
+    "zh-CN": LABELS_ZH_CN,
+    "zh-TW": LABELS_ZH_TW,
+    "ja": LABELS_JA,
+}
+
+# 한글 주석 — global current locale state (WelcomeDialog 4 toggle 시점 동적 갱신 entry)
+_CURRENT_LOCALE: str = "ko"
+
+
+def set_locale(locale: str) -> None:
+    """current locale 갱신 — WelcomeDialog 4 lang toggle chain 의 의 entry."""
+    global _CURRENT_LOCALE
+    if locale in _LOCALE_DICT:
+        _CURRENT_LOCALE = locale
+
+
+def get_locale() -> str:
+    """current locale 반환."""
+    return _CURRENT_LOCALE
+
+
+def tr(key: str, locale: str | None = None) -> str:
+    """label key → locale 별 text — fallback chain: locale dict → ko dict → key.
+
+    Parameters
+    ----------
+    key : str
+        labels key (예: "tootalk_그룹_만들기").
+    locale : str | None
+        명시 locale (None 시점 global _CURRENT_LOCALE 활용).
+    """
+    loc = locale or _CURRENT_LOCALE
+    d = _LOCALE_DICT.get(loc, LABELS_KO)
+    return d.get(key) or LABELS_KO.get(key, key)
