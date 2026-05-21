@@ -40,6 +40,26 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.212 (2026-05-21 11:21 KST) — hook_dereliction_check.sh stderr redirect — claude Stop hook display 정합
+- cycle 169.211 (2026-05-21 11:07 KST) — 평가 4 file fingerprint sync — cycle 169.206~210 5 cycle drift 회수
+- cycle 169.210 (2026-05-21 11:07 KST) — bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive)
+- cycle 169.209 (2026-05-21 11:03 KST) — bot LLM ContentTypeError 회수 — graceful HTTP status + JSON parse 분기
+- cycle 169.208 (2026-05-21 11:01 KST) — PORTABLE_HARNESS.md GPLv3 항목 제거 (사용자 directive)
+- cycle 169.207 (2026-05-21 10:59 KST) — DESIGN.md + html §11.10/11.11 sweep + PORTABLE_HARNESS.md 신설
+- cycle 169.206 (2026-05-21 10:52 KST) — handoff §8.79 cycle 194~205 9 entry append + parallel execution strict 가드레일
+- cycle 169.205 (2026-05-21 10:49 KST) — 평가 4 file fingerprint sync — cycle 169.196~204 9 cycle drift 회수
+- cycle 169.202~204 (2026-05-21 10:48 KST) — default chat retain + bot LLM 응답 chain + avatar 단색 (4 critique batch)
+- cycle 169.201 (2026-05-21 10:45 KST) — FolderManageDialog + FolderEditDialog frameless modal 변환
+- cycle 169.199 (2026-05-21 10:29 KST) — doc-gardener FRONTEND.md + html partial sweep — UI redesign 70+ sub-cycle reflect
+- cycle 169.197~198 (2026-05-21 10:26 KST) — doc-gardener Specification + ARCHITECTURE partial sweep
+- cycle 169.196 (2026-05-21 10:18 KST) — doc-gardener Structure.md partial sweep — cycle 169.x UI redesign reflect
+- cycle 169.195 (2026-05-21 10:18 KST) — 평가 4 file fingerprint sync + token regen — 6h staleness 회수
+- cycle 169.194 (2026-05-21 10:16 KST) — history-agent handoff §8.79 cycle 169.177~193 17 entry append
+- cycle 169.193 (2026-05-21 04:13 KST) — 편집 tab → FolderManageDialog (telegram 폴더 편집 align) — 사용자 directive 회수
+- cycle 169.191~192 (2026-05-21 04:12 KST) — chat_header label transparent bg + input_bar pill bg align
+- cycle 169.190 (2026-05-21 04:06 KST) — doc-gardener 평가 4 file 6 영역 본격 sweep — cycle 169.117~187 70 cycle drift 회수
+- cycle 169.190 (2026-05-21 03:55 KST) — assess 평가 4 file + token-usage sync — cycle 169.117~188 70 cycle 본격 sweep
+- cycle 169.189 (2026-05-21 03:53 KST) — dereliction-detector 자동 spawn 강제 chain 신설
 - cycle 169.187 (2026-05-21 03:47 KST) — 평가 4 file fingerprint sync — cycle 169.182~186 5 cycle drift 회수
 - cycle 169.186 (2026-05-21 03:46 KST) — MyProfileDialog crash 회수 + telegram simple rewrite
 - cycle 169.185 (2026-05-21 03:42 KST) — sidebar TAB_DEFS 2 entry (home + phone icon 폐기) — 사용자 directive

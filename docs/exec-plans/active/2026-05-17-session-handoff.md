@@ -254,6 +254,13 @@ status: active
 | `65fe98e` | 169.201 | FolderManage + FolderEdit frameless modal (image #26 critique) |
 | `4c50a80` | 169.202~204 | default chat retain + 투네이션 고객센터 bot LLM 응답 chain + system prompt knowledge source + avatar gradient → 단색 #0066FF |
 | `8685562` | 169.205 | 평가 4 file fingerprint sync v11 |
+| `bf193cb` | 169.206 | handoff §8.79 cycle 194~205 9 entry append + parallel execution strict 가드레일 |
+| `dbe0e75` | 169.207 | DESIGN.md + html §11.10/11.11 sweep + PORTABLE_HARNESS.md 신설 |
+| `2a05a77` | 169.208 | PORTABLE_HARNESS.md GPLv3 항목 제거 (사용자 directive) |
+| `410f0b6` | 169.209 | bot LLM ContentTypeError 회수 — graceful HTTP status + JSON parse 분기 |
+| `9c4c7ac` | 169.210 | bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive) |
+| `57e3110` | 169.211 | 평가 4 file fingerprint sync — cycle 169.206~210 5 cycle drift 회수 |
+| `3e7c22e` | 169.212 | hook_dereliction_check.sh stderr redirect — claude Stop hook display 정합 |
 
 ### 8.79.2 사용자 critique 회수 chain
 
