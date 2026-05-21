@@ -220,25 +220,26 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
 
     # bot LLM proxy endpoint 등록 (Phase 3 사이클 74 — BOT_ENABLED=1 시 활성)
     # cycle 96 (QA P3) — Anthropic → OpenAI → Mock 의 3 layer fallback chain
-    # cycle 110 — Config.bot 경유 (os.environ 직접 access 회수)
+    # cycle 169.210 — 사용자 directive verbatim "투네이션 챗봇은 gpt 를 이용했으면 해"
+    # OpenAI 우선 + Anthropic fallback + Mock 폴백 (순서 swap)
     if cfg.bot.enabled:
         bot_logger = logging.getLogger(__name__)
-        if AnthropicProvider.is_available():
-            app[APP_KEY_PROVIDER] = AnthropicProvider()
-            bot_logger.info(
-                "Bot LLM provider = AnthropicProvider (ANTHROPIC_API_KEY 활성)"
-            )
-        elif OpenAIProvider.is_available():
+        if OpenAIProvider.is_available():
             app[APP_KEY_PROVIDER] = OpenAIProvider()
             bot_logger.info(
-                "Bot LLM provider = OpenAIProvider "
-                "(ANTHROPIC_API_KEY 부재, OPENAI_API_KEY 활성)"
+                "Bot LLM provider = OpenAIProvider (OPENAI_API_KEY 활성, 사용자 directive cycle 169.210)"
+            )
+        elif AnthropicProvider.is_available():
+            app[APP_KEY_PROVIDER] = AnthropicProvider()
+            bot_logger.info(
+                "Bot LLM provider = AnthropicProvider "
+                "(OPENAI_API_KEY 부재, ANTHROPIC_API_KEY 활성 fallback)"
             )
         else:
             app[APP_KEY_PROVIDER] = MockLLMProvider()
             bot_logger.warning(
                 "Bot LLM provider = MockLLMProvider 폴백 — "
-                "ANTHROPIC_API_KEY + OPENAI_API_KEY 모두 부재 (개발 전용, "
+                "OPENAI_API_KEY + ANTHROPIC_API_KEY 모두 부재 (개발 전용, "
                 "프로덕션 배포 시 환경 변수 설정 필수)"
             )
         app[APP_KEY_RATE_GATE] = RateLimitGate(rate_per_minute=cfg.bot.rate_per_minute)
