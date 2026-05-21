@@ -2119,16 +2119,83 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:
-        """ChatHeader 메뉴 button — context menu popup."""
+        """ChatHeader 메뉴 button — kind 분기 dropdown (group/channel/friend) 사용자 directive image #102."""
         log.info("ChatHeader 메뉴 click")
         from PyQt6.QtWidgets import QMenu
         from PyQt6.QtGui import QCursor
+        kind = getattr(self, "_active_chat_kind", None) or "friend"
         menu = QMenu(self)
-        menu.addAction("채팅 정보")
-        menu.addAction("알림 끄기")
-        menu.addSeparator()
-        menu.addAction("채팅 나가기")
+        menu.setStyleSheet(
+            "QMenu { background-color: #131C30; color: #e5e7eb; border: 1px solid #1f2937; padding: 4px; }"
+            "QMenu::item { padding: 8px 16px; border-radius: 4px; }"
+            "QMenu::item:selected { background-color: #1F2937; }"
+            "QMenu::separator { height: 1px; background: #1f2937; margin: 4px 0; }"
+        )
+        # cycle 169.334 — group/channel kind = telegram align 6 entry (image #102)
+        if kind in ("group", "channel"):
+            act_mute = menu.addAction("알림 끄기")
+            menu.addSeparator()
+            act_info = menu.addAction("그룹 정보 보기" if kind == "group" else "채널 정보 보기")
+            act_manage = menu.addAction("그룹 관리" if kind == "group" else "채널 관리")
+            act_poll = menu.addAction("설문 만들기")
+            act_clear = menu.addAction("대화 내용 비우기")
+            menu.addSeparator()
+            act_leave = menu.addAction("삭제하고 나가기")
+            act_info.triggered.connect(self._on_group_info)  # type: ignore[arg-type]
+            act_manage.triggered.connect(lambda: log.info("[group_manage] placeholder"))  # type: ignore[arg-type]
+            act_poll.triggered.connect(lambda: log.info("[group_poll] placeholder"))  # type: ignore[arg-type]
+            act_clear.triggered.connect(self._on_chat_clear)  # type: ignore[arg-type]
+            act_leave.triggered.connect(self._on_chat_leave)  # type: ignore[arg-type]
+        else:
+            menu.addAction("채팅 정보")
+            menu.addAction("알림 끄기")
+            menu.addSeparator()
+            menu.addAction("채팅 나가기")
         menu.exec(QCursor.pos())
+
+    @pyqtSlot()
+    def _on_group_info(self) -> None:
+        """그룹 정보 보기 — GroupInfoDialog open (cycle 169.334 image #103)."""
+        try:
+            from app.ui.group_info_dialog import GroupInfoDialog
+            kind = getattr(self, "_active_chat_kind", "group")
+            target_id = getattr(self, "_active_chat_target_id", 0)
+            clp = getattr(self, "_chat_list_panel", None)
+            name = "?"
+            if clp is not None:
+                for e in getattr(clp, "_entries", []):
+                    if e.kind == kind and e.target_id == target_id:
+                        name = e.name
+                        break
+            dialog = GroupInfoDialog(group_name=name, members=[], parent=self)
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("GroupInfoDialog open 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_chat_clear(self) -> None:
+        """대화 내용 비우기 — chat_view + dm_history reset."""
+        log.info("[chat_clear] active=%s/%s", getattr(self, "_active_chat_kind", "?"), getattr(self, "_active_chat_target_id", "?"))
+        try:
+            self._chat_view.clear_messages()
+            key = (getattr(self, "_active_chat_kind", None), getattr(self, "_active_chat_target_id", None))
+            if hasattr(self, "_dm_history") and key in self._dm_history:
+                self._dm_history[key] = []
+        except Exception as exc:
+            log.debug("chat_clear 실패 — %r", exc)
+
+    @pyqtSlot()
+    def _on_chat_leave(self) -> None:
+        """삭제하고 나가기 — chat_list_panel entry remove + chat clear."""
+        kind = getattr(self, "_active_chat_kind", None)
+        target_id = getattr(self, "_active_chat_target_id", None)
+        log.info("[chat_leave] kind=%s target=%s", kind, target_id)
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is None or kind is None:
+            return
+        entries = [e for e in getattr(clp, "_entries", []) if not (e.kind == kind and e.target_id == target_id)]
+        clp.set_entries(entries)
+        self._chat_view.clear_messages()
 
     @pyqtSlot()
     def _on_send_clicked(self) -> None:
