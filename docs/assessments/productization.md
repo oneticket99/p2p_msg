@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T19:30:00+09:00
+last_verified: 2026-05-21T20:05:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 163 sub-cycle 누계 (cycle 169.117~342). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 173 sub-cycle 누계 (cycle 169.117~352). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -210,6 +210,16 @@ status: active
 - **cycle 169.340**: bot identity override pre-LLM filter — identity keyword detect 시점 LLM 우회 hardcoded reply (사용자 critique image #107)
 - **cycle 169.341**: system prompt SYSTEM ROLE LOCK 강화 — own knowledge < RAG corpus 우선순위 명시 + identity '저는 ~ 아닙니다' 부정 차단 강화 (사용자 critique 학습 부재 회수)
 - **cycle 169.342**: hardcoded identity override 폐기 (cycle 169.340 revert) + system prompt CRITICAL PERSONA 강화 — LLM 스스로 페르소나 부여 chain (사용자 directive image #108 — LLM 자체 페르소나 의무)
+- **cycle 169.343**: 평가 4 file fingerprint sync cycle 169.337~342 6 cycle drift 회수 + ssh-deploy chain demo server (114.207.112.73) bot service rebuild (사용자 directive "서버사이드 적용시켜 당장")
+- **cycle 169.344**: server bot_handlers system prompt prepend chain — default_system_prompt() inject 의무 (LLM training data fallback 'ChatGPT입니다' 차단 + 투네이션 고객센터 페르소나 강제 사용자 critique image #111)
+- **cycle 169.345**: bot provider OpenAI only strict — Anthropic + Mock fallback chain 폐기 (사용자 directive verbatim '챗봇은 gpt 로만 진행')
+- **cycle 169.346**: BotMessage timestamp_ms required arg 회수 — system prompt prepend chain TypeError 해소 (cycle 169.344 silent exception 회수)
+- **cycle 169.347**: bot system prompt SCOPE LOCK — Toonation 5 영역 (후원/정산/OBS/사기/환불) 외 주제 응답 거부 의무 (사용자 directive image #116)
+- **cycle 169.348**: NewChannelDialog wizard 2 step rewrite (step 1 카메라+채널명+설명+다음 → step 2 구독자 추가 검색+chip+친구 list+만들기) + channel_created chain (ChatListEntry kind=channel insert + chat focus)
+- **cycle 169.349**: folder dialog 폭 20% 감소 (420→336) — 사용자 directive image #117
+- **cycle 169.350**: NewGroupDialog/NewChannelDialog camera_btn.setIcon QPixmap→QIcon (load_pixmap→load_icon) TypeError 회수 — 그룹 만들기 click 부재 사용자 critique 회수
+- **cycle 169.351**: dialog open 後 child widget visible 강제 chain (findChildren + show + update + repaint) — QStackedWidget 등 nested widget 시점 obscure 차단 + debug log
+- **cycle 169.352**: NewGroupDialog/NewChannelDialog 🔍 이모지 → search SVG icon QAction LeadingPosition 대체 + padding-left 32 (사용자 critique image #118 이모지 차단 의무)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
