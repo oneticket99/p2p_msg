@@ -50,7 +50,7 @@ mkdir -p deploy/secrets
 cp ~/Downloads/fcm-service-account.json deploy/secrets/fcm_service_account.json
 chmod 600 deploy/secrets/fcm_service_account.json
 # 4) production stack 기동
-docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env.production up -d
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env up -d
 # 5) DB migration 확인
 docker compose exec mariadb mariadb -u tootalk -p tootalk -e "SHOW TABLES;"
 ```
@@ -79,7 +79,7 @@ docker compose exec mariadb mariadb -u tootalk -p tootalk -e "SHOW TABLES;"
 # 1) .env.production 안 OPENAI_API_KEY 직접 입력
 echo "OPENAI_API_KEY=sk-..." >> .env.production
 # 2) docker compose stack 재기동 (env 반영)
-docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env.production up -d --force-recreate server
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.production.yml --env-file .env up -d --force-recreate server
 # 3) provider 활성 verify
 docker compose logs server | grep "Bot LLM provider"
 # expected: "Bot LLM provider = OpenAIProvider (OPENAI_API_KEY 활성, 사용자 directive cycle 169.210)"

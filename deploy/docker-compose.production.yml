@@ -32,7 +32,9 @@ services:
 
   web:
     deploy:
-      replicas: 2
+      # cycle 169.241 — replicas 키 폐기 (base compose container_name 충돌 차단)
+      # 단일 instance 의 container_name 의 unique 의무 retain. multi-replica 시점
+      # 별개 cycle 안 nginx upstream 의 dynamic upstream 의 추가 작업 의무.
       resources:
         limits:
           memory: 1G
@@ -50,7 +52,7 @@ services:
 
   ws:
     deploy:
-      replicas: 1
+      # cycle 169.241 — replicas 키 폐기 (base compose container_name 충돌 차단)
       resources:
         limits:
           memory: 512M
