@@ -1013,6 +1013,18 @@ class MainWindow(QMainWindow):
             "[main_window] chat_list_panel refresh — bot=1 friend=%d room=%d",
             len(friends), len(rooms),
         )
+        # cycle 169.202 — re-populate 후 active chat retain 또는 default 진입 (사용자 critique image #28)
+        if self._active_chat_kind and self._active_chat_target_id is not None:
+            try:
+                self._chat_list_panel.set_current_chat(
+                    self._active_chat_kind, self._active_chat_target_id,
+                )
+            except Exception:
+                pass
+        else:
+            # 빈 chat default 회피 — 투네이션 고객센터 bot 진입
+            from PyQt6.QtCore import QTimer
+            QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
 
     def _on_open_add_friend(self) -> None:
         """"친구 추가" 메뉴 슬롯 — AddFriendDialog 의 모달 실행."""
@@ -1220,6 +1232,37 @@ class MainWindow(QMainWindow):
                 self._chat_view.scroll_to_bottom()
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("chat_view add_message 실패 — %r", exc)
+
+    async def _send_bot_message(self, text: str) -> None:
+        """cycle 169.203 — 투네이션 고객센터 bot LLM 응답 chain (사용자 directive image #29).
+
+        POST /api/bot/chat → reply.content → DM cache append.
+        graceful exception (server fail 시 system message render).
+        """
+        import time, aiohttp
+        try:
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            token = getattr(self._state, "bearer_token", None) or ""
+            headers = {"Authorization": f"Bearer {token}"} if token else {}
+            payload = {
+                "messages": [
+                    {"role": "user", "content": text, "timestamp_ms": int(time.time() * 1000)},
+                ],
+            }
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector) as session:
+                async with session.post(
+                    f"{api_base}/api/bot/chat", json=payload, headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as resp:
+                    data = await resp.json()
+                    reply = data.get("reply", {}).get("content", "응답 부재")
+        except Exception as exc:  # pragma: no cover - graceful
+            log.warning("[bot_chat] LLM 호출 실패 — %r", exc)
+            reply = f"⚠️ 응답 실패 — {exc.__class__.__name__}"
+        self._append_dm_message(
+            "bot", 1, "투네이션 고객센터", reply, datetime.now(), is_self=False,
+        )
 
     def _lookup_friend_name(self, friend_id: int) -> str:
         """cycle 169.154 — friend_id → nickname lookup (friend_list 안 cache 조회).
@@ -1678,6 +1721,10 @@ class MainWindow(QMainWindow):
                 True,
                 reply_to=reply_ctx,
             )
+            # cycle 169.203 — bot kind 의 LLM 응답 chain (사용자 critique image #29)
+            if self._active_chat_kind == "bot":
+                import asyncio
+                asyncio.ensure_future(self._send_bot_message(text))
         else:
             # active chat 부재 fallback — 기존 chat_view direct render
             self._chat_view.add_message(
