@@ -185,7 +185,8 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         self._sound_player = sound_player
         # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
         self.setWindowTitle(f"TooTalk · {_tr('설정')}")
-        self.setMinimumSize(720, 560)
+        # cycle 169.291 — MyProfileDialog 의 setFixedSize 등가 strict retain (사용자 critique image #65)
+        self.setFixedSize(420, 600)
         # 한글 주석 — cycle 169.57 회수 — 모든 dialog modal 강제 (사용자 directive)
         self.setModal(True)
         # cycle 169.250 — frameless modal + main embed (사용자 critique image #10 회수 — 별도 window 차단)
