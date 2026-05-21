@@ -218,19 +218,25 @@ class FolderEditDialog(QDialog):
         self._exclude_btn.setText(f"−  제외할 대화방 추가 ({n}개)")
 
     def _on_save(self) -> None:
-        """만들기 click — validation + folder_saved emit."""
+        """만들기 click — validation + folder_saved emit.
+
+        cycle 169.388 — is_edit flag retain (사용자 critique image #153 — folder edit click 시점
+        새 INSERT 부재 + UPDATE chain 활성). existing.get("folder_id") retain 시점 = edit mode.
+        """
         name = self._name_edit.text().strip()
         if not name:
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.warning(self, "TooTalk", "폴더명 입력 의무")
             return
+        existing_id = self._existing.get("folder_id")
         folder_data = {
-            "folder_id": self._existing.get("folder_id") or uuid.uuid4().hex[:8],
+            "folder_id": existing_id or uuid.uuid4().hex[:8],
             "name": name,
             "color_name": self._selected_color,
             "included_chats": self._included_chats,
             "excluded_chats": self._excluded_chats,
             "chat_count": len(self._included_chats),
+            "_is_edit": bool(existing_id),
         }
         self.folder_saved.emit(folder_data)
         self.accept()

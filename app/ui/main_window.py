@@ -1514,10 +1514,25 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def _on_folder_saved(self, folder_data: dict) -> None:
-        """FolderEditDialog 만들기 PASS → user_folders append + REST 영속화 + sidebar refresh."""
+        """FolderEditDialog 만들기 PASS → user_folders append/replace + REST 영속화 + sidebar refresh.
+
+        cycle 169.388 — edit mode (사용자 critique image #153) — _is_edit flag retain 시점
+        기존 folder_id 의 user_folders entry replace + UPDATE chain (INSERT 부재).
+        """
         if not hasattr(self, "_user_folders"):
             self._user_folders = []
-        self._user_folders.append(folder_data)
+        is_edit = folder_data.pop("_is_edit", False)
+        if is_edit:
+            target_fid = str(folder_data.get("folder_id", ""))
+            self._user_folders = [
+                folder_data if str(f.get("folder_id", "")) == target_fid else f
+                for f in self._user_folders
+            ]
+            # 한글 주석 — replace 부재 시 append fallback
+            if not any(str(f.get("folder_id", "")) == target_fid for f in self._user_folders):
+                self._user_folders.append(folder_data)
+        else:
+            self._user_folders.append(folder_data)
         # cycle 169.385 — included_chats debug log (사용자 critique image #148 folder filter fail 회수)
         log.warning(
             "[folder_saved] name=%s included=%d excluded=%d included_data=%s",

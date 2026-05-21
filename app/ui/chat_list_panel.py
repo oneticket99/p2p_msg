@@ -269,8 +269,13 @@ class ChatListPanel(QFrame):
         self._user_folders: list[dict] = []  # cycle 169.378 — folder filter chain (사용자 critique image #134)
 
     def set_active_tab(self, tab_key: str) -> None:
-        """sidebar_rail tab_clicked signal 연결 — list re-render."""
+        """sidebar_rail tab_clicked signal 연결 — list re-render.
+
+        cycle 169.388 — tab click 시점 active_folder reset "all" (사용자 critique image #153
+        모든 대화방 click → folder filter 잔존 회수).
+        """
         self._active_tab = tab_key
+        self._active_folder = "all"
         self._render()
 
     def set_active_folder(self, folder_id: str) -> None:
