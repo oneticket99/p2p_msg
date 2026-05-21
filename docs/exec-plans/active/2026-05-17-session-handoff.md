@@ -228,6 +228,24 @@ status: active
 | `7b33d0a` | 169.174 | chat_list bump_entry on send (preview + ts + sort 재 정렬) |
 | `07f5592` | 169.175 | 평가 4 file fingerprint sync v7 |
 | `269ac6a` | 169.176 | chat_view scroll offset per-chat retain (save/restore + fallback bottom) |
+| `ba783b9` | 169.177 | handoff §8.79 cycle 169.162~176 15 entry append |
+| `d71ef1a` | 169.178 | chat_header status color cyan → gray (telegram image #6 align) |
+| `83b040e` | 169.179 | chat_view day separator label (오늘/어제/YYYY년 M월 D일) |
+| `e4856b1` | 169.180 | bubble ts inline overlay (telegram D-15 negative margin + color 분기) |
+| `a422e35` | 169.181 | 평가 4 file fingerprint sync v8 |
+| `135b411` | 169.182 | chat_header avatar 폐기 + hamburger 60 align + default chat 진입 |
+| `a50ce8c` | 169.183 | top bar 3 영역 vertical center align (image #17/18) |
+| `bb7dbff` | 169.184 | chat_list "채팅" tab 통합 filter (image #19 critique) |
+| `633b878` | 169.185 | sidebar TAB_DEFS 2 entry (home + phone icon 폐기) |
+| `b232097` | 169.186 | MyProfileDialog crash 회수 + telegram simple rewrite |
+| `ceccbdd` | 169.187 | 평가 4 file fingerprint sync v9 |
+| `043ed53` | 169.188 | doc-gardener 평가 4 file 6 영역 본격 sweep (cycle 169.117~187 70 cycle drift) |
+| `69e9f23` | 169.189 | release-agent README 30 entry trim + dereliction hook block exit 2 강화 |
+| `822cdff` | 169.190 | history-agent History 53 entry prepend + main thread vibe-coding + html mirror + token regen |
+| `1b110f6` | 169.190 | 평가 4 file + token-usage sync cycle 169.117~188 70 cycle 본격 |
+| `f8a9015` | 169.189 | dereliction-detector 자동 spawn hook 강화 + memory permanent |
+| `78d385e` | 169.191~192 | chat_header label transparent bg (image #24) + input_bar pill bg align (image #25/26) |
+| `fd0da9c` | 169.193 | 편집 tab → FolderManageDialog redirect (image #27~30 사용자 directive 회수) |
 
 ### 8.79.2 사용자 critique 회수 chain
 
