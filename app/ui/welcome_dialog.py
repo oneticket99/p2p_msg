@@ -30,8 +30,16 @@ from PyQt6.QtWidgets import (
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — i18n tr() helper, MainWindow context 정합
-_tr = lambda src: QCoreApplication.translate("MainWindow", src)
+# cycle 169.356 — labels.py 4 locale dict + PyQt6 QCoreApplication.translate dual chain
+# labels.tr() 우선 lookup + 부재 시점 QCoreApplication.translate fallback
+from app.i18n import labels as _i18n_labels
+
+
+def _tr(src: str) -> str:
+    # 한글 주석 — labels key slug 추출 chain (한글 src → key generation)
+    import re as _re
+    slug = _re.sub(r"[^가-힣A-Za-z0-9]+", "_", src)[:40].strip("_").lower()
+    return _i18n_labels.tr(slug) if _i18n_labels.tr(slug) != slug else QCoreApplication.translate("MainWindow", src)
 
 # 한글 주석 — branding asset path
 _LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
@@ -169,8 +177,13 @@ class WelcomeDialog(QDialog):
         outer.addStretch(1)
 
     def _on_locale_click(self, locale: str) -> None:
-        """locale switch — UserLocalePreferences persist + 본 dialog 재 렌더."""
-        # cycle 169.33 — signature mismatch 회수 (str → UserLocalePreferences instance)
+        """locale switch — UserLocalePreferences persist + labels.set_locale + dialog accept."""
+        # cycle 169.356 — labels global locale 갱신 chain 추가 (사용자 directive image #119/120)
+        try:
+            _i18n_labels.set_locale(locale)
+            log.info("[i18n] labels.set_locale → %s", locale)
+        except Exception as exc:
+            log.debug("labels set_locale graceful skip — %r", exc)
         try:
             from app.config.user_preferences import (
                 UserLocalePreferences,
