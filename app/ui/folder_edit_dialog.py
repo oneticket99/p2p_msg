@@ -54,7 +54,9 @@ class FolderEditDialog(QDialog):
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("TooTalk · 새 폴더")
+        # cycle 169.389 — edit mode 시점 title 변경 (사용자 critique image #154)
+        is_edit_mode = bool((existing or {}).get("folder_id"))
+        self.setWindowTitle("TooTalk · 폴더 수정" if is_edit_mode else "TooTalk · 새 폴더")
         self.setModal(True)
         # cycle 169.201 — frameless modal 의무 (사용자 directive cycle 169.121 pattern align)
         self.setWindowFlags(
@@ -80,7 +82,7 @@ class FolderEditDialog(QDialog):
         c_layout.setContentsMargins(20, 20, 20, 20)
         c_layout.setSpacing(14)
 
-        title = QLabel("새 폴더")
+        title = QLabel("폴더 수정" if is_edit_mode else "새 폴더")
         title.setStyleSheet("color: #e5e7eb; font-size: 18px; font-weight: 700;")
         c_layout.addWidget(title)
 
@@ -168,7 +170,7 @@ class FolderEditDialog(QDialog):
         cancel_btn.setStyleSheet("color: #9ca3af; background: transparent; border: none; font-size: 14px;")
         cancel_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
         btn_row.addWidget(cancel_btn)
-        save_btn = QPushButton("만들기")
+        save_btn = QPushButton("수정 완료" if is_edit_mode else "만들기")
         save_btn.setStyleSheet(
             "QPushButton {"
             " color: #0066FF; background: transparent; border: none;"
