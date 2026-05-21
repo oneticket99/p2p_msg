@@ -1336,6 +1336,11 @@ class MainWindow(QMainWindow):
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
             token = getattr(self, "_session_token", None) or ""
+            # cycle 169.263 — 사용자 critique bot 401 retain root cause trace log
+            log.warning(
+                "[bot_chat] token_present=%s token_len=%d api_base=%s",
+                bool(token), len(token), api_base,
+            )
             headers = {"Authorization": f"Bearer {token}"} if token else {}
             payload = {
                 "messages": [
