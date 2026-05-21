@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T18:50:00+09:00
+last_verified: 2026-05-21T19:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-21 18:50 KST — cycle 169.321 fingerprint sync. cycle 169.311~321 11 sub-cycle drift 회수 (chat_list disappear fix 4 cycle: entries log + splitter sizes snapshot/restore + `_list` 영구 setVisible(True) + `_matches_tab` unknown tab fallback True + active_tab snapshot/restore. drawer 5 dialog 신설: NewGroupDialog + NewChannelDialog + ContactsDialog + CallsDialog + SavedMessagesDialog 의 telegram align 420x600 + outer wrap. drawer connect chain. dialog close 강화: ✕ button bg 강화 + backdrop click reject + ESC key handler).
+> **최신 갱신 시점**: 2026-05-21 19:00 KST — cycle 169.328 fingerprint sync. cycle 169.322~328 7 sub-cycle drift 회수 (저장한 메시지 친구 list saved entry chain + saved kind avatar Toonation BI bg + data SVG icon + drawer close + chat focus 이동 + 공통 close button factory 7 dialog 일괄 적용 + avatar font/icon size 키우기 + CallDialog frameless + _exec_dialog_centered chain + CallDialog avatar palette_solid 공통화 + saved 시점 data icon 분기).<br>**이전 갱신**: 2026-05-21 18:50 KST — cycle 169.321 fingerprint sync. cycle 169.311~321 11 sub-cycle drift 회수.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 142 sub-cycle 누계 (cycle 169.117~321). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 149 sub-cycle 누계 (cycle 169.117~328). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -190,6 +190,13 @@ status: active
 - **cycle 169.315~319**: drawer 5 dialog 신설 — NewGroupDialog (그룹 만들기) + NewChannelDialog (채널 만들기) + ContactsDialog (연락처) + CallsDialog (전화) + SavedMessagesDialog (저장한 메시지). 모두 QDialog base + setFixedSize(420, 600) + outer wrap #131C30 + border 1px #1f2937 + telegram align
 - **cycle 169.320**: main_window drawer 5 signal connect chain — new_group + new_channel + contacts + calls + saved 의 `_exec_dialog_centered` open handler 5종 신설
 - **cycle 169.321**: dialog close 강화 — ✕ button bg #1F2937 + border + 32x32 strict visible + backdrop click reject + ESC key handler chain (사용자 critique image #85 close 불가 회수)
+- **cycle 169.322**: 평가 4 file fingerprint sync cycle 169.311~321 11 cycle drift 회수
+- **cycle 169.323**: 저장한 메시지 dialog 폐기 → 친구 list saved entry chain — drawer saved click 시점 chat_list saved entry 활성화 + chat_view focus 이동 + `_matches_tab` saved kind 추가 (사용자 directive image #86)
+- **cycle 169.324**: `_close_button.py` factory 신설 + 7 dialog 일괄 적용 — telegram align 공통 circular close (36x36 + subtle bg + muted glyph + hover contrast) 사용자 directive image #87
+- **cycle 169.325**: saved kind avatar render — Toonation BI #0066FF bg + data SVG icon (24px) + drawer close (slide-out animation) + input focus chain (사용자 directive image #88)
+- **cycle 169.326**: avatar icon 24→34 + initials font 14/16→20/24 키우기 (사용자 directive image #90)
+- **cycle 169.327**: CallDialog frameless + 420x600 + `_exec_dialog_centered` chain (main center + backdrop + ESC) — main outside protrude 차단 (사용자 directive image #91)
+- **cycle 169.328**: CallDialog avatar chat_list entry 등가 공통화 — palette_solid + initials chain + saved 시점 data icon 분기 (사용자 directive image #92)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
