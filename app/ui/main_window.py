@@ -1709,23 +1709,20 @@ class MainWindow(QMainWindow):
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame
-        # cycle 169.298/306 — backdrop도 centralWidget의 child (splitter cover only)
-        backdrop_parent = self.centralWidget() if self.centralWidget() else self
-        backdrop = QFrame(backdrop_parent)
+        # cycle 169.307 — main_window child overlay (centralWidget = splitter, child 시점 panel add 깨짐 회수)
+        backdrop = QFrame(self)
         backdrop.setObjectName("dialogBackdrop")
         backdrop.setAutoFillBackground(True)
         backdrop.setStyleSheet(
             "QFrame#dialogBackdrop { background-color: rgba(0, 0, 0, 160); }"
         )
-        backdrop.setGeometry(backdrop_parent.rect())
+        backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
-        # cycle 169.306 — dialog parent의 centralWidget로 변경 (splitter sibling retain 부재)
-        # 사용자 critique image #76 — dialog close 後 splitter 의 chat_list_panel visual 부재 root cause
         dialog.hide()
-        parent_for_dialog = self.centralWidget() if self.centralWidget() else self
-        dialog.setParent(parent_for_dialog)
+        dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
+        parent_for_dialog = self
         # cycle 169.299 — debug log 추가 (사용자 critique 의 실 size capture)
         parent_rect = parent_for_dialog.rect()
         log.warning(
@@ -1783,13 +1780,16 @@ class MainWindow(QMainWindow):
         dialog.raise_()
         loop.exec()
         dialog.hide()
+        dialog.setParent(None)  # cycle 169.307 — dialog widget tree 분리 (close 後 main_window layout 회복)
         result = dialog._embed_result
         backdrop.hide()
         backdrop.deleteLater()
-        # cycle 169.305 — close 後 main central widget 의 visibility restore 강제 (사용자 critique image #74/75)
+        # cycle 169.305 — close 後 splitter/chat_list visibility restore
         if hasattr(self, "_chat_list_panel"):
             self._chat_list_panel.show()
             self._chat_list_panel.update()
+        if self.centralWidget():
+            self.centralWidget().update()
         self.update()
         return result
 
