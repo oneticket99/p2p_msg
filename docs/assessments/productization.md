@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T19:20:00+09:00
+last_verified: 2026-05-21T19:30:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 156 sub-cycle 누계 (cycle 169.117~335). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 163 sub-cycle 누계 (cycle 169.117~342). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -203,6 +203,13 @@ status: active
 - **cycle 169.333**: NewGroupDialog wizard 2 step rewrite — step 1 (camera circle + 그룹명 + 다음) → step 2 (참가자 추가 검색 + chip + 친구 list scrollable + 만들기) + group_created chain (ChatListEntry kind=group entries insert + chat focus + roster broadcast placeholder) + `_matches_tab` group/channel kind 추가 (사용자 directive image #97~101 telegram wizard align)
 - **cycle 169.334**: header menu kind 분기 dropdown — group/channel = telegram 6 entry (알림 끄기 + 정보 보기 + 관리 + 설문 만들기 + 대화 비우기 + 삭제하고 나가기) + chat clear + chat leave handler + GroupInfoDialog 신설 (큰 avatar + 4 action button row + 참가자 list 의 add button 우측 + member row scroll) — 사용자 directive image #102/103
 - **cycle 169.335**: CallSoundPlayer.play_loop setLoopCount Loop.Infinite enum → int convert (PyQt6 TypeError 회수 — ringback wav 재생 부재 사용자 critique image #104)
+- **cycle 169.336**: 07/08/09 wav v3 binding (call_connected_chime + call_ended_soft + call_failed_or_busy) + CallDialog end button 1.5s delay 후 reject + bot RAG corpus 1순위 강화 + Twonation hallucination 차단 (사용자 critique image #105)
+- **cycle 169.337**: markdownlint MD037 회수 — productization.md underscore handler 명시 제거 + html mirror touch
+- **cycle 169.338**: RemoteCallDialog 신설 (CallDialog 등가 modal — avatar + status + 통화 sound chain + outgoing 취소 / incoming 승인/거절 button) + main_window remote_request/remote_connect handler 교체 (사용자 directive 원격 연결 = 통화 등가 modal)
+- **cycle 169.339**: bot system prompt identity strict — '너 투네이션 고객센터 맞아' 질문 시점 긍정 응답 의무 + identity 부정 응답 금지 (사용자 critique image #106)
+- **cycle 169.340**: bot identity override pre-LLM filter — identity keyword detect 시점 LLM 우회 hardcoded reply (사용자 critique image #107)
+- **cycle 169.341**: system prompt SYSTEM ROLE LOCK 강화 — own knowledge < RAG corpus 우선순위 명시 + identity '저는 ~ 아닙니다' 부정 차단 강화 (사용자 critique 학습 부재 회수)
+- **cycle 169.342**: hardcoded identity override 폐기 (cycle 169.340 revert) + system prompt CRITICAL PERSONA 강화 — LLM 스스로 페르소나 부여 chain (사용자 directive image #108 — LLM 자체 페르소나 의무)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
