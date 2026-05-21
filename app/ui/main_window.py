@@ -1784,9 +1784,18 @@ class MainWindow(QMainWindow):
         result = dialog._embed_result
         backdrop.hide()
         backdrop.deleteLater()
-        # cycle 169.305 — close 後 splitter/chat_list visibility restore
+        # cycle 169.308 — close 後 splitter + chat_list_panel + inner _list 강제 visibility + render
         if hasattr(self, "_chat_list_panel"):
             self._chat_list_panel.show()
+            inner_list = getattr(self._chat_list_panel, "_list", None)
+            if inner_list is not None:
+                inner_list.show()
+            # 한글 주석 — _render() 재호출 의 entries 의 visible re-allocate
+            if hasattr(self._chat_list_panel, "_render"):
+                try:
+                    self._chat_list_panel._render()
+                except Exception:
+                    pass
             self._chat_list_panel.update()
         if self.centralWidget():
             self.centralWidget().update()
