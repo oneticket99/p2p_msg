@@ -238,22 +238,22 @@ status: active
 - **cycle 169.370**: ChatPickerDialog rewrite — ChatListItemDelegate 재사용 (avatar circle + name + last message entry 등가 format) + frameless 420x600 + SVG search icon + close X + i18n labels (포함할/제외할 대화방 + 확인) + _exec_dialog_centered chain 사용자 critique image #125
 - **cycle 169.371**: FolderEditDialog add_included_chats/add_excluded_chats ChatListEntry dataclass → JSON serializable dict convert (_entry_to_dict static) — FolderCreateWorker json.dumps TypeError → fatal abort crash 회수
 - **cycle 169.372**: 평가 4 file fingerprint sync cycle 169.366~371 6 cycle drift 회수
-- **cycle 169.373**: sidebar_rail set_folder_entries API 신설 (folder dynamic button rebuild + folder_selected emit chain) + main_window _on_folder_saved sidebar refresh + active FolderManageDialog close chain 사용자 critique image #127/129
+- **cycle 169.373**: sidebar_rail set folder entries API 신설 (folder dynamic button rebuild + folder selected emit chain) + main window folder saved sidebar refresh + active FolderManageDialog close chain 사용자 critique image #127/129
 - **cycle 169.374~375**: sidebar folder vertical layout (icon + label ToolButtonTextUnderIcon) + width 72→80 + login 직後 FolderListWorker fetch chain 사용자 directive image #130 + 서버 저장 폴더 restore
 - **cycle 169.376**: sidebar 편집 button 최하단 position 의무 (folder = 편집 button 之前 insert) 사용자 critique image #131
 - **cycle 169.377**: sidebar tab/folder label _wrap_label helper (4 char 초과 띄어쓰기 break 또는 mid-split) + 72x72 button size 사용자 critique image #132 elided '모…방' 회수
 - **cycle 169.378**: chat_list_panel set_user_folders API + _matches_tab user folder included/excluded_chats filter chain — folder click → folder 내 entries 만 visible 사용자 critique image #134
 - **cycle 169.379**: 평가 4 file fingerprint sync cycle 169.372~378 7 cycle drift 회수
 - **cycle 169.380**: FolderManageDialog 탭 뷰 section 제거 + 새 폴더 만들기 button Toonation BI filled (#0066FF) + folder hero icon color #22D3EE→#9ca3af + folder row + sidebar folder icon color_name 반영 사용자 critique image #135/136/137/138
-- **cycle 169.381**: folder row more icon → edit SVG icon 교체 + folder_edit_requested signal + main_window _on_folder_edit_requested handler (FolderEditDialog existing 주입 chain) 사용자 critique image #139/140
-- **cycle 169.382~383**: chat_list _matches_tab folder lookup fail 시점 빈 list strict return + set_user_folders debug log + 폴더 공유 + 초대 링크 section 제거 사용자 critique image #141/142/143
+- **cycle 169.381**: folder row more icon → edit SVG icon 교체 + folder edit requested signal + main window folder edit handler (FolderEditDialog existing 주입 chain) 사용자 critique image #139/140
+- **cycle 169.382~383**: chat list matches tab folder lookup fail 시점 빈 list strict return + set user folders debug log + 폴더 공유 + 초대 링크 section 제거 사용자 critique image #141/142/143
 - **cycle 169.384**: my_account_dialog 이메일 row 제거 (email = ID retain 수정 의무 부재) 사용자 directive image #145/146
 - **cycle 169.385**: my_account_dialog header rewrite — title left + 표준 make_close_button X right (다른 dialog 등가) + _on_folder_saved included_chats debug log inject 사용자 critique image #149/150
 - **cycle 169.386**: 평가 4 file fingerprint sync cycle 169.379~385 7 cycle drift 회수
 - **cycle 169.387**: review finding 2 root cause 회수 — my_account save payload name→display_name (server PUT /api/auth/profile schema 정합 사용자 critique image #152 HTTP 400) + folder_repo.list_folder_chats JOIN chain 신설 + handle_list_folders response 안 included_chats/excluded_chats field 추가 (사용자 critique image #148 folder filter empty 회수)
-- **cycle 169.388**: chat_list set_active_tab active_folder 'all' reset (모든 대화방 click 시점 folder filter 잔존 회수) + FolderEditDialog _is_edit flag + main_window _on_folder_saved edit mode replace chain (사용자 critique image #153 folder 수정 INSERT 폐기)
+- **cycle 169.388**: chat list set active tab → active folder 'all' reset (모든 대화방 click 시점 folder filter 잔존 회수) + FolderEditDialog is edit flag + main window folder saved edit mode replace chain (사용자 critique image #153 folder 수정 INSERT 폐기)
 - **cycle 169.389**: FolderEditDialog edit mode title '새 폴더' → '폴더 수정' + save_btn '만들기' → '수정 완료' (사용자 critique image #154 mode 분기)
-- **cycle 169.390~391**: profile local cache _current_user_* attribute retain (Config frozen=True setattr 폐기) + MyAccountDialog 생년월일 input row 추가 + open 시점 attribute lookup chain (사용자 critique image #155/156/157/158 visual reflect 부재 회수)
+- **cycle 169.390~391**: profile local cache `_current_user_nickname` attribute retain (Config frozen=True setattr 폐기) + MyAccountDialog 생년월일 input row 추가 + open 시점 attribute lookup chain (사용자 critique image #155/156/157/158 visual reflect 부재 회수)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
