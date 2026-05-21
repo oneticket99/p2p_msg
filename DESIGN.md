@@ -1,3 +1,10 @@
+---
+title: DESIGN.md — TooTalk (p2p_msg) 설계 정책
+owner: planning-agent
+last_updated: 2026-05-21
+status: active
+---
+
 # DESIGN.md — TooTalk (p2p_msg) 설계 정책
 
 > 본 문서는 **TooTalk** (저장소명 `p2p_msg`) 의 코드·인터페이스·데이터 흐름 설계 원칙을 정의한다.
@@ -412,7 +419,7 @@ pytest -m "integration or e2e or not (integration or e2e)"
 - line-height = 1.5 base + 1.3 (heading)
 - 한국어 line-break = `word-break: keep-all` (어절 단위 break 유지)
 
-### 11.9 Toonation BI 색상 통합 (cycle 153~160 본격 entry, FRONTEND.md §15 ground truth)
+### 11.9 Toonation BI 색상 통합 (cycle 153~169.x 본격 entry, FRONTEND.md §15 ground truth)
 
 본 §11.9 = `app/assets/themes/base-dark.qss` + `app/ui/theme.py` actual binding 정합 본문. FRONTEND.md §15 BI 가이드 의 변수 mapping + DESIGN.md §11 컴포넌트 시스템 의 연결 layer.
 

@@ -246,6 +246,14 @@ status: active
 | `f8a9015` | 169.189 | dereliction-detector 자동 spawn hook 강화 + memory permanent |
 | `78d385e` | 169.191~192 | chat_header label transparent bg (image #24) + input_bar pill bg align (image #25/26) |
 | `fd0da9c` | 169.193 | 편집 tab → FolderManageDialog redirect (image #27~30 사용자 directive 회수) |
+| `29b64bb` | 169.194 | handoff §8.79 cycle 169.177~193 18 entry append |
+| `8685562` | 169.195 | 평가 4 file fingerprint sync v10 + 6h staleness 회수 |
+| `2b23740` | 169.196 | Structure.md partial sweep (cycle 169.x UI redesign reflect) |
+| `22a6c73` | 169.197~198 | Specification.md + ARCHITECTURE.md + html partial sweep |
+| `1874e6b` | 169.199 | FRONTEND.md + html partial sweep (cycle 169.25 → 169.196 162 cycle drift) |
+| `65fe98e` | 169.201 | FolderManage + FolderEdit frameless modal (image #26 critique) |
+| `4c50a80` | 169.202~204 | default chat retain + 투네이션 고객센터 bot LLM 응답 chain + system prompt knowledge source + avatar gradient → 단색 #0066FF |
+| `8685562` | 169.205 | 평가 4 file fingerprint sync v11 |
 
 ### 8.79.2 사용자 critique 회수 chain
 
