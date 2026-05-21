@@ -267,19 +267,20 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         bl.setContentsMargins(0, 8, 0, 16)
         bl.setSpacing(0)
 
+        # cycle 169.269 — 사용자 directive image #33 회수 — sub-page 폐기 + inline expand pattern.
         menu_defs = [
-            ("account", _tr("내 계정"), self._open_account, None),
-            ("notification", _tr("알림 및 소리"), self._open_notification, None),
-            ("privacy", _tr("개인 정보 및 보안"), self._open_privacy, None),
-            ("settings", _tr("대화방 설정"), self._open_advanced, None),
-            ("folder", _tr("대화방 폴더"), self._open_folder, None),
-            ("data", _tr("고급"), self._open_data, None),
-            ("phone", _tr("스피커 및 카메라"), self._open_device, None),
-            ("more", _tr("배터리 및 애니메이션"), self._open_advanced, None),
-            ("locale", _tr("언어"), self._open_locale, "한국어"),
+            ("account", _tr("내 계정"), self._build_account_tab, None),
+            ("notification", _tr("알림 및 소리"), lambda: self._build_notification_tab(self._initial), None),
+            ("privacy", _tr("개인 정보 및 보안"), self._build_privacy_tab, None),
+            ("settings", _tr("대화방 설정"), self._build_advanced_tab, None),
+            ("folder", _tr("대화방 폴더"), self._build_folder_tab, None),
+            ("data", _tr("고급"), self._build_data_tab, None),
+            ("phone", _tr("스피커 및 카메라"), self._build_device_tab, None),
+            ("more", _tr("배터리 및 애니메이션"), self._build_advanced_tab, None),
+            ("locale", _tr("언어"), self._build_locale_tab, "한국어"),
         ]
-        for icon_name, lbl_text, slot, right_lbl in menu_defs:
-            bl.addWidget(self._build_menu_row(icon_name, lbl_text, slot, right_lbl))
+        for icon_name, lbl_text, builder, right_lbl in menu_defs:
+            bl.addWidget(self._build_expandable_row(icon_name, lbl_text, builder, right_lbl))
 
         divider = QFrame()
         divider.setFixedHeight(8)
@@ -353,6 +354,29 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         ok_btn.clicked.connect(self._on_accept)  # type: ignore[arg-type]
         al.addWidget(ok_btn)
         outer.addWidget(action_row)
+
+    def _build_expandable_row(self, icon_name, label_text, builder, right_label=None):
+        """cycle 169.269 — inline expand container (사용자 directive image #33 회수).
+
+        row click 시점 sub_content 의 visible toggle (sub-modal 폐기 의무).
+        """
+        from PyQt6.QtWidgets import QFrame, QVBoxLayout
+        container = QFrame()
+        container.setStyleSheet("QFrame { background-color: transparent; }")
+        v = QVBoxLayout(container)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(0)
+        sub_content = builder()
+        sub_content.setStyleSheet("background-color: #1F2937;")
+        sub_content.setVisible(False)
+
+        def _toggle():
+            sub_content.setVisible(not sub_content.isVisible())
+
+        row = self._build_menu_row(icon_name, label_text, _toggle, right_label)
+        v.addWidget(row)
+        v.addWidget(sub_content)
+        return container
 
     def _build_menu_row(self, icon_name, label_text, slot, right_label=None):
         from PyQt6.QtWidgets import QPushButton, QHBoxLayout
