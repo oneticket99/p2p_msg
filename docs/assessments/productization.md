@@ -226,7 +226,7 @@ status: active
 - **cycle 169.356**: WelcomeDialog `_tr()` chain 강화 — labels.tr() 우선 lookup + QCoreApplication.translate fallback dual chain + `_on_locale_click` 안 labels.set_locale 호출 (4 locale 동적 갱신)
 - **cycle 169.357**: 6 dialog setWindowTitle labels.tr() chain wrap (NewGroup + NewChannel + Contacts + Calls + GroupInfo + RemoteCall)
 - **cycle 169.358**: LoginDialog `_tr()` chain labels.tr() 우선 lookup + Qt fallback + labels.py 4 locale entry 25종 추가 (투턱 로그인 + email + password + 비밀번호 + 로그인 + 취소 + 회원가입 + 검색 + 만들기 + 메시지 + 통화 등) 사용자 critique English 부재 회수
-- **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog `_tr()` debug log (locale + key + val capture chain)
+- **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog `_tr` debug log (locale + key + val capture chain)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
