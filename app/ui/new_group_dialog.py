@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import (
 
 from app.ui._close_button import make_close_button
 from app.ui._icons import load_icon
+from app.i18n.labels import tr as _tr
 
 
 class NewGroupDialog(QDialog):
@@ -38,7 +39,7 @@ class NewGroupDialog(QDialog):
     def __init__(self, friends: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
         # 한글 주석 — telegram align outer wrap + 420x600 strict + 2 step QStackedWidget
         super().__init__(parent)
-        self.setWindowTitle("TooTalk · 그룹 만들기")
+        self.setWindowTitle(_tr("tootalk_그룹_만들기"))
         self.setModal(True)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(420, 600)

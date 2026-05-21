@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._close_button import make_close_button
+from app.i18n.labels import tr as _tr
 
 
 class ContactsDialog(QDialog):
@@ -33,7 +34,7 @@ class ContactsDialog(QDialog):
     def __init__(self, contacts: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
         # 한글 주석 — telegram align outer wrap + 420x600 strict
         super().__init__(parent)
-        self.setWindowTitle("TooTalk · 연락처")
+        self.setWindowTitle(_tr("tootalk_연락처"))
         self.setModal(True)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(420, 600)

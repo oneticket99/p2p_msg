@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._close_button import make_close_button
+from app.i18n.labels import tr as _tr
 from app.ui._avatar_helper import get_initials
 from app.ui.avatar_palette import palette_solid
 
@@ -47,7 +48,7 @@ class RemoteCallDialog(QDialog):
     ) -> None:
         # 한글 주석 — telegram align outer wrap + 420x600 strict
         super().__init__(parent)
-        self.setWindowTitle(f"TooTalk · 원격 {'요청' if mode == 'request' else '수신'}")
+        self.setWindowTitle(_tr("tootalk_원격_요청") if mode == "request" else _tr("tootalk_원격_수신"))
         self.setModal(True)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(420, 600)

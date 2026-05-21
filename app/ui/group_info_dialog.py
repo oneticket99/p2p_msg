@@ -27,6 +27,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._close_button import make_close_button
+from app.i18n.labels import tr as _tr
 from app.ui._icons import load_pixmap
 from app.ui._avatar_helper import get_initials
 from app.ui.avatar_palette import palette_solid
@@ -48,7 +49,7 @@ class GroupInfoDialog(QDialog):
     ) -> None:
         # 한글 주석 — telegram align outer wrap + 420x600 strict
         super().__init__(parent)
-        self.setWindowTitle("TooTalk · 그룹 정보")
+        self.setWindowTitle(_tr("tootalk_그룹_정보"))
         self.setModal(True)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(420, 600)
