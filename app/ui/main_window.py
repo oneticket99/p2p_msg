@@ -1101,6 +1101,8 @@ class MainWindow(QMainWindow):
                 # cycle 169.369 — folder_create_requested connect chain (사용자 critique image #123/124 '+ 새 폴더 만들기' 무반응 회수)
                 dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
                 dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
+                # cycle 169.381 — folder_edit_requested chain (사용자 critique image #139/140 수정 button)
+                dialog.folder_edit_requested.connect(self._on_folder_edit_requested)  # type: ignore[arg-type]
                 # cycle 169.373 — active dialog reference retain (만들기 완료 시점 close chain)
                 self._active_folder_dialog = dialog
                 self._exec_dialog_centered(dialog)
@@ -1477,6 +1479,7 @@ class MainWindow(QMainWindow):
             dialog = FolderManageDialog(user_folders=user_folders, parent=self)
             dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
             dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
+            dialog.folder_edit_requested.connect(self._on_folder_edit_requested)  # type: ignore[arg-type]
             dialog.exec()
             return
         if hasattr(self, "_chat_list_panel"):
@@ -1560,6 +1563,22 @@ class MainWindow(QMainWindow):
             log.info("[folder] REST 영속화 PASS — id=%s", data.get("id"))
         else:
             log.warning("[folder] REST 영속화 실패 — code=%s msg=%s", error_code, error_message)
+
+    @pyqtSlot(str)
+    def _on_folder_edit_requested(self, folder_id: str) -> None:
+        """folder edit click → FolderEditDialog open with existing data (cycle 169.381 사용자 critique image #139/140)."""
+        user_folders = getattr(self, "_user_folders", [])
+        existing = next((f for f in user_folders if str(f.get("folder_id", "")) == folder_id), None)
+        if existing is None:
+            log.warning("[folder_edit] folder_id=%s 부재", folder_id)
+            return
+        from app.ui.folder_edit_dialog import FolderEditDialog
+        dialog = FolderEditDialog(existing=existing, parent=self)
+        dialog.folder_saved.connect(self._on_folder_saved)  # type: ignore[arg-type]
+        dialog.chat_picker_requested.connect(
+            lambda mode: self._open_chat_picker(dialog, mode)
+        )  # type: ignore[arg-type]
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot(str)
     def _on_folder_delete_requested(self, folder_id: str) -> None:

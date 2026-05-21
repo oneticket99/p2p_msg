@@ -32,6 +32,7 @@ class FolderManageDialog(QDialog):
 
     folder_create_requested = pyqtSignal()
     folder_delete_requested = pyqtSignal(str)  # folder_id
+    folder_edit_requested = pyqtSignal(str)  # cycle 169.381 — folder edit click (사용자 critique image #139)
     tab_view_changed = pyqtSignal(str)  # "left" / "top"
 
     def __init__(
@@ -147,12 +148,15 @@ class FolderManageDialog(QDialog):
         count.setStyleSheet("color: #9ca3af; font-size: 12px;")
         col.addWidget(count)
         r_layout.addLayout(col, stretch=1)
-        del_btn = QPushButton()
-        del_btn.setIcon(load_icon("more", size=20, color="#9ca3af"))
-        del_btn.setIconSize(QSize(20, 20))
-        del_btn.setFixedSize(32, 32)
-        del_btn.setFlat(True)
+        # cycle 169.381 — more icon → edit icon SVG 교체 + folder_edit_requested chain (사용자 critique image #139/140)
+        edit_btn = QPushButton()
+        edit_btn.setIcon(load_icon("edit", size=20, color="#9ca3af"))
+        edit_btn.setIconSize(QSize(20, 20))
+        edit_btn.setFixedSize(32, 32)
+        edit_btn.setFlat(True)
+        edit_btn.setToolTip("폴더 수정")
+        edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         fid = folder.get("folder_id", "")
-        del_btn.clicked.connect(lambda _c=False, f=fid: self.folder_delete_requested.emit(f))  # type: ignore[arg-type]
-        r_layout.addWidget(del_btn)
+        edit_btn.clicked.connect(lambda _c=False, f=fid: self.folder_edit_requested.emit(f))  # type: ignore[arg-type]
+        r_layout.addWidget(edit_btn)
         return row
