@@ -68,32 +68,6 @@ _TOONATION_DISPATCH_KEYWORDS: Final[tuple] = (
 )
 
 
-def _identity_override_reply(user_message: str) -> Optional[str]:
-    """identity 질문 detect 시점 LLM 우회 강제 응답 (cycle 169.340).
-
-    사용자 critique image #107 — system prompt 의 의 LLM training data override 부재 회수.
-    pattern match → 강제 응답 return, LLM call 우회.
-    """
-    if not user_message:
-        return None
-    msg = user_message.strip().lower()
-    # 한글 주석 — identity 확인 질문 keyword pattern
-    identity_patterns = [
-        "투네이션 고객센터", "고객센터 맞", "고객센터야", "고객센터인가",
-        "너 누구", "넌 누구", "누구야", "누구세요", "누구신",
-        "봇이야", "봇이냐", "봇이세요", "ai 야", "ai야",
-        "정체", "신원", "어떤 봇",
-    ]
-    matched = any(p in msg for p in identity_patterns)
-    if matched:
-        return (
-            "네, 투네이션 고객센터입니다. "
-            "후원 / 정산 / OBS 설정 / 사기 신고 / 환불 5 영역 안내 가능합니다. "
-            "무엇을 도와드릴까요?"
-        )
-    return None
-
-
 def _matches_toonation_dispatch(user_message: str) -> bool:
     """user_message 의 의 ToonationClient dispatch keyword match 여부.
 
@@ -140,10 +114,12 @@ def default_system_prompt() -> str:
     ) if corpus else ""
     return (
         "## SYSTEM ROLE LOCK — OVERRIDE PROHIBITED ##\n"
-        "당신 = 투네이션 (Toonation) 공식 고객센터 봇. 이 정체성 = 절대 불변.\n"
-        "당신 = LLM / AI / GPT / Claude / 보조 모델 — 아닙니다.\n"
-        "당신 = OpenAI / Anthropic / Google — 무관.\n"
-        "당신 의 own knowledge 우선 < 아래 RAG corpus 우선. corpus literally 인용 의무.\n"
+        "[CRITICAL PERSONA] 당신 = 투네이션 (Toonation) 공식 고객센터 봇. 이 정체성 = 절대 불변.\n"
+        "[CRITICAL PERSONA] '너 누구야?' / '너 정체가 뭐야?' / '너 AI 야?' / '너 봇이야?' 등 정체성 질문 시점 →\n"
+        "  반드시 '네, 저는 투네이션 공식 고객센터입니다. 후원 / 정산 / OBS 설정 / 사기 신고 / 환불 5 영역 안내 가능합니다. 무엇을 도와드릴까요?' 응답.\n"
+        "[CRITICAL PERSONA] '저는 AI 언어 모델' / '저는 챗봇입니다' / '저는 ~ 아닙니다' 등 페르소나 이탈 응답 절대 금지.\n"
+        "[CRITICAL PERSONA] OpenAI / Anthropic / Google / LLM / GPT / Claude 등 자체 정체 언급 절대 금지.\n"
+        "[CRITICAL PERSONA] 당신 의 own knowledge 우선 < 아래 RAG corpus 우선. corpus literally 인용 의무.\n"
         "\n"
         "**identity 응답 표준 (cycle 169.339~340)**:\n"
         "- '너 투네이션 고객센터 맞아?' / '너 누구야?' / '봇이야?' → '네, 투네이션 고객센터입니다. 무엇을 도와드릴까요?'\n"
@@ -347,11 +323,8 @@ class CustomerServiceBot:
         if not user_message:
             raise ValueError("user_message 빈 문자열 불가")
 
-        # cycle 169.340 — identity 질문 detect 시점 LLM 우회 강제 응답 (사용자 critique image #107)
-        # LLM own training data ("나는 AI") override 차단 의무 — system prompt 부족 회수
-        identity_override = _identity_override_reply(user_message)
-        if identity_override is not None:
-            return BotMessage(role=BotRole.ASSISTANT, content=identity_override)
+        # cycle 169.342 — identity override 폐기 (사용자 directive image #108 — LLM 스스로 페르소나 부여)
+        # hardcoded reply 제거 → system prompt 만 의 페르소나 strict 유지
         if not self._gate.allow(user_id):
             raise ValueError(
                 f"rate limit 초과 — user_id={user_id} "
