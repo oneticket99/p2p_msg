@@ -1963,8 +1963,16 @@ class MainWindow(QMainWindow):
         """내 프로필 안 edit click → MyAccountDialog 진입 + save 시 PUT /api/auth/profile."""
         from app.ui.my_account_dialog import MyAccountDialog
         from app.net.account_client import ProfileUpdateWorker
-        username = getattr(self._config, "user_nickname", "사용자")
-        dialog = MyAccountDialog(username=username, parent=self)
+        # cycle 169.391 — _current_user_* attribute 우선 lookup + config fallback (사용자 critique image #157/158)
+        username = getattr(self, "_current_user_nickname", None) or getattr(self._config, "user_nickname", "사용자")
+        email = getattr(self, "_current_email", "")
+        phone = getattr(self, "_current_user_phone", "")
+        bio = getattr(self, "_current_user_bio", "")
+        birthdate = getattr(self, "_current_user_birthdate", "")
+        dialog = MyAccountDialog(
+            username=username, email=email, phone=phone, bio=bio,
+            birthdate=birthdate, parent=self,
+        )
 
         def _on_save(payload: dict) -> None:
             base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
@@ -1972,13 +1980,19 @@ class MainWindow(QMainWindow):
             if not base_url or not token:
                 log.warning("[profile] base_url/token 부재 — PUT skip")
                 return
-            # cycle 169.390 — local cache 즉시 반영 (사용자 critique image #155/156 visual reflect 부재 회수)
+            # cycle 169.391 — local cache 즉시 반영 (Config frozen=True → 별도 attribute retain)
             new_name = (payload.get("display_name") or "").strip()
-            if new_name and hasattr(self, "_config"):
-                try:
-                    setattr(self._config, "user_nickname", new_name)
-                except Exception:
-                    pass
+            if new_name:
+                self._current_user_nickname = new_name
+            new_bio = (payload.get("bio") or "").strip()
+            if new_bio:
+                self._current_user_bio = new_bio
+            new_phone = (payload.get("phone") or "").strip()
+            if new_phone:
+                self._current_user_phone = new_phone
+            new_birth = (payload.get("birthdate") or "").strip()
+            if new_birth:
+                self._current_user_birthdate = new_birth
             worker = ProfileUpdateWorker(base_url, token, payload, parent=self)
             worker.finished_with_result.connect(self._on_profile_update_finished)  # type: ignore[arg-type]
             worker.start()

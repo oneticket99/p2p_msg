@@ -33,6 +33,7 @@ class MyAccountDialog(QDialog):
         username: str = "",
         phone: str = "",
         bio: str = "",
+        birthdate: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -118,6 +119,8 @@ class MyAccountDialog(QDialog):
         # cycle 169.266 — 이메일 icon 회수 (notification bell → mail 의미) + 사용자 directive horizontal row
         self._name_edit = self._build_field_row(c_layout, "이름", username, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
+        # cycle 169.391 — 생년월일 row 추가 (사용자 critique image #157)
+        self._birthdate_edit = self._build_field_row(c_layout, "생년월일", birthdate, "info")
         # cycle 169.384 — 이메일 row 제거 (email = ID retain 사용자 directive image #145/146)
         self._email_value = email
 
@@ -182,6 +185,7 @@ class MyAccountDialog(QDialog):
                 "phone": self._phone_edit.text(),
                 "email": self._email_value,
                 "bio": self._bio_edit.toPlainText(),
+                "birthdate": self._birthdate_edit.text(),
             }
         )
         self.accept()
