@@ -1101,7 +1101,10 @@ class MainWindow(QMainWindow):
                 # cycle 169.369 — folder_create_requested connect chain (사용자 critique image #123/124 '+ 새 폴더 만들기' 무반응 회수)
                 dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
                 dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
+                # cycle 169.373 — active dialog reference retain (만들기 완료 시점 close chain)
+                self._active_folder_dialog = dialog
                 self._exec_dialog_centered(dialog)
+                self._active_folder_dialog = None
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("FolderManageDialog open 실패 graceful — %r", exc)
             self._sidebar_rail.set_active_tab("friends")
@@ -1508,11 +1511,25 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def _on_folder_saved(self, folder_data: dict) -> None:
-        """FolderEditDialog 만들기 PASS → user_folders append + REST 영속화."""
+        """FolderEditDialog 만들기 PASS → user_folders append + REST 영속화 + sidebar refresh."""
         if not hasattr(self, "_user_folders"):
             self._user_folders = []
         self._user_folders.append(folder_data)
         log.info("[main_window] folder created — name=%s", folder_data.get("name"))
+        # cycle 169.373 — sidebar_rail folder entry 동적 갱신 (사용자 critique image #129)
+        if hasattr(self, "_sidebar_rail") and hasattr(self._sidebar_rail, "set_folder_entries"):
+            try:
+                self._sidebar_rail.set_folder_entries(self._user_folders)
+            except Exception as exc:
+                log.debug("sidebar_rail set_folder_entries fail — %r", exc)
+        # cycle 169.373 — active FolderManageDialog close chain (사용자 critique image #127)
+        active_folder_dialog = getattr(self, "_active_folder_dialog", None)
+        if active_folder_dialog is not None:
+            try:
+                active_folder_dialog.reject()
+            except Exception:
+                pass
+            self._active_folder_dialog = None
         # cycle 169.77 회수 — FolderCreateWorker REST 영속화 chain
         base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
         token = getattr(self, "_auth_token", None)

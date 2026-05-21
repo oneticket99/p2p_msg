@@ -106,6 +106,47 @@ class SidebarRail(QFrame):
 
         layout.addStretch(1)
 
+    def set_folder_entries(self, folders: list) -> None:
+        """cycle 169.373 — user folder entry 동적 갱신 (사용자 critique image #129).
+
+        folders = list[dict] (folder_id + name + color_name). 기존 button 제거 後
+        새 button rebuild + click → folder_selected.emit(folder_id) chain.
+        """
+        layout = self.layout()
+        # 한글 주석 — 기존 folder button 제거
+        for fid, btn in list(self._folder_buttons.items()):
+            layout.removeWidget(btn)
+            btn.deleteLater()
+        self._folder_buttons.clear()
+        # 한글 주석 — 신규 folder button 추가 (편집 tab 之前 insert)
+        for folder in folders or []:
+            fid = str(folder.get("folder_id", ""))
+            name = folder.get("name", "?")
+            if not fid:
+                continue
+            btn = QToolButton()
+            btn.setObjectName("sidebarFolder")
+            btn.setCheckable(True)
+            btn.setText(name[:2])
+            btn.setToolTip(name)
+            btn.setFixedSize(56, 56)
+            btn.setStyleSheet(
+                "QToolButton {"
+                " color: #9ca3af; background-color: transparent;"
+                " border: none; border-radius: 6px; font-size: 12px; font-weight: 600;"
+                "}"
+                "QToolButton:hover { background-color: rgba(0, 102, 255, 0.1); color: #e5e7eb; }"
+                "QToolButton:checked { background-color: rgba(0, 102, 255, 0.2); color: #0066FF; }"
+            )
+            btn.clicked.connect(  # type: ignore[arg-type]
+                lambda _checked, f=fid: self.folder_selected.emit(f)
+            )
+            self._button_group.addButton(btn)
+            # 한글 주석 — stretch 之前 insert (편집 button 다음 위치)
+            insert_idx = layout.count() - 1
+            layout.insertWidget(insert_idx, btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            self._folder_buttons[fid] = btn
+
     def set_active_tab(self, tab_key: str) -> None:
         """외부 단 active tab 변경 — programmatic switch."""
         if tab_key in self._buttons:
