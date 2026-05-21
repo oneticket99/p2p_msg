@@ -92,21 +92,33 @@ class ChatListItemDelegate(QStyledItemDelegate):
             self.AVATAR_SIZE,
             self.AVATAR_SIZE,
         )
-        # cycle 169.249 — palette_solid hash 의 deterministic 랜덤 bg (사용자 directive image #9)
-        from app.ui.avatar_palette import palette_solid
-        from app.ui._avatar_helper import get_initials
-        bg_color = palette_solid(entry.name or "?")
-        painter.setBrush(QColor(bg_color))
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(avatar_rect)
-        # cycle 169.248 — nickname 앞 1~2 글자 (한글 2자 / 영문 2자 대문자) 사용자 directive image #7/8
-        initials = get_initials(entry.name or "?")
-        painter.setPen(QPen(QColor("#ffffff")))
-        f = QFont()
-        f.setPixelSize(14 if len(initials) >= 2 else 16)
-        f.setBold(True)
-        painter.setFont(f)
-        painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
+        # cycle 169.325 — 사용자 directive image #88 — kind="saved" 시점 Toonation BI bg + data icon
+        if entry.kind == "saved":
+            from app.ui._icons import load_pixmap
+            painter.setBrush(QColor("#0066FF"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(avatar_rect)
+            icon_size = 24
+            pix = load_pixmap("data", size=icon_size, color="#ffffff")
+            cx = avatar_rect.center().x() - icon_size // 2
+            cy = avatar_rect.center().y() - icon_size // 2
+            painter.drawPixmap(QRect(cx, cy, icon_size, icon_size), pix)
+        else:
+            # cycle 169.249 — palette_solid hash 의 deterministic 랜덤 bg (사용자 directive image #9)
+            from app.ui.avatar_palette import palette_solid
+            from app.ui._avatar_helper import get_initials
+            bg_color = palette_solid(entry.name or "?")
+            painter.setBrush(QColor(bg_color))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(avatar_rect)
+            # cycle 169.248 — nickname 앞 1~2 글자 (한글 2자 / 영문 2자 대문자) 사용자 directive image #7/8
+            initials = get_initials(entry.name or "?")
+            painter.setPen(QPen(QColor("#ffffff")))
+            f = QFont()
+            f.setPixelSize(14 if len(initials) >= 2 else 16)
+            f.setBold(True)
+            painter.setFont(f)
+            painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
 
         # online indicator (right-bottom)
         if entry.is_online:

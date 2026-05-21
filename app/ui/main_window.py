@@ -1968,14 +1968,22 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_saved(self) -> None:
-        """저장한 메시지 → 친구 list 안 saved entry select + chat view focus (cycle 169.323 image #86 사용자 directive)."""
+        """저장한 메시지 → drawer close + chat_view focus (cycle 169.325 image #88 사용자 directive)."""
         try:
             # 한글 주석 — chat_list_panel 안 saved entry highlight + chat_view 안 saved chat open
             if hasattr(self, "_chat_list_panel"):
                 self._chat_list_panel.set_active_tab("friends")
                 self._chat_list_panel.set_current_chat("saved", 0)
-            # 한글 주석 — chat_view focus 이동 chain (sidebar chat tab + saved chat 진입)
             self._on_chat_selected("saved", 0)
+            # 한글 주석 — cycle 169.325 — drawer slide close (사용자 directive image #88)
+            drawer = getattr(self, "_active_drawer", None)
+            if drawer is not None and hasattr(drawer, "close_drawer"):
+                drawer.close_drawer()
+            elif drawer is not None:
+                drawer.close()
+            # 한글 주석 — chat input focus 이동
+            if hasattr(self, "_input_bar"):
+                self._input_bar.setFocus()
         except Exception as exc:
             log.warning("저장한 메시지 진입 실패 — %r", exc)
 
