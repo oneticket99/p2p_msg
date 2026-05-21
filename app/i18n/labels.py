@@ -184,6 +184,19 @@ LABELS_EN: dict[str, str] = {
     "tootalk_영상_통화": "TooTalk · Video Call",
     "투네이션_고객센터": "Toonation Customer Service",
     "온라인": "Online",
+    "투턱_회원가입": "TooTalk Sign Up",
+    "email_username_password_의무": "Email + Username + Password required",
+    "가입_otp_송신": "Sign Up + Send OTP",
+    "otp_인증": "OTP Verification",
+    "메일함_안_6_digit_otp_확인": "Check 6-digit OTP in inbox",
+    "재_송신": "Resend",
+    "검증": "Verify",
+    "tootalk_비밀번호_재설정": "TooTalk Password Reset",
+    "otp_발송": "Send OTP",
+    "6자리_otp_3분_유효": "6-digit OTP (3 min valid)",
+    "8_128자": "8~128 chars",
+    "이전": "Back",
+    "비밀번호_갱신": "Update Password",
 }
 LABELS_ZH_CN: dict[str, str] = {
     "친구와_직접_연결_p2p_메신저": "P2P 即时通讯 — 朋友直接连接",
@@ -212,6 +225,16 @@ LABELS_ZH_CN: dict[str, str] = {
     "tootalk_전화": "TooTalk · 通话",
     "투네이션_고객센터": "Toonation 客服",
     "온라인": "在线",
+    "투턱_회원가입": "TooTalk 注册",
+    "email_username_password_의무": "邮箱 + 用户名 + 密码",
+    "가입_otp_송신": "注册 + 发送验证码",
+    "otp_인증": "验证码确认",
+    "검증": "验证",
+    "재_송신": "重新发送",
+    "tootalk_비밀번호_재설정": "TooTalk 密码重置",
+    "otp_발송": "发送验证码",
+    "이전": "上一步",
+    "비밀번호_갱신": "更新密码",
 }
 LABELS_ZH_TW: dict[str, str] = {
     "친구와_직접_연결_p2p_메신저": "P2P 即時通訊 — 朋友直接連線",
@@ -249,6 +272,16 @@ LABELS_JA: dict[str, str] = {
     "tootalk_전화": "TooTalk · 通話",
     "투네이션_고객센터": "Toonation カスタマーサポート",
     "온라인": "オンライン",
+    "투턱_회원가입": "TooTalk 新規登録",
+    "email_username_password_의무": "メール + ユーザー名 + パスワード",
+    "가입_otp_송신": "登録 + OTP 送信",
+    "otp_인증": "OTP 認証",
+    "검증": "認証",
+    "재_송신": "再送信",
+    "tootalk_비밀번호_재설정": "TooTalk パスワード再設定",
+    "otp_발송": "OTP 送信",
+    "이전": "戻る",
+    "비밀번호_갱신": "パスワード更新",
 }
 
 
