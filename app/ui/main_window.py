@@ -1670,11 +1670,11 @@ class MainWindow(QMainWindow):
         self._active_drawer = drawer
 
     def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.258 — dialog 의 main window client area 안 강제 fit (사용자 critique image #19/20 회수).
+        """cycle 169.261 — dialog 의 main window OS frame 安 강제 fit (사용자 critique image #24 회수).
 
-        width + height 둘 다 parent client rect 안 clamp + position 의 main window edge 부재.
+        frameGeometry() 의 OS frame 包含 retain — dialog 의 top edge 안 OS frame title bar 위 protrude 부재.
         """
-        parent_rect = self.geometry()
+        parent_rect = self.frameGeometry()
         # 한글 주석 — width / height 둘 다 clamp (사용자 critique main 외부 protrude 부재)
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)

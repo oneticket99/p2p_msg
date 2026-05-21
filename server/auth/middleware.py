@@ -42,6 +42,12 @@ async def auth_middleware(
 
     auth_header = request.headers.get(_HEADER_AUTH, "")
     if not auth_header.startswith(_BEARER_PREFIX):
+        # cycle 169.260 — debug log 추가 (사용자 critique bot 401 root cause trace)
+        log.warning(
+            "[auth] Bearer 헤더 부재 path=%s header=%r ua=%s",
+            request.path, auth_header[:40],
+            request.headers.get("User-Agent", "")[:60],
+        )
         raise web.HTTPUnauthorized(reason="Authorization Bearer 헤더 부재")
 
     token = auth_header[len(_BEARER_PREFIX):].strip()
