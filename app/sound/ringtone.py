@@ -31,12 +31,13 @@ except ImportError:
     _QT_AVAILABLE = False
 
 
-# 한글 주석 — 4 통화 사운드 file name (tools/generate_call_sounds.py 산출)
+# cycle 169.309 — 사용자 directive wav v3 binding (messenger_voice_call_sounds_v3)
+# description 부재 (07/08/09) → 제외. connect/end key retain 但 None (graceful skip).
 CALL_SOUNDS = {
-    "ringback": "tootalk_ringback.wav",
-    "ringtone": "tootalk_ringtone.wav",
-    "connect": "tootalk_call_connect.wav",
-    "end": "tootalk_call_end.wav",
+    "ringback": "01_outgoing_call_melodic_fast_loop_12s.wav",
+    "ringtone": "05_incoming_call_ringtone_extra_fast_loop_15s.wav",
+    # 한글 주석 — 03_outgoing_call_cute_melodic_fast_loop_12s.wav = 귀여운 variant (사용자 선택 옵션)
+    "ringback_cute": "03_outgoing_call_cute_melodic_fast_loop_12s.wav",
 }
 
 
