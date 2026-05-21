@@ -185,16 +185,16 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         self._sound_player = sound_player
         # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
         self.setWindowTitle(f"TooTalk · {_tr('설정')}")
-        # cycle 169.291 — MyProfileDialog 의 setFixedSize 등가 strict retain (사용자 critique image #65)
-        self.setFixedSize(420, 600)
-        # 한글 주석 — cycle 169.57 회수 — 모든 dialog modal 강제 (사용자 directive)
+        # cycle 169.57 — modal 강제
         self.setModal(True)
-        # cycle 169.250 — frameless modal + main embed (사용자 critique image #10 회수 — 별도 window 차단)
+        # cycle 169.294 — setWindowFlags 의 setFixedSize 之前 (PyQt6 cache reset 회피)
         from PyQt6.QtCore import Qt as _Qt
         self.setWindowFlags(
             _Qt.WindowType.Dialog
             | _Qt.WindowType.FramelessWindowHint
         )
+        # cycle 169.291 — MyProfileDialog 등가 strict (사용자 critique image #65/66)
+        self.setFixedSize(420, 600)
 
         initial = build_state_from_player(sound_player)
 
