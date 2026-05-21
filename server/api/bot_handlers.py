@@ -282,6 +282,19 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
             reason="LLM provider 미등록 — 서버 영역 의 ANTHROPIC_API_KEY 의무"
         )
 
+    # cycle 169.344 — system prompt prepend 의무 (사용자 critique image #111 회수)
+    # client message chain 안 system role 부재 시점 → server 안 default_system_prompt prepend
+    # LLM training data fallback ('저는 ChatGPT입니다') 차단 + 투네이션 고객센터 페르소나 강제
+    has_system = any(m.role == BotRole.SYSTEM for m in messages)
+    if not has_system:
+        try:
+            from app.bot.customer_service_bot import default_system_prompt
+            sys_prompt = default_system_prompt()
+            messages = [BotMessage(role=BotRole.SYSTEM, content=sys_prompt)] + list(messages)
+            log.info("[bot_chat] system prompt prepend — len=%d chars", len(sys_prompt))
+        except Exception as exc:
+            log.warning("[bot_chat] system prompt prepend 실패 — %r", exc)
+
     # LLM 호출 + 예외 매핑
     try:
         reply = await provider.chat(messages)
