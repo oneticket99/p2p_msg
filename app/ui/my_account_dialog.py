@@ -108,6 +108,12 @@ class MyAccountDialog(QDialog):
         self._bio_edit.setPlaceholderText("나이와 직업, 도시 따위를 자유롭게 소개하세요.")
         self._bio_edit.setPlainText(bio)
         self._bio_edit.setMaximumHeight(80)
+        # cycle 169.332 — 사용자 critique image #96 — input 가능 visible 강화
+        self._bio_edit.setStyleSheet(
+            "QTextEdit { color: #e5e7eb; background-color: #1F2937;"
+            " border: 1px solid #374151; border-radius: 8px; padding: 8px; font-size: 14px; }"
+            "QTextEdit:focus { border: 1px solid #0066FF; }"
+        )
         c_layout.addWidget(self._bio_edit)
 
         c_layout.addSpacing(12)
@@ -156,10 +162,11 @@ class MyAccountDialog(QDialog):
         lbl.setFixedWidth(80)
         row.addWidget(lbl)
         edit = QLineEdit(value)
+        # cycle 169.332 — 사용자 critique image #96 — input bg + border strict visible
         edit.setStyleSheet(
-            "QLineEdit { background-color: transparent; border: none;"
-            " color: #e5e7eb; font-size: 14px; padding: 4px; }"
-            " QLineEdit:focus { border-bottom: 1px solid #0066FF; }"
+            "QLineEdit { background-color: #1F2937; border: 1px solid #374151;"
+            " border-radius: 6px; color: #e5e7eb; font-size: 14px; padding: 6px 8px; }"
+            " QLineEdit:focus { border: 1px solid #0066FF; }"
         )
         row.addWidget(edit, stretch=1)
         layout.addLayout(row)
