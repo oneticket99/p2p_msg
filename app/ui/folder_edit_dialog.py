@@ -211,15 +211,26 @@ class FolderEditDialog(QDialog):
         btn.clicked.connect(lambda _c=False, m=mode: self.chat_picker_requested.emit(m))  # type: ignore[arg-type]
         return btn
 
+    @staticmethod
+    def _entry_to_dict(entry) -> dict:
+        # cycle 169.371 — ChatListEntry dataclass → JSON serializable dict (FolderCreateWorker abort 회수)
+        if isinstance(entry, dict):
+            return entry
+        return {
+            "kind": getattr(entry, "kind", ""),
+            "target_id": getattr(entry, "target_id", 0),
+            "name": getattr(entry, "name", ""),
+        }
+
     def add_included_chats(self, chats: list) -> None:
         """ChatPickerDialog 응답 — 포함 대화방 추가."""
-        self._included_chats.extend(chats)
+        self._included_chats.extend(self._entry_to_dict(c) for c in chats)
         n = len(self._included_chats)
         self._include_btn.setText(f"+  대화방 추가 ({n}개)")
 
     def add_excluded_chats(self, chats: list) -> None:
         """ChatPickerDialog 응답 — 제외 대화방 추가."""
-        self._excluded_chats.extend(chats)
+        self._excluded_chats.extend(self._entry_to_dict(c) for c in chats)
         n = len(self._excluded_chats)
         self._exclude_btn.setText(f"−  제외할 대화방 추가 ({n}개)")
 
