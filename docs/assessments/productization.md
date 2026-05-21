@@ -223,10 +223,10 @@ status: active
 - **cycle 169.353**: 평가 4 file fingerprint sync cycle 169.344~352 9 cycle drift 회수
 - **cycle 169.354**: i18n 전수 sweep — 138 file scan + 127 unique UI literal extract (setText/setPlaceholderText/QLabel/QPushButton/QMessageBox/addAction call site) + labels.py 신설 (LABELS_KO dict + tr() fallback chain) + labels_extract.json full catalog 사용자 directive image #119/120
 - **cycle 169.355**: labels.py 4 locale 본격 binding — LABELS_EN/ZH_CN/ZH_TW/JA 핵심 entry + set_locale/get_locale singleton + tr() locale 인자 fallback chain
-- **cycle 169.356**: WelcomeDialog _tr() chain 강화 — labels.tr() 우선 lookup + QCoreApplication.translate fallback dual chain + _on_locale_click 안 labels.set_locale 호출 (4 locale 동적 갱신)
+- **cycle 169.356**: WelcomeDialog `_tr()` chain 강화 — labels.tr() 우선 lookup + QCoreApplication.translate fallback dual chain + `_on_locale_click` 안 labels.set_locale 호출 (4 locale 동적 갱신)
 - **cycle 169.357**: 6 dialog setWindowTitle labels.tr() chain wrap (NewGroup + NewChannel + Contacts + Calls + GroupInfo + RemoteCall)
-- **cycle 169.358**: LoginDialog _tr() chain labels.tr() 우선 lookup + Qt fallback + labels.py 4 locale entry 25종 추가 (투턱_로그인 + email_password + 비밀번호 + 로그인 + 취소 + 회원가입 + 검색 + 만들기 + 메시지 + 통화 등) 사용자 critique English 부재 회수
-- **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog _tr() debug log (locale + key + val capture chain)
+- **cycle 169.358**: LoginDialog `_tr()` chain labels.tr() 우선 lookup + Qt fallback + labels.py 4 locale entry 25종 추가 (투턱 로그인 + email + password + 비밀번호 + 로그인 + 취소 + 회원가입 + 검색 + 만들기 + 메시지 + 통화 등) 사용자 critique English 부재 회수
+- **cycle 169.359**: main.py startup labels.set_locale 호출 추가 (singleton global state init) + LoginDialog `_tr()` debug log (locale + key + val capture chain)
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
