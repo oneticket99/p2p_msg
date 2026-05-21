@@ -44,12 +44,15 @@ class MyProfileDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 내 프로필")
         self.setModal(True)
-        # cycle 169.121 — frameless modal (텔레그램 align)
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.FramelessWindowHint
         )
         self.setFixedSize(420, 600)
+        # cycle 169.274 — 사용자 directive image #38 회수 — outer border line 추가 (설정 modal 의 통일성)
+        self.setStyleSheet(
+            "QDialog { background-color: #131C30; border: 1px solid #1f2937; }"
+        )
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)

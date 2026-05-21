@@ -321,13 +321,14 @@ class SettingsDialog(QDialog):  # type: ignore[misc, valid-type]
         divider2.setStyleSheet("background-color: #0F172A;")
         bl.addWidget(divider2)
 
+        # cycle 169.273 — footer entries 도 inline expand pattern (사용자 directive image #36/37 회수)
         footer_defs = [
-            ("more", _tr("정보"), self._open_about, None),
-            ("data", _tr("저장 공간"), self._open_data, None),
-            ("settings", _tr("고급 설정"), self._open_advanced, None),
+            ("more", _tr("정보"), self._build_about_tab, None),
+            ("data", _tr("저장 공간"), self._build_data_tab, None),
+            ("settings", _tr("고급 설정"), self._build_advanced_tab, None),
         ]
-        for icon_name, lbl_text, slot, right_lbl in footer_defs:
-            bl.addWidget(self._build_menu_row(icon_name, lbl_text, slot, right_lbl))
+        for icon_name, lbl_text, builder, right_lbl in footer_defs:
+            bl.addWidget(self._build_expandable_row(icon_name, lbl_text, builder, right_lbl))
 
         bl.addStretch(1)
         scroll.setWidget(body)
