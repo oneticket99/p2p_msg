@@ -353,7 +353,8 @@ class ChatListPanel(QFrame):
             return entry.kind == "friend"
         if self._active_tab == "bots":
             return entry.kind == "bot"
-        return False
+        # cycle 169.314 — 사용자 directive "어떤 경우에도 사라지면 안돼" — unknown tab (settings 등) fallback all entries
+        return True
 
     def _render(self) -> None:
         """현 active tab + 검색 filter 기반 list 재 렌더."""

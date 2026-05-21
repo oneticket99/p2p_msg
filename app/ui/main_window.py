@@ -1715,6 +1715,10 @@ class MainWindow(QMainWindow):
         if isinstance(_central, _QSplitter):
             _splitter_sizes = _central.sizes()
             log.warning("[dialog_open] splitter sizes captured=%s", _splitter_sizes)
+        # cycle 169.314 — active_tab snapshot (folder dialog 후 tab 의 entries filter mismatch → 빈 list 회피)
+        _clp_pre = getattr(self, "_chat_list_panel", None)
+        _active_tab_pre = getattr(_clp_pre, "_active_tab", "chats") if _clp_pre else "chats"
+        log.warning("[dialog_open] active_tab captured=%s", _active_tab_pre)
         # cycle 169.307 — main_window child overlay (centralWidget = splitter, child 시점 panel add 깨짐 회수)
         backdrop = QFrame(self)
         backdrop.setObjectName("dialogBackdrop")
@@ -1804,6 +1808,14 @@ class MainWindow(QMainWindow):
                 inner_list.show()
                 inner_list.setVisible(True)
             empty_label = getattr(clp, "_empty_label", None)
+            # cycle 169.314 — active_tab restore (dialog open 직전 snapshot) + _render() 재호출
+            if hasattr(clp, "set_active_tab"):
+                try:
+                    clp.set_active_tab(_active_tab_pre)
+                    log.warning("[dialog_close] active_tab restored=%s actual=%s",
+                                _active_tab_pre, getattr(clp, "_active_tab", "?"))
+                except Exception:
+                    pass
             if hasattr(clp, "_render"):
                 try:
                     clp._render()
