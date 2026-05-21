@@ -281,6 +281,13 @@ class ChatListPanel(QFrame):
     def set_user_folders(self, folders: list) -> None:
         """cycle 169.378 — user folder metadata cache (사용자 critique image #134 폴더 filter 의무)."""
         self._user_folders = list(folders or [])
+        # cycle 169.382 — debug log (folder filter fail 회수 검증)
+        import logging as _log
+        _log.getLogger(__name__).warning(
+            "[chat_list] set_user_folders count=%d ids=%s",
+            len(self._user_folders),
+            [f.get("folder_id", "") for f in self._user_folders],
+        )
         self._render()
 
     def set_entries(self, entries: list[ChatListEntry]) -> None:
@@ -365,21 +372,34 @@ class ChatListPanel(QFrame):
         """
         if self._active_folder == "unread" and entry.unread_count <= 0:
             return False
-        # cycle 169.378 — user folder filter (사용자 critique image #134)
+        # cycle 169.378~382 — user folder filter (사용자 critique image #134/141/142)
         # active_folder 의 user_folders 안 folder_id match 시점 → included_chats 안 entry 만 visible
         if self._active_folder not in ("all", "unread"):
+            import logging as _log
+            _logger = _log.getLogger(__name__)
+            matched_folder = None
             for folder in self._user_folders:
                 if str(folder.get("folder_id", "")) == self._active_folder:
-                    included = folder.get("included_chats", []) or []
-                    excluded = folder.get("excluded_chats", []) or []
-                    inc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in included if isinstance(c, dict)}
-                    exc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in excluded if isinstance(c, dict)}
-                    entry_pair = (entry.kind, entry.target_id)
-                    if entry_pair in exc_pairs:
-                        return False
-                    if inc_pairs and entry_pair not in inc_pairs:
-                        return False
+                    matched_folder = folder
                     break
+            if matched_folder is None:
+                _logger.warning(
+                    "[chat_list._matches_tab] folder_id=%s NOT FOUND in user_folders (count=%d, ids=%s)",
+                    self._active_folder, len(self._user_folders),
+                    [f.get("folder_id", "") for f in self._user_folders],
+                )
+                # cycle 169.382 — folder lookup fail = 빈 list 의무 (사용자 critique image #141/142 모든 entries 출력 회수)
+                return False
+            included = matched_folder.get("included_chats", []) or []
+            excluded = matched_folder.get("excluded_chats", []) or []
+            inc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in included if isinstance(c, dict)}
+            exc_pairs = {(c.get("kind", ""), int(c.get("target_id", 0))) for c in excluded if isinstance(c, dict)}
+            entry_pair = (entry.kind, entry.target_id)
+            if entry_pair in exc_pairs:
+                return False
+            if inc_pairs and entry_pair not in inc_pairs:
+                return False
+            # 한글 주석 — included_chats 부재 시점 = 전체 visible (folder = "all" semantic)
         if self._active_tab == "friends":
             # cycle 169.323 — saved kind 추가 (사용자 directive image #86)
             # cycle 169.333 — group / channel kind 추가 (telegram wizard align)

@@ -153,25 +153,8 @@ class FolderEditDialog(QDialog):
 
         c_layout.addSpacing(8)
 
-        # 폴더 공유 — 초대 링크
-        share_label = QLabel("폴더 공유")
-        share_label.setStyleSheet("color: #22D3EE; font-size: 13px; font-weight: 700;")
-        c_layout.addWidget(share_label)
-        link_btn = QPushButton("🔗  초대 링크 생성")
-        link_btn.setStyleSheet(
-            "QPushButton {"
-            " color: #0066FF; background: transparent; border: none;"
-            " text-align: left; padding: 8px 0; font-size: 13px; font-weight: 600;"
-            "}"
-            " QPushButton:hover { color: #67E8F9; }"
-        )
-        link_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        link_btn.clicked.connect(self.invite_link_requested.emit)  # type: ignore[arg-type]
-        c_layout.addWidget(link_btn)
-        link_hint = QLabel("이 폴더의 일부 그룹 및 채널 접근을 다른 사용자와 공유합니다.")
-        link_hint.setStyleSheet("color: #6b7280; font-size: 11px;")
-        link_hint.setWordWrap(True)
-        c_layout.addWidget(link_hint)
+        # cycle 169.383 — 폴더 공유 section 제거 (사용자 critique image #143 — 의미 부재)
+        # cycle 169.383 — 폴더 공유 + 초대 링크 + hint 모두 제거 (사용자 critique image #143)
 
         c_layout.addStretch(1)
         scroll.setWidget(content)
