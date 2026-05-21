@@ -84,10 +84,10 @@ class SidebarRail(QFrame):
             # cycle 169.138 — icon size 28→24 + cycle 169.374 image #130 — text label 표시
             btn.setIcon(load_icon(icon_name, size=22, color="#9ca3af"))
             btn.setIconSize(QSize(22, 22))
-            btn.setText(label[:6])
+            btn.setText(self._wrap_label(label))
             btn.setToolTip(label)
             btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-            btn.setFixedSize(64, 60)
+            btn.setFixedSize(72, 72)
             btn.setStyleSheet(
                 "QToolButton#sidebarTab {"
                 " color: #9ca3af; background-color: transparent;"
@@ -115,11 +115,25 @@ class SidebarRail(QFrame):
 
         layout.addStretch(1)
 
-    def set_folder_entries(self, folders: list) -> None:
-        """cycle 169.373 — user folder entry 동적 갱신 (사용자 critique image #129).
+    @staticmethod
+    def _wrap_label(text: str) -> str:
+        """cycle 169.377 — sidebar label 줄내림 helper (사용자 critique image #132 elided 회수).
 
-        folders = list[dict] (folder_id + name + color_name). 기존 button 제거 後
-        새 button rebuild + click → folder_selected.emit(folder_id) chain.
+        4 char 이하 = single line. 띄어쓰기 안 break (1회). 부재 + 5+ char = mid-split.
+        """
+        text = text.strip()
+        if len(text) <= 4:
+            return text
+        if " " in text:
+            return text.replace(" ", "\n", 1)
+        mid = (len(text) + 1) // 2
+        return text[:mid] + "\n" + text[mid:8]
+
+    def set_folder_entries(self, folders: list) -> None:
+        """cycle 169.376 — user folder entry 동적 갱신 (사용자 critique image #131).
+
+        편집 button 의 sidebar 최하단 위치 의무 — folder button = 편집 button 之前 insert.
+        folders = list[dict] (folder_id + name + color_name).
         """
         layout = self.layout()
         # 한글 주석 — 기존 folder button 제거
@@ -127,6 +141,9 @@ class SidebarRail(QFrame):
             layout.removeWidget(btn)
             btn.deleteLater()
         self._folder_buttons.clear()
+        # cycle 169.376 — 편집 button index detect (folder insert anchor)
+        edit_btn = self._buttons.get("settings")
+        edit_idx = layout.indexOf(edit_btn) if edit_btn is not None else (layout.count() - 1)
         # 한글 주석 — 신규 folder button 추가 (편집 tab 之前 insert) — cycle 169.374 image #130 정합
         # folder SVG icon (top) + name label (bottom) — QToolButton ToolButtonTextUnderIcon style
         for folder in folders or []:
@@ -139,10 +156,10 @@ class SidebarRail(QFrame):
             btn.setCheckable(True)
             btn.setIcon(load_icon("folder", size=22, color="#9ca3af"))
             btn.setIconSize(QSize(22, 22))
-            btn.setText(name[:6])
+            btn.setText(self._wrap_label(name))
             btn.setToolTip(name)
             btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-            btn.setFixedSize(64, 60)
+            btn.setFixedSize(72, 72)
             btn.setStyleSheet(
                 "QToolButton {"
                 " color: #9ca3af; background-color: transparent;"
@@ -156,9 +173,9 @@ class SidebarRail(QFrame):
                 lambda _checked, f=fid: self.folder_selected.emit(f)
             )
             self._button_group.addButton(btn)
-            # 한글 주석 — stretch 之前 insert (편집 button 다음 위치)
-            insert_idx = layout.count() - 1
-            layout.insertWidget(insert_idx, btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            # cycle 169.376 — 편집 button 之前 insert (편집 = 최하단 의무)
+            layout.insertWidget(edit_idx, btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            edit_idx += 1
             self._folder_buttons[fid] = btn
 
     def set_active_tab(self, tab_key: str) -> None:
