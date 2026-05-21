@@ -2071,14 +2071,19 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_logout(self) -> None:
-        """로그아웃 — 사용자 confirm + app close."""
-        from PyQt6.QtWidgets import QMessageBox
-        reply = QMessageBox.question(
-            self, "TooTalk", "로그아웃 의무 — 어플 종료 + 다음 진입 시 재 로그인",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            self.close()
+        """로그아웃 confirm — cycle 169.365 모달 ConfirmDialog (i18n + frameless + main center)."""
+        try:
+            from app.ui.confirm_dialog import ConfirmDialog
+            dialog = ConfirmDialog(
+                title_key="로그아웃",
+                message_key="로그아웃_의무_어플_종료_다음_진입_시_재_로그인",
+                parent=self,
+            )
+            result = self._exec_dialog_centered(dialog)
+            if result == 1:
+                self.close()
+        except Exception as exc:
+            log.warning("ConfirmDialog logout 실패 — %r", exc)
 
     @pyqtSlot()
     def _on_header_search(self) -> None:
