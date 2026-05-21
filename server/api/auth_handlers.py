@@ -324,6 +324,53 @@ async def handle_profile_update(request: web.Request) -> web.Response:
     return web.json_response({"ok": True, "user_id": user_id, "changed": changed_fields})
 
 
+async def handle_user_status(request: web.Request) -> web.Response:
+    """GET /api/auth/users/{user_id}/status — cycle 169.216 신설.
+
+    친구 last_seen + 온라인 상태 조회. chat_header status binding chain prereq.
+
+    응답 schema = ``{user_id: int, last_login_at: iso, last_active_at: iso | null, online: bool}``.
+    online = (now - last_active_at) < 60s (사용자 만 활성).
+    Bearer 인증 의무 (auth_middleware 주입).
+    """
+    from datetime import datetime, timezone, timedelta
+    viewer_id = request.get("user_id")
+    if not isinstance(viewer_id, int) or viewer_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+    try:
+        target_id = int(request.match_info["user_id"])
+    except (KeyError, ValueError):
+        raise web.HTTPBadRequest(reason="user_id 양수 int 의무")
+
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response({"user_id": target_id, "online": False, "last_login_at": None, "last_active_at": None})
+
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT last_login_at, last_active_at FROM users LEFT JOIN user_sessions "
+                "ON user_sessions.user_id = users.id "
+                "WHERE users.id = %s ORDER BY user_sessions.last_active_at DESC LIMIT 1",
+                (target_id,),
+            )
+            row = await cur.fetchone()
+    if not row:
+        raise web.HTTPNotFound(reason=f"user_id {target_id} 부재")
+
+    last_login, last_active = row
+    online = False
+    if last_active:
+        delta = datetime.now(timezone.utc) - last_active.replace(tzinfo=timezone.utc)
+        online = delta < timedelta(seconds=60)
+    return web.json_response({
+        "user_id": target_id,
+        "online": online,
+        "last_login_at": last_login.isoformat() if last_login else None,
+        "last_active_at": last_active.isoformat() if last_active else None,
+    })
+
+
 async def handle_email_change_request(request: web.Request) -> web.Response:
     """POST /api/auth/email/request — cycle 128 이메일 변경 요청 skeleton.
 
@@ -418,4 +465,6 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_put("/api/auth/profile", handle_profile_update)
     app.router.add_post("/api/auth/email/request", handle_email_change_request)
     app.router.add_delete("/api/auth/account", handle_account_delete)
-    log.info("[api] auth 10 endpoint 등록 완료")
+    # cycle 169.216 — last_seen + 온라인 상태 조회 (chat_header status binding chain)
+    app.router.add_get(r"/api/auth/users/{user_id:\d+}/status", handle_user_status)
+    log.info("[api] auth 11 endpoint 등록 완료")
