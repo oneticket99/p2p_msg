@@ -172,6 +172,11 @@ class LoginDialog(QDialog):
         if ok:
             self._token = data.get("token")
             self._user_id = data.get("user_id")
+            # cycle 169.271 — token capture log (사용자 critique bot 401 client side root cause)
+            log.warning(
+                "[login_dialog] token_present=%s token_len=%d user_id=%s",
+                bool(self._token), len(self._token or ""), self._user_id,
+            )
             self.accept()
             return
         err_map = {

@@ -861,6 +861,11 @@ class MainWindow(QMainWindow):
         if dialog.exec() == dialog.DialogCode.Accepted:
             self._session_token = dialog.token
             self._current_user_id = dialog.user_id
+            # cycle 169.271 — 사용자 critique bot 401 root cause trace
+            log.warning(
+                "[main_window] _session_token set token_present=%s token_len=%d user_id=%s",
+                bool(self._session_token), len(self._session_token or ""), self._current_user_id,
+            )
             log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
             # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
             self._post_login_refresh()
