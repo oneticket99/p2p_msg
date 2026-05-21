@@ -1675,18 +1675,17 @@ class MainWindow(QMainWindow):
         self._active_drawer = drawer
 
     def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.264 — dialog 의 main window child overlay retain (사용자 directive image #25 회수).
+        """cycle 169.265 — dialog 의 main window child overlay + manual modal event loop.
 
-        QDialog 의 OS top-level retain 폐기 → setParent(self, Qt.SubWindow) retain — main window 의
-        child widget visually inside retain. exec() modal blocking 동작 retain.
+        사용자 directive image #25/27 회수 — QDialog OS top-level retain 폐기 →
+        setParent + Qt.Widget flag + manual QEventLoop modal blocking. dialog 안
+        main window 의 inside child widget retain visually.
         """
-        from PyQt6.QtCore import Qt as _Qt
-        # 한글 주석 — child overlay pattern: parent = main_window + Qt.SubWindow flag 시점 OS-level top-level 부재
-        dialog.setParent(self, _Qt.WindowType.SubWindow)
-        # 한글 주석 — overlay 의 stacking order 최상위 retain (raise_)
-        dialog.raise_()
+        from PyQt6.QtCore import Qt as _Qt, QEventLoop
+        # 한글 주석 — child widget overlay pattern (OS-level top-level 절대 폐기)
+        dialog.setParent(self)
+        dialog.setWindowFlags(_Qt.WindowType.Widget)
         parent_rect = self.rect()
-        # 한글 주석 — width + height 의 main rect 안 fit clamp
         max_w = max(parent_rect.width() - 40, 360)
         max_h = max(parent_rect.height() - 40, 400)
         if dialog.width() > max_w:
@@ -1694,11 +1693,35 @@ class MainWindow(QMainWindow):
         if dialog.height() > max_h:
             dialog.setFixedHeight(max_h)
         dw, dh = dialog.width(), dialog.height()
-        # 한글 주석 — main window local coord 안 center pos (child widget pos)
         x = (parent_rect.width() - dw) // 2
         y = (parent_rect.height() - dh) // 2
         dialog.move(x, y)
-        return dialog.exec()
+        # 한글 주석 — manual modal event loop (QDialog.exec OS-level retain 회피)
+        loop = QEventLoop()
+        dialog._embed_result = 0
+        orig_accept = dialog.accept
+        orig_reject = dialog.reject
+        def _accept():
+            dialog._embed_result = 1
+            try:
+                orig_accept()
+            except Exception:
+                pass
+            loop.quit()
+        def _reject():
+            dialog._embed_result = 0
+            try:
+                orig_reject()
+            except Exception:
+                pass
+            loop.quit()
+        dialog.accept = _accept
+        dialog.reject = _reject
+        dialog.show()
+        dialog.raise_()
+        loop.exec()
+        dialog.hide()
+        return dialog._embed_result
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
