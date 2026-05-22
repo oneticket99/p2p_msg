@@ -131,10 +131,10 @@ class MessageBubble(QFrame):
         bubble = QFrame(self)
         bubble.setObjectName("messageBubble")
         bubble_layout = QVBoxLayout(bubble)
-        # cycle 169.180 — telegram align D-15 — ts inline overlay (text 우측 하단)
-        # padding right 의 의 ts label width reserve (~52px for "오전 1:14 ✓✓") + bottom 의 의 spacing 단축
-        bubble_layout.setContentsMargins(10, 6, 10, 4)
-        bubble_layout.setSpacing(2)
+        # cycle 169.435 — bubble 내부 padding 2배 (사용자 directive image #13 답답함 회수)
+        # 이전 (10,6,10,4) → (20,12,20,8) — 좌우 20 + 상 12 + 하 8 (ts inline overlap 정합)
+        bubble_layout.setContentsMargins(20, 12, 20, 8)
+        bubble_layout.setSpacing(4)
 
         # cycle 169.144/163 — grouped 또는 1:1 chat (hide_sender) 시 sender label 생략
         # peer 발신 + 첫 bubble (non-grouped) + 1:1 부재 시점 만 render
