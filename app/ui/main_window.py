@@ -2373,11 +2373,41 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             log.warning("RemoteCallDialog request 실패 — %r", exc)
 
+    def _spawn_incoming_remote_modal(
+        self, peer_name: str, kind: str = "remote_request",
+    ) -> None:
+        """cycle 169.425 — 상대 peer 요청 incoming 시점 강제 modal spawn 의 의 helper.
+
+        사용자 directive — 음성통화/원격연결/원격요청 incoming = 같은 layout (RemoteCallDialog incoming) + label 상황별 변경.
+
+        Parameters
+        ----------
+        peer_name : str
+            요청 송신 상대 표시 이름.
+        kind : str
+            "voice_call" / "remote_request" / "remote_connect" 3 종. status label 분기.
+        """
+        try:
+            from app.ui.remote_call_dialog import RemoteCallDialog
+            label_map = {
+                "voice_call": "음성 통화 수신…",
+                "remote_request": "원격 요청 수신…",
+                "remote_connect": "원격 연결 수신…",
+            }
+            label = label_map.get(kind, "수신…")
+            dialog = RemoteCallDialog(
+                peer_name=peer_name, mode="incoming", parent=self,
+                incoming_label=label,
+            )
+            self._exec_dialog_centered(dialog)
+        except Exception as exc:
+            log.warning("[incoming_remote] spawn 실패 kind=%s — %r", kind, exc)
+
     @pyqtSlot()
     def _on_remote_connect(self) -> None:
         """원격 연결 → RemoteCallDialog outgoing — 사용자 directive cycle 169.424 회수.
 
-        이전 mode='incoming' 폐기 — incoming UI = 상대가 me 측 요청 시점 별 trigger (peer signal).
+        이전 mode='incoming' 폐기 — incoming UI = 상대 peer 요청 송신 시점 별 trigger (peer signal handler).
         dropdown 클릭 = outgoing 의무. layout = 원격 요청 same dialog (RemoteCallDialog request mode).
         """
         try:
