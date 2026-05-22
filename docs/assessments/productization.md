@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T21:20:00+09:00
+last_verified: 2026-05-22T21:43:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 21:20 KST — cycle 169.476~480 fingerprint sync (5 commit drift 회수). 누계: consume_otp MariaDB error 1020 retry chain (169.476) → OTP paste 6 digit distribute chain (169.477) → reset_test_users.sh column 정정 (friend_user_id/folders.owner_id/file_meta.sender_id) (169.478) → QLineEdit.paste() slot override (paste 1 digit retain 회수) (169.479) → OTP verify HTTP 500 회수 — `increment_attempt`/`mark_email_verified` retry chain + client `_verify_in_flight` double-fire guard (169.480).<br>**이전 갱신**: 2026-05-22 20:38 KST — cycle 169.469~474 sync.
+> **최신 갱신 시점**: 2026-05-22 21:43 KST — cycle 169.482~486 fingerprint sync (5 commit drift 회수). 누계: signup `_signup_in_flight` double-click guard (169.482) → reclaim_unverified_user_atomic MariaDB 1020 retry chain transaction 전수 (169.483) → login + OTP resend double-click guard `_login_in_flight` + `_resend_in_flight` (169.484) → handoff §8.79.1 cycle 169.476~484 9 entry append (169.485) → streaming OAuth flow 4 platform token persistence + refresh chain — migration 0016 streaming_oauth_tokens + repo 5 method + 5 endpoint (start/callback/refresh/status/delete) + 4 platform endpoint config Twitch/YouTube/CHZZK/Kick (169.486).<br>**이전 갱신**: 2026-05-22 21:20 KST — cycle 169.476~480 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
