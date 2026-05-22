@@ -1428,13 +1428,20 @@ class MainWindow(QMainWindow):
         """
         import time, aiohttp
         # cycle 169.288 — typing indicator 표시 (사용자 directive image #58/62)
+        # cycle 169.432 — active chat 의 bot kind 검증 의무 (사용자 critique image #4 cross-leak 회수)
         from app.ui.typing_indicator import TypingIndicator
         typing = TypingIndicator(parent=self._chat_view._content)
-        try:
-            self._chat_view._messages_layout.addWidget(typing)
-            self._chat_view._scroll_to_bottom_once()
-        except Exception:  # pragma: no cover - graceful
-            pass
+        # bot kind active 시점만 typing widget 추가 (saved/friend 화면 leak 차단)
+        typing_added = False
+        if self._active_chat_kind == "bot":
+            try:
+                # 한글 주석 — stretch slot 직전 insertWidget (chat_view layout 정합)
+                insert_at = max(0, self._chat_view._messages_layout.count() - 1)
+                self._chat_view._messages_layout.insertWidget(insert_at, typing)
+                self._chat_view._scroll_to_bottom_once()
+                typing_added = True
+            except Exception:  # pragma: no cover - graceful
+                pass
         try:
             api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
             token = getattr(self, "_session_token", None) or ""
@@ -1473,13 +1480,15 @@ class MainWindow(QMainWindow):
             log.warning("[bot_chat] LLM 호출 실패 — %r", exc)
             reply = f"⚠️ 서버 연결 실패 — {exc.__class__.__name__}. 데모 서버 점검 중일 수 있습니다."
         finally:
-            # cycle 169.288 — typing indicator 제거 (응답 도착 또는 graceful 분기 모두)
+            # cycle 169.288~432 — typing indicator 제거 (응답 도착 또는 graceful 분기 + 부재 시점 noop)
             try:
                 typing.stop()
+                # bot kind active 였든 chat 전환 후든 setParent(None) safe
                 typing.setParent(None)
                 typing.deleteLater()
             except Exception:  # pragma: no cover - graceful
                 pass
+        # cycle 169.432 — bot 응답 cache append (active 무관) — render = _append_dm_message 안 active 검증 retain
         self._append_dm_message(
             "bot", 1, "투네이션 고객센터", reply, datetime.now(), is_self=False,
         )
