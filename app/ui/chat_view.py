@@ -103,6 +103,8 @@ class ChatView(QScrollArea):
 
     # cycle 154 — bubble reply_requested signal 재발산 → main_window reply mode set
     reply_to_message = pyqtSignal(str, str)  # (sender, text)
+    # cycle 169.444 — scroll-up lazy-load signal (caller = main_window subscribe)
+    lazy_load_requested = pyqtSignal(int)  # room_id (local namespace)
 
     def _on_bubble_reply_requested(self, sender: str, text: str) -> None:
         """bubble reply_requested 재발산 → main_window reply mode chain."""
@@ -217,6 +219,26 @@ class ChatView(QScrollArea):
         self._scroll_active_key: Optional[tuple[str, int]] = None
 
         self.setWidget(self._content)
+
+        # cycle 169.444 — scroll-up lazy-load chain (사용자 directive — local SQLite + MariaDB sync)
+        # scrollbar value <= 30 시점 lazy_load_requested emit. caller = before_msg_id cursor 활용 fetch.
+        self._lazy_load_threshold_px: int = 30
+        self._lazy_load_active: bool = False  # 중복 fire 차단
+        self._active_room_id: int = 0  # 현 chat room_id (local namespace)
+        self.verticalScrollBar().valueChanged.connect(self._on_scroll_value_changed)  # type: ignore[arg-type]
+
+    def set_active_room(self, room_id: int) -> None:
+        """cycle 169.444 — chat 전환 시점 active room_id 갱신 (lazy load chain 의 cursor)."""
+        self._active_room_id = int(room_id)
+        self._lazy_load_active = False  # 새 chat 진입 = lock reset
+
+    def _on_scroll_value_changed(self, value: int) -> None:
+        """cycle 169.444 — scrollbar 최상단 도달 시점 lazy load fire."""
+        if self._lazy_load_active:
+            return
+        if value <= self._lazy_load_threshold_px and self._active_room_id > 0:
+            self._lazy_load_active = True
+            self.lazy_load_requested.emit(self._active_room_id)
 
     # ------------------------------------------------------------------
     # public API

@@ -310,6 +310,8 @@ class MainWindow(QMainWindow):
             sound_player=self._sound_player,
             reactions_client=self._reactions_client,
         )
+        # cycle 169.444 — scroll-up lazy load signal subscribe (사용자 directive)
+        self._chat_view.lazy_load_requested.connect(self._on_lazy_load_requested)  # type: ignore[arg-type]
         # cycle 164 — ReactionsPoller 인스턴스 + 시작 (client 부재 시 graceful skip)
         try:
             from app.ui.reactions_poller import ReactionsPoller
@@ -1769,6 +1771,47 @@ class MainWindow(QMainWindow):
         worker.start()
 
     @pyqtSlot(str, int)
+    def _kind_room_local(self, kind: str, target_id: int) -> int:
+        """cycle 169.444 — kind + target_id → local SQLite room_id namespace 변환."""
+        self_id = getattr(self, "_current_user_id", None) or 1
+        if kind == "saved":
+            return self_id * 100 + 1
+        if kind == "bot":
+            return self_id * 10 + 2
+        if kind == "friend":
+            return target_id * 100 + 3
+        return target_id * 100 + 9
+
+    @pyqtSlot(int)
+    def _on_lazy_load_requested(self, room_id_local: int) -> None:
+        """cycle 169.444 — chat_view scroll-up 시점 추가 history fetch chain.
+
+        1차 = local SQLite 안 before_msg_id cursor 활용 추가 메시지 fetch
+        2차 = local 부재 시점 server REST fetch (별 cycle)
+        """
+        try:
+            from app.db import messages_cache as _mc
+            from datetime import datetime as _dt
+            min_id = _mc.get_min_msg_id(room_id_local)
+            if min_id is None or min_id <= 1:
+                log.debug("[lazy_load] room=%d 추가 cache 부재 — server fetch 별 cycle", room_id_local)
+                self._chat_view._lazy_load_active = False
+                return
+            rows = _mc.list_messages_by_room(
+                room_id=room_id_local, limit=30, before_msg_id=min_id,
+            )
+            if not rows:
+                self._chat_view._lazy_load_active = False
+                return
+            # 한글 주석 — 기존 bubble 위 prepend = layout 정합 별 cycle. 본 cycle = chat_view clear + 전체 re-replay
+            self._chat_view.clear_messages()
+            kind = self._active_chat_kind or "saved"
+            self._load_local_history(kind, self._active_chat_target_id or 0)
+            log.info("[lazy_load] PASS — room=%d fetched=%d", room_id_local, len(rows))
+        except Exception as exc:
+            log.debug("[lazy_load] 실패 — %r", exc)
+            self._chat_view._lazy_load_active = False
+
     def _load_local_history(self, kind: str, target_id: int) -> None:
         """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
 
@@ -1856,6 +1899,8 @@ class MainWindow(QMainWindow):
             else:
                 # 한글 주석 — in-memory cache miss → local SQLite history replay (사용자 directive 영속)
                 self._load_local_history(kind, target_id)
+            # cycle 169.444 — chat_view active room_id 갱신 (lazy load cursor base)
+            self._chat_view.set_active_room(self._kind_room_local(kind, target_id))
             # cycle 169.176 — prev offset restore 시도 + 부재 시 bottom fallback
             restored = self._chat_view.restore_scroll_offset(kind, target_id)
             if not restored:
