@@ -335,6 +335,12 @@ class ChatListPanel(QFrame):
         - is_self=False + active_chat_match=False 시 unread_count++ (사용자 critique image #5 — bot 응답 도착 시점 unread bump 의무)
         - resort + render
         """
+        import logging as _log
+        _logger = _log.getLogger(__name__)
+        _logger.warning(
+            "[bump_entry] enter — kind=%s tid=%s entries_count=%d match_attempt",
+            kind, target_id, len(self._entries),
+        )
         for entry in self._entries:
             if entry.kind == kind and entry.target_id == target_id:
                 entry.last_message = last_message
@@ -344,6 +350,10 @@ class ChatListPanel(QFrame):
                 # cycle 169.434 — unread_count bump chain (사용자 critique image #5)
                 if not is_self and not active_chat_match:
                     entry.unread_count += 1
+                _logger.warning(
+                    "[bump_entry] MATCH PASS — kind=%s tid=%s preview=%r unread=%d",
+                    kind, target_id, last_message[:40], entry.unread_count,
+                )
                 # sort 재 정렬 (pinned + ts desc)
                 self._entries = sorted(
                     self._entries,
@@ -351,6 +361,11 @@ class ChatListPanel(QFrame):
                 )
                 self._render()
                 return
+        _logger.warning(
+            "[bump_entry] NO MATCH — kind=%s tid=%s entries=%s",
+            kind, target_id,
+            [(e.kind, e.target_id) for e in self._entries],
+        )
 
     def set_current_chat(self, kind: str, target_id: int) -> None:
         """cycle 169.167 — programmatic 진입 path 의 list highlight sync (telegram align image #12).

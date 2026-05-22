@@ -1243,10 +1243,15 @@ class MainWindow(QMainWindow):
         """
         key = (kind, target_id)
         self._dm_history.setdefault(key, []).append((sender, text, ts, is_self))
-        # cycle 169.174~434 — chat_list entry preview + ts bump (sort + render + unread)
+        # cycle 169.174~436 — chat_list entry preview + ts bump (sort + render + unread)
         try:
             active_match = (
                 self._active_chat_kind == kind and self._active_chat_target_id == target_id
+            )
+            log.warning(
+                "[append_dm_message] bump fire — kind=%s tid=%s active_kind=%s active_tid=%s match=%s is_self=%s text=%r",
+                kind, target_id, self._active_chat_kind, self._active_chat_target_id,
+                active_match, is_self, text[:40],
             )
             self._chat_list_panel.bump_entry(
                 kind=kind, target_id=target_id,
@@ -1255,8 +1260,8 @@ class MainWindow(QMainWindow):
                 is_self=is_self,
                 active_chat_match=active_match,
             )
-        except Exception:  # pragma: no cover - graceful
-            pass
+        except Exception as exc:
+            log.warning("[append_dm_message] bump_entry 실패 — %r", exc)
         # active chat 이면 chat_view render
         if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
             try:
