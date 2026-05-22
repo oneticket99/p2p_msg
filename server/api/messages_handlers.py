@@ -140,16 +140,27 @@ async def _read_json(request: web.Request) -> dict:
 
 
 def _message_row_to_wire(row: Any) -> Dict[str, Any]:
-    """MessageRow → JSON-safe dict."""
+    """MessageRow → JSON-safe dict (cycle 169.459 — ts_ms field 추가 사용자 directive 의 ts 정합).
 
+    사용자 critique image #23 — client 측 ts_ms 부재 시점 datetime.now() fallback retain.
+    server side = created_at → ts_ms (epoch ms) 명시 변환 chain.
+    """
+    ts_ms = 0
+    if row.created_at:
+        try:
+            ts_ms = int(row.created_at.timestamp() * 1000)
+        except Exception:
+            ts_ms = 0
     return {
         "id": row.id,
+        "message_id": row.id,  # cycle 169.459 — client 의 의 message_id alias retain
         "room_id": row.room_id,
         "sender_id": row.sender_id,
         "kind": row.kind,
         "body": row.body,
         "file_id": row.file_id,
         "created_at": row.created_at.isoformat() if row.created_at else None,
+        "ts_ms": ts_ms,
     }
 
 
