@@ -55,13 +55,19 @@ class SearchResult:
     user_id : int
         users.id (PK).
     username : str
-        표시명.
+        users.username — 로그인 식별자 (영문).
+    display_name : str
+        users.display_name — 표시 이름 (한글 가능, cycle 169.491 신설).
+    nickname : str
+        users.nickname — 닉네임 (한글 가능, cycle 169.491 신설).
     email_verified : bool
         OTP 검증 완료 flag — UI 의 verified badge 표시.
     """
 
     user_id: int
     username: str
+    display_name: str = ""
+    nickname: str = ""
     email_verified: bool = False
 
 
@@ -186,7 +192,14 @@ else:
 
             for result in self._results:
                 badge = " ✓" if result.email_verified else ""
-                item = QListWidgetItem(f"{result.username}{badge}")
+                # 한글 주석 — cycle 169.491 — display_name + nickname 보조 표기.
+                # 표시 우선순위: nickname (있으면) → display_name (있으면) → username only.
+                primary = result.nickname or result.display_name or result.username
+                if primary == result.username:
+                    label = f"{result.username}{badge}"
+                else:
+                    label = f"{primary} (@{result.username}){badge}"
+                item = QListWidgetItem(label)
                 item.setData(Qt.ItemDataRole.UserRole, result.user_id)
                 self._result_list.addItem(item)
 

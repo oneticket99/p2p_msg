@@ -154,13 +154,19 @@ class UserSearchResult:
     id : int
         users.id (PK) — 친구 요청 시 target.
     username : str
-        users.username — 검색 결과 표시명.
+        users.username — 로그인 식별자 (영문).
+    display_name : str
+        users.display_name — 표시 이름 (한글 가능). cycle 169.491 신설.
+    nickname : str
+        users.nickname — 닉네임 (한글 가능). cycle 169.491 신설.
     email_verified : bool
         OTP 인증 완료 여부 — UI badge 의무.
     """
 
     id: int
     username: str
+    display_name: str = ""
+    nickname: str = ""
     email_verified: bool = False
 
     @classmethod
@@ -170,6 +176,8 @@ class UserSearchResult:
         return cls(
             id=int(wire["id"]),
             username=str(wire.get("username", "")),
+            display_name=str(wire.get("display_name") or ""),
+            nickname=str(wire.get("nickname") or ""),
             email_verified=bool(wire.get("email_verified", False)),
         )
 

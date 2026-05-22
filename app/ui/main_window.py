@@ -1175,6 +1175,8 @@ class MainWindow(QMainWindow):
                     SearchResult(
                         user_id=int(r.id),
                         username=str(r.username),
+                        display_name=str(getattr(r, "display_name", "")),
+                        nickname=str(getattr(r, "nickname", "")),
                         email_verified=bool(r.email_verified),
                     )
                     for r in results

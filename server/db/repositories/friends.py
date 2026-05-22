@@ -110,8 +110,9 @@ _DELETE_FRIEND = (
 )
 
 _SEARCH_USER_BY_USERNAME = (
-    "SELECT id, username, email_verified FROM users "
-    "WHERE username LIKE %s AND status = 'active' "
+    "SELECT id, username, display_name, nickname, email_verified FROM users "
+    "WHERE (username LIKE %s OR display_name LIKE %s OR nickname LIKE %s) "
+    "AND status = 'active' "
     "ORDER BY username ASC LIMIT %s"
 )
 
@@ -284,26 +285,34 @@ async def search_users_by_username(
     keyword: str,
     limit: int = 20,
 ) -> List[dict]:
-    """username 의 부분 매칭 검색 — LIKE %keyword% + status=active + LIMIT.
+    """username + display_name + nickname 의 부분 매칭 검색 (cycle 169.491 한글 확장).
+
+    이전 cycle = username LIKE 만 — 한글 nickname/display_name 의 검색 부재 회수.
+    OR 3 column LIKE — 한국어 이름/닉네임 입력 시점 매칭 정합.
 
     Returns
     -------
     List[dict]
-        ``{"id": int, "username": str, "email_verified": bool}`` 의 list.
-        UI dropdown 의 검색 결과 base.
+        ``{"id": int, "username": str, "display_name": str, "nickname": str,
+        "email_verified": bool}`` 의 list. UI 검색 결과 base.
     """
 
     # 한글 주석: SQL injection 차단 — LIKE 의 % 는 query 안 wrap, keyword 는 parameterized.
     pattern = f"%{keyword}%"
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(_SEARCH_USER_BY_USERNAME, (pattern, int(limit)))
+            await cur.execute(
+                _SEARCH_USER_BY_USERNAME,
+                (pattern, pattern, pattern, int(limit)),
+            )
             rows = await cur.fetchall()
     return [
         {
             "id": int(row[0]),
             "username": str(row[1]),
-            "email_verified": bool(row[2]),
+            "display_name": str(row[2] or ""),
+            "nickname": str(row[3] or ""),
+            "email_verified": bool(row[4]),
         }
         for row in rows
     ]
