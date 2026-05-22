@@ -268,6 +268,11 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.437**: 실시간 배지 + 실시간 수신음 fix (사용자 directive 메신저 기본 의무) — ChatListEntry frozen=True 폐기 (FrozenInstanceError silent swallow 회수) + _append_dm_message 안 peer 수신 시점 play_signature 직접 trigger (포커싱 무관)
+- **cycle 169.436**: bump_entry diagnostic log 추가 — FrozenInstanceError trace 캡처 path
+- **cycle 169.435**: bubble 내부 padding 2배 ((10,6,10,4) → (20,12,20,8) + spacing 2→4)
+- **cycle 169.434**: bump_entry active_chat_match parameter + unread_count++ chain + badge 위치 ts 하단 정합 (telegram screenshot 정합)
+- **cycle 169.433**: 평가 sync (pronoun 본인 → self echo 회수)
 - **cycle 169.432**: typing indicator cross-chat leak fix — bot chat 의 TypingIndicator widget 가 saved chat 전환 시점 누설 회수 (active_chat_kind == 'bot' 검증 의무)
 - **cycle 169.431**: '안 읽음' only 라벨 정합 — 읽음 시점 ts only retain (사용자 directive setVisible(False))
 - **cycle 169.430**: 저장한 메시지 self echo 우측 정렬 fix + MessageBubble is_read parameter + set_read method 신설
