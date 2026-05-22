@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.504 (2026-05-23 00:45 KST) — settings.json D2Coding fontFamily retain + token-usage-30d.json regen (sessions=0 msgs=0) + docs/assessments/current-project-review.md 신설 retain (사용자 6.3/10 readiness 평가)
 - cycle 169.503 (2026-05-23 00:30 KST) — 평가 4 file fingerprint sync (cycle 169.494~502 9 commit drift 회수 + handoff §8.79.1 entry append)
 - cycle 169.502 (2026-05-23 00:25 KST) — server bot user (id=1) ensure chain — `_ensure_bot_user(pool)` startup hook INSERT IGNORE (bot reply FK violation IntegrityError 1452 silent skip root cause 회수, ssh-deploy-agent verdict 정합)
 - cycle 169.498~501 (2026-05-23 00:10 KST) — tray icon + 친구 요청 chain batch — system tray (close → hide + RMB context menu + LMB restore + logout LoginDialog re-spawn) (498) + PendingRequestsDialog 신설 + Conflict 메시지 swap "이미 요청된 상대" (499) + drawer pending entry + window resize → drawer height 동기 + sidebar pending badge + row chat list 패턴 (avatar + nickname + 요청 시각) (500) + placeholder "받은 요청이 없습니다." QLabel center overlay (501)
