@@ -94,7 +94,7 @@ cycle: 169.534
 
 ## 5. 참조
 
-- [cavecrew-reviewer finding raw](../../private/tmp/claude-501/-Users-1ticket-Documents-vscode-work-p2p-msg/.../tasks/a4e453b1cf68fe30a.output) — agent spawn 결과 (보존)
+- cavecrew-reviewer finding raw — agentId `a4e453b1cf68fe30a` 의 임시 artifact 경로 기록. 저장소 밖 `/private/tmp/claude-501/.../tasks/a4e453b1cf68fe30a.output` 산출물이라 markdown 링크로 보존하지 않음.
 - main_window.py:125 — MainWindow class signature 의무 (MRO 21 mixin 다중 상속)
 - cycle 169.530 — `__init__` 9 helper split commit `bb705cf`
 - cycle 169.533 — PyQt6 offscreen instantiation smoke commit `6f1cd0f`

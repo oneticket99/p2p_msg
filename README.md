@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-23 06:40:00] meta-enforcement L5 자기검증 계층 추가 + 임시 artifact 깨진 링크 정리 (tools/meta_enforce.py · ci.yml · docs/policies/execution-harness.md · docs/assessments/codex-2.8-mixin-fragility.md)
 - cycle 169.533 (2026-05-23 06:30 KST) — codex 2.7 재 평가 + PyQt6 offscreen MainWindow instantiation smoke PASS (21 mixin + 9 helper + 4 stacked + 2 chat entry + central QSplitter + 720x640). 기술 9.2 → 9.4 ▲ + 종합 6.5 → 6.8 / 10 ▲. 평가 4 file (productization md/html + vibe-coding md/html) last_verified 06:30 swap. 본격 readiness = 외부 dogfooding 단계 진입 가능 + codex 2.5 HIGH ✅ + 2.6 MED ✅ + 2.7 CRITICAL ✅.
 - cycle 169.532 (2026-05-23 06:20 KST) — handoff §8.81 신설 (cycle 169.516~531 16 entry manifest) + M6 wbs_tasks 6 row INSERT local (data/wbs.sqlite — cycle 169.526~531). 본격 main_window 책임 분리 phase 본격 종료 manifest + 다음 session 진입 chain 5 (visual ack + PyQt6 smoke + M6 + codex 2.7 + .app build).
 - cycle 169.531 (2026-05-23 06:10 KST) — 평가 4 file fingerprint sync — cycle 169.525~530 6 commit drift 회수 (last_verified swap 04:05 → 06:10 + 사이클 169.523 → 169.530).

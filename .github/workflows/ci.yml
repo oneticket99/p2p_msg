@@ -54,6 +54,23 @@ jobs:
         run: bash tools/doc-lint.sh
 
   # ---------------------------------------------------------------------------
+  # meta-enforcement — enforcement layer 자기검증 (L5)
+  # ---------------------------------------------------------------------------
+  meta-enforcement:
+    name: meta-enforcement (L5)
+    runs-on: [self-hosted, macOS, arm64]
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: brew python@3.13 PATH 등록
+        if: runner.os == 'macOS'
+        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> $GITHUB_PATH
+
+      - name: meta-enforcement 실행
+        run: python tools/meta_enforce.py
+
+  # ---------------------------------------------------------------------------
   # root-18-freeze — 루트 마크다운 정확히 18개 동결 (정본 §K)
   # ---------------------------------------------------------------------------
   root-18-freeze:

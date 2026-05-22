@@ -1,13 +1,13 @@
 ---
-title: "Execution Harness — Watcher 정책 + Enforcement Layer 5단"
+title: "Execution Harness — Watcher 정책 + Enforcement Layer 6단"
 owner: oneticket99
-last_verified: 2026-05-17
+last_verified: 2026-05-23
 status: active
 ---
 
 # Execution Harness
 
-> Watcher 역할 정책 + Enforcement Layer 5단 자동화 + 직무유기 회피 본질.
+> Watcher 역할 정책 + Enforcement Layer 6단 자동화 + 직무유기 회피 본질.
 > 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../CLAUDE_HARNESS_IMPORTANT.md) §S (Tier 1 자동화) + §C (7 역할) + §P (Whitebox) 등가 정합.
 
 ---
@@ -34,7 +34,7 @@ Claude (어시스턴트) 자율 진행 의 4 전형 실패 패턴 (false positiv
 
 ---
 
-## 3. Enforcement Layer 5단 (정본 §S-1)
+## 3. Enforcement Layer 6단 (정본 §S-1 + meta-enforcement)
 
 | Layer | 위치 | 트리거 | 작동 | 본 저장소 sketch |
 |---|---|---|---|---|
@@ -44,10 +44,34 @@ Claude (어시스턴트) 자율 진행 의 4 전형 실패 패턴 (false positiv
 | **L2 pre-commit** | git hook | commit 직전 | markdownlint + doc-lint.sh + M2/M3 검증 | 미구현 (수동 lint 의 직접 의무) |
 | **L3 post-commit** | git hook | commit 직후 | WBS row INSERT + telegram 송신 + History.md SHA 자동 갱신 | 미구현 |
 | **L4 pre-push** | git hook | push 직전 | CI workflow 사전 검증 (선택) + 분류기 우회 prefix 자동 부여 | `SKIP_PREPUSH=1` prefix 패턴 (정본 §S-3) |
+| **L5 meta-enforcement** | CI + 로컬 Python | push / PR / 수동 검증 | 정본이 참조하는 도구 실재성, root-freeze, CI soft-fail 금지, 불필요 파일 추적 금지 | `tools/meta_enforce.py` + `ci.yml` `meta-enforcement` job |
 
 > 본 hook 5종 = Phase 2 의 자동화 도입 예정. Phase 1 시점 = `tools/doc-lint.sh` + `SKIP_PREPUSH=1` prefix + `.claude/settings.json.disabled` sketch (L0 + L1 Stop 의 미활성 — 다음 위반/누락 발견 시 `mv` 의 즉시 활성) 부분 적용.
 >
 > sketch 활성 절차: `mv .claude/settings.json.disabled .claude/settings.json` — 즉시 PreToolUse + Stop hook 의 enforcement layer 강제 발동. 정합 메모리: [[feedback-bpe-script-trigger-warning]] + [[feedback-telegram-report-script-trigger-warning]].
+
+### 3.1 L5 meta-enforcement 설계
+
+L5 는 기존 gate 를 대체하지 않는다. L5 의 목적은 **gate 자체가 실제로 존재하고 차단력을 잃지 않았는지**를 검증하는 것이다. 즉 “감시자가 감시 가능 상태인지”를 CI 안에서 먼저 확인한다.
+
+검사 범위:
+
+1. **정본 참조 도구 실재성** — `tools/doc-lint.sh`, `tools/md_agents.py`, hook script, CI workflow 파일이 실제 파일로 존재해야 한다.
+2. **루트 문서 동결 재검증** — `tools/md_agents.py --root-freeze-only` 와 동일한 18개 동결 상태를 확인한다.
+3. **CI soft-fail 차단** — `.github/workflows/ci.yml` 안 `continue-on-error: true` 사용을 차단한다.
+4. **meta job 자기등록 확인** — `ci.yml` 안 `meta-enforcement` job 과 `python tools/meta_enforce.py` 호출이 존재해야 한다.
+5. **macOS 잡음 파일 추적 차단** — `git ls-files` 기준 `.DS_Store` 류 파일이 추적되면 실패한다.
+
+로컬 실행:
+
+```bash
+python tools/meta_enforce.py
+```
+
+CI 실행:
+
+- `.github/workflows/ci.yml` 의 `meta-enforcement` job 이 push / PR 시점마다 실행한다.
+- 실패 시 PR merge 차단 대상이다.
 
 ---
 

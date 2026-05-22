@@ -12,6 +12,7 @@
   ],
   "language": "korean",
   "terminal.integrated.fontFamily": "'MesloLGS NF', 'AppleGothic', monospace",
+  "terminal.integrated.gpuAcceleration": "off",
   "permissions": {
     "allow": [
       "Bash(ssh root@114.207.112.73 *)",
