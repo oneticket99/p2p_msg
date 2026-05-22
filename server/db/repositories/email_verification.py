@@ -116,13 +116,33 @@ async def increment_attempt(pool: Any, otp_id: int) -> int:
 
 
 async def consume_otp(pool: Any, otp_id: int) -> None:
-    """검증 PASS 시점 의 consumed_at = NOW() 갱신 (재사용 차단)."""
+    """검증 PASS 시점 의 consumed_at = NOW() 갱신 (재사용 차단).
+
+    cycle 169.476 — MariaDB error 1020 ("Record has changed since last read") retry chain.
+    OTP verify chain 안 increment_attempt + consume_otp 의 cursor 재 use race 회수.
+    """
+
+    import asyncio as _asyncio
+    from asyncmy.errors import OperationalError as _OperationalError
 
     sql = "UPDATE email_verification SET consumed_at = CURRENT_TIMESTAMP WHERE id = %s"
-    async with pool.acquire() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute(sql, (otp_id,))
-        await conn.commit()
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            async with pool.acquire() as conn:
+                async with conn.cursor() as cur:
+                    await cur.execute(sql, (otp_id,))
+                await conn.commit()
+            return
+        except _OperationalError as exc:
+            # 한글 주석 — 1020 ("Record has changed") 만 retry. 외 OperationalError 재 raise.
+            if getattr(exc, "args", [None])[0] != 1020:
+                raise
+            last_exc = exc
+            await _asyncio.sleep(0.05 * (attempt + 1))
+    # 한글 주석 — 3회 retry 후 fail 시점 마지막 exception raise
+    if last_exc is not None:
+        raise last_exc
 
 
 async def invalidate_pending(pool: Any, *, email: str, purpose: str) -> int:
