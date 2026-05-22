@@ -135,16 +135,31 @@ async def get_user_by_username_and_phone(
 async def mark_email_verified(pool: Any, user_id: int) -> None:
     """OTP 검증 PASS 후 email_verified = 1 갱신.
 
+    cycle 169.480 — MariaDB error 1020 retry chain 적용 (concurrent verify 의 race 회수).
+
     Notes
     -----
     호출자 = 이미 OTP 검증 PASS 검증 완료. 본 함수 = 단순 갱신.
     """
+    import asyncio
+    from asyncmy.errors import OperationalError
 
     sql = "UPDATE users SET email_verified = 1 WHERE id = %s"
-    async with pool.acquire() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute(sql, (user_id,))
-        await conn.commit()
+    last_exc = None
+    for attempt in range(4):
+        try:
+            async with pool.acquire() as conn:
+                async with conn.cursor() as cur:
+                    await cur.execute(sql, (user_id,))
+                await conn.commit()
+            return
+        except OperationalError as exc:
+            if getattr(exc, "args", [None])[0] != 1020:
+                raise
+            last_exc = exc
+            await asyncio.sleep(0.05 * (attempt + 1))
+    if last_exc is not None:
+        raise last_exc
 
 
 async def update_last_login(pool: Any, user_id: int) -> None:

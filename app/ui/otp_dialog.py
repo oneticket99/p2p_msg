@@ -125,6 +125,8 @@ class OTPDialog(QDialog):
         # 한글 주석 — cycle 169.54 회수 — verify PASS 응답 안 session token + user_id 보관
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
+        # cycle 169.480 — double-fire guard (paste 의 textChanged + _on_last_box_filled + explicit verify 의 race 차단)
+        self._verify_in_flight: bool = False
 
         self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')}")
         self.setMinimumWidth(420)
@@ -296,7 +298,14 @@ class OTPDialog(QDialog):
             self._on_verify_clicked()
 
     def _on_verify_clicked(self) -> None:
-        """cycle 169.49 회수 — QThread + sync urllib worker."""
+        """cycle 169.49 회수 — QThread + sync urllib worker.
+
+        cycle 169.480 — double-fire guard (paste 의 자동 verify + textChanged 의 last_box_filled
+        의 의 race 차단). _verify_in_flight=True 시점 즉시 return.
+        """
+        if self._verify_in_flight:
+            log.info("[OTP verify] double-fire 차단 — _verify_in_flight retain")
+            return
         otp = self._get_otp()
         if len(otp) != OTP_LENGTH or not otp.isdigit():
             _ConfirmDialog.show_warning(self, "TooTalk", _tr("6 digit OTP 입력 의무"))
@@ -305,6 +314,7 @@ class OTPDialog(QDialog):
         if not base_url:
             _ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
+        self._verify_in_flight = True
         self._verify_worker = HttpJsonWorker(base_url, "/api/auth/verify", {"email": self._email, "code": otp}, parent=self)
         self._verify_worker.finished_with_result.connect(self._on_verify_finished)
         self._verify_worker.start()
@@ -313,7 +323,9 @@ class OTPDialog(QDialog):
         """HttpJsonWorker finished slot — verify 응답 처리.
 
         cycle 169.54 회수 — 응답 안 token + user_id store (회원가입 직후 자동 로그인).
+        cycle 169.480 — _verify_in_flight flag reset (재 시도 가능 상태).
         """
+        self._verify_in_flight = False
         log.info("[OTP verify] finished ok=%s code=%s", ok, error_code)
         if ok:
             self._token = data.get("token")
