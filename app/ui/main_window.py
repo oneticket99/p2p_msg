@@ -891,19 +891,82 @@ class MainWindow(QMainWindow):
             )
 
     async def _fetch_unread_counts(self) -> None:
-        """cycle 169.448 — startup 시점 multiple room unread count batch fetch.
+        """cycle 169.448~469 — startup + 주기 unread count batch fetch (actual binding).
 
-        chat_list_panel 안 entry.unread_count populate chain.
+        chain:
+        1. chat_list_panel entries 의 friend/saved/bot kind → server room_id resolve
+        2. POST /api/auth/dm/{target}/room → room_id
+        3. GET /api/rooms/unread?room_ids=N,M,K → {counts: {room_id: count}}
+        4. chat_list_panel entry.unread_count 갱신 + _render fire
         """
         import aiohttp
         try:
             token = getattr(self, "_session_token", None) or ""
-            if not token:
+            self_id = getattr(self, "_current_user_id", None) or 0
+            if not token or self_id <= 0:
                 return
-            # 한글 주석 — room_ids 의 dynamic resolve (cycle 169.448 stub — 본 cycle = friend rooms only)
-            # 별 cycle 의무: 모든 active room id 의 batch 조회 (chat_list_panel entries → room_id resolve)
-            log.debug("[fetch_unread] skeleton — 실 room_ids dynamic resolve 별 cycle")
-            return
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+
+            # 한글 주석 — chat_list entries → server room_id resolve (saved + friend kind 만 — bot 별 endpoint)
+            entries = getattr(self._chat_list_panel, "_entries", [])
+            room_id_to_entry: dict = {}
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                for e in entries:
+                    if e.kind == "friend" and e.target_id > 0:
+                        path = f"/api/auth/dm/{e.target_id}/room"
+                    elif e.kind == "saved":
+                        path = f"/api/auth/dm/{self_id}/room"
+                    elif e.kind == "bot":
+                        path = "/api/auth/dm/bot/room"
+                    else:
+                        continue
+                    try:
+                        async with session.get(
+                            f"{api_base}{path}",
+                            timeout=aiohttp.ClientTimeout(total=5),
+                        ) as resp:
+                            if resp.status != 200:
+                                continue
+                            data = await resp.json()
+                            rid = data.get("room_id")
+                            if isinstance(rid, int) and rid > 0:
+                                room_id_to_entry[rid] = e
+                    except Exception:
+                        continue
+
+                if not room_id_to_entry:
+                    return
+                # 한글 주석 — batch unread count
+                ids_str = ",".join(str(k) for k in room_id_to_entry.keys())
+                try:
+                    async with session.get(
+                        f"{api_base}/api/rooms/unread?room_ids={ids_str}",
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as resp:
+                        if resp.status != 200:
+                            return
+                        data = await resp.json()
+                        counts = data.get("counts", {})
+                except Exception as exc:
+                    log.debug("[fetch_unread] batch fail — %r", exc)
+                    return
+
+            # 한글 주석 — entry 갱신 + render
+            for rid_str, count in counts.items():
+                try:
+                    rid = int(rid_str)
+                    entry = room_id_to_entry.get(rid)
+                    if entry is not None:
+                        entry.unread_count = int(count)
+                except Exception:
+                    continue
+            try:
+                self._chat_list_panel._render()
+            except Exception:
+                pass
+            log.info("[fetch_unread] PASS — rooms=%d", len(counts))
         except Exception as exc:
             log.debug("[fetch_unread] 실패 — %r", exc)
 
@@ -936,6 +999,8 @@ class MainWindow(QMainWindow):
                         log.warning("[post_login] rooms fetch fail — %r", exc)
             finally:
                 self._refresh_chat_list_panel()
+                # cycle 169.469 — startup 시점 unread batch fetch fire
+                asyncio.ensure_future(self._fetch_unread_counts())
 
         try:
             asyncio.ensure_future(_fetch_chain())
