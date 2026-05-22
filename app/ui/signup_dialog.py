@@ -62,6 +62,8 @@ class SignupDialog(QDialog):
         # 한글 주석 — cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
+        # cycle 169.482 — double-click guard (가입 button 의 race 차단 — server IntegrityError 의 EMAIL_DUPLICATE 응답 차단)
+        self._signup_in_flight: bool = False
 
         self.setWindowTitle(f"TooTalk · {_tr('회원가입')}")
         self.setMinimumWidth(440)
@@ -184,7 +186,14 @@ class SignupDialog(QDialog):
         return self._user_id
 
     def _on_signup_clicked(self) -> None:
-        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain."""
+        """cycle 169.34 회수 — sync def + asyncio.run() 격리 loop chain.
+
+        cycle 169.482 — double-click guard (가입 button 의 race 차단 — server IntegrityError
+        의 EMAIL_DUPLICATE 응답 차단). _signup_in_flight=True 시점 즉시 return.
+        """
+        if self._signup_in_flight:
+            log.info("[회원가입] double-fire 차단 — _signup_in_flight retain")
+            return
         email = self._email_edit.text().strip()
         username = self._username_edit.text().strip()
         password = self._password_edit.text()
@@ -209,6 +218,8 @@ class SignupDialog(QDialog):
         if not base_url:
             ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
+        # cycle 169.482 — in-flight flag set + worker fire
+        self._signup_in_flight = True
         self._signup_email = email
         self._signup_worker = HttpJsonWorker(
             base_url,
@@ -220,7 +231,11 @@ class SignupDialog(QDialog):
         self._signup_worker.start()
 
     def _on_signup_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """HttpJsonWorker finished slot — signup 응답 처리 + OTP dialog chain."""
+        """HttpJsonWorker finished slot — signup 응답 처리 + OTP dialog chain.
+
+        cycle 169.482 — _signup_in_flight reset (재 시도 가능 상태).
+        """
+        self._signup_in_flight = False
         log.info("[회원가입] finished ok=%s code=%s", ok, error_code)
         email = getattr(self, "_signup_email", "")
         if ok:
