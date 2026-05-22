@@ -270,7 +270,7 @@ status: active
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
 - **cycle 169.432**: typing indicator cross-chat leak fix — bot chat 의 TypingIndicator widget 가 saved chat 전환 시점 누설 회수 (active_chat_kind == 'bot' 검증 의무)
 - **cycle 169.431**: '안 읽음' only 라벨 정합 — 읽음 시점 ts only retain (사용자 directive setVisible(False))
-- **cycle 169.430**: 저장한 메시지 본인 echo 우측 정렬 fix + MessageBubble is_read parameter + set_read method 신설
+- **cycle 169.430**: 저장한 메시지 self echo 우측 정렬 fix + MessageBubble is_read parameter + set_read method 신설
 - **cycle 169.429**: avatar 우측 하단 녹색 dot → unread_count > 0 조건 (사용자 directive) + 테스트 배포 매뉴얼 HTML 신설 (`docs/html/test-deployment-setup.html`)
 - **cycle 169.428**: 평가 4 file fingerprint sync — 15 commit drift 회수 (cycle 169.413~427 누계)
 - **cycle 169.427**: Phase 3+/5 actual binding 본격 완성 — bot framework BotFather 등가 base + 원격 제어 cross-platform 4 backend + streaming chat 4 platform subscribe + 자동 업데이트 binary swap + i18n 5 locale full sweep + emoji pack 5 endpoint
