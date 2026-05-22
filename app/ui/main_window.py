@@ -101,9 +101,10 @@ _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 from app.ui._tray_mixin import TrayMixin
 from app.ui._friend_search_mixin import FriendSearchMixin
+from app.ui._bot_chat_mixin import BotChatMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -1569,101 +1570,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, QMainWindow):
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("[user_status] fetch 실패 — %r", exc)
 
-    async def _send_bot_message(self, text: str) -> None:
-        """cycle 169.203 — 투네이션 고객센터 bot LLM 응답 chain (사용자 directive image #29).
-
-        POST /api/bot/chat → reply.content → DM cache append.
-        graceful exception (server fail 시 system message render).
-        """
-        import time, aiohttp
-        # cycle 169.288 — typing indicator 표시 (사용자 directive image #58/62)
-        # cycle 169.432 — active chat 의 bot kind 검증 의무 (사용자 critique image #4 cross-leak 회수)
-        from app.ui.typing_indicator import TypingIndicator
-        typing = TypingIndicator(parent=self._chat_view._content)
-        # bot kind active 시점만 typing widget 추가 (saved/friend 화면 leak 차단)
-        typing_added = False
-        if self._active_chat_kind == "bot":
-            try:
-                # 한글 주석 — stretch slot 직전 insertWidget (chat_view layout 정합)
-                insert_at = max(0, self._chat_view._messages_layout.count() - 1)
-                self._chat_view._messages_layout.insertWidget(insert_at, typing)
-                self._chat_view._scroll_to_bottom_once()
-                typing_added = True
-            except Exception:  # pragma: no cover - graceful
-                pass
-        try:
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            token = getattr(self, "_session_token", None) or ""
-            # cycle 169.263 — 사용자 critique bot 401 retain root cause trace log
-            log.warning(
-                "[bot_chat] token_present=%s token_len=%d api_base=%s",
-                bool(token), len(token), api_base,
-            )
-            headers = {"Authorization": f"Bearer {token}"} if token else {}
-            payload = {
-                "messages": [
-                    {"role": "user", "content": text, "timestamp_ms": int(time.time() * 1000)},
-                ],
-            }
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.post(
-                    f"{api_base}/api/bot/chat", json=payload, headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    # cycle 169.209 — ContentTypeError 회수 — content_type=None force parse
-                    text_body = await resp.text()
-                    status = resp.status
-                    if status != 200:
-                        log.warning("[bot_chat] HTTP %d body=%s", status, text_body[:200])
-                        reply = f"⚠️ 서버 응답 부재 (HTTP {status}). 잠시 후 다시 시도해주세요."
-                    else:
-                        try:
-                            import json
-                            data = json.loads(text_body)
-                            reply = data.get("reply", {}).get("content", "응답 부재")
-                            # cycle 169.441 — server msg_id capture + local cache write-through
-                            _user_msg_id = data.get("user_msg_id")
-                            _bot_msg_id = data.get("bot_msg_id")
-                            try:
-                                from app.db import messages_cache as _mc
-                                import time as _t
-                                self_id = getattr(self, "_current_user_id", None) or 1
-                                bot_room = self_id * 10 + 2  # bot kind local namespace
-                                now_ms = int(_t.time() * 1000)
-                                if isinstance(_user_msg_id, int) and _user_msg_id > 0:
-                                    _mc.insert_message(
-                                        msg_id=_user_msg_id, room_id=bot_room,
-                                        sender_id=self_id, body=text,
-                                        ts_ms=now_ms - 1000, is_self=True,
-                                    )
-                                if isinstance(_bot_msg_id, int) and _bot_msg_id > 0:
-                                    _mc.insert_message(
-                                        msg_id=_bot_msg_id, room_id=bot_room,
-                                        sender_id=1, body=reply,
-                                        ts_ms=now_ms, is_self=False,
-                                    )
-                            except Exception as exc:
-                                log.debug("[bot_chat] local cache 실패 — %r", exc)
-                        except json.JSONDecodeError:
-                            log.warning("[bot_chat] JSON parse 실패 — body=%s", text_body[:200])
-                            reply = "⚠️ 응답 형식 오류. 잠시 후 다시 시도해주세요."
-        except Exception as exc:  # pragma: no cover - graceful
-            log.warning("[bot_chat] LLM 호출 실패 — %r", exc)
-            reply = f"⚠️ 서버 연결 실패 — {exc.__class__.__name__}. 데모 서버 점검 중일 수 있습니다."
-        finally:
-            # cycle 169.288~432 — typing indicator 제거 (응답 도착 또는 graceful 분기 + 부재 시점 noop)
-            try:
-                typing.stop()
-                # bot kind active 였든 chat 전환 후든 setParent(None) safe
-                typing.setParent(None)
-                typing.deleteLater()
-            except Exception:  # pragma: no cover - graceful
-                pass
-        # cycle 169.432 — bot 응답 cache append (active 무관) — render = _append_dm_message 안 active 검증 retain
-        self._append_dm_message(
-            "bot", 1, "투네이션 고객센터", reply, datetime.now(), is_self=False,
-        )
+    # ------------------------------------------------------------------
+    # cycle 169.513 — _send_bot_message → app/ui/_bot_chat_mixin.py 분리
+    # (BotChatMixin mixin 상속, codex 2.5 책임 분리 3차)
+    # ------------------------------------------------------------------
 
     def _lookup_friend_name(self, friend_id: int) -> str:
         """cycle 169.154 — friend_id → nickname lookup (friend_list 안 cache 조회).
@@ -1978,116 +1888,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, QMainWindow):
             log.debug("[lazy_load] 실패 — %r", exc)
             self._chat_view._lazy_load_active = False
 
-    async def _fetch_bot_history(self) -> None:
-        """cycle 169.445~454 — bot chat history server fetch chain (actual binding).
-
-        GET /api/auth/dm/bot/room → bot-{uid} room_id resolve (cycle 169.454 endpoint).
-        + GET /api/rooms/{rid}/messages bulk + SQLite write-back.
-        """
-        import aiohttp
-        from datetime import datetime
-        try:
-            token = getattr(self, "_session_token", None) or ""
-            self_id = getattr(self, "_current_user_id", None) or 0
-            if not token or self_id <= 0:
-                return
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
-                async with session.get(
-                    f"{api_base}/api/auth/dm/bot/room",
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    dm = await resp.json()
-                    room_id = dm.get("room_id")
-                if not room_id:
-                    return
-                async with session.get(
-                    f"{api_base}/api/rooms/{room_id}/messages?limit=50&offset=0",
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    page = await resp.json()
-                    raw_messages = page.get("messages", [])
-            if self._active_chat_kind == "bot":
-                # 한글 주석 — cycle 169.497 — clear_messages 폐기 (bot reply 사라짐 회수).
-                # 사용자 critique — 다른 chat focus 이동 후 재 진입 시점 bot 응답 폐기 root cause.
-                # server fetch raw_messages 안 본인 메시지 + bot reply 모두 정합 — cached + server merge.
-                # `_dm_history[("bot",1)]` cache 와 server fetch 의 msg_id 정합으로 dedup.
-                from app.db import messages_cache as _mc
-                room_id_local = self._kind_room_local("bot", 1)
-                # cycle 169.461 — server DESC fetch → ASC iteration 의무 (사용자 critique image #24)
-                raw_messages = list(reversed(raw_messages))
-                # 한글 주석 — 기존 cache key/text/ts triple set (dedup base)
-                key = ("bot", 1)
-                existing = set()
-                for sender_e, text_e, ts_e, is_self_e in self._dm_history.get(key, []):
-                    existing.add((bool(is_self_e), str(text_e), int(ts_e.timestamp() * 1000) if ts_e else 0))
-                # 한글 주석 — chat_view 안 기존 message 의 retain (clear 폐기) + server fetch 안 신규 만 append + 정렬
-                new_entries: list[tuple[str, str, "datetime", bool, int]] = []
-                for m in raw_messages:
-                    sender_id = int(m.get("sender_id") or 0)
-                    is_self = sender_id == self_id
-                    sender = "투네이션 고객센터" if not is_self else "나"
-                    text = m.get("body") or m.get("text") or ""
-                    ts_ms = m.get("ts_ms") or 0
-                    ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                    triplet = (is_self, text, int(ts_ms))
-                    if triplet in existing:
-                        continue
-                    new_entries.append((sender, text, ts, is_self, sender_id))
-                    msg_id = m.get("message_id") or m.get("id") or 0
-                    if isinstance(msg_id, int) and msg_id > 0:
-                        try:
-                            _mc.insert_message(
-                                msg_id=msg_id, room_id=room_id_local,
-                                sender_id=sender_id or 1, body=text,
-                                ts_ms=int(ts_ms) if ts_ms else int(ts.timestamp() * 1000),
-                                is_self=is_self,
-                            )
-                        except Exception:
-                            pass
-                # 한글 주석 — chat_view 가 cached 의무 retain 한 상태 — clear + server full rewrite 패턴 의무
-                # 이유: cached 안 retain 의무 row 일부 만 + server full row set 가 truth source.
-                # 단 server insert race 시점 bot reply 부재 → cached fallback 의무.
-                if new_entries or not self._dm_history.get(key):
-                    self._chat_view.clear_messages()
-                    # cached + server merge — server timestamp 기준 정렬
-                    merged: list[tuple[str, str, "datetime", bool]] = []
-                    for m in raw_messages:
-                        sender_id = int(m.get("sender_id") or 0)
-                        is_self = sender_id == self_id
-                        sender = "투네이션 고객센터" if not is_self else "나"
-                        text = m.get("body") or m.get("text") or ""
-                        ts_ms = m.get("ts_ms") or 0
-                        ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                        merged.append((sender, text, ts, is_self))
-                    # 한글 주석 — cached 안 server response 안 안 들어있는 entry 보충 (server insert race fallback)
-                    server_set = set()
-                    for s, t, ts_v, slf in merged:
-                        server_set.add((slf, t, int(ts_v.timestamp() * 1000) if ts_v else 0))
-                    for sender_e, text_e, ts_e, is_self_e in self._dm_history.get(key, []):
-                        triplet = (bool(is_self_e), str(text_e), int(ts_e.timestamp() * 1000) if ts_e else 0)
-                        if triplet not in server_set:
-                            merged.append((sender_e, text_e, ts_e, bool(is_self_e)))
-                    merged.sort(key=lambda x: int(x[2].timestamp() * 1000) if x[2] else 0)
-                    for sender, text, ts, is_self in merged:
-                        self._chat_view.add_message(
-                            sender, text, ts, is_self=is_self, hide_sender=True,
-                            play_sound=False,
-                        )
-                    # 한글 주석 — `_dm_history` 도 merged 의 truth 로 갱신 (다음 cached replay 의 source)
-                    self._dm_history[key] = list(merged)
-                self._chat_view.scroll_to_bottom()
-                self._active_room_id_server = int(room_id)
-                log.info("[bot_history] room=%d msgs=%d new=%d replay PASS",
-                         room_id, len(raw_messages), len(new_entries))
-        except Exception as exc:
-            log.debug("[bot_history] 실패 — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.513 — _fetch_bot_history → app/ui/_bot_chat_mixin.py 분리
+    # ------------------------------------------------------------------
 
     def _load_local_history(self, kind: str, target_id: int, scroll_bottom: bool = True) -> None:
         """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
