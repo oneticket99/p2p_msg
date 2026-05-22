@@ -1411,7 +1411,10 @@ class MainWindow(QMainWindow):
                     # saved kind 시점 모든 msg = self echo 강제 (self DM)
                     if self._active_chat_kind == "saved":
                         is_self = True
-                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
+                    self._chat_view.add_message(
+                        sender, text, ts, is_self=is_self, hide_sender=True,
+                        play_sound=False,  # cycle 169.462 — history replay sound 차단
+                    )
                     # cycle 169.445 — SQLite write-back (server msg_id retain — 미래 lazy load cursor base)
                     msg_id = m.get("message_id") or m.get("id") or 0
                     try:
@@ -1894,9 +1897,15 @@ class MainWindow(QMainWindow):
                 self._chat_view._lazy_load_active = False
                 return
             # 한글 주석 — 기존 bubble 위 prepend = layout 정합 별 cycle. 본 cycle = chat_view clear + 전체 re-replay
+            # cycle 169.463 — lazy load 시점 scroll position retain (사용자 critique scroll-up 시점 bottom 강제 차단)
+            from PyQt6.QtCore import QTimer
+            scrollbar = self._chat_view.verticalScrollBar()
+            saved_value = scrollbar.value()
             self._chat_view.clear_messages()
             kind = self._active_chat_kind or "saved"
-            self._load_local_history(kind, self._active_chat_target_id or 0)
+            self._load_local_history(kind, self._active_chat_target_id or 0, scroll_bottom=False)
+            # 한글 주석 — load 후 scroll position 복원 (top 부근 유지)
+            QTimer.singleShot(50, lambda: scrollbar.setValue(min(saved_value, scrollbar.maximum())))
             log.info("[lazy_load] PASS — room=%d fetched=%d", room_id_local, len(rows))
         except Exception as exc:
             log.debug("[lazy_load] 실패 — %r", exc)
@@ -1950,7 +1959,10 @@ class MainWindow(QMainWindow):
                     text = m.get("body") or m.get("text") or ""
                     ts_ms = m.get("ts_ms") or 0
                     ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
+                    self._chat_view.add_message(
+                        sender, text, ts, is_self=is_self, hide_sender=True,
+                        play_sound=False,  # cycle 169.462 — history replay sound 차단
+                    )
                     msg_id = m.get("message_id") or m.get("id") or 0
                     if isinstance(msg_id, int) and msg_id > 0:
                         try:
@@ -1968,7 +1980,7 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             log.debug("[bot_history] 실패 — %r", exc)
 
-    def _load_local_history(self, kind: str, target_id: int) -> None:
+    def _load_local_history(self, kind: str, target_id: int, scroll_bottom: bool = True) -> None:
         """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
 
         사용자 directive — 모든 채팅방 이전 대화 영속 + 채팅방 진입 시점 즉시 표시.
@@ -2002,8 +2014,11 @@ class MainWindow(QMainWindow):
                     sender_name, r["body"] or "", ts,
                     is_self=effective_self,
                     hide_sender=kind in ("friend", "bot", "saved"),
+                    play_sound=False,  # cycle 169.462 — history replay 시점 sound 차단
                 )
-            self._chat_view.scroll_to_bottom()
+            # cycle 169.463 — lazy load 시점 scroll bottom 차단 (사용자 critique)
+            if scroll_bottom:
+                self._chat_view.scroll_to_bottom()
             log.info("[load_local] kind=%s room=%d msgs=%d replay PASS",
                      kind, room_id_local, len(rows))
         except Exception as exc:
@@ -2057,7 +2072,11 @@ class MainWindow(QMainWindow):
             cached = self._dm_history.get((kind, target_id), [])
             if cached:
                 for sender, text, ts, is_self in cached:
-                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=hide_sender)
+                    # cycle 169.462 — history replay 시점 sound 차단 (사용자 critique)
+                    self._chat_view.add_message(
+                        sender, text, ts, is_self=is_self, hide_sender=hide_sender,
+                        play_sound=False,
+                    )
             else:
                 # 한글 주석 — in-memory cache miss → local SQLite history replay (사용자 directive 영속)
                 self._load_local_history(kind, target_id)

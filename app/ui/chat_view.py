@@ -277,6 +277,7 @@ class ChatView(QScrollArea):
         reactions: Optional[dict] = None,
         message_id: Optional[int] = None,
         hide_sender: bool = False,
+        play_sound: bool = True,
     ) -> None:
         """신규 메시지를 리스트에 추가하고 하단으로 자동 스크롤.
 
@@ -340,13 +341,16 @@ class ChatView(QScrollArea):
 
         # 다음 이벤트 사이클에 스크롤바를 끝까지 이동
         # (현재 사이클에서는 layout 이 아직 갱신되지 않을 수 있음)
-        scrollbar = self.verticalScrollBar()
-        scrollbar.rangeChanged.connect(self._scroll_to_bottom_once)
+        # cycle 169.462~463 — play_sound = False 시점 scroll bottom chain 도 차단 (history replay 정합)
+        if play_sound:
+            scrollbar = self.verticalScrollBar()
+            scrollbar.rangeChanged.connect(self._scroll_to_bottom_once)
 
         # peer 수신 메시지 = 시그니처 사운드 재생 트리거 (사용자 directive
         # 2026-05-17 "텔레그램/카카오톡 뿅 등가"). self 발신 + player 부재
         # + 음소거 상태 = should_play_on_message 의 False 폴백.
-        if should_play_on_message(is_self, self._sound_player):
+        # cycle 169.462 — play_sound parameter (history replay 시점 False 강제, 사용자 critique)
+        if play_sound and should_play_on_message(is_self, self._sound_player):
             self._sound_player.play_signature()  # type: ignore[union-attr]
 
     # ------------------------------------------------------------------
