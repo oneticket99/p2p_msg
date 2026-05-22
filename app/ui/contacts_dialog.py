@@ -25,6 +25,9 @@ from PyQt6.QtWidgets import (
 from app.ui._close_button import make_close_button
 from app.i18n.labels import tr as _tr
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class ContactsDialog(QDialog):
     """연락처 dialog — 친구 list + 신규 친구 추가."""
@@ -65,25 +68,21 @@ class ContactsDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 친구 추가 input + button
-        add_row = QHBoxLayout()
+        # cycle 169.450 — telegram align 신규 연락처 추가 button (사용자 directive)
+        # 이전 이메일/유저ID 단일 input 폐기 → NewContactDialog (성+이름+전화번호 마스크) chain
+        new_contact_btn = QPushButton("+ 새 연락처")
+        new_contact_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        new_contact_btn.setStyleSheet(
+            "QPushButton { color: #ffffff; background-color: #0066FF;"
+            " border: 0; border-radius: 8px; padding: 10px 16px;"
+            " font-size: 14px; font-weight: 600; }"
+            "QPushButton:hover { background-color: #0052cc; }"
+        )
+        new_contact_btn.clicked.connect(self._on_open_new_contact)  # type: ignore[arg-type]
+        body.addWidget(new_contact_btn)
+        # 한글 주석 — placeholder retain 이메일/유저 ID 검색 (별 chain 의무 retain)
         self._add_edit = QLineEdit()
-        self._add_edit.setPlaceholderText("이메일 또는 유저 ID")
-        self._add_edit.setStyleSheet(
-            "QLineEdit { color: #f3f4f6; background-color: #1F2937;"
-            " border: 1px solid #374151; border-radius: 8px; padding: 8px; }"
-        )
-        add_row.addWidget(self._add_edit, stretch=1)
-        add_btn = QPushButton("추가")
-        add_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        add_btn.setStyleSheet(
-            "QPushButton { color: #ffffff; background-color: #3b82f6;"
-            " border: 0; border-radius: 8px; padding: 8px 16px; }"
-            "QPushButton:hover { background-color: #2563eb; }"
-        )
-        add_btn.clicked.connect(self._on_add)  # type: ignore[arg-type]
-        add_row.addWidget(add_btn)
-        body.addLayout(add_row)
+        self._add_edit.setVisible(False)  # cycle 169.450 = telegram align 의 의 dialog chain 의무
 
         # 한글 주석 — 친구 list
         self._list = QListWidget()
