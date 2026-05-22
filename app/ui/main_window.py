@@ -1984,8 +1984,10 @@ class MainWindow(QMainWindow):
             rows = _mc.list_messages_by_room(room_id=room_id_local, limit=100)
             if not rows:
                 return
-            # 한글 주석 — DESC fetch → 시간 ASC chat_view replay
-            for r in reversed(rows):
+            # cycle 169.458 — ts ASC + id ASC sort 정합 (sender chain 의 insertion order retain)
+            # SQL DESC fetch → reversed(rows) = ASC fetch chain (사용자 critique 회수)
+            rows = list(reversed(rows))
+            for r in rows:
                 sender_name = "나" if r["is_self"] else (
                     "투네이션 고객센터" if kind == "bot" else f"user#{r['sender_id']}"
                 )
