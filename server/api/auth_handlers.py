@@ -327,11 +327,10 @@ async def handle_reset_request(request: web.Request) -> web.Response:
 
 
 async def handle_profile_update(request: web.Request) -> web.Response:
-    """PUT /api/auth/profile — cycle 128 profile 갱신 skeleton.
+    """PUT /api/auth/profile — cycle 169.395 actual DB UPDATE chain.
 
-    schema = ``{display_name?: str, username?: str}``. user_id = middleware 주입.
-    actual UPDATE users SET = 별개 cycle (Phase 5+ 본격 implementation).
-    PROFILE_UPDATE audit + 임시 200 응답 + 변경 field metadata.
+    schema = ``{display_name?, phone?, birthdate?, bio?}``. user_id = middleware 주입.
+    migration 0010 안 4 column 추가 (display_name + phone + birthdate + bio).
     """
 
     user_id = request.get("user_id")
@@ -339,15 +338,36 @@ async def handle_profile_update(request: web.Request) -> web.Response:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
 
     payload = await _read_json(request)
-    changed_fields = []
-    if "display_name" in payload:
-        changed_fields.append("display_name")
-    if "username" in payload:
-        changed_fields.append("username")
-    if not changed_fields:
-        raise web.HTTPBadRequest(reason="display_name 또는 username 의무")
+    # 한글 주석 — accept field whitelist + actual UPDATE
+    update_columns: list[str] = []
+    values: list = []
+    field_map = {
+        "display_name": "display_name",
+        "phone": "phone",
+        "birthdate": "birthdate",
+        "bio": "bio",
+    }
+    for field_key, col in field_map.items():
+        if field_key in payload:
+            val = payload.get(field_key, "")
+            if val is None:
+                val = ""
+            update_columns.append(f"{col} = %s")
+            values.append(str(val)[:255])
+    if not update_columns:
+        raise web.HTTPBadRequest(reason="display_name / phone / birthdate / bio 중 1개 이상 의무")
 
-    # actual DB UPDATE = 별개 cycle (Phase 5+ 본격)
+    pool = request.app.get("db_pool")
+    if pool is None:
+        raise web.HTTPInternalServerError(reason="db_pool 부재")
+    values.append(user_id)
+    sql = f"UPDATE users SET {', '.join(update_columns)} WHERE id = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, tuple(values))
+        await conn.commit()
+
+    changed_fields = list(field_map.keys() & payload.keys())
     await _audit(
         request,
         user_id=user_id,
@@ -355,6 +375,41 @@ async def handle_profile_update(request: web.Request) -> web.Response:
         metadata={"changed_fields": changed_fields},
     )
     return web.json_response({"ok": True, "user_id": user_id, "changed": changed_fields})
+
+
+async def handle_profile_get(request: web.Request) -> web.Response:
+    """GET /api/auth/profile — cycle 169.395 신설 (사용자 critique image #160 visual reflect).
+
+    response = ``{user_id, email, username, display_name, phone, birthdate, bio}``.
+    login 이후 client local cache initial population chain entry.
+    """
+    user_id = request.get("user_id")
+    if not isinstance(user_id, int) or user_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+    pool = request.app.get("db_pool")
+    if pool is None:
+        raise web.HTTPInternalServerError(reason="db_pool 부재")
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "SELECT email, username, display_name, phone, birthdate, bio "
+                "FROM users WHERE id = %s",
+                (user_id,),
+            )
+            row = await cur.fetchone()
+    if not row:
+        raise web.HTTPNotFound(reason=f"user_id {user_id} 부재")
+    email, username, display_name, phone, birthdate, bio = row
+    return web.json_response({
+        "ok": True,
+        "user_id": user_id,
+        "email": email,
+        "username": username,
+        "display_name": display_name or "",
+        "phone": phone or "",
+        "birthdate": birthdate or "",
+        "bio": bio or "",
+    })
 
 
 async def handle_user_status(request: web.Request) -> web.Response:
@@ -520,6 +575,7 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_post("/api/auth/reset/consume", handle_reset_consume)
     # cycle 128 — profile + email change + account delete 3 신규 endpoint
     app.router.add_put("/api/auth/profile", handle_profile_update)
+    app.router.add_get("/api/auth/profile", handle_profile_get)  # cycle 169.395
     app.router.add_post("/api/auth/email/request", handle_email_change_request)
     app.router.add_delete("/api/auth/account", handle_account_delete)
     # cycle 169.216 — last_seen + 온라인 상태 조회 (chat_header status binding chain)
