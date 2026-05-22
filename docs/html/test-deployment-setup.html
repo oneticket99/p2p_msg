@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TooTalk · 테스트 버전 임시 배포 셋업 매뉴얼 (cycle 169.429)</title>
+<!-- 한글 주석 (M4): 본 HTML = TooTalk 테스트 버전 임시 배포 매뉴얼. 인증서 없이 macOS/Windows 배포 path 정립. -->
+<!-- last_verified = 2026-05-22T16:40:00+09:00 -->
+<style>
+:root{
+  --bg:#0f172a; --fg:#e5e7eb; --muted:#9ca3af; --accent:#0066FF;
+  --accent-soft:rgba(0,102,255,0.12); --border:#1f2937;
+  --warn-bg:#fef3c7; --warn-fg:#92400e;
+  --code-bg:#1e293b; --code-fg:#22d3ee;
+  --good:#22c55e; --bad:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans KR",sans-serif;font-size:15px;line-height:1.7}
+main{max-width:1080px;margin:0 auto;padding:32px 28px 80px}
+h1{font-size:28px;font-weight:800;margin:0 0 8px;letter-spacing:-0.5px}
+h2{font-size:22px;font-weight:700;margin:32px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+h3{font-size:17px;font-weight:600;margin:24px 0 8px;color:#22d3ee}
+p{margin:8px 0}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:4px 0}
+code{background:var(--code-bg);color:var(--code-fg);padding:2px 6px;border-radius:4px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--fg);padding:14px 18px;border-radius:8px;overflow-x:auto;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;line-height:1.6;border:1px solid var(--border)}
+.warn{background:var(--warn-bg);color:var(--warn-fg);padding:12px 16px;border-radius:6px;margin:12px 0;border-left:4px solid #f59e0b}
+.note{background:var(--accent-soft);padding:12px 16px;border-radius:6px;margin:12px 0;border-left:4px solid var(--accent)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:rgba(0,102,255,0.08);font-weight:600;color:#22d3ee}
+.pill{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--accent-soft);color:#67e8f9;font-size:12px;font-weight:600;margin:0 4px}
+.good{color:var(--good)}
+.bad{color:var(--bad)}
+hr{border:0;border-top:1px solid var(--border);margin:32px 0}
+header{padding:24px 28px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-bottom:2px solid var(--accent)}
+header .meta{color:var(--muted);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚀 TooTalk · 테스트 버전 임시 배포 셋업 매뉴얼</h1>
+  <div class="meta">
+    cycle 169.429 · 2026-05-22 16:40 KST · 인증서 없이 macOS + Windows 데모 배포 path 정립
+  </div>
+</header>
+
+<main>
+
+<h2>1. 개요 (Why this guide?)</h2>
+
+<p>TooTalk 정식 배포 = Apple Developer ID 인증서 ($99/년) + Windows EV code signing ($400+) 의무 retain. 테스트 단계 = 정식 인증서 부재. 본 매뉴얼 = <strong>인증서 없이 임시 배포 path</strong> 명시 + 사용자 manual 안내 정합.</p>
+
+<table>
+  <thead><tr><th>OS</th><th>정식 path</th><th>테스트 path (본 매뉴얼)</th></tr></thead>
+  <tbody>
+    <tr><td>macOS</td><td>Apple Developer ID + Notarization</td><td>adhoc codesign + manual unquarantine</td></tr>
+    <tr><td>Windows</td><td>EV code signing cert</td><td>unsigned .exe + SmartScreen "More info" bypass</td></tr>
+  </tbody>
+</table>
+
+<h2>2. macOS 빌드 + 배포</h2>
+
+<h3>2.1 PyInstaller 빌드 (개발자)</h3>
+
+<pre>cd /path/to/p2p_msg
+.venv/bin/python tools/build.py --target macos
+# 출력: dist/TooTalk.app</pre>
+
+<h3>2.2 ad-hoc codesign 적용 (개발자)</h3>
+
+<div class="note">
+TooTalk 빌드 = PyInstaller post-process 안에서 자동 adhoc sign retain. 검증:
+</div>
+
+<pre>codesign -dv dist/TooTalk.app 2>&1 | head -5
+# 기대 출력:
+#   Identifier=com.toonation.tootalk
+#   Format=app bundle with Mach-O thin (arm64)
+#   CodeDirectory v=20400 ... flags=0x2(adhoc)
+#   Signature=adhoc</pre>
+
+<p>adhoc 미적용 시점 수동 적용:</p>
+
+<pre>codesign --force --deep --sign - dist/TooTalk.app</pre>
+
+<h3>2.3 DMG 패키징 (선택)</h3>
+
+<pre># Homebrew create-dmg 활용
+brew install create-dmg
+create-dmg \
+  --volname "TooTalk" \
+  --window-pos 200 120 --window-size 600 400 \
+  --icon-size 100 \
+  --icon "TooTalk.app" 175 200 \
+  --app-drop-link 425 200 \
+  "TooTalk-v0.4.0-test.dmg" "dist/TooTalk.app"</pre>
+
+<p>대안 = zip 패키징:</p>
+
+<pre>cd dist
+zip -r TooTalk-v0.4.0-test-macos-arm64.zip TooTalk.app</pre>
+
+<h3>2.4 GitHub Release 업로드 (개발자)</h3>
+
+<pre>gh release create v0.4.0-test \
+  --title "TooTalk v0.4.0 테스트 빌드" \
+  --notes "테스트 배포 — adhoc signed. README 안 install 안내 참고." \
+  TooTalk-v0.4.0-test.dmg \
+  TooTalk-v0.4.0-test-macos-arm64.zip</pre>
+
+<h3>2.5 사용자 install 절차 (최종 사용자 안내)</h3>
+
+<div class="warn">
+<strong>주의</strong>: adhoc 서명 binary = macOS Gatekeeper 차단 default. quarantine attribute 제거 의무.
+</div>
+
+<ol>
+  <li>GitHub Release 페이지 안 zip 또는 DMG download</li>
+  <li>DMG 열고 TooTalk.app 을 /Applications 폴더 안 drag</li>
+  <li><strong>Terminal 열고</strong> quarantine 속성 제거:
+    <pre>xattr -rd com.apple.quarantine /Applications/TooTalk.app</pre>
+  </li>
+  <li>Finder 안 TooTalk.app double-click 실행</li>
+  <li>마이크 + 카메라 권한 요청 시점 "허용" click (Info.plist NSCameraUsageDescription + NSMicrophoneUsageDescription 정합)</li>
+</ol>
+
+<div class="note">
+<strong>대안 절차</strong>: Terminal 부재 사용자 = 우클릭 → 열기 → "그래도 열기" 2회 시도. quarantine 제거 시점 단일 클릭 진행. xattr 패스 권장.
+</div>
+
+<h2>3. Windows 빌드 + 배포</h2>
+
+<h3>3.1 PyInstaller 빌드 (Windows runner 안)</h3>
+
+<pre>cd C:\p2p_msg
+python tools\build.py --target windows
+# 출력: dist\TooTalk.exe (단일 binary) 또는 dist\TooTalk\ (one-folder)</pre>
+
+<h3>3.2 zip 패키징</h3>
+
+<pre>cd dist
+Compress-Archive -Path TooTalk -DestinationPath TooTalk-v0.4.0-test-windows.zip</pre>
+
+<h3>3.3 GitHub Release 업로드</h3>
+
+<pre>gh release upload v0.4.0-test TooTalk-v0.4.0-test-windows.zip</pre>
+
+<h3>3.4 사용자 install 절차</h3>
+
+<ol>
+  <li>GitHub Release 안 windows zip download</li>
+  <li>zip 압축 해제 → TooTalk 폴더 안 TooTalk.exe 실행</li>
+  <li><strong>SmartScreen 경고 화면</strong> 표시:
+    <ul>
+      <li>"Windows의 PC 보호" 화면 안 <strong>"추가 정보"</strong> click</li>
+      <li>"실행" button 표시 → click</li>
+    </ul>
+  </li>
+  <li>Windows Defender 차단 시점 = "허용" 또는 예외 추가</li>
+</ol>
+
+<h2>4. 통화 기능 사전 체크 (음성/영상)</h2>
+
+<h3>4.1 aiortc + FFmpeg 의존성</h3>
+
+<table>
+  <thead><tr><th>OS</th><th>요구 라이브러리</th><th>install 명령</th></tr></thead>
+  <tbody>
+    <tr><td>macOS</td><td>FFmpeg + PyAV</td><td><code>brew install ffmpeg</code></td></tr>
+    <tr><td>Linux</td><td>FFmpeg + v4l-utils + pulseaudio</td><td><code>apt install ffmpeg v4l-utils pulseaudio</code></td></tr>
+    <tr><td>Windows</td><td>FFmpeg (PyInstaller bundle)</td><td>PyInstaller spec datas 안 자동 포함</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 PyInstaller hidden imports 검증 (개발자)</h3>
+
+<div class="warn">
+<strong>현재 issue (cycle 169.427 검증)</strong>: dist/TooTalk.app 안 <code>aiortc</code> Python module bundle 부재. tootalk.spec 안 <code>hiddenimports</code> 누락. 통화 fire 시점 ImportError 차단.
+</div>
+
+<p>fix:</p>
+
+<pre># tootalk.spec
+hiddenimports=[
+    "aiortc", "aiortc.contrib.media",
+    "aiortc.contrib.signaling",
+    "av", "av.audio", "av.video",
+    "cffi", "cryptography",
+    "google.crc32c", "pylibsrtp",
+]
+binaries=collect_dynamic_libs("av") + collect_dynamic_libs("pylibsrtp")</pre>
+
+<h3>4.3 macOS TCC 권한 grant</h3>
+
+<p>Info.plist 안 다음 entry 의무 retain:</p>
+
+<pre>&lt;key&gt;NSCameraUsageDescription&lt;/key&gt;
+&lt;string&gt;TooTalk 영상 통화 시점 카메라 사용&lt;/string&gt;
+&lt;key&gt;NSMicrophoneUsageDescription&lt;/key&gt;
+&lt;string&gt;TooTalk 음성 통화 시점 마이크 사용&lt;/string&gt;</pre>
+
+<p>사용자 처음 실행 시점 마이크/카메라 권한 dialog 자동 표시. 거부 시점 시스템 설정 → 개인정보 보호 → 마이크/카메라 안 TooTalk 활성 의무.</p>
+
+<h2>5. 서버 demo 배포 (114.207.112.73)</h2>
+
+<h3>5.1 SSH deploy chain</h3>
+
+<pre>ssh root@114.207.112.73 'cd /root/p2p_msg && git pull origin main'
+ssh root@114.207.112.73 'cd /root/p2p_msg/deploy && docker compose build web'
+ssh root@114.207.112.73 'cd /root/p2p_msg/deploy && docker compose up -d --force-recreate web'</pre>
+
+<h3>5.2 healthz 검증</h3>
+
+<pre>curl -sk https://114.207.112.73:443/healthz
+# 기대 출력: {"status": "ok", "uptime_seconds": ...}</pre>
+
+<h2>6. 트러블슈팅</h2>
+
+<table>
+  <thead><tr><th>증상</th><th>원인</th><th>해결</th></tr></thead>
+  <tbody>
+    <tr><td>macOS "손상되었거나 신뢰할 수 없는 개발자" 차단</td><td>quarantine attribute 잔존</td><td><code>xattr -rd com.apple.quarantine /Applications/TooTalk.app</code></td></tr>
+    <tr><td>마이크 권한 거부</td><td>TCC default deny</td><td>시스템 설정 → 개인정보 → 마이크 → TooTalk 활성</td></tr>
+    <tr><td>Windows SmartScreen 차단</td><td>unsigned binary</td><td>"추가 정보" → "실행" 2 click chain</td></tr>
+    <tr><td>통화 시점 ImportError aiortc</td><td>PyInstaller bundle 부재</td><td>tootalk.spec hiddenimports 추가 + 재빌드</td></tr>
+    <tr><td>FFmpeg 부재 오류</td><td>system FFmpeg 미설치</td><td>macOS: <code>brew install ffmpeg</code> / Linux: <code>apt install ffmpeg</code></td></tr>
+    <tr><td>SSL/TLS 검증 실패</td><td>self-signed cert demo server</td><td><code>TOOTALK_TLS_VERIFY=0</code> env override</td></tr>
+  </tbody>
+</table>
+
+<h2>7. 정식 배포 path (참고)</h2>
+
+<p>본 매뉴얼 = <strong>테스트 단계 전용</strong>. 정식 배포 path retain:</p>
+
+<table>
+  <thead><tr><th>단계</th><th>macOS</th><th>Windows</th></tr></thead>
+  <tbody>
+    <tr><td>인증서</td><td>Apple Developer ID Application ($99/년)</td><td>EV Code Signing Certificate ($400~600/년)</td></tr>
+    <tr><td>서명</td><td><code>codesign --sign "Developer ID Application: ..."</code></td><td><code>signtool sign /fd SHA256 /a TooTalk.exe</code></td></tr>
+    <tr><td>인증</td><td>Notarization (<code>xcrun notarytool submit</code>)</td><td>Microsoft SmartScreen reputation 누적</td></tr>
+    <tr><td>배포</td><td>DMG + .pkg 또는 Mac App Store</td><td>MSI installer + Microsoft Store</td></tr>
+  </tbody>
+</table>
+
+<h2>8. 참조 file 위치</h2>
+
+<ul>
+  <li><code>tools/build.py</code> — PyInstaller 빌드 entry</li>
+  <li><code>build/tootalk.spec</code> — PyInstaller spec (hidden imports + datas)</li>
+  <li><code>app/main.py</code> — main entry point (qasync + auth chain)</li>
+  <li><code>deploy/docker-compose.yml</code> — 서버 6 컴포넌트 (mariadb + postfix + web + ws + nginx + certbot)</li>
+  <li><code>docs/operations/</code> — token-usage-30d + ssh-deploy-agent run-book</li>
+  <li><code>README.md</code> §3.2 — 빌드 + Gatekeeper / SmartScreen 우회 안내</li>
+</ul>
+
+<hr>
+
+<p class="meta" style="color:var(--muted);font-size:12px;text-align:center">
+TooTalk · 코드명 p2p_msg · GPLv3 OSS · cycle 169.429
+</p>
+
+</main>
+</body>
+</html>

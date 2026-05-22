@@ -120,8 +120,9 @@ class ChatListItemDelegate(QStyledItemDelegate):
             painter.setFont(f)
             painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
 
-        # online indicator (right-bottom)
-        if entry.is_online:
+        # cycle 169.429 — avatar 우측 하단 녹색 dot = unread_count > 0 시점만 (사용자 directive)
+        # 이전 is_online 기반 → unread_count 기반 (읽지 않은 신규 메시지 표시)
+        if entry.unread_count > 0:
             painter.setBrush(QColor("#22c55e"))
             painter.setPen(QPen(QColor("#0F172A"), 2))
             painter.drawEllipse(
