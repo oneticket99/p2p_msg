@@ -173,14 +173,16 @@ class ChatListItemDelegate(QStyledItemDelegate):
         painter.setFont(ft)
         painter.drawText(ts_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, ts_text)
 
-        # unread badge (right bottom)
+        # cycle 169.434 — unread badge 위치 = ts 하단 (사용자 directive image #7 telegram screenshot 정합)
         if entry.unread_count > 0:
             badge_text = str(entry.unread_count) if entry.unread_count < 100 else "99+"
-            badge_w = max(20, painter.fontMetrics().horizontalAdvance(badge_text) + 12)
-            badge_rect = QRect(rect.right() - 12 - badge_w, rect.top() + 40, badge_w, 20)
+            badge_w = max(22, painter.fontMetrics().horizontalAdvance(badge_text) + 14)
+            # ts_rect = rect.top() + 14 ~ +34 → badge = rect.bottom() - 32 ~ -12 (하단 우측)
+            badge_y = rect.bottom() - 32
+            badge_rect = QRect(rect.right() - 12 - badge_w, badge_y, badge_w, 22)
             painter.setBrush(QColor("#0066FF"))
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(badge_rect, 10, 10)
+            painter.drawRoundedRect(badge_rect, 11, 11)
             painter.setPen(QPen(QColor("white")))
             fb = QFont(); fb.setPixelSize(11); fb.setBold(True)
             painter.setFont(fb)
@@ -325,11 +327,12 @@ class ChatListPanel(QFrame):
         last_ts: "datetime",
         last_sender: Optional[str] = None,
         is_self: bool = False,
+        active_chat_match: bool = False,
     ) -> None:
-        """cycle 169.174 — send/receive 시점 entry preview + ts + sort 재 정렬.
+        """cycle 169.174~434 — send/receive 시점 entry preview + ts + sort 재 정렬.
 
         - last_message + last_ts update
-        - is_self=False 시 unread_count++ (active chat 부재 시점 — caller resolve 의무)
+        - is_self=False + active_chat_match=False 시 unread_count++ (사용자 critique image #5 — bot 응답 도착 시점 unread bump 의무)
         - resort + render
         """
         for entry in self._entries:
@@ -338,6 +341,9 @@ class ChatListPanel(QFrame):
                 entry.last_ts = last_ts
                 if last_sender is not None:
                     entry.last_sender = last_sender
+                # cycle 169.434 — unread_count bump chain (사용자 critique image #5)
+                if not is_self and not active_chat_match:
+                    entry.unread_count += 1
                 # sort 재 정렬 (pinned + ts desc)
                 self._entries = sorted(
                     self._entries,
