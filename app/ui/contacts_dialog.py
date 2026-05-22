@@ -113,3 +113,69 @@ class ContactsDialog(QDialog):
         if identifier:
             self.contact_added.emit(identifier)
             self._add_edit.clear()
+
+    def _on_open_new_contact(self) -> None:
+        """cycle 169.450 — telegram align 신규 연락처 dialog spawn (사용자 directive)."""
+        try:
+            from app.ui.new_contact_dialog import NewContactDialog
+            dialog = NewContactDialog(parent=self)
+            dialog.contact_submitted.connect(self._on_new_contact_submitted)
+            dialog.exec()
+        except Exception as exc:
+            log.warning("[new_contact_dialog] spawn 실패 — %r", exc)
+
+    def _on_new_contact_submitted(self, payload: dict) -> None:
+        """cycle 169.455 — POST /api/contacts chain + contact_added signal 재 emit.
+
+        server upsert + 양방향 매칭 attempt fire — telegram align friend chain.
+        """
+        phone = payload.get("phone", "")
+        last_name = payload.get("last_name", "")
+        first_name = payload.get("first_name", "")
+        if not phone:
+            return
+        try:
+            mw = self.parent()
+            while mw is not None and not hasattr(mw, "_session_token"):
+                mw = mw.parent()
+            if mw is not None and getattr(mw, "_session_token", None):
+                import asyncio
+                asyncio.ensure_future(self._async_post_contact(
+                    mw, phone, last_name, first_name,
+                ))
+            else:
+                log.warning("[contacts] main_window 부재 — POST skip")
+        except Exception as exc:
+            log.warning("[contacts] post chain 실패 — %r", exc)
+        # legacy chain — local contact_added signal retain
+        self.contact_added.emit(phone)
+
+    async def _async_post_contact(self, main_window, phone: str, last_name: str, first_name: str) -> None:
+        """cycle 169.455 — POST /api/contacts async chain."""
+        import aiohttp
+        try:
+            api_base = getattr(main_window._config, "api_base", None) or "https://114.207.112.73"
+            token = getattr(main_window, "_session_token", "") or ""
+            if not token:
+                return
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            payload = {
+                "phone": phone,
+                "last_name": last_name or None,
+                "first_name": first_name or None,
+            }
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                async with session.post(
+                    f"{api_base}/api/contacts",
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status == 201:
+                        data = await resp.json()
+                        matched = data.get("matched_user_id")
+                        log.info("[contacts] POST PASS phone=%s matched=%s", phone, matched)
+                    else:
+                        log.warning("[contacts] POST HTTP %d", resp.status)
+        except Exception as exc:
+            log.debug("[contacts] async POST 실패 — %r", exc)

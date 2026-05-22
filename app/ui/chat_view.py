@@ -296,6 +296,7 @@ class ChatView(QScrollArea):
             reactions=reactions,
             grouped=is_grouped,
             hide_sender=hide_sender,
+            msg_id=int(message_id) if isinstance(message_id, int) else 0,
         )
         # 한글 주석 — cycle 154 reply_requested signal → parent main_window 안 reply mode set
         try:
