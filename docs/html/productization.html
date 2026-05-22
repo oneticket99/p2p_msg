@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.523)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.523 의 등가 렌더링.
-     cycle 169.518~523 6 commit drift 회수 — 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 49.2% (522) + FolderMixin 2045→1890 53.1% (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.
-     last_verified = 2026-05-23T04:05:00+09:00.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.530)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.530 의 등가 렌더링.
+     cycle 169.525~530 6 commit drift 회수 — ChatHeaderMixin 1890→1703 57.7% (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + __init__ 302 line CRITICAL blocker 9 helper split 643→600 85.1% (530). 본격 main_window 책임 분리 phase 본격 종료 — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).
+     last_verified = 2026-05-23T06:10:00+09:00.
      cycle 169.213~231 핵심: README + History prepend + handoff §8.79 7 entry + hook feat grep logic 회수 + last_seen REST + last_seen fetch chain + DM room resolver + DM history fetch chain + rooms.py BPE 회수 + i18n qm frozen bundle 5 locale + drawer header gradient 폐기 단색 Toonation BI + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + height clamp.
      기술 9.7 / 시장 6.1 / 차별화 9.9 / 가치 7.3 / 수익화 5.6 / 운영 9.94 / 가드레일 10.0 / 정합 9.96 / 보안 9.4 = 종합 10.0. -->
 <style>

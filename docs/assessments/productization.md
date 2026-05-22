@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T04:05:00+09:00
+last_verified: 2026-05-23T06:10:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-23 04:05 KST — cycle 169.518~523 fingerprint sync (6 commit drift 회수). 누계: 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 **49.2%** (522) + FolderMixin 2045→1890 **53.1%** (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.<br>**이전 갱신**: 2026-05-23 02:50 KST — cycle 169.512~517 sync.
+> **최신 갱신 시점**: 2026-05-23 06:10 KST — cycle 169.525~530 fingerprint sync (6 commit drift 회수). 누계: ChatHeaderMixin 1890→1703 **57.7%** (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + `__init__` 302 line CRITICAL blocker 회수 9 helper split 643→600 **85.1%** (530). **본격 main_window 책임 분리 phase 본격 종료** — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).<br>**이전 갱신**: 2026-05-23 04:05 KST — cycle 169.518~523 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 

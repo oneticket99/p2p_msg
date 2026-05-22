@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T04:05:00+09:00
+last_verified: 2026-05-23T06:10:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.523
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.530
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.523 누계.
-> 최근 갱신: 2026-05-23 04:05 KST — cycle 169.518~523 fingerprint sync (6 commit drift 회수). 누계: 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 49.2% (522) + FolderMixin 2045→1890 53.1% (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.
+> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.530 누계.
+> 최근 갱신: 2026-05-23 06:10 KST — cycle 169.525~530 fingerprint sync (6 commit drift 회수). 누계: ChatHeaderMixin 1890→1703 **57.7%** (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + `__init__` 302 line CRITICAL blocker 9 helper split 643→600 **85.1%** (530). **본격 main_window 책임 분리 phase 본격 종료** — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).
 
 ---
 
