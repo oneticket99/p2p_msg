@@ -175,7 +175,7 @@ def _apply_windows_skeleton(zip_path: Path, install_dir: Path) -> bool:
 
     Notes
     -----
-    Windows 의 의 의 running .exe 자체 overwrite 불가 → batch script detached process pattern 의무.
+    Windows running .exe 자체 overwrite 불가 → batch script detached process pattern 의무.
     """
     import os as _os
     import subprocess
