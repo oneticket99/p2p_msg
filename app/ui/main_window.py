@@ -185,126 +185,117 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         """
 
         super().__init__(parent)
+        # cycle 169.530 — __init__ 9 helper split (302 line CRITICAL blocker 회수)
+        self._init_state(config, auth_client, rooms_client, messages_client,
+                         group_message_client, friends_client, reactions_client)
+        self._init_window_properties()
+        splitter = self._init_splitter()
+        self._init_sidebar_rail(splitter)
+        self._init_chat_list_panel(splitter)
+        right_panel, right_layout = self._init_right_panel(splitter)
+        self._init_input_bar(right_panel, right_layout)
+        self._finalize_splitter(splitter, right_panel)
+        self._init_status_and_startup_chain()
 
-        # 0) 외부 의존 보관
+    # ------------------------------------------------------------------
+    # cycle 169.530 — __init__ 9 helper method split (CRITICAL blocker 회수)
+    # ------------------------------------------------------------------
+
+    def _init_state(
+        self,
+        config: Config,
+        auth_client,
+        rooms_client,
+        messages_client,
+        group_message_client,
+        friends_client,
+        reactions_client,
+    ) -> None:
+        """0) 외부 의존 보관 + state 초기화 + SoundPlayer."""
         self._config: Config = config
         self._state: AppState = AppState.instance()
-        self._auth_client: Optional[AuthClient] = auth_client
-        self._rooms_client = rooms_client  # cycle 139 RoomsClient (lazy 의존)
-        # cycle 142 — messages REST + WebRTC mesh 의 dual chain 의무 의존성
+        self._auth_client = auth_client
+        self._rooms_client = rooms_client
         self._messages_client = messages_client
         self._group_message_client = group_message_client
-        # cycle 147 — friends REST client (InviteDialog dropdown populate source)
         self._friends_client = friends_client
-        # cycle 159 — reactions_client (app.net.reactions_client) 주입 — graceful 부재 None
         self._reactions_client = reactions_client
-        # cycle 164 — ReactionsPoller (30s interval polling fallback)
         self._reactions_poller = None
         self._session_token: Optional[str] = None
         self._current_user_id: Optional[int] = None
         self._auth_token: Optional[str] = None
-        # 한글 주석 — cycle 169.59 — 현 active chat 의 peer_id (signaling 의 의 SDP exchange 의 target)
         self._active_peer_id: Optional[str] = None
-        # cycle 148 — 현재 user 의 service-wide role (admin / owner / member).
-        # admin / owner 만 "관리자" 메뉴 가시 + emoji moderation dialog 진입 path.
-        # 로그인 응답 의 role 의 caller 의 set_user_role 갱신 의무 (별개 cycle 의 chain).
         self._current_user_role: str = "member"
-        # cycle 139 — 현재 활성 그룹 채팅 방 의 GroupChatView (방 전환 시 swap)
         self._group_chat_view: Optional[GroupChatView] = None
         self._current_room_id: Optional[int] = None
-        # cycle 142 — 가장 최근 REST POST 응답 의 message_id capture (UI / 추후 ack chain)
         self._last_message_id: Optional[int] = None
-        # cycle 169.157 — friend/bot DM history client cache (kind, target_id) → list[(sender, text, ts, is_self)]
-        # chat_selected 시점 replay → chat_view re-populate. server REST fetch chain = 별 cycle 169.158+
+        # cycle 169.157 — friend/bot DM history client cache
         self._dm_history: dict[tuple[str, int], list[tuple[str, str, "datetime", bool]]] = {}
         self._active_chat_kind: Optional[str] = None
         self._active_chat_target_id: Optional[int] = None
-
-        # 0-1) 시그니처 사운드 player — Config 의 sound_* 3 필드 기반 init
+        # 0-1) 시그니처 사운드 player
         self._sound_player: SoundPlayer = SoundPlayer(config)
 
-        # 1) 윈도우 기본 속성
+    def _init_window_properties(self) -> None:
+        """1) 윈도우 기본 속성."""
         self.setWindowTitle("TooTalk")
-        self.setMinimumSize(720, 640)  # cycle 139 sidebar 추가로 가로 확장
+        self.setMinimumSize(720, 640)
 
-        # 2) 중앙 위젯 — QSplitter 3 column (rail | room_list | right_panel)
-        # cycle 153.4 phase 3 통합 — SidebarRail (64px) + RoomListWidget (220~320px) + ChatHeader + stacked
+    def _init_splitter(self) -> QSplitter:
+        """2) 중앙 QSplitter 3 column container."""
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
         splitter.setContentsMargins(0, 0, 0, 0)
-        # 한글 주석 — cycle 169.52 회수 — splitter handle visible (사용자 directive "구분선 안보여")
         splitter.setHandleWidth(2)
         splitter.setStyleSheet(
             "QSplitter::handle { background-color: #1F2937; }"
             " QSplitter::handle:hover { background-color: #374151; }"
         )
+        return splitter
 
-        # 3-1) 좌측 rail — SidebarRail (cycle 153 phase 3 신설)
-        # 한글 주석 — 4 tab (👥 친구 + 🏠 방 + 🤖 봇 + ⚙️ 설정) + tab_clicked signal
+    def _init_sidebar_rail(self, splitter: QSplitter) -> None:
+        """3-1) SidebarRail + FolderList legacy."""
         from app.ui.sidebar_rail import SidebarRail
         self._sidebar_rail = SidebarRail(parent=splitter)
         self._sidebar_rail.tab_clicked.connect(self._on_sidebar_tab_clicked)  # type: ignore[arg-type]
-        # 한글 주석 — cycle 169.56 회수 — 햄버거 menu drawer signal
         self._sidebar_rail.hamburger_clicked.connect(self._on_hamburger_clicked)  # type: ignore[arg-type]
-
-        # 한글 주석 — cycle 169.74 회수 — sidebar_rail + FolderList 통합 single column.
-        # 사용자 verbatim "같은 레이아웃에 있어야 하는데 그냥 목업 레이아웃을 새로 붙인걸로밖에".
-        # FolderList legacy 보존 (signal backward compat) + splitter 안 hide.
+        # 한글 주석 — FolderList legacy 보존 (signal backward compat) + hide
         from app.ui.folder_list import FolderList
         self._folder_list = FolderList(parent=self)
         self._folder_list.setVisible(False)
         self._folder_list.folder_selected.connect(self._on_folder_selected)  # type: ignore[arg-type]
-        # sidebar_rail 내부 folder 통합 chain — folder_selected signal direct binding
         self._sidebar_rail.folder_selected.connect(self._on_folder_selected)  # type: ignore[arg-type]
 
-        # 3-2) 중앙 chat list — ChatListPanel (cycle 169.62 신설, telegram desktop align)
-        # RoomListWidget legacy 보존 — group chat 진입 chain (room_id) backward compat.
+    def _init_chat_list_panel(self, splitter: QSplitter) -> None:
+        """3-2) ChatListPanel + default seed (bot + saved) + RoomList legacy."""
         from app.ui.chat_list_panel import ChatListPanel, ChatListEntry
         self._chat_list_panel = ChatListPanel(parent=splitter)
         self._chat_list_panel.chat_selected.connect(self._on_chat_selected)  # type: ignore[arg-type]
         self._sidebar_rail.tab_clicked.connect(self._chat_list_panel.set_active_tab)  # type: ignore[arg-type]
-
-        # 한글 주석 — cycle 169.99 회수 — 투네이션 고객센터 봇 default seed (사용자 directive)
-        # chatlist = 친구 + 그룹톡 + 봇톡 통합 — 기본 entry = 투네이션 고객센터 봇 (LLM 연동)
-        from datetime import datetime
+        # 한글 주석 — 투네이션 고객센터 봇 default seed (사용자 directive)
         default_entries = [
             ChatListEntry(
-                kind="bot",
-                target_id=1,
-                name="투네이션 고객센터",
+                kind="bot", target_id=1, name="투네이션 고객센터",
                 last_message="안녕하세요. 무엇을 도와드릴까요? 24시간 LLM 상담 chain.",
-                last_ts=datetime.now(),
-                unread_count=0,
-                is_pinned=True,
-                is_online=True,
+                last_ts=datetime.now(), unread_count=0, is_pinned=True, is_online=True,
             ),
-            # cycle 169.323 — 사용자 directive image #86 — "저장한 메시지" 친구 list entry (telegram saved messages 정합)
             ChatListEntry(
-                kind="saved",
-                target_id=0,
-                name="저장한 메시지",
+                kind="saved", target_id=0, name="저장한 메시지",
                 last_message="나에게 메모 + 파일 보관",
-                last_ts=datetime.now(),
-                unread_count=0,
-                is_pinned=True,
-                is_online=True,
+                last_ts=datetime.now(), unread_count=0, is_pinned=True, is_online=True,
             ),
         ]
         self._chat_list_panel.set_entries(default_entries)
-        # cycle 169.136 — 채팅 통합 (telegram align) — default tab "friends" = 채팅
         self._chat_list_panel.set_active_tab("friends")
-        # cycle 169.182 — startup 시점 default chat 진입 (사용자 critique image #16)
-        # 투네이션 고객센터 bot default selected → chat_header name 즉시 출력
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
-
-        # RoomListWidget — 의 의 hide (group chat 진입 시 _on_room_entered 호출 chain backward compat)
+        # RoomListWidget hidden sibling
         self._room_list = RoomListWidget(parent=self)
         self._room_list.setVisible(False)
         self._room_list.room_entered.connect(self._on_room_entered)
         self._room_list.set_rooms([])
 
-        # 4) 우측 — ChatHeader + QStackedWidget + 입력 영역
-        # 한글 주석 — cycle 169.52 회수 — right panel 배경 sidebar 보다 밝게 (사용자 directive)
+    def _init_right_panel(self, splitter: QSplitter):
+        """4) right_panel + ChatHeader + QStackedWidget 4 widget."""
         right_panel = QWidget(splitter)
         right_panel.setObjectName("rightPanel")
         right_panel.setStyleSheet(
@@ -313,8 +304,7 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)
-
-        # 4-0) ChatHeader top bar (56px) — cycle 153 phase 3 신설
+        # 4-0) ChatHeader
         from app.ui.chat_header import ChatHeader
         self._chat_header = ChatHeader(parent=right_panel)
         self._chat_header.search_clicked.connect(self._on_header_search)  # type: ignore[arg-type]
@@ -323,19 +313,15 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._chat_header.menu_clicked.connect(self._on_header_menu)  # type: ignore[arg-type]
         self._chat_header.sidebar_toggled.connect(self._on_header_sidebar_toggle)  # type: ignore[arg-type]
         right_layout.addWidget(self._chat_header)
-
         self._stacked = QStackedWidget(right_panel)
         right_layout.addWidget(self._stacked, stretch=1)
-
-        # 4-1) ChatView (1:1) — index 0 (기존 호환 유지)
+        # 4-1) ChatView (1:1) idx 0
         self._chat_view = ChatView(
             parent=self._stacked,
             sound_player=self._sound_player,
             reactions_client=self._reactions_client,
         )
-        # cycle 169.444 — scroll-up lazy load signal subscribe (사용자 directive)
         self._chat_view.lazy_load_requested.connect(self._on_lazy_load_requested)  # type: ignore[arg-type]
-        # cycle 164 — ReactionsPoller 인스턴스 + 시작 (client 부재 시 graceful skip)
         try:
             from app.ui.reactions_poller import ReactionsPoller
             self._reactions_poller = ReactionsPoller(
@@ -346,101 +332,72 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             self._reactions_poller.start()
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("ReactionsPoller 초기화 실패 graceful — %r", exc)
-        self._stacked.addWidget(self._chat_view)  # idx 0
-        # cycle 154 — reply_to_message signal → InputBar reply mode chain
+        self._stacked.addWidget(self._chat_view)
         try:
             self._chat_view.reply_to_message.connect(self._on_chat_reply_requested)  # type: ignore[attr-defined]
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("reply_to_message binding 실패 — %r", exc)
-
-        # 4-2) GroupChatView placeholder (lazy) — index 1 의 자리 holder
-        # 실제 GroupChatView 는 _on_room_entered 시 신설 + 교체.
+        # 4-2) GroupChatView placeholder idx 1
         self._group_placeholder = QWidget(self._stacked)
-        self._stacked.addWidget(self._group_placeholder)  # idx 1
-
-        # 4-3) MemberListWidget — index 2
+        self._stacked.addWidget(self._group_placeholder)
+        # 4-3) MemberListWidget idx 2
         self._member_list = MemberListWidget(parent=self._stacked)
-        self._stacked.addWidget(self._member_list)  # idx 2
-
-        # 4-4) FriendListWidget — index 3 (cycle 144 신설)
-        # 한글 주석: 메뉴 "계정 → 친구 목록" 진입점 + 친구 추가 dialog 의 host.
+        self._stacked.addWidget(self._member_list)
+        # 4-4) FriendListWidget idx 3
         self._friend_list = FriendListWidget(parent=self._stacked)
-        self._friend_list.set_friends([], viewer_id=0)  # 빈 placeholder
-        # cycle 153.7 — friend chat click → ProfileView modal open chain
+        self._friend_list.set_friends([], viewer_id=0)
         try:
             self._friend_list.friend_chat_clicked.connect(self._on_friend_profile_open)  # type: ignore[attr-defined]
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("friend_chat_clicked binding 실패 — %r", exc)
-        self._stacked.addWidget(self._friend_list)  # idx 3
-
-        # 초기 페이지 = 1:1 직접 메시지 (기존 호환)
+        self._stacked.addWidget(self._friend_list)
         self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
+        return right_panel, right_layout
 
-        # 5) 입력 영역 — cycle 153.7 본격 InputBar 마이그레이션
-        # 한글 주석 — 기존 QLineEdit + 보내기 button row → InputBar widget 교체
-        # InputBar = 첨부 + emoji + multi-line + voice + drag&drop 통합 (phase 6 신설)
+    def _init_input_bar(self, right_panel, right_layout) -> None:
+        """5) InputBar 마이그레이션."""
         from app.ui.input_bar import InputBar
-        # 한글 주석 — cycle 169.71 회수 — i18n tr() literal 의 의 input bar 의 tooltip 정합
         _ = QCoreApplication.translate("MainWindow", "보내기")
         self._input_bar = InputBar(parent=right_panel)
         self._input_bar.message_sent.connect(self._on_input_message_sent)  # type: ignore[arg-type]
         self._input_bar.file_attached.connect(self._on_input_file_attached)  # type: ignore[arg-type]
         right_layout.addWidget(self._input_bar, stretch=0)
-
-        # 한글 주석 — 기존 호환 binding (QLineEdit attribute 보존 legacy code path)
+        # 한글 주석 — 기존 호환 binding (legacy attribute)
         self._input_edit = self._input_bar._text_edit
         self._send_button = self._input_bar._send_btn
         self._attach_button = self._input_bar._attach_btn
         self._input_container = self._input_bar
 
-        # 6) Splitter 3 column 위젯 추가 + 비율 설정
-        # 한글 주석 — index 0 rail (fixed) + 1 room_list (resize) + 2 right_panel (flex)
-        # cycle 169.100 회수 — telegram desktop align column order
-        # leftmost = sidebar_rail (folder + icon + label) + middle = chat_list_panel + right = chat area
-        # room_list = hidden sibling (group chat 진입 chain backward compat)
+    def _finalize_splitter(self, splitter: QSplitter, right_panel) -> None:
+        """6) splitter assemble + StretchFactor + centralWidget."""
         splitter.addWidget(self._sidebar_rail)
         splitter.addWidget(self._chat_list_panel)
         splitter.addWidget(right_panel)
-        splitter.setStretchFactor(0, 0)  # rail fixed narrow
-        splitter.setStretchFactor(1, 0)  # chat list panel resizable
-        splitter.setStretchFactor(2, 1)  # right_panel flex
-        # room_list = parent=self (별도 — hidden + signal chain retain)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 0)
+        splitter.setStretchFactor(2, 1)
         self._room_list.setParent(self)
         self._room_list.setVisible(False)
-
         self.setCentralWidget(splitter)
 
-        # 7) StatusBar
+    def _init_status_and_startup_chain(self) -> None:
+        """7~10) StatusBar + menu_bar + 초기 안내 + auto-update + tray."""
         self._status_bar = StatusBar(parent=self)
         self.setStatusBar(self._status_bar)
-        # cycle 169.100 회수 — production status bar hide (telegram align 정합)
         self._status_bar.setVisible(False)
         self._status_bar.set_connection_state("DISCONNECTED")
         self._status_bar.set_peer_count(0)
-
-        # 8) 메뉴바 (설정 / 계정 / 도움말)
         self._build_menu_bar()
-
-        # 9) 초기 안내 메시지 한 줄 (1:1 ChatView)
         self._chat_view.add_message(
             sender="system",
-            text=f"TooTalk 클라이언트 준비 완료 — 닉네임: {config.user_nickname}",
+            text=f"TooTalk 클라이언트 준비 완료 — 닉네임: {self._config.user_nickname}",
             ts=datetime.now(),
             is_self=False,
         )
-
-        # 10) auto-update periodic_check 백그라운드 task 등록 (cycle 139)
-        # cycle 132 (server) + cycle 133 (UpdateDialog) + cycle 134 (release CI)
-        # chain 의 startup integration — 시작 시 1회 + 24시간 polling. 신 버전
-        # 검출 시 _on_new_version slot 호출 + UpdateDialog instantiation.
-        # asyncio loop 부재 환경 (일반 unittest 등) 의 graceful skip.
         self._update_task: Optional[asyncio.Task] = None
         self._current_update_dialog: Optional[UpdateDialog] = None
-        # cycle 148 — emoji moderation admin dialog 참조 보관 (gc 회피 + 테스트 가시성)
         self._current_moderation_dialog: Optional[object] = None
         self._start_update_check_task()
-        # cycle 169.498 — system tray icon + context menu (사용자 directive 영구).
-        # close event override → hide + tray retain. tray RMB → 로그아웃 + TooTalk 종료.
         self._tray_icon = None
         self._tray_quit_requested = False
         self._setup_tray_icon()
