@@ -170,11 +170,26 @@ class MessageBubble(QFrame):
             reply_layout.addWidget(reply_text)
             bubble_layout.addWidget(reply_frame)
 
-        # 본문 텍스트 라벨 — Toonation BI 통합 + self/peer 색상 분기
-        text_label = QLabel(text, bubble)
+        # cycle 169.442 — 본문 텍스트 라벨 + markdown 렌더 (사용자 directive 마크다운 뷰어 내장)
+        # Qt.TextFormat.MarkdownText = PyQt6 native markdown → rich text 변환 chain
+        # **bold** / *italic* / `code` / [link](url) / - list / 1. ordered / # heading 자동 렌더
+        text_label = QLabel(bubble)
+        # 한글 주석 — markdown 감지 heuristic (**, __, ##, ```, > , [text](url), [-*+] list)
+        import re as _re
+        is_markdown = bool(_re.search(
+            r"(\*\*|__|^#{1,6}\s|^[-*+]\s|```|\[.+?\]\(.+?\)|^>\s|^\d+\.\s)",
+            text, _re.MULTILINE,
+        ))
+        if is_markdown:
+            text_label.setTextFormat(Qt.TextFormat.MarkdownText)
+        else:
+            text_label.setTextFormat(Qt.TextFormat.PlainText)
+        text_label.setText(text)
         text_label.setWordWrap(True)
+        text_label.setOpenExternalLinks(True)
         text_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
+            | Qt.TextInteractionFlag.LinksAccessibleByMouse
         )
         text_color = "#ffffff" if is_self else "#e5e7eb"
         text_label.setStyleSheet(
