@@ -1,28 +1,28 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T11:15:00+09:00
+last_verified: 2026-05-22T11:35:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 11:15 KST — cycle 169.408~412 fingerprint sync (5 commit drift 회수). 누계: drawer SVG 4 신설 + 야간 모드 click 즉시 toggle (cycle 169.409) → 아이디 찾기 endpoint + FindIdDialog + login link (cycle 169.410) → Phase 1 잔존 3건 회수 — 저장한 메시지 server persist (saved-{uid} self DM room) + folder PATCH endpoint (UPDATE + folder_chats reconciliation) + 야간 모드 visual indicator (#0066FF/grey icon swap + 켜짐/꺼짐 badge, cycle 169.411) → QMessageBox 전수 sweep 44 call sites (ConfirmDialog static factory show_info/show_warning/show_critical/ask, cycle 169.412).<br>**이전 갱신**: 2026-05-22 10:40 KST — cycle 169.335 fingerprint sync.
+> **최신 갱신 시점**: 2026-05-22 11:35 KST — cycle 169.413~417 fingerprint sync (7 commit drift 회수). 누계: Phase 1 i18n EN sweep 91 entry append (cycle 169.413) → Phase 5 Item 1 i18n ZH-CN+JA 109 entry append + ZH-TW fallback chain (cycle 169.414) → Phase 5 Item 3 emoji pack GET 2 + POST 1 endpoint actual binding + middleware GET prefix whitelist + register chain (cycle 169.415) → Phase 5 Item 5 원격 제어 macOS Quartz CGDisplayCreateImage capture + CGEvent input forward 4 event_type 분기 + autorelease pool 정합 (cycle 169.416) → Phase 5 Item 2 자동 업데이트 binary swap actual chain macOS shutil.move rollback + Windows batch script DETACHED_PROCESS (cycle 169.417).<br>**이전 갱신**: 2026-05-22 11:15 KST — cycle 169.408~412 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-22. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.412 누계 (commit `be49385`).
+> 평가 기준일 = 2026-05-22. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.417 누계 (commit `c46644a`).
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 295+ sub-cycle 누계 (cycle 169.117~412). 제품화 가능성 = **Phase 1 잔존 4건 회수 완료 (저장한 메시지 server persist + folder PATCH endpoint + 야간 모드 visual indicator + QMessageBox 전수 sweep 44 call sites) + 아이디 찾기 endpoint + FindIdDialog + drawer SVG 4 신설 (broadcast + bookmark + logout + contacts) + 야간 모드 click 즉시 toggle + ConfirmDialog static factory 4 mode (info/warning/critical/ask) + 인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 300+ sub-cycle 누계 (cycle 169.117~417). 제품화 가능성 = **Phase 1 종결 + Phase 5 Item 1/2/3/5 actual binding 본격 진입 + 모바일 제외 잔존 작업 본격 회수 — i18n 5 locale full sweep (KO 137 keyset 100% × EN/ZH-CN/JA + ZH-TW fallback) + emoji pack endpoint actual binding (list_public_approved + get_pack_by_slug + insert_pack + slug regex 409 graceful) + 원격 제어 macOS native binding (CGDisplayCreateImage + CGEventCreate* 4 event_type + autorelease pool) + 자동 업데이트 binary swap actual chain (macOS shutil.move rollback + Windows batch DETACHED_PROCESS) + 인프라 완비 + telegram align 98% + bot LLM production-ready + PORTABLE_HARNESS / Phase 5 마무리 = streaming_helper 5 platform API + bot framework BotFather 등가 + mesh production-grade**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.6 / 10 | 8.3 → 8.6 ▲ | Phase 1 잔존 4건 회수 완료 — 저장한 메시지 server persist (saved-{uid} self DM room resolve + find_or_create_saved_room + viewer==target 분기 + client _send_saved_message_rest + _fetch_dm_history saved kind 정합, cycle 169.411) + folder PATCH endpoint (update_folder_with_chats UPDATE + folder_chats DELETE/INSERT 단일 transaction + FolderUpdateWorker, cycle 169.411) + 야간 모드 visual indicator (#0066FF/grey icon swap + 켜짐/꺼짐 badge + accent color, cycle 169.411) + QMessageBox 전수 sweep 44 call sites → ConfirmDialog static factory 4 mode (show_info/show_warning/show_critical/ask + raw_text bypass + `_MODE_COLORS` mapping, cycle 169.412) + 아이디 찾기 endpoint 신설 (POST /api/auth/find/email + get_user_by_username_and_phone + _mask_email + middleware whitelist, cycle 169.410) + FindIdDialog frameless modal + login_dialog 아이디_찾기/비밀번호_찾기 link row + done(3)/done(4) intent + main.py FindIdDialog/PasswordResetDialog dispatch + i18n 8 entry × 2 locale + drawer 4 SVG (broadcast/bookmark/logout/contacts) + 야간 모드 click 즉시 toggle (cycle 169.409) |
+| 기술 완성도 | 8.9 / 10 | 8.6 → 8.9 ▲ | Phase 5 Item 1+2+3+5 actual binding 본격 진입 (cycle 169.413~417): i18n 5 locale full sweep (KO 137 × EN 171 / ZH-CN 162 / JA 162 / ZH-TW fallback chain, cycle 169.413~414) + emoji pack GET 2 + POST 1 endpoint actual (list_public_approved + get_pack_by_slug + insert_pack + slug regex + UNIQUE 409 graceful + middleware GET prefix whitelist + main.py register chain, cycle 169.415) + 원격 제어 macOS native (CGDisplayCreateImage capture + CGEventCreate* 4 event_type 분기 MOUSE_MOVE/CLICK/KEY_DOWN/UP + try/finally autorelease pool + del cg_event 명시, cycle 169.416) + 자동 업데이트 binary swap actual chain (macOS .tootalk_backup_<ts>/ shutil.move + zipfile.extractall + 실행 binary 검증 + rollback chain / Windows tempfile.mkdtemp + batch script taskkill+timeout+xcopy+start+rmdir + subprocess.Popen DETACHED_PROCESS 0x00000008, cycle 169.417) |
 | 시장 적합성 | 5.0 / 10 | 6.2 → 5.0 ▼ | Toonation BI 통합 redesign + telegram align 96% 도달 + 1차 dogfooding readiness (default 투네이션 고객센터 봇 진입 + chat_list filter 통합 + sidebar 2 entry 단순화 + 편집 tab folder dialog redirect 완성) + SMTP 자체 설치 + DB audit 28 ActivityAction + bot LLM Q&A 실 응답 chain + last_seen 시각화 (Phase 5 binding) + DM room resolver friend_id ↔ direct room_id mapping + i18n qm 5 locale 활성 |
 | 차별화 요소 | 8.0 / 10 | 9.9 → 8.0 ▼ | 친구간 원격 데스크탑 Phase 5 base + telegram align 단순화 UX + 시그니처 사운드 + push 4 platform + E2EE Signal + Phase 3 bot framework production-ready + Toonation BI 통합 hamburger drawer 단색 + 채팅 통합 filter "채팅" 단일 tab + 편집 tab FolderManageDialog telegram align + bot LLM 우선 provider OpenAI swap chain + PORTABLE_HARNESS.md 공용 한벌 + last_seen 실시간 갱신 chain + i18n qm 5 locale frozen bundle |
 | 사용자 가치 | 5.5 / 10 | 7.4 → 5.5 ▼ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) + last_seen client fetch (cycle 169.221) + DM history fetch chain (cycle 169.225) + dialog main center (cycle 169.229~230) |
@@ -545,7 +545,10 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 | KT PTR record default 잔존 | 상 | 저 | dopa.co.kr 데모 전용 + 실 도메인 확정 후 갱신 또는 skip |
 | WebRTC mesh ≤ 8 peer cap | 중 | 중 | 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
 | 1차 dogfooding 부재 | 중 | 중 | Phase 5 마무리 직후 1주 retention + NPS 측정 진입 의무 |
-| Phase 1 i18n ZH-CN/ZH-TW/JA sweep 잔존 | 저 | 중 | KO+EN 정상 retain + 3 locale placeholder. dogfooding 진입 시점 ZH 우선 + JA 후속. cycle 169.412 시점 잔존 single 항목 |
+| ~~Phase 1 i18n ZH-CN/ZH-TW/JA sweep 잔존~~ | ✅ 해소 (cycle 169.414) | — | KO 137 keyset 100% × EN/ZH-CN/JA full cover + ZH-TW fallback chain (tr() 안 ZH-CN 우회) |
+| Phase 5 streaming_helper 5 platform API 잔존 | 중 | 중 | YouTube/Twitch/CHZZK/Kick/별 1 platform NotImplementedError retain (`app/bot/streaming_helper.py:399~415`). 방송 도우미 봇 본격 cycle 의무 |
+| Phase 5 bot framework BotFather 등가 잔존 | 중 | 중 | `/api/bot/chat` 단일 endpoint retain + 외부 개발자 봇 등록 + webhook + inline + payment 등 BotFather 등가 chain 부재. Phase 3+ 차별화 base |
+| Phase 5 mesh production-grade 잔존 | 중 | 중 | WebRTC mesh ≤ 8 peer cap + receive chain 부재 retain (`app/rtc/mesh_manager.py`). 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
 | cycle 169.x UI redesign 의 LLM autonomy 의 한계 (사용자 design directive 부재 시 임의 변경 금지) | 중 | 중 | `[[feedback-no-design-change-without-user-directive]]` 영구 가드레일 + 위반 시 즉시 git revert |
 | design critique batch 일시 중지 의무 (cycle 169.229 신설) | 중 | 중 | `[[feedback-design-critique-first-priority]]` 영구 가드레일 = 사용자 design critique 의 모든 잔존 batch 일시 중지 + 우선 처리 의무. Phase 5 binding / doc sync / Stop hook 모두 후순위 |
 | bearer_token chain drift (cycle 169.228 회수) | 저 | 중 | self._session_token 정합 + HTTP 401 차단 + 매 endpoint 의 token chain 의 단일 source helper 정합 |
@@ -603,8 +606,9 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 
 본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:
 
-- 기술 완성도 점수 — Phase 5 마무리 + 1차 dogfooding 시 +0.3 (현 8.6 → 8.9)
-- Phase 1 잔존 회수 진척 — cycle 169.411~412 안 4건 PASS (saved/folder PATCH/야간 모드 visual/QMessageBox sweep), i18n ZH/JA sweep single 잔존
+- 기술 완성도 점수 — Phase 5 streaming + bot framework + mesh 마무리 + dogfooding 시 +0.3 (현 8.9 → 9.2)
+- Phase 1 잔존 회수 진척 = ✅ 종결 (cycle 169.411~414 안 5건 PASS)
+- Phase 5 진척 = Item 1+2+3+5 actual binding (cycle 169.413~417). Item 4 (streaming 5 platform + bot framework + mesh) 잔존
 - 누락 기능 표 — Phase 5 마무리 시 항목 제거
 - 단기 액션 ✅ 표시 갱신
 - KPI 실측 값 (dogfooding 진입 후)
