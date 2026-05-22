@@ -66,3 +66,4 @@ deploy/postfix/dkim/
 !deploy/secrets/.gitkeep
 !deploy/postfix/dkim/.gitkeep
 .claude/dereliction_last_fire.txt
+.claude/dereliction_disabled.flag

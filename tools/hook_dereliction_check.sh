@@ -10,6 +10,12 @@ set +u  # 한글 주석 — CLAUDE_PROJECT_DIR 부재 graceful path (terminal �
 CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$CLAUDE_PROJECT_DIR" || exit 0
 
+# cycle 169.397 — 사용자 directive — sentinel flag retain 시점 hook 즉시 exit 0
+# 재 활성 = `rm .claude/dereliction_disabled.flag` 또는 사용자 명시 directive
+if [ -f "${CLAUDE_PROJECT_DIR}/.claude/dereliction_disabled.flag" ]; then
+    exit 0
+fi
+
 # cycle 169.367 — stop_hook_active flag 시점 즉시 exit 0 (Claude Code harness 9 consecutive block cap 회피)
 # Stop hook stdin = JSON {"stop_hook_active": bool, ...} — flag true 시점 detect 의무 skip
 if [ -t 0 ]; then
