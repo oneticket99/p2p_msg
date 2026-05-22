@@ -1243,6 +1243,35 @@ class MainWindow(QMainWindow):
         """
         key = (kind, target_id)
         self._dm_history.setdefault(key, []).append((sender, text, ts, is_self))
+        # cycle 169.440 — local SQLite cache write-through (사용자 directive MariaDB 부하 분담)
+        # room_id mapping = bot/saved/friend kind 별 별 chain (server REST POST 의 응답 안 msg_id retain 별 cycle)
+        # 본 cycle = client-only insert (msg_id 부재 시점 0 — uuid-only retain)
+        try:
+            from app.db import messages_cache as _mc
+            # 한글 주석 — room_id derive: bot=1*10+kind_offset, friend=target_id*100, saved=self_id*100
+            self_id = getattr(self, "_current_user_id", None) or 0
+            sender_id = self_id if is_self else target_id
+            # local cache room_id 의 의 namespace 분리 (server room_id 부재 시점 — temporary)
+            if kind == "saved":
+                room_id_local = (self_id or 1) * 100 + 1
+            elif kind == "bot":
+                room_id_local = target_id * 10 + 2
+            elif kind == "friend":
+                room_id_local = target_id * 100 + 3
+            else:
+                room_id_local = target_id * 100 + 9
+            ts_ms = int(ts.timestamp() * 1000) if ts else 0
+            _mc.insert_message(
+                msg_id=0,  # server msg_id 부재 — uuid-only path retain
+                room_id=room_id_local,
+                sender_id=int(sender_id) if sender_id else 1,
+                kind="text",
+                body=text,
+                ts_ms=ts_ms,
+                is_self=is_self,
+            )
+        except Exception as exc:
+            log.debug("[append_dm_message] local cache 실패 — %r", exc)
         # cycle 169.174~436 — chat_list entry preview + ts bump (sort + render + unread)
         try:
             active_match = (
