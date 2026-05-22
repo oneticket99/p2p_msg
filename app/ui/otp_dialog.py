@@ -83,14 +83,9 @@ class OtpBox(QLineEdit):
         if event is None:
             return
         # cycle 169.477 — Ctrl/Cmd+V paste detect → clipboard 안 6 digit 전 box 분산
+        # PyQt6 안 matches() 부재 시점 paste() slot override 안 fallback retain
         if event.matches(QKeySequence.StandardKey.Paste):
-            from PyQt6.QtWidgets import QApplication
-            clipboard = QApplication.clipboard()
-            if clipboard is not None:
-                pasted = (clipboard.text() or "").strip()
-                if pasted:
-                    self._on_paste(pasted)
-                    return
+            self.paste()
             return
         # 한글 주석 — Backspace 시점 의 직전 box focus 이동 callback
         if event.key() == Qt.Key.Key_Backspace and not self.text():
@@ -98,13 +93,20 @@ class OtpBox(QLineEdit):
             return
         super().keyPressEvent(event)
 
-    def insertFromMimeData(self, source) -> None:  # type: ignore[override]
-        """우클릭 paste / 드래그 안 mime drop 도 6 digit 분산 chain 호출."""
-        if source is None or not source.hasText():
+    def paste(self) -> None:  # type: ignore[override]
+        """cycle 169.479 — QLineEdit.paste() slot override (paste 의 single entry).
+
+        Cmd+V / Ctrl+V keyboard shortcut + 우클릭 context menu paste action +
+        프로그래밍 paste() 호출 모두 본 메소드 의 single path. maxLength(1) truncate
+        bypass 의무 — _on_paste callback 안 6 digit 분산 chain.
+        """
+        from PyQt6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        if clipboard is None:
             return
-        pasted = (source.text() or "").strip()
-        if pasted:
-            self._on_paste(pasted)
+        text = (clipboard.text() or "").strip()
+        if text:
+            self._on_paste(text)
 
 
 class OTPDialog(QDialog):
