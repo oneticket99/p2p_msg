@@ -212,6 +212,36 @@ def main() -> int:
         if authenticated:
             window._status_bar.set_connection_state("CONNECTED")
         # cycle 169.375 — login 직後 folder list fetch chain (사용자 directive — 폴더 server 저장 retain)
+        # cycle 169.398 — login 직後 GET /api/auth/profile fetch chain (사용자 critique image #160 visual reflect)
+        if authenticated and session_token:
+            try:
+                from app.net.account_client import ProfileGetWorker
+                profile_worker = ProfileGetWorker(api_base, session_token, parent=window)
+
+                def _on_profile_get_finished(ok, error_code, error_message, data):
+                    if not ok:
+                        log.warning("[profile] GET fail — code=%s msg=%s", error_code, error_message)
+                        return
+                    window._current_user_nickname = data.get("display_name", "") or data.get("username", "")
+                    window._current_user_phone = data.get("phone", "")
+                    window._current_user_birthdate = data.get("birthdate", "")
+                    window._current_user_bio = data.get("bio", "")
+                    window._current_email = data.get("email", "")
+                    log.info("[profile] GET PASS — display_name=%s phone=%s birthdate=%s",
+                             window._current_user_nickname, window._current_user_phone,
+                             window._current_user_birthdate)
+
+                profile_worker.finished_with_result.connect(_on_profile_get_finished)  # type: ignore[arg-type]
+                if not hasattr(window, "_profile_workers"):
+                    window._profile_workers = []
+                window._profile_workers.append(profile_worker)
+                profile_worker.finished.connect(
+                    lambda w=profile_worker: window._profile_workers.remove(w)
+                )  # type: ignore[arg-type]
+                profile_worker.start()
+            except Exception as exc:
+                log.debug("profile GET chain fail — %r", exc)
+
         if authenticated and session_token:
             try:
                 from app.net.folder_client import FolderListWorker

@@ -77,3 +77,59 @@ class ProfileUpdateWorker(QThread):
         except Exception as exc:  # noqa: BLE001
             log.warning("[ProfileUpdate] 내부 오류 — %r", exc)
             self.finished_with_result.emit(False, "INTERNAL", f"내부 오류: {exc}", {})
+
+
+class ProfileGetWorker(QThread):
+    """GET /api/auth/profile background worker — cycle 169.398 신설.
+
+    response = ``{email, username, display_name, phone, birthdate, bio}``.
+    login 직後 main_window `_current_user_*` initial population chain entry.
+    """
+
+    finished_with_result = pyqtSignal(bool, str, str, dict)
+
+    def __init__(
+        self,
+        base_url: str,
+        token: str,
+        parent: Optional[object] = None,
+    ) -> None:
+        super().__init__(parent)
+        self._url = f"{base_url.rstrip('/')}/api/auth/profile"
+        self._token = token
+
+    def run(self) -> None:  # type: ignore[override]
+        from app.net._ssl_util import build_ssl_context
+        ctx = build_ssl_context()
+        req = urllib.request.Request(
+            self._url,
+            headers={"Authorization": f"Bearer {self._token}"},
+            method="GET",
+        )
+        log.info("[ProfileGet] fire url=%s", self._url)
+        try:
+            with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
+                raw = resp.read()
+                data = json.loads(raw) if raw else {}
+                log.info("[ProfileGet] 응답 status=%d ok=%s", resp.status, data.get("ok"))
+                self.finished_with_result.emit(
+                    bool(data.get("ok")),
+                    str(data.get("error", "")),
+                    str(data.get("message", "")),
+                    data,
+                )
+        except urllib.error.HTTPError as exc:
+            try:
+                err_body = exc.read()
+                err_data = json.loads(err_body) if err_body else {}
+            except Exception:
+                err_data = {}
+            self.finished_with_result.emit(
+                False,
+                str(err_data.get("error", f"HTTP_{exc.code}")),
+                str(err_data.get("message", str(exc))),
+                err_data,
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[ProfileGet] 내부 오류 — %r", exc)
+            self.finished_with_result.emit(False, "INTERNAL", f"내부 오류: {exc}", {})
