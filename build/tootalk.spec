@@ -14,6 +14,9 @@
 import sys
 from pathlib import Path
 
+# cycle 169.453 — PyInstaller helper imports (aiortc + av 의 submodule 전수 collect)
+from PyInstaller.utils.hooks import collect_submodules
+
 block_cipher = None
 
 ROOT = Path(SPECPATH).parent.resolve()
@@ -37,17 +40,29 @@ a = Analysis(
         # cycle 169.226 — i18n translations qm bundle (5 locale: en/ja/ko/zh-CN/zh-TW)
         (str(ROOT / "app" / "i18n" / "translations"), "app/i18n/translations"),
     ],
-    hiddenimports=[
+    hiddenimports=collect_submodules("aiortc") + collect_submodules("av") + [
         # qasync + aiortc 누락 hidden dependency 명시
         "qasync",
         "aiortc",
         "aiortc.contrib.media",
+        "aiortc.contrib.signaling",
         "av",
+        "av.audio",
+        "av.video",
         "asyncmy",
         "aiosmtplib",
         "aiofiles",
+        "cffi",
+        "cryptography",
+        "google.crc32c",
+        "pylibsrtp",
         "PIL.Image",
         "PIL.ImageOps",
+        # cycle 169.453 — local SQLite cache + 신규 module 의무 (cycle 169.440~452)
+        "sqlite3",
+        "app.db.local_db",
+        "app.db.messages_cache",
+        "app.net.push_client",
     ],
     hookspath=[],
     hooksconfig={},

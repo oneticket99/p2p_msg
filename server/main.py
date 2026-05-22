@@ -221,6 +221,15 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
             "read_handlers 등록 실패 — skip (%s)", exc
         )
 
+    # cycle 169.452 — telegram align 연락처 + 양방향 매칭 endpoint
+    try:
+        from .api.contacts_handlers import register_contacts_routes
+        register_contacts_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "contacts_handlers 등록 실패 — skip (%s)", exc
+        )
+
     # remote control endpoint 등록 (cycle 132 — Phase 5 Item 5 진입 prerequisite skeleton)
     # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
     try:
