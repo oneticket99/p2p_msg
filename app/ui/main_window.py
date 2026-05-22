@@ -2375,7 +2375,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_remote_connect(self) -> None:
-        """원격 연결 → RemoteCallDialog (incoming mode) — cycle 169.338 사용자 directive."""
+        """원격 연결 → RemoteCallDialog outgoing — 사용자 directive cycle 169.424 회수.
+
+        이전 mode='incoming' 폐기 — incoming UI = 상대가 me 측 요청 시점 별 trigger (peer signal).
+        dropdown 클릭 = outgoing 의무. layout = 원격 요청 same dialog (RemoteCallDialog request mode).
+        """
         try:
             from app.ui.remote_call_dialog import RemoteCallDialog
             peer = "상대 사용자"
@@ -2387,7 +2391,11 @@ class MainWindow(QMainWindow):
                     if e.kind == kind and e.target_id == tid:
                         peer = e.name or peer
                         break
-            dialog = RemoteCallDialog(peer_name=peer, mode="incoming", parent=self)
+            # cycle 169.424 — outgoing mode + status text 분기 (원격 연결 발신)
+            dialog = RemoteCallDialog(
+                peer_name=peer, mode="request", parent=self,
+                outgoing_label="원격 연결 발신 중…",
+            )
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("RemoteCallDialog connect 실패 — %r", exc)

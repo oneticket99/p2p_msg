@@ -45,6 +45,7 @@ class RemoteCallDialog(QDialog):
         peer_name: str,
         mode: str = "request",  # "request" outgoing / "incoming"
         parent: Optional[QWidget] = None,
+        outgoing_label: Optional[str] = None,
     ) -> None:
         # 한글 주석 — telegram align outer wrap + 420x600 strict
         super().__init__(parent)
@@ -92,8 +93,11 @@ class RemoteCallDialog(QDialog):
         name_label.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700; padding-top: 16px;")
         body.addWidget(name_label)
 
-        # 한글 주석 — status
-        status_text = "원격 요청 발신 중…" if mode == "request" else "원격 요청 수신…"
+        # 한글 주석 — status (cycle 169.424 outgoing_label override 정합)
+        if mode == "request":
+            status_text = outgoing_label or "원격 요청 발신 중…"
+        else:
+            status_text = "원격 요청 수신…"
         self._status_label = QLabel(status_text)
         self._status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._status_label.setStyleSheet("color: #67E8F9; font-size: 14px; padding-top: 8px;")
