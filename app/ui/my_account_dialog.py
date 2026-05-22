@@ -131,8 +131,23 @@ class MyAccountDialog(QDialog):
         # 닉네임 (nickname) = 자유 변경 가능 (avatar text source)
         self._nickname_edit = self._build_field_row(c_layout, "닉네임", nickname, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
+        # cycle 169.451 — 전화번호 input mask telegram align (사용자 directive image #20)
+        # +82 NN NNNN NNNN format + 글자수 cap + placeholder '_'
+        # 기존 phone value digit string ('821092821587') normalize chain
+        self._phone_edit.setInputMask("+82 99 9999 9999;_")
+        # 기존 raw digit mask setText 정합 — '82' prefix strip 후 적용
+        _raw = "".join(c for c in phone if c.isdigit())
+        if _raw.startswith("82") and len(_raw) >= 11:
+            _raw = _raw[2:]  # +82 prefix 제거 → mask 의 의 본문 의 의 10 digit
+        if _raw:
+            self._phone_edit.setText(_raw[:10])
         # cycle 169.391 — 생년월일 row 추가 (사용자 critique image #157)
         self._birthdate_edit = self._build_field_row(c_layout, "생년월일", birthdate, "info")
+        # cycle 169.451 — 생년월일 mask YYYY-MM-DD (사용자 directive 정합 확장)
+        self._birthdate_edit.setInputMask("9999-99-99;_")
+        _bd_raw = "".join(c for c in birthdate if c.isdigit())[:8]
+        if _bd_raw:
+            self._birthdate_edit.setText(_bd_raw)
         # cycle 169.384 — 이메일 row 제거 (email = ID retain 사용자 directive image #145/146)
         self._email_value = email
         self._username_value = username
