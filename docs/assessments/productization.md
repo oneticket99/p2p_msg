@@ -268,6 +268,11 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.442**: MessageBubble 마크다운 뷰어 내장 — Qt.TextFormat.MarkdownText + heuristic regex 감지 + setOpenExternalLinks 활성 (bot LLM reply markdown 자동 rich text 렌더)
+- **cycle 169.441**: 모든 채팅방 history 영속 chain — find_or_create_bot_room + handle_bot_chat 안 reply server INSERT + client _load_local_history 우선 replay (in-memory miss 시점 SQLite fallback)
+- **cycle 169.440**: local SQLite cache base (app/db/local_db.py + messages_cache.py + write-through chain) — MariaDB 부하 분담 + scroll lazy-load 기반
+- **cycle 169.439**: saved 강제 sort hack 폐기 (사용자 critique 눈가리개) + ChatListEntry frozen 회수 후 정식 chain retain
+- **cycle 169.438**: 평가 sync (pronoun gendered 회수)
 - **cycle 169.437**: 실시간 배지 + 실시간 수신음 fix (사용자 directive 메신저 기본 의무) — ChatListEntry frozen=True 폐기 (FrozenInstanceError silent swallow 회수) + _append_dm_message 안 peer 수신 시점 play_signature 직접 trigger (포커싱 무관)
 - **cycle 169.436**: bump_entry diagnostic log 추가 — FrozenInstanceError trace 캡처 path
 - **cycle 169.435**: bubble 내부 padding 2배 ((10,6,10,4) → (20,12,20,8) + spacing 2→4)
