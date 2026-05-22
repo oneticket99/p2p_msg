@@ -17,7 +17,7 @@ from typing import List, Optional
 
 
 from PyQt6.QtCore import QCoreApplication, Qt, QTimer
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtGui import QKeyEvent, QKeySequence
 from PyQt6.QtWidgets import (
     QDialog,
     QFrame,
@@ -75,16 +75,36 @@ class OtpBox(QLineEdit):
         )
         self._on_full = lambda: None
         self._on_back = lambda: None
+        # cycle 169.477 — 6 digit paste callback (사용자 directive — 메일 복사 OTP 의 단일 paste 의무)
+        self._on_paste: "callable[[str], None]" = lambda _text: None
 
     def keyPressEvent(self, event: Optional[QKeyEvent]) -> None:
         """Backspace 시점 직전 box 의 의 focus + 6 digit paste 지원."""
         if event is None:
+            return
+        # cycle 169.477 — Ctrl/Cmd+V paste detect → clipboard 안 6 digit 전 box 분산
+        if event.matches(QKeySequence.StandardKey.Paste):
+            from PyQt6.QtWidgets import QApplication
+            clipboard = QApplication.clipboard()
+            if clipboard is not None:
+                pasted = (clipboard.text() or "").strip()
+                if pasted:
+                    self._on_paste(pasted)
+                    return
             return
         # 한글 주석 — Backspace 시점 의 직전 box focus 이동 callback
         if event.key() == Qt.Key.Key_Backspace and not self.text():
             self._on_back()
             return
         super().keyPressEvent(event)
+
+    def insertFromMimeData(self, source) -> None:  # type: ignore[override]
+        """우클릭 paste / 드래그 안 mime drop 도 6 digit 분산 chain 호출."""
+        if source is None or not source.hasText():
+            return
+        pasted = (source.text() or "").strip()
+        if pasted:
+            self._on_paste(pasted)
 
 
 class OTPDialog(QDialog):
@@ -152,7 +172,7 @@ class OTPDialog(QDialog):
             box_row.addWidget(box)
         outer.addLayout(box_row)
 
-        # 한글 주석 — auto-advance + back nav binding
+        # 한글 주석 — auto-advance + back nav + paste 분산 binding
         for i, box in enumerate(self._boxes):
             if i < OTP_LENGTH - 1:
                 next_box = self._boxes[i + 1]
@@ -165,6 +185,8 @@ class OTPDialog(QDialog):
             # 한글 주석 — 마지막 box text 입력 시 자동 검증 trigger
             if i == OTP_LENGTH - 1:
                 box.textChanged.connect(self._on_last_box_filled)  # type: ignore[arg-type]
+            # cycle 169.477 — paste callback bind (사용자 directive — 메일 복사 OTP 단일 paste)
+            box._on_paste = self._distribute_pasted_otp  # type: ignore[assignment]
 
         outer.addSpacing(8)
 
@@ -208,6 +230,27 @@ class OTPDialog(QDialog):
         outer.addLayout(btn_row)
 
         self._boxes[0].setFocus()
+
+    def _distribute_pasted_otp(self, raw: str) -> None:
+        """cycle 169.477 — paste text 안 digit 추출 + 6 box 분산 + 자동 검증.
+
+        사용자 directive — "메일 안 복사한 OTP 의 단일 paste 의무". 6 digit 외 문자
+        (공백/줄바꿈/dash) 제거 후 6 자리 만 box 분산. 6 자리 충족 시점 자동 verify.
+        """
+        import re as _re
+        digits = _re.sub(r"\D", "", raw)[:OTP_LENGTH]
+        if not digits:
+            return
+        log.info("[OTP paste] digits=%d → box 분산", len(digits))
+        for i, box in enumerate(self._boxes):
+            box.setText(digits[i] if i < len(digits) else "")
+        # 한글 주석 — 마지막 box focus 이동 (auto-advance 정합)
+        last_filled = min(len(digits), OTP_LENGTH) - 1
+        if last_filled >= 0:
+            self._boxes[last_filled].setFocus()
+        # 한글 주석 — 6 digit 충족 시점 자동 검증 trigger
+        if len(digits) == OTP_LENGTH:
+            self._on_verify_clicked()
 
     def _get_otp(self) -> str:
         """6 box text concat → 6 digit string."""
