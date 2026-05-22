@@ -1990,7 +1990,10 @@ class MainWindow(QMainWindow):
             if not base_url or not token:
                 log.warning("[profile] base_url/token 부재 — PUT skip")
                 return
-            # cycle 169.399 — nickname 갱신 (display_name readonly retain)
+            # cycle 169.400 — display_name + nickname 동시 갱신 (사용자 directive image #166)
+            new_disp = (payload.get("display_name") or "").strip()
+            if new_disp:
+                self._current_display_name = new_disp
             new_nick = (payload.get("nickname") or "").strip()
             if new_nick:
                 self._current_nickname = new_nick

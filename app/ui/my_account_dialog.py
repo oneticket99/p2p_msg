@@ -126,13 +126,8 @@ class MyAccountDialog(QDialog):
             "QLineEdit { background-color: #131C30; border: 1px solid #2c3a52;"
             " border-radius: 6px; color: #9ca3af; font-size: 14px; padding: 6px 8px; }"
         )
-        # 이름 (display_name) = 신청 시점 입력값 retain readonly
+        # cycle 169.400 — 이름 (display_name) = editable (password reset 매칭 부재 사용자 directive image #166)
         self._displayname_edit = self._build_field_row(c_layout, "이름", display_name or username, "account")
-        self._displayname_edit.setReadOnly(True)
-        self._displayname_edit.setStyleSheet(
-            "QLineEdit { background-color: #131C30; border: 1px solid #2c3a52;"
-            " border-radius: 6px; color: #9ca3af; font-size: 14px; padding: 6px 8px; }"
-        )
         # 닉네임 (nickname) = 자유 변경 가능 (avatar text source)
         self._nickname_edit = self._build_field_row(c_layout, "닉네임", nickname, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
@@ -200,7 +195,8 @@ class MyAccountDialog(QDialog):
         """
         self.save_requested.emit(
             {
-                # cycle 169.399 — username + display_name readonly (server-side whitelist 제외 정합)
+                # cycle 169.400 — display_name editable (password reset 매칭 부재 retain — 사용자 directive image #166)
+                "display_name": self._displayname_edit.text(),
                 "nickname": self._nickname_edit.text(),
                 "phone": self._phone_edit.text(),
                 "email": self._email_value,

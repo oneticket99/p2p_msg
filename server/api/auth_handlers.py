@@ -341,9 +341,10 @@ async def handle_profile_update(request: web.Request) -> web.Response:
     # 한글 주석 — accept field whitelist + actual UPDATE
     update_columns: list[str] = []
     values: list = []
-    # cycle 169.399 — nickname field 추가 (사용자 directive image #163/164) + display_name readonly
-    # username + display_name = 변경 불가 (whitelist 제외). nickname / phone / birthdate / bio = 변경 가능.
+    # cycle 169.400 — display_name editable 회수 (사용자 directive image #166 — password reset 매칭 부재 retain).
+    # username + email 만 변경 불가 (UNIQUE constraint + login identity). 5 field whitelist.
     field_map = {
+        "display_name": "display_name",
         "nickname": "nickname",
         "phone": "phone",
         "birthdate": "birthdate",
@@ -357,7 +358,7 @@ async def handle_profile_update(request: web.Request) -> web.Response:
             update_columns.append(f"{col} = %s")
             values.append(str(val)[:255])
     if not update_columns:
-        raise web.HTTPBadRequest(reason="nickname / phone / birthdate / bio 중 1개 이상 의무")
+        raise web.HTTPBadRequest(reason="display_name / nickname / phone / birthdate / bio 중 1개 이상 의무")
 
     pool = request.app.get("db_pool")
     if pool is None:
