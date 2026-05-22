@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.474)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.474 의 등가 렌더링.
-     cycle 169.469~474 5 commit drift 회수 — startup unread batch fetch + friend username 양방향 + default theme dark + OTP setModal crash fix + handle_register IntegrityError race catch + reset_test_users.sh.
-     last_verified = 2026-05-22T20:38:00+09:00.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.480)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.480 의 등가 렌더링.
+     cycle 169.476~480 5 commit drift 회수 — consume_otp retry chain (169.476) + OTP paste 6 digit distribute (169.477) + reset_test_users.sh column 정정 (169.478) + QLineEdit.paste() slot override (169.479) + OTP verify HTTP 500 회수 retry + double-fire guard (169.480).
+     last_verified = 2026-05-22T21:20:00+09:00.
      cycle 169.213~231 핵심: README + History prepend + handoff §8.79 7 entry + hook feat grep logic 회수 + last_seen REST + last_seen fetch chain + DM room resolver + DM history fetch chain + rooms.py BPE 회수 + i18n qm frozen bundle 5 locale + drawer header gradient 폐기 단색 Toonation BI + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + height clamp.
      기술 9.7 / 시장 6.1 / 차별화 9.9 / 가치 7.3 / 수익화 5.6 / 운영 9.94 / 가드레일 10.0 / 정합 9.96 / 보안 9.4 = 종합 10.0. -->
 <style>
@@ -56,8 +56,8 @@
   <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
     문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
-    최신 갱신 = 2026-05-22 20:38 KST — cycle 169.469~474 fingerprint sync (5 commit drift 회수).
-    누계: startup unread batch fetch (169.469) + friend username 양방향 + last_read batch (169.470) + default theme dark + Talk label theme-aware + OTP setModal crash fix (169.471~472) + handle_register IntegrityError race catch (169.473) + reset_test_users.sh DRY_RUN default + 17 FK 종속 cleanup script (169.474).
+    최신 갱신 = 2026-05-22 21:20 KST — cycle 169.476~480 fingerprint sync (5 commit drift 회수).
+    누계: consume_otp MariaDB 1020 retry (169.476) + OTP paste 6 digit distribute (169.477) + reset_test_users.sh column 정정 (169.478) + QLineEdit.paste() slot override (169.479) + OTP verify HTTP 500 회수 increment_attempt/mark_email_verified retry chain + client double-fire guard (169.480).
     drift 0건 연속 retain · sub-agent 누계 95종 · pytest 1817 PASS.
   </div>
 </header>

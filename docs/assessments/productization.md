@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T20:38:00+09:00
+last_verified: 2026-05-22T21:20:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 20:38 KST — cycle 169.469~474 fingerprint sync (5 commit drift 회수). 누계: startup unread batch fetch actual binding (169.469) → friend username 양방향 friends + last_read batch endpoint + apply_last_read chain (169.470) → default theme dark + Talk label theme-aware color + OTP signup setModal crash fix (169.471~472) → handle_register IntegrityError race catch — uq_users_email/username 의 EMAIL_DUPLICATE/USERNAME_DUPLICATE 매핑 (169.473) → reset_test_users.sh DRY_RUN default + 17 FK 종속 table cleanup script (169.474).<br>**이전 갱신**: 2026-05-22 16:25 KST — cycle 169.418~427 sync.
+> **최신 갱신 시점**: 2026-05-22 21:20 KST — cycle 169.476~480 fingerprint sync (5 commit drift 회수). 누계: consume_otp MariaDB error 1020 retry chain (169.476) → OTP paste 6 digit distribute chain (169.477) → reset_test_users.sh column 정정 (friend_user_id/folders.owner_id/file_meta.sender_id) (169.478) → QLineEdit.paste() slot override (paste 1 digit retain 회수) (169.479) → OTP verify HTTP 500 회수 — `increment_attempt`/`mark_email_verified` retry chain + client `_verify_in_flight` double-fire guard (169.480).<br>**이전 갱신**: 2026-05-22 20:38 KST — cycle 169.469~474 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 

@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T20:38:00+09:00
+last_verified: 2026-05-22T21:20:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.474
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.480
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-22. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.474 누계.
-> 최근 갱신: 2026-05-22 20:38 KST — cycle 169.469~474 fingerprint sync (5 commit drift 회수). 누계: startup unread batch fetch (169.469) + friend username 양방향 + last_read batch (169.470) + default theme dark + Talk label theme-aware + OTP setModal crash fix (169.471~472) + handle_register IntegrityError race catch — uq_users_email/username 매핑 (169.473) + reset_test_users.sh DRY_RUN default + 17 FK 종속 cleanup script (169.474).
+> 평가 기준일: 2026-05-22. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.480 누계.
+> 최근 갱신: 2026-05-22 21:20 KST — cycle 169.476~480 fingerprint sync (5 commit drift 회수). 누계: `consume_otp` MariaDB error 1020 retry chain (169.476) + OTP paste 6 digit distribute chain (169.477) + reset_test_users.sh column 정정 — `friend_user_id`/`folders.owner_id`/`file_meta.sender_id` (169.478) + `QLineEdit.paste()` slot override (paste 1 digit retain 회수) (169.479) + OTP verify HTTP 500 회수 — `increment_attempt`/`mark_email_verified` retry chain + client `_verify_in_flight` double-fire guard (169.480).
 
 ---
 
