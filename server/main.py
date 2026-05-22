@@ -185,6 +185,15 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
             "version_handlers 등록 실패 — skeleton skip (%s)", exc
         )
 
+    # cycle 169.415 — emoji pack share endpoint 등록 (Phase 5 Item 3 actual binding)
+    try:
+        from .api.emoji_handlers import register_emoji_routes
+        register_emoji_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "emoji_handlers 등록 실패 — skip (%s)", exc
+        )
+
     # remote control endpoint 등록 (cycle 132 — Phase 5 Item 5 진입 prerequisite skeleton)
     # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
     try:
