@@ -100,9 +100,10 @@ _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 
 from app.ui._tray_mixin import TrayMixin
+from app.ui._friend_search_mixin import FriendSearchMixin
 
 
-class MainWindow(TrayMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -1145,198 +1146,10 @@ class MainWindow(TrayMixin, QMainWindow):
             from PyQt6.QtCore import QTimer
             QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
 
-    def _on_open_pending_requests(self) -> None:
-        """"받은 친구 요청" 메뉴 슬롯 — PendingRequestsDialog 모달 + list_pending async.
-
-        cycle 169.499 — 친구 요청 수락 chain 본격 binding (사용자 directive).
-        """
-        if self._session_token is None:
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(
-                self, "TooTalk", "받은 요청 보기 = 로그인 의무"
-            )
-            return
-        from app.ui.pending_requests_dialog import PendingRequestsDialog
-        dlg = PendingRequestsDialog(friends_client=self._friends_client, parent=self)
-        dlg.request_resolved.connect(self._on_pending_resolved)  # type: ignore[arg-type]
-        # 한글 주석 — async fetch + populate (dialog show 직후 fire)
-        import asyncio
-        fc = self._friends_client
-        if fc is not None:
-            async def _populate():
-                try:
-                    items = await fc.list_pending()
-                    dlg.populate(items)
-                except Exception as exc:  # noqa: BLE001
-                    log.warning("[pending] list_pending fail — %r", exc)
-                    dlg.populate([])
-            try:
-                asyncio.ensure_future(_populate())
-            except Exception as exc:  # noqa: BLE001
-                log.warning("[pending] spawn fail — %r", exc)
-        else:
-            dlg.populate([])
-        dlg.exec()
-
-    def _on_pending_resolved(self, user_id: int, accepted: bool) -> None:
-        """PendingRequestsDialog 의 accept/reject 결과 처리 — friend list refresh + badge."""
-        log.info("[pending] resolved user_id=%d accepted=%s", user_id, accepted)
-        if accepted:
-            try:
-                self._post_login_refresh()
-            except Exception as exc:
-                log.debug("[pending] post-resolve refresh 실패 — %r", exc)
-        # 한글 주석 — accept/reject 모두 badge 갱신 의무
-        import asyncio
-        try:
-            asyncio.ensure_future(self._refresh_pending_badge())
-        except Exception:
-            pass
-
-    async def _refresh_pending_badge(self) -> None:
-        """sidebar 햄버거 menu pending count badge 갱신 (cycle 169.500).
-
-        friends_client.list_pending() 호출 + sidebar_rail.set_pending_count(n).
-        """
-        fc = getattr(self, "_friends_client", None)
-        if fc is None or self._session_token is None:
-            return
-        try:
-            items = await fc.list_pending()
-            count = len(items) if items else 0
-            if hasattr(self, "_sidebar_rail") and hasattr(self._sidebar_rail, "set_pending_count"):
-                self._sidebar_rail.set_pending_count(count)
-            log.info("[pending_badge] count=%d", count)
-        except Exception as exc:  # noqa: BLE001
-            log.debug("[pending_badge] fetch fail — %r", exc)
-
-    def _on_open_add_friend(self) -> None:
-        """"친구 추가" 메뉴 슬롯 — AddFriendDialog 의 모달 실행."""
-
-        if self._session_token is None:
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(
-                self, "TooTalk", "친구 추가 = 로그인 의무"
-            )
-            return
-
-        dlg = AddFriendDialog(parent=self)
-        # 한글 주석 — cycle 169.489 — search_requested wire fix. 이전 cycle 부재 → 검색 버튼 noop 회수
-        self._add_friend_dlg_ref = dlg
-        dlg.search_requested.connect(self._on_friend_search_requested)
-        dlg.friend_requested.connect(self._on_friend_requested)
-        dlg.exec()
-        self._add_friend_dlg_ref = None
-
-    def _on_friend_search_requested(self, keyword: str) -> None:
-        """AddFriendDialog search_requested 슬롯 — FriendsClient.search_users 호출 + set_search_results 갱신.
-
-        cycle 169.489 — 검색 wire 부재 회수. friends_client 부재 graceful skip.
-        """
-        import asyncio
-        from app.ui.add_friend_dialog import SearchResult
-
-        log.info("[main_window] friend_search_requested keyword=%r", keyword)
-        dlg = getattr(self, "_add_friend_dlg_ref", None)
-        if dlg is None:
-            log.warning("[friend_search] dlg ref 부재 — skip")
-            return
-        fc = getattr(self, "_friends_client", None)
-        if fc is None or self._session_token is None:
-            log.warning("[friend_search] friends_client/session_token 부재 — skip")
-            dlg.set_search_results([])
-            return
-
-        async def _do_search() -> None:
-            try:
-                results = await fc.search_users(keyword=keyword, limit=20)
-                ui_results = [
-                    SearchResult(
-                        user_id=int(r.id),
-                        username=str(r.username),
-                        display_name=str(getattr(r, "display_name", "")),
-                        nickname=str(getattr(r, "nickname", "")),
-                        email_verified=bool(r.email_verified),
-                    )
-                    for r in results
-                ]
-                dlg.set_search_results(ui_results)
-                log.info("[friend_search] count=%d", len(ui_results))
-            except Exception as exc:  # noqa: BLE001
-                log.warning("[friend_search] fail — %r", exc)
-                dlg.set_search_results([])
-
-        try:
-            asyncio.ensure_future(_do_search())
-        except Exception as exc:  # noqa: BLE001
-            log.warning("[friend_search] spawn fail — %r", exc)
-
-    def _on_friend_requested(self, user_id: int, nickname: str) -> None:
-        """AddFriendDialog 의 friend_requested 시그널 수신 — REST POST 호출 placeholder.
-
-        REST 호출 chain (POST /api/friends) 의 actual binding = 별개 cycle 의 의무.
-        본 슬롯 = log + status bar feedback 만.
-        """
-
-        log.info(
-            "[main_window] friend_requested user_id=%d nickname=%r",
-            user_id,
-            nickname,
-        )
-        # 한글 주석 — cycle 169.496 — actual REST POST binding (이전 placeholder 회수).
-        # friends_client.request_friend(user_id, nickname) async + dialog close + status bar.
-        import asyncio
-        fc = getattr(self, "_friends_client", None)
-        if fc is None or self._session_token is None:
-            log.warning("[friend_request] friends_client/session_token 부재 — skip")
-            self._status_bar.showMessage("친구 요청 실패 — 인증 부재", 3000)
-            return
-
-        async def _do_request() -> None:
-            dlg = getattr(self, "_add_friend_dlg_ref", None)
-            from app.ui.confirm_dialog import ConfirmDialog
-            from app.net.friends_client import (
-                FriendsConflictError,
-                FriendsBadRequestError,
-                FriendsNotFoundError,
-                FriendsAuthError,
-            )
-            try:
-                friend_id = await fc.request_friend(user_id, nickname or None)
-                log.info("[friend_request] PASS friend_row_id=%d", friend_id)
-                self._status_bar.showMessage(f"친구 요청 발신 — user_id={user_id}", 3000)
-                if dlg is not None:
-                    dlg.accept()
-                ConfirmDialog.show_info(self, "친구 추가", "친구 요청 발신 PASS")
-            except FriendsConflictError:
-                log.info("[friend_request] 이미 친구 또는 pending 상태")
-                if dlg is not None:
-                    dlg.accept()
-                # 한글 주석 — 사용자 directive 2026-05-22 — 이미 요청된 상대 안내 메시지
-                ConfirmDialog.show_info(
-                    self,
-                    "친구 추가",
-                    "이미 요청된 상대입니다.\n상대방이 수락하면 채팅리스트에 자동 추가됩니다.",
-                )
-            except FriendsBadRequestError as exc:
-                log.warning("[friend_request] bad request — %r", exc)
-                ConfirmDialog.show_warning(
-                    self, "친구 추가", f"요청 형식 오류: {exc}"
-                )
-            except FriendsNotFoundError:
-                ConfirmDialog.show_warning(self, "친구 추가", "사용자 미존재")
-            except FriendsAuthError:
-                ConfirmDialog.show_warning(self, "친구 추가", "인증 만료 — 다시 로그인")
-            except Exception as exc:  # noqa: BLE001
-                log.warning("[friend_request] fail — %r", exc)
-                ConfirmDialog.show_warning(
-                    self, "친구 추가", f"요청 실패: {exc.__class__.__name__}"
-                )
-
-        try:
-            asyncio.ensure_future(_do_request())
-        except Exception as exc:  # noqa: BLE001
-            log.warning("[friend_request] spawn fail — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.511 — friend search + pending requests chain → _friend_search_mixin.py 분리
+    # (FriendSearchMixin mixin 상속, codex 2.5 책임 분리 2차)
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가) + SidebarRail / ChatHeader (cycle 153.4 신설)
