@@ -1302,8 +1302,12 @@ class MainWindow(QMainWindow):
                         return
                     page = await resp.json()
                     raw_messages = page.get("messages", [])
-            # step 3 — active chat retain 시점 chat_view re-populate
-            if self._active_chat_kind == "friend" and self._active_chat_target_id == friend_id:
+            # step 3 — active chat retain 시점 chat_view re-populate (cycle 169.411 saved 정합)
+            active_match = (
+                (self._active_chat_kind == "friend" and self._active_chat_target_id == friend_id)
+                or (self._active_chat_kind == "saved")
+            )
+            if active_match:
                 self._chat_view.clear_messages()
                 for m in raw_messages:
                     sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
@@ -1316,6 +1320,46 @@ class MainWindow(QMainWindow):
                 log.info("[dm_history] friend=%d room=%d msgs=%d replay PASS", friend_id, room_id, len(raw_messages))
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("[dm_history] fetch 실패 — %r", exc)
+
+    async def _send_saved_message_rest(self, text: str, client_uuid: str) -> None:
+        """cycle 169.411 — saved messages self DM room REST POST chain.
+
+        1. GET /api/auth/dm/{self_id}/room → server 의 saved-{uid} room return (viewer==target)
+        2. POST /api/rooms/{room_id}/messages → server 영속화
+        mesh broadcast 부재 (self 의 self echo loop 회피).
+        """
+        import aiohttp
+        try:
+            self_id = getattr(self, "_current_user_id", None)
+            token = getattr(self, "_session_token", None) or ""
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            if not isinstance(self_id, int) or self_id <= 0 or not token:
+                return
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                async with session.get(
+                    f"{api_base}/api/auth/dm/{self_id}/room",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        return
+                    dm = await resp.json()
+                    room_id = dm.get("room_id")
+                if not room_id:
+                    return
+                async with session.post(
+                    f"{api_base}/api/rooms/{room_id}/messages",
+                    json={"body": text, "client_uuid": client_uuid},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status not in (200, 201):
+                        log.warning("[saved_post] status=%d", resp.status)
+                        return
+                    data = await resp.json()
+                    log.info("[saved_post] PASS room=%d msg_id=%s", room_id, data.get("message_id"))
+        except Exception as exc:
+            log.debug("[saved_post] 실패 graceful — %r", exc)
 
     async def _fetch_user_status(self, user_id: int) -> None:
         """cycle 169.221 — friend last_seen REST fetch (cycle 169.216 endpoint).
@@ -1568,8 +1612,14 @@ class MainWindow(QMainWindow):
         if not base_url or not token:
             log.warning("[folder] base_url/token 부재 — REST 영속화 skip")
             return
-        from app.net.folder_client import FolderCreateWorker
-        worker = FolderCreateWorker(base_url, token, folder_data, parent=self)
+        # cycle 169.411 — edit mode PATCH endpoint chain (Phase 1 잔존 회수)
+        if is_edit:
+            from app.net.folder_client import FolderUpdateWorker
+            target_fid = str(folder_data.get("folder_id", ""))
+            worker = FolderUpdateWorker(base_url, token, target_fid, folder_data, parent=self)
+        else:
+            from app.net.folder_client import FolderCreateWorker
+            worker = FolderCreateWorker(base_url, token, folder_data, parent=self)
         worker.finished_with_result.connect(self._on_folder_persist_finished)  # type: ignore[arg-type]
         # cycle 169.79 회수 — worker list append (MED-2 dangling 차단)
         if not hasattr(self, "_folder_workers"):
@@ -1649,6 +1699,12 @@ class MainWindow(QMainWindow):
             import asyncio
             asyncio.ensure_future(self._fetch_user_status(target_id))
             asyncio.ensure_future(self._fetch_dm_history(target_id))
+        # cycle 169.411 — saved messages history fetch chain (self DM room resolve server-side)
+        if kind == "saved":
+            import asyncio
+            self_id = getattr(self, "_current_user_id", None)
+            if isinstance(self_id, int) and self_id > 0:
+                asyncio.ensure_future(self._fetch_dm_history(self_id))
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
             # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)
@@ -1776,6 +1832,8 @@ class MainWindow(QMainWindow):
         drawer.calls_clicked.connect(self._on_drawer_calls)  # type: ignore[arg-type]
         drawer.saved_clicked.connect(self._on_drawer_saved)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
+        # cycle 169.411 — night mode toggle signal binding (Phase 1 잔존 회수)
+        drawer.night_mode_toggled.connect(self._on_night_mode_toggled)  # type: ignore[arg-type]
         # cycle 169.116 회수 — sidebar_rail (96px) 의 의 reserve — 햄버거 button click 가능
         # drawer x anchor = sidebar width — sidebar_rail visible retain
         central = self.centralWidget() if self.centralWidget() else self
@@ -2187,6 +2245,7 @@ class MainWindow(QMainWindow):
             if hasattr(self, "_chat_list_panel"):
                 self._chat_list_panel.set_active_tab("friends")
                 self._chat_list_panel.set_current_chat("saved", 0)
+            # cycle 169.411 — saved kind 의 target_id retain (0 유지 — server self-resolve viewer_id)
             self._on_chat_selected("saved", 0)
             # 한글 주석 — cycle 169.325 — drawer slide close (사용자 directive image #88)
             drawer = getattr(self, "_active_drawer", None)
@@ -2199,6 +2258,16 @@ class MainWindow(QMainWindow):
                 self._input_bar.setFocus()
         except Exception as exc:
             log.warning("저장한 메시지 진입 실패 — %r", exc)
+
+    @pyqtSlot(bool)
+    def _on_night_mode_toggled(self, on: bool) -> None:
+        """cycle 169.411 — drawer 야간 모드 toggle handler (Phase 1 잔존 회수).
+
+        Phase 1 scope = log + drawer visual 자체 retain. theme stylesheet swap 의 의 Phase 2+
+        (현재 default dark retain — 주간 light theme 별 cycle 의무).
+        """
+        log.info("[main_window] night_mode_toggled — on=%s", on)
+        # 한글 주석 — 추후 light theme swap chain 진입 위치. 본 cycle = drawer visual 만.
 
     @pyqtSlot()
     def _on_drawer_logout(self) -> None:
@@ -2486,18 +2555,22 @@ class MainWindow(QMainWindow):
                 pass
 
             import asyncio
-            # 한글 주석 — mesh broadcast (DataChannel fan-out, ≤ 8 peer)
-            mesh = getattr(self, "_mesh_manager", None)
-            if mesh is not None:
-                asyncio.ensure_future(mesh.broadcast_payload(payload))
+            # cycle 169.411 — saved kind 의 의 mesh skip + self DM REST POST chain
+            if self._active_chat_kind == "saved":
+                asyncio.ensure_future(self._send_saved_message_rest(text, payload.id))
+            else:
+                # 한글 주석 — mesh broadcast (DataChannel fan-out, ≤ 8 peer)
+                mesh = getattr(self, "_mesh_manager", None)
+                if mesh is not None:
+                    asyncio.ensure_future(mesh.broadcast_payload(payload))
 
-            # cycle 163 — server REST POST + message_id resolve chain
-            msg_client = getattr(self, "_messages_client", None)
-            current_room = getattr(self, "_current_room_id", None)
-            if msg_client is not None and current_room:
-                asyncio.ensure_future(
-                    self._post_and_resolve(msg_client, current_room, text, payload.id)
-                )
+                # cycle 163 — server REST POST + message_id resolve chain
+                msg_client = getattr(self, "_messages_client", None)
+                current_room = getattr(self, "_current_room_id", None)
+                if msg_client is not None and current_room:
+                    asyncio.ensure_future(
+                        self._post_and_resolve(msg_client, current_room, text, payload.id)
+                    )
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("send chain 실패 graceful — %r", exc)
 

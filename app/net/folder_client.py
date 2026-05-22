@@ -89,6 +89,15 @@ class FolderCreateWorker(_BaseFolderWorker):
         super().__init__(base_url, token, "/api/folders", "POST", folder_data, parent, timeout=30)
 
 
+class FolderUpdateWorker(_BaseFolderWorker):
+    """cycle 169.411 — folder edit mode PATCH /api/folders/{folder_id} chain."""
+
+    def __init__(self, base_url: str, token: str, folder_id: str, folder_data: dict, parent=None) -> None:
+        super().__init__(
+            base_url, token, f"/api/folders/{folder_id}", "PATCH", folder_data, parent, timeout=30
+        )
+
+
 class FolderListWorker(_BaseFolderWorker):
     def __init__(self, base_url: str, token: str, parent=None) -> None:
         super().__init__(base_url, token, "/api/folders", "GET", None, parent)

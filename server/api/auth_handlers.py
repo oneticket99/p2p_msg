@@ -520,11 +520,14 @@ async def handle_dm_room_resolve(request: web.Request) -> web.Response:
         target_id = int(request.match_info["user_id"])
     except (KeyError, ValueError):
         raise web.HTTPBadRequest(reason="user_id 양수 int 의무")
-    if viewer_id == target_id:
-        raise web.HTTPBadRequest(reason="self DM 불가")
     pool = request.app.get("db_pool")
     if pool is None:
         raise web.HTTPServiceUnavailable(reason="DB pool 부재")
+    # cycle 169.411 — self DM = saved messages room (이전 reject 회수)
+    if viewer_id == target_id:
+        from server.db.repositories.rooms import find_or_create_saved_room
+        room_id = await find_or_create_saved_room(pool, viewer_id)
+        return web.json_response({"room_id": room_id, "room_code": f"saved-{viewer_id}"})
     from server.db.repositories.rooms import find_or_create_dm_room
     room_id = await find_or_create_dm_room(pool, viewer_id, target_id)
     small, large = sorted((viewer_id, target_id))

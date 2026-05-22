@@ -86,6 +86,45 @@ async def handle_list_folders(request: web.Request) -> web.Response:
     })
 
 
+async def handle_update_folder(request: web.Request) -> web.Response:
+    """PATCH /api/folders/{folder_id} — folder edit mode actual UPDATE (cycle 169.411).
+
+    server folder UPDATE chain — 이전 INSERT/DELETE client-side replace 우회 회수.
+    payload schema = create 와 동일 (name + color + included_chats + excluded_chats).
+    """
+    user_id = request.get("user_id")
+    if not isinstance(user_id, int):
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+    folder_id = request.match_info.get("folder_id", "")
+    if not folder_id:
+        raise web.HTTPBadRequest(reason="folder_id path 의무")
+    try:
+        payload = await request.json()
+    except Exception as exc:
+        raise web.HTTPBadRequest(reason=f"JSON parse fail: {exc}")
+    name = str(payload.get("name", "")).strip()
+    if not name:
+        raise web.HTTPBadRequest(reason="name 의무")
+    color_name = payload.get("color_name") or None
+    color_hex = payload.get("color_hex") or None
+    if color_hex is not None and not _COLOR_HEX_RE.match(str(color_hex)):
+        raise web.HTTPBadRequest(reason="color_hex 형식 부재 (#RRGGBB)")
+    pool = request.app["db_pool"]
+    ok = await folder_repo.update_folder_with_chats(
+        pool,
+        folder_id=folder_id,
+        owner_id=user_id,
+        name=name,
+        color_name=color_name,
+        color_hex=color_hex,
+        included_chats=payload.get("included_chats", []),
+        excluded_chats=payload.get("excluded_chats", []),
+    )
+    if not ok:
+        raise web.HTTPNotFound(reason="folder 부재 또는 권한 부재")
+    return web.json_response({"ok": True, "folder_id": folder_id})
+
+
 async def handle_delete_folder(request: web.Request) -> web.Response:
     """DELETE /api/folders/{folder_id}."""
     user_id = request.get("user_id")
@@ -123,6 +162,7 @@ async def handle_create_folder_invite(request: web.Request) -> web.Response:
 def register_folder_routes(app: web.Application) -> None:
     app.router.add_post("/api/folders", handle_create_folder)
     app.router.add_get("/api/folders", handle_list_folders)
+    app.router.add_patch("/api/folders/{folder_id}", handle_update_folder)  # cycle 169.411
     app.router.add_delete("/api/folders/{folder_id}", handle_delete_folder)
     app.router.add_post("/api/folders/{folder_id}/invite", handle_create_folder_invite)
     log.info("[api] folder 4 endpoint 등록 완료")

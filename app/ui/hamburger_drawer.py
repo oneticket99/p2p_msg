@@ -109,13 +109,14 @@ class HamburgerDrawer(QFrame):
             btn.clicked.connect(signal.emit)  # type: ignore[arg-type]
             outer.addWidget(btn)
 
-        # cycle 169.409 — 야간 모드 row 의 click 시점 즉시 toggle (체크박스 폐기, 사용자 directive image #179)
-        # menu_entry button 활용 — full row click → night_mode_toggled emit (state internal track)
+        # cycle 169.409~411 — 야간 모드 row 의 click 시점 즉시 toggle (체크박스 폐기, image #179)
+        # cycle 169.411 — visual indicator 우측 state badge (켜짐/꺼짐 + color swap)
         self._night_state = True  # default = night mode on
         night_btn = self._build_menu_entry("theme", _tr("야간_모드"))
         night_btn.clicked.connect(self._on_night_toggle)  # type: ignore[arg-type]
         self._night_btn = night_btn
         outer.addWidget(night_btn)
+        self._refresh_night_btn_visual()
 
         outer.addStretch(1)
 
@@ -199,9 +200,37 @@ class HamburgerDrawer(QFrame):
         return 0
 
     def _on_night_toggle(self) -> None:
-        """cycle 169.409 — 야간 모드 row click 시점 즉시 toggle + signal emit (사용자 directive image #179)."""
+        """cycle 169.409~411 — 야간 모드 row click 시점 즉시 toggle + visual update + signal emit."""
         self._night_state = not self._night_state
+        self._refresh_night_btn_visual()
         self.night_mode_toggled.emit(self._night_state)
+
+    def _refresh_night_btn_visual(self) -> None:
+        """cycle 169.411 — 야간 모드 button 우측 state badge + icon color swap (visual indicator)."""
+        btn = getattr(self, "_night_btn", None)
+        if btn is None:
+            return
+        from app.ui._icons import load_icon as _load_icon
+        # 한글 주석 — 켜짐 = Toonation BI #0066FF, 꺼짐 = grey
+        on = self._night_state
+        icon_color = "#0066FF" if on else "#9ca3af"
+        state_text = _tr("켜짐") if on else _tr("꺼짐")
+        btn.setIcon(_load_icon("theme", size=20, color=icon_color))
+        # 한글 주석 — 라벨 우측 state badge inline 합성 (button text 활용)
+        btn.setText(f"  {_tr('야간_모드')}    ·  {state_text}")
+        bg_hover = "rgba(0, 102, 255, 0.12)" if on else "rgba(156, 163, 175, 0.08)"
+        accent = "#0066FF" if on else "#6b7280"
+        btn.setStyleSheet(
+            "QPushButton {"
+            " text-align: left;"
+            " padding-left: 20px;"
+            " background-color: transparent;"
+            " border: none;"
+            f" color: {accent if on else '#e5e7eb'};"
+            " font-size: 14px;"
+            "}"
+            f" QPushButton:hover {{ background-color: {bg_hover}; }}"
+        )
 
     def update_user_info(self, nickname: str) -> None:
         """cycle 169.403 — drawer header username + avatar 동적 갱신 (사용자 critique image #171)."""

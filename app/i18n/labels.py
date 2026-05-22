@@ -149,6 +149,9 @@ LABELS_KO: dict[str, str] = {
     "찾은_이메일": "찾은 이메일",
     "사용자명_전화번호_입력_안내": "회원가입 시점 등록한 사용자명 + 전화번호 입력 의무. 일치 시점 가입 이메일 일부 표시.",
     "사용자명_전화번호_입력_의무": "사용자명 + 전화번호 입력 의무",
+    # cycle 169.411 — 야간 모드 state badge
+    "켜짐": "켜짐",
+    "꺼짐": "꺼짐",
 }
 
 
@@ -172,6 +175,8 @@ LABELS_EN: dict[str, str] = {
     "찾은_이메일": "Email Found",
     "사용자명_전화번호_입력_안내": "Enter the username and phone number used at signup. Matching account email will be partially shown.",
     "사용자명_전화번호_입력_의무": "Username + phone number required",
+    "켜짐": "ON",
+    "꺼짐": "OFF",
     "확인": "OK",
     "저장": "Save",
     "검색": "Search",

@@ -187,6 +187,21 @@ async def find_or_create_dm_room(pool: Any, user_a: int, user_b: int) -> int:
     return await insert_room(pool, room_code=room_code, owner_id=small, kind="direct")
 
 
+async def find_or_create_saved_room(pool: Any, user_id: int) -> int:
+    """cycle 169.411 — 저장한 메시지 room 의 lookup or insert chain.
+
+    self DM room (single owner = user_id). room_code = `saved-{user_id}` deterministic.
+    kind="direct" retain 但 단일 peer 의 (sender == receiver == user_id) saved messages.
+    """
+    if user_id <= 0:
+        raise ValueError("saved room user_id 양수 의무")
+    room_code = f"saved-{user_id}"
+    existing = await get_room_by_code(pool, room_code)
+    if existing:
+        return existing.id
+    return await insert_room(pool, room_code=room_code, owner_id=user_id, kind="direct")
+
+
 async def list_rooms_by_owner(pool: Any, owner_id: int) -> List[RoomRow]:
     """owner_id 의 활성 룸 list (status=active, 최신순)."""
 

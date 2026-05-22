@@ -180,6 +180,80 @@ async def insert_folder_with_chats(
             raise
 
 
+async def update_folder_with_chats(
+    pool: Any,
+    *,
+    folder_id: str,
+    owner_id: int,
+    name: str,
+    color_name: Optional[str] = None,
+    color_hex: Optional[str] = None,
+    included_chats: Optional[list] = None,
+    excluded_chats: Optional[list] = None,
+) -> bool:
+    """cycle 169.411 — folder edit mode 의 server UPDATE chain (Phase 1 잔존 회수).
+
+    단일 transaction 안 sequence:
+    1. folders UPDATE (name + color + chat_count + updated_at) — owner_id 정합 의무
+    2. folder_chats DELETE (folder_pk 기준 전수 삭제)
+    3. folder_chats INSERT batch (included + excluded reconciliation)
+
+    Returns True = UPDATE PASS (1+ row affected). False = folder_id 부재 또는 권한 부재.
+    """
+    sql_update = (
+        "UPDATE folders SET name = %s, color_name = %s, color_hex = %s, chat_count = %s "
+        "WHERE folder_id = %s AND owner_id = %s"
+    )
+    sql_delete_chats = "DELETE FROM folder_chats WHERE folder_id = %s"
+    sql_insert_chat = (
+        "INSERT IGNORE INTO folder_chats (folder_id, chat_kind, chat_target_id, mode) "
+        "VALUES (%s, %s, %s, %s)"
+    )
+    included_chats = included_chats or []
+    excluded_chats = excluded_chats or []
+    chat_count_cache = len(included_chats)
+    async with pool.acquire() as conn:
+        try:
+            await conn.begin()
+        except AttributeError:
+            await conn.autocommit(False)
+        try:
+            async with conn.cursor() as cur:
+                # 한글 주석 — folder lookup 의 의 PK 확보
+                row = None
+                await cur.execute(
+                    "SELECT id FROM folders WHERE folder_id = %s AND owner_id = %s LIMIT 1",
+                    (folder_id, owner_id),
+                )
+                row = await cur.fetchone()
+                if row is None:
+                    await conn.rollback()
+                    return False
+                folder_pk = int(row[0])
+                # 한글 주석 — folders UPDATE
+                await cur.execute(
+                    sql_update,
+                    (name, color_name, color_hex, chat_count_cache, folder_id, owner_id),
+                )
+                # 한글 주석 — folder_chats 전수 DELETE + reconciliation
+                await cur.execute(sql_delete_chats, (folder_pk,))
+                for chat in included_chats:
+                    await cur.execute(
+                        sql_insert_chat,
+                        (folder_pk, str(chat.get("kind", "")), int(chat.get("target_id", 0)), "include"),
+                    )
+                for chat in excluded_chats:
+                    await cur.execute(
+                        sql_insert_chat,
+                        (folder_pk, str(chat.get("kind", "")), int(chat.get("target_id", 0)), "exclude"),
+                    )
+            await conn.commit()
+            return True
+        except Exception:
+            await conn.rollback()
+            raise
+
+
 async def create_invite(
     pool: Any,
     *,
