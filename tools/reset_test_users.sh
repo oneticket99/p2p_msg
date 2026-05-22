@@ -81,12 +81,12 @@ DELETE FROM password_reset WHERE user_id IN (SELECT id FROM users WHERE ${USERS_
 DELETE FROM user_activity_log WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM user_sessions WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM user_contacts WHERE owner_user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
-DELETE FROM friends WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE}) OR friend_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
+DELETE FROM friends WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE}) OR friend_user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM device_tokens WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM devices WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
-DELETE FROM folders WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
+DELETE FROM folders WHERE owner_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM read_states WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
-DELETE FROM file_meta WHERE owner_user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
+DELETE FROM file_meta WHERE sender_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM peers WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM messages WHERE sender_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
 DELETE FROM bot_escalations WHERE user_id IN (SELECT id FROM users WHERE ${USERS_WHERE});
