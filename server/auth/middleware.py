@@ -24,6 +24,7 @@ _PUBLIC_PATHS = frozenset({
     "/api/auth/login",
     "/api/auth/reset/request",
     "/api/auth/reset/consume",
+    "/api/auth/find/email",
 })
 
 
