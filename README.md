@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.514 (2026-05-23 02:15 KST) — codex 2.5 main_window 책임 분리 4차 — `app/ui/_drawer_mixin.py` 신설 (DrawerMixin: _on_hamburger_clicked + _on_drawer_profile/settings/contacts/new_group/new_channel/calls/saved/pending_requests/logout + _on_profile_edit_requested + _on_profile_update_finished + _on_group_created + _on_channel_created + _on_night_mode_toggled, 15 method) + MainWindow MRO 5 mixin (TrayMixin + FriendSearchMixin + BotChatMixin + DrawerMixin + QMainWindow) + main_window.py 3478 → 3152줄 (326줄 분리, 누계 874줄 4026 → 3152, 21.7%)
 - cycle 169.513 (2026-05-23 02:00 KST) — codex 2.5 main_window 책임 분리 3차 — `app/ui/_bot_chat_mixin.py` 신설 (BotChatMixin: _send_bot_message + _fetch_bot_history) + MainWindow MRO `(TrayMixin, FriendSearchMixin, BotChatMixin, QMainWindow)` + main_window.py 3675 → 3478줄 (197줄 분리, 누계 548줄 4026 → 3478, 13.6%)
 - cycle 169.512 (2026-05-23 01:50 KST) — 평가 4 file fingerprint sync (cycle 169.503~511 9 commit drift 회수, Stop hook freshness layer 정합)
 - cycle 169.511 (2026-05-23 01:40 KST) — codex 2.5 main_window 책임 분리 2차 — `app/ui/_friend_search_mixin.py` 신설 (FriendSearchMixin: _on_open_add_friend + _on_friend_search_requested + _on_friend_requested + _on_open_pending_requests + _on_pending_resolved + _refresh_pending_badge, 6 method) + MainWindow MRO `(TrayMixin, FriendSearchMixin, QMainWindow)` + main_window.py 3862 → 3675줄 (187줄 분리, 누계 351줄) + wbs_tasks 14 row INSERT (M6 회수)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.450 (2026-05-22 18:10 KST) — NewContactDialog 신설 (telegram align +82 mask)
 - cycle 169.447 (2026-05-22 17:50 KST) — read state tracking base (migration 0014)
 - cycle 169.446 (2026-05-22 17:45 KST) — FCM push notification base (migration 0013 + Notifier + Stub/FCM)
-- cycle 169.440 (2026-05-22 17:15 KST) — local SQLite cache base (app/db/local_db.py + messages_cache.py)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
