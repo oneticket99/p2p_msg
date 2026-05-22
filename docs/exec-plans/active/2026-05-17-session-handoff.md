@@ -261,6 +261,15 @@ status: active
 | `9c4c7ac` | 169.210 | bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive) |
 | `57e3110` | 169.211 | 평가 4 file fingerprint sync — cycle 169.206~210 5 cycle drift 회수 |
 | `3e7c22e` | 169.212 | hook_dereliction_check.sh stderr redirect — claude Stop hook display 정합 |
+| `dafe1cd` | 169.476 | consume_otp MariaDB error 1020 retry chain (OTP verify HTTP 500 회수 1차) |
+| `faf428f` | 169.477 | OTP paste 6 digit distribute chain (메일 복사 OTP 단일 paste 의무) |
+| `1713a51` | 169.478 | reset_test_users.sh column 정정 — friend_user_id/folders.owner_id/file_meta.sender_id |
+| `c20d17d` | 169.479 | QLineEdit.paste() slot override — paste 1 digit retain 회수 (maxLength bypass) |
+| `693b511` | 169.480 | OTP verify HTTP 500 회수 — increment_attempt/mark_email_verified retry chain + client `_verify_in_flight` double-fire guard |
+| `2e2f980` | 169.481 | 평가 4 file fingerprint sync — cycle 169.476~480 5 commit drift 회수 |
+| `8f07dbe` | 169.482 | signup_dialog double-click guard — `_signup_in_flight` flag (IntegrityError race 차단) |
+| `dacfdcb` | 169.483 | reclaim_unverified_user_atomic MariaDB 1020 retry chain — transaction 전수 재 시도 |
+| `50e94a6` | 169.484 | login + OTP resend double-click guard — `_login_in_flight` + `_resend_in_flight` flags |
 
 ### 8.79.2 사용자 critique 회수 chain
 
