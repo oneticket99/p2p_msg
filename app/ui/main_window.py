@@ -103,9 +103,10 @@ from app.ui._tray_mixin import TrayMixin
 from app.ui._friend_search_mixin import FriendSearchMixin
 from app.ui._bot_chat_mixin import BotChatMixin
 from app.ui._drawer_mixin import DrawerMixin
+from app.ui._chat_helper_mixin import ChatHelperMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -906,85 +907,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, QMainW
                 self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
             )
 
-    async def _fetch_unread_counts(self) -> None:
-        """cycle 169.448~469 — startup + 주기 unread count batch fetch (actual binding).
-
-        chain:
-        1. chat_list_panel entries 의 friend/saved/bot kind → server room_id resolve
-        2. POST /api/auth/dm/{target}/room → room_id
-        3. GET /api/rooms/unread?room_ids=N,M,K → {counts: {room_id: count}}
-        4. chat_list_panel entry.unread_count 갱신 + _render fire
-        """
-        import aiohttp
-        try:
-            token = getattr(self, "_session_token", None) or ""
-            self_id = getattr(self, "_current_user_id", None) or 0
-            if not token or self_id <= 0:
-                return
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-
-            # 한글 주석 — chat_list entries → server room_id resolve (saved + friend kind 만 — bot 별 endpoint)
-            entries = getattr(self._chat_list_panel, "_entries", [])
-            room_id_to_entry: dict = {}
-            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
-                for e in entries:
-                    if e.kind == "friend" and e.target_id > 0:
-                        path = f"/api/auth/dm/{e.target_id}/room"
-                    elif e.kind == "saved":
-                        path = f"/api/auth/dm/{self_id}/room"
-                    elif e.kind == "bot":
-                        path = "/api/auth/dm/bot/room"
-                    else:
-                        continue
-                    try:
-                        async with session.get(
-                            f"{api_base}{path}",
-                            timeout=aiohttp.ClientTimeout(total=5),
-                        ) as resp:
-                            if resp.status != 200:
-                                continue
-                            data = await resp.json()
-                            rid = data.get("room_id")
-                            if isinstance(rid, int) and rid > 0:
-                                room_id_to_entry[rid] = e
-                    except Exception:
-                        continue
-
-                if not room_id_to_entry:
-                    return
-                # 한글 주석 — batch unread count
-                ids_str = ",".join(str(k) for k in room_id_to_entry.keys())
-                try:
-                    async with session.get(
-                        f"{api_base}/api/rooms/unread?room_ids={ids_str}",
-                        timeout=aiohttp.ClientTimeout(total=10),
-                    ) as resp:
-                        if resp.status != 200:
-                            return
-                        data = await resp.json()
-                        counts = data.get("counts", {})
-                except Exception as exc:
-                    log.debug("[fetch_unread] batch fail — %r", exc)
-                    return
-
-            # 한글 주석 — entry 갱신 + render
-            for rid_str, count in counts.items():
-                try:
-                    rid = int(rid_str)
-                    entry = room_id_to_entry.get(rid)
-                    if entry is not None:
-                        entry.unread_count = int(count)
-                except Exception:
-                    continue
-            try:
-                self._chat_list_panel._render()
-            except Exception:
-                pass
-            log.info("[fetch_unread] PASS — rooms=%d", len(counts))
-        except Exception as exc:
-            log.debug("[fetch_unread] 실패 — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.519 — _fetch_unread_counts → app/ui/_chat_helper_mixin.py 분리
+    # ------------------------------------------------------------------
 
     def _post_login_refresh(self) -> None:
         """login PASS 직후 friend + room server fetch + chat_list_panel populate (cycle 169.107).
@@ -1387,111 +1312,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, QMainW
             except Exception as exc:  # pragma: no cover - graceful
                 log.debug("chat_view add_message 실패 — %r", exc)
 
-    async def _fetch_dm_history(self, friend_id: int) -> None:
-        """cycle 169.225 — friend DM room resolve + message history fetch chain.
-
-        1. GET /api/auth/dm/{friend_id}/room → room_id resolve (cycle 169.222 endpoint)
-        2. list_messages(room_id, limit=50) → MessagePayload list
-        3. active chat retain 시점 chat_view re-populate
-
-        graceful — server 부재 시 DM cache replay retain.
-        """
-        import aiohttp
-        from datetime import datetime
-        try:
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            # cycle 169.228 — self._session_token 정합 회수 (cycle 169.221/222/225 chain)
-            token = getattr(self, "_session_token", None) or ""
-            if not token:
-                return
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
-                # step 1 — DM room resolve
-                async with session.get(
-                    f"{api_base}/api/auth/dm/{friend_id}/room",
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    dm = await resp.json()
-                    room_id = dm.get("room_id")
-                if not room_id:
-                    return
-                # step 2 — messages list (cycle 142 endpoint)
-                async with session.get(
-                    f"{api_base}/api/rooms/{room_id}/messages?limit=50&offset=0",
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    page = await resp.json()
-                    raw_messages = page.get("messages", [])
-            # step 3 — active chat retain 시점 chat_view re-populate (cycle 169.411 saved 정합)
-            active_match = (
-                (self._active_chat_kind == "friend" and self._active_chat_target_id == friend_id)
-                or (self._active_chat_kind == "saved")
-            )
-            if active_match:
-                self._chat_view.clear_messages()
-                # cycle 169.430 — saved kind 의 is_self detection chain 회수 (사용자 critique image #3)
-                # _state.user_id 부재 시점 → _current_user_id fallback 의무
-                viewer_uid = (
-                    getattr(self._state, "user_id", None)
-                    or getattr(self, "_current_user_id", None)
-                    or friend_id  # saved kind 시점 friend_id == self_id
-                )
-                # cycle 169.445 — server msgs → SQLite write-back chain (사용자 directive MariaDB sync)
-                from app.db import messages_cache as _mc
-                kind_active = self._active_chat_kind or "saved"
-                room_id_local = self._kind_room_local(kind_active, friend_id)
-                # cycle 169.448 — server room_id retain (mark_read chain base)
-                self._active_room_id_server = int(room_id)
-                _max_msg_id = 0
-                # cycle 169.461 — raw_messages = server DESC fetch → ASC iteration 의무 (사용자 critique image #24)
-                # 최신 = 가장 아래, 예전 = 위 (telegram 정합)
-                raw_messages = list(reversed(raw_messages))
-                for m in raw_messages:
-                    sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
-                    text = m.get("text", "")
-                    # cycle 169.430 — body field fallback (server schema 정합 — body field 우선)
-                    if not text:
-                        text = m.get("body", "")
-                    ts_ms = m.get("ts_ms") or 0
-                    ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                    is_self = m.get("sender_id") == viewer_uid
-                    # saved kind 시점 모든 msg = self echo 강제 (self DM)
-                    if self._active_chat_kind == "saved":
-                        is_self = True
-                    self._chat_view.add_message(
-                        sender, text, ts, is_self=is_self, hide_sender=True,
-                        play_sound=False,  # cycle 169.462 — history replay sound 차단
-                    )
-                    # cycle 169.445 — SQLite write-back (server msg_id retain — 미래 lazy load cursor base)
-                    msg_id = m.get("message_id") or m.get("id") or 0
-                    try:
-                        if isinstance(msg_id, int) and msg_id > 0:
-                            _mc.insert_message(
-                                msg_id=msg_id, room_id=room_id_local,
-                                sender_id=int(m.get("sender_id") or 0) or 1,
-                                kind=str(m.get("kind") or "text"),
-                                body=text,
-                                ts_ms=int(ts_ms) if ts_ms else int(ts.timestamp() * 1000),
-                                is_self=is_self,
-                            )
-                            # cycle 169.448 — max msg_id retain (mark_read 호출 base)
-                            if msg_id > _max_msg_id:
-                                _max_msg_id = msg_id
-                    except Exception as exc:
-                        log.debug("[dm_history] SQLite write-back 실패 — %r", exc)
-                # cycle 169.448 — replay 완료 후 mark_read chain (chat 포커스 정합 의무)
-                if _max_msg_id > 0:
-                    self._mark_room_read(int(room_id), _max_msg_id)
-                self._chat_view.scroll_to_bottom()
-                log.info("[dm_history] friend=%d room=%d msgs=%d viewer=%s replay PASS",
-                         friend_id, room_id, len(raw_messages), viewer_uid)
-        except Exception as exc:  # pragma: no cover - graceful
-            log.debug("[dm_history] fetch 실패 — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.519 — _fetch_dm_history → app/ui/_chat_helper_mixin.py 분리
+    # ------------------------------------------------------------------
 
     async def _send_saved_message_rest(self, text: str, client_uuid: str) -> None:
         """cycle 169.411 — saved messages self DM room REST POST chain.
@@ -1814,128 +1637,14 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, QMainW
         except Exception as exc:
             log.debug("[mark_read] async fail — %r", exc)
 
-    def _kind_room_local(self, kind: str, target_id: int) -> int:
-        """cycle 169.444 — kind + target_id → local SQLite room_id namespace 변환."""
-        self_id = getattr(self, "_current_user_id", None) or 1
-        if kind == "saved":
-            return self_id * 100 + 1
-        if kind == "bot":
-            return self_id * 10 + 2
-        if kind == "friend":
-            return target_id * 100 + 3
-        return target_id * 100 + 9
-
-    @pyqtSlot(int)
-    def _on_lazy_load_requested(self, room_id_local: int) -> None:
-        """cycle 169.466 — chat_view scroll-up 시점 incremental prepend chain (정식 lazy load).
-
-        chain:
-        1. before_msg_id = local SQLite 안 현 min_msg_id
-        2. fetch 30 older rows
-        3. 부재 시점 = server REST fetch + SQLite write-back chain (별 trigger)
-        4. retain 시점 = chat_view.prepend_message 호출 (layout insertWidget(0)) → scroll position 자연 retain
-
-        clear+replay 폐기 (cycle 169.464 회수 정합).
-        """
-        try:
-            from app.db import messages_cache as _mc
-            from datetime import datetime as _dt
-            min_id = _mc.get_min_msg_id(room_id_local)
-            if min_id is None or min_id <= 1:
-                log.info("[lazy_load] room=%d local cache exhausted — server fetch fire", room_id_local)
-                import asyncio
-                kind = self._active_chat_kind or "saved"
-                tid = self._active_chat_target_id or 0
-                if kind == "friend" and tid > 0:
-                    asyncio.ensure_future(self._fetch_dm_history(tid))
-                elif kind == "saved":
-                    self_id = getattr(self, "_current_user_id", None)
-                    if isinstance(self_id, int) and self_id > 0:
-                        asyncio.ensure_future(self._fetch_dm_history(self_id))
-                elif kind == "bot":
-                    asyncio.ensure_future(self._fetch_bot_history())
-                self._chat_view._lazy_load_active = False
-                return
-            rows = _mc.list_messages_by_room(
-                room_id=room_id_local, limit=30, before_msg_id=min_id,
-            )
-            if not rows:
-                self._chat_view._lazy_load_active = False
-                return
-            # cycle 169.466 — incremental prepend (clear+replay 폐기)
-            # rows = DESC ts fetch — prepend chain = oldest 부터 insertWidget(0) iteration (역순)
-            # 결과: insertWidget(0, oldest) → insertWidget(0, older) → ... → bubble order 정합 (oldest TOP)
-            kind = self._active_chat_kind or "saved"
-            hide_sender = kind in ("friend", "bot", "saved")
-            self_id = getattr(self, "_current_user_id", None) or 1
-            # 한글 주석 — DESC fetch 결과 그대로 iterate — insertWidget(0) 시점 reverse 효과 (oldest = 마지막 prepend = 최상단)
-            for r in rows:
-                is_self_flag = bool(r["is_self"])
-                if kind == "saved":
-                    is_self_flag = True
-                sender = "나" if is_self_flag else (
-                    "투네이션 고객센터" if kind == "bot" else f"user#{r['sender_id']}"
-                )
-                ts = _dt.fromtimestamp(r["ts_ms"] / 1000.0) if r["ts_ms"] else _dt.now()
-                self._chat_view.prepend_message(
-                    sender=sender, text=r["body"] or "", ts=ts,
-                    is_self=is_self_flag,
-                    hide_sender=hide_sender,
-                    msg_id=int(r["msg_id"]) if r["msg_id"] else 0,
-                )
-            log.info("[lazy_load] prepend PASS — room=%d fetched=%d", room_id_local, len(rows))
-            # 한글 주석 — _lazy_load_active = False 유지 (chat 전환 시점 reset) — 잦은 prepend 차단
-        except Exception as exc:
-            log.debug("[lazy_load] 실패 — %r", exc)
-            self._chat_view._lazy_load_active = False
-
     # ------------------------------------------------------------------
-    # cycle 169.513 — _fetch_bot_history → app/ui/_bot_chat_mixin.py 분리
+    # cycle 169.519 — _kind_room_local → app/ui/_chat_helper_mixin.py 분리
     # ------------------------------------------------------------------
 
-    def _load_local_history(self, kind: str, target_id: int, scroll_bottom: bool = True) -> None:
-        """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
-
-        사용자 directive — 모든 채팅방 이전 대화 영속 + 채팅방 진입 시점 즉시 표시.
-        local cache 부재 시점 server fetch chain (_fetch_dm_history) 만 polling.
-        """
-        try:
-            from app.db import messages_cache as _mc
-            from datetime import datetime as _dt
-            self_id = getattr(self, "_current_user_id", None) or 1
-            if kind == "saved":
-                room_id_local = self_id * 100 + 1
-            elif kind == "bot":
-                room_id_local = self_id * 10 + 2
-            elif kind == "friend":
-                room_id_local = target_id * 100 + 3
-            else:
-                return
-            rows = _mc.list_messages_by_room(room_id=room_id_local, limit=100)
-            if not rows:
-                return
-            # cycle 169.458 — ts ASC + id ASC sort 정합 (sender chain 의 insertion order retain)
-            # SQL DESC fetch → reversed(rows) = ASC fetch chain (사용자 critique 회수)
-            rows = list(reversed(rows))
-            for r in rows:
-                sender_name = "나" if r["is_self"] else (
-                    "투네이션 고객센터" if kind == "bot" else f"user#{r['sender_id']}"
-                )
-                ts = _dt.fromtimestamp(r["ts_ms"] / 1000.0) if r["ts_ms"] else _dt.now()
-                effective_self = True if kind == "saved" else bool(r["is_self"])
-                self._chat_view.add_message(
-                    sender_name, r["body"] or "", ts,
-                    is_self=effective_self,
-                    hide_sender=kind in ("friend", "bot", "saved"),
-                    play_sound=False,  # cycle 169.462 — history replay 시점 sound 차단
-                )
-            # cycle 169.463 — lazy load 시점 scroll bottom 차단 (사용자 critique)
-            if scroll_bottom:
-                self._chat_view.scroll_to_bottom()
-            log.info("[load_local] kind=%s room=%d msgs=%d replay PASS",
-                     kind, room_id_local, len(rows))
-        except Exception as exc:
-            log.debug("[load_local] 실패 — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.519 — _on_lazy_load_requested + _load_local_history →
+    # app/ui/_chat_helper_mixin.py 분리 (cycle 169.466/441 origin)
+    # ------------------------------------------------------------------
 
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
         """ChatListPanel.chat_selected → group room 진입 또는 friend/bot chat 진입 (cycle 169.62)."""

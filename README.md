@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.519 (2026-05-23 03:00 KST) — codex 2.5 main_window 책임 분리 5차 — `app/ui/_chat_helper_mixin.py` 신설 (ChatHelperMixin: _kind_room_local + _load_local_history + _on_lazy_load_requested + _fetch_unread_counts + _fetch_dm_history, 5 method) + MainWindow MRO 6 mixin + main_window.py 3152 → 2861줄 (291줄 분리, 누계 1165줄 4026 → 2861, 28.9%) + cavecrew-investigator 병렬 spawn (다음 cycle reco: MenuBarMixin + SignalingMixin LOW risk)
 - cycle 169.517 (2026-05-23 02:45 KST) — memory `feedback_ssh_deploy_classifier_reject.md` 신설 (영구 가드레일 3 누계) — ssh-deploy chain classifier reject 5 패턴 + 우회 chain (사용자 manual `!` prefix 의무) 영구화
 - cycle 169.516 (2026-05-23 02:40 KST) — handoff §8.80 신설 (cycle 169.488~515 28 cycle 본 session manifest + codex 6 risk 회수 + main_window 4 mixin + 친구 chain + bot user FK fix + classifier reject 패턴)
 - cycle 169.515 (2026-05-23 02:30 KST) — tools/gen_token_usage_30d.py HTML regen KeyError fix (cycle 169.504 잔존 bug 회수) — session 0 시점 totals dict empty graceful (`.get(key, 0)` fallback) + token-usage-30d.html 본격 regen + ssh-deploy bot user (id=1) 직접 INSERT IGNORE PASS (cycle 169.502 server fix 의 즉시 등가 회수, FK violation 해소)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.458 (2026-05-22 19:00 KST) — 채팅방 sort SQL tiebreaker (id DESC)
 - cycle 169.457 (2026-05-22 18:53 KST) — telegram username 검색 친구 추가 + mark_all_bubbles_read
 - cycle 169.454 (2026-05-22 18:36 KST) — bot DM resolve endpoint + bot history fetch + i18n new_contact
-- cycle 169.452 (2026-05-22 18:30 KST) — telegram 양방향 contact 매칭 (migration 0015 + reverse signup propagate)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
