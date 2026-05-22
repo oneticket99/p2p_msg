@@ -209,6 +209,41 @@ async def handle_list_messages_in_range(request: web.Request) -> web.Response:
 # ─── 신규 endpoint — cycle 141 ─────────────────────────────────────────────
 
 
+async def _fire_push_notification(
+    request: web.Request, *, room_id: int, sender_id: int, body: str,
+) -> None:
+    """cycle 169.446 — 메시지 INSERT 직후 recipient push notification fan-out chain.
+
+    DM room 안 peer (sender 아닌 의 user) 의 active device token 전수 fan-out.
+    StubNotifier 활성 시점 log only — 실 FCM = service account 활성 시점.
+    """
+    try:
+        pool = request.app.get("db_pool")
+        if pool is None:
+            return
+        # 한글 주석 — DM room 안 sender 외 peer user_id 추출
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT user_id FROM peers WHERE room_id = %s AND user_id != %s AND left_at IS NULL",
+                    (room_id, sender_id),
+                )
+                rows = await cur.fetchall()
+        recipient_ids = [int(r[0]) for r in rows]
+        if not recipient_ids:
+            return
+        from server.fcm import send_to_user
+        preview = body[:120] if body else "(파일)"
+        for uid in recipient_ids:
+            await send_to_user(
+                pool, user_id=uid, title="새 메시지", body=preview,
+                data={"room_id": str(room_id), "sender_id": str(sender_id)},
+            )
+    except Exception as exc:  # noqa: BLE001
+        import logging as _log
+        _log.getLogger(__name__).warning("[push.fan_out] 실패 — %r", exc)
+
+
 async def handle_post_message(request: web.Request) -> web.Response:
     """POST /api/rooms/{room_id}/messages — text message INSERT + MESSAGE_SEND audit.
 
@@ -291,6 +326,15 @@ async def handle_post_message(request: web.Request) -> web.Response:
             "sender_id": user_id,
         },
     )
+
+    # cycle 169.446 — push notification fan-out (사용자 directive 실시간 FCM)
+    # 메시지 INSERT + audit 완료 직후 recipient device tokens 의 fan-out chain
+    try:
+        await _fire_push_notification(
+            request, room_id=room_id, sender_id=user_id, body=msg_body or "",
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("[push.fire] 실패 — %r", exc)
 
     # 한글 주석: created_at 의 server-side ISO 8601 응답 — client UI timeline 의 source.
     inserted = await messages_repo.get_by_id(pool, message_id)
