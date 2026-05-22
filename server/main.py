@@ -212,6 +212,15 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
             "push_handlers 등록 실패 — skip (%s)", exc
         )
 
+    # cycle 169.447 — 읽음 상태 추적 endpoint 등록 (사용자 directive 정식 read state)
+    try:
+        from .api.read_handlers import register_read_routes
+        register_read_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "read_handlers 등록 실패 — skip (%s)", exc
+        )
+
     # remote control endpoint 등록 (cycle 132 — Phase 5 Item 5 진입 prerequisite skeleton)
     # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
     try:

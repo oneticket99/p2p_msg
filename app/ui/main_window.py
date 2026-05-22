@@ -1789,6 +1789,38 @@ class MainWindow(QMainWindow):
         worker.start()
 
     @pyqtSlot(str, int)
+    def _mark_room_read(self, room_id_server: int, last_msg_id: int) -> None:
+        """cycle 169.447 — chat 포커스 시점 server last_read_msg_id 갱신 chain.
+
+        graceful — server fail = silent skip. caller = _on_chat_selected + dm_history fetch 후.
+        """
+        try:
+            import asyncio
+            asyncio.ensure_future(self._post_mark_read(room_id_server, last_msg_id))
+        except Exception as exc:
+            log.debug("[mark_read] dispatch 실패 — %r", exc)
+
+    async def _post_mark_read(self, room_id_server: int, last_msg_id: int) -> None:
+        """POST /api/rooms/{room_id}/read fire (async chain)."""
+        import aiohttp
+        try:
+            token = getattr(self, "_session_token", None) or ""
+            if not token or room_id_server <= 0:
+                return
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                async with session.post(
+                    f"{api_base}/api/rooms/{room_id_server}/read",
+                    json={"last_read_msg_id": int(last_msg_id)},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        log.warning("[mark_read] HTTP %d", resp.status)
+        except Exception as exc:
+            log.debug("[mark_read] async fail — %r", exc)
+
     def _kind_room_local(self, kind: str, target_id: int) -> int:
         """cycle 169.444 — kind + target_id → local SQLite room_id namespace 변환."""
         self_id = getattr(self, "_current_user_id", None) or 1
