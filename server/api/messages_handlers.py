@@ -142,7 +142,7 @@ async def _read_json(request: web.Request) -> dict:
 def _message_row_to_wire(row: Any) -> Dict[str, Any]:
     """MessageRow → JSON-safe dict (cycle 169.459 — ts_ms field 추가 사용자 directive 의 ts 정합).
 
-    사용자 critique image #23 — client 측 ts_ms 부재 시점 datetime.now() fallback retain.
+    사용자 critique image #23 — client side ts_ms 부재 시점 datetime.now() fallback retain.
     server side = created_at → ts_ms (epoch ms) 명시 변환 chain.
     """
     ts_ms = 0
