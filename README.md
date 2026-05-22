@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.526 (2026-05-23 04:40 KST) — codex 2.5 main_window 책임 분리 11차 LOW batch — `app/ui/_update_lifecycle_mixin.py` (UpdateLifecycleMixin: _start_update_check_task + _on_new_version + _cancel_update_task, 3 method 128 line) + `app/ui/_auth_chain_mixin.py` (AuthChainMixin: _require_auth_client + _on_open_signup + _on_open_login + _post_login_refresh + _on_open_reset + _on_logout, 6 method 141 line) + `app/ui/_chat_navigation_mixin.py` (ChatNavigationMixin: _refresh_chat_list_panel + _on_sidebar_tab_clicked + _on_chat_selected, 3 method 232 line) + MainWindow MRO 14 mixin + main_window.py 1703 → 1321줄 (382줄 분리 + dead decorator 4 cleanup, 누계 2705줄 4026 → 1321, **67.2%**)
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
 - cycle 169.525 (2026-05-23 04:20 KST) — codex 2.5 main_window 책임 분리 10차 — `app/ui/_chat_header_mixin.py` 신설 (ChatHeaderMixin: _on_header_sidebar_toggle + _on_header_search + _on_header_call + _on_header_remote + _on_remote_request + _spawn_incoming_remote_modal + _on_remote_connect + _on_header_menu, 8 method 187 line) + MainWindow MRO 11 mixin + main_window.py 1890 → 1703줄 (187줄 분리, 누계 2323줄 4026 → 1703, **57.7%**) + cavecrew-investigator 병렬 spawn (잔존 5 mixin 후보 detect — AuthChain + UpdateLifecycle + FriendProfile + ChatSend + ChatNavigation, ~828 line scope)
 - cycle 169.523 (2026-05-23 04:00 KST) — codex 2.5 main_window 책임 분리 9차 — `app/ui/_folder_mixin.py` 신설 (FolderMixin: _on_folder_selected + _on_folder_create_requested + _open_chat_picker + _on_folder_saved + _on_folder_persist_finished + _on_folder_edit_requested + _on_folder_delete_requested, 7 method 160 line) + MainWindow MRO 10 mixin + main_window.py 2045 → 1890줄 (155줄 분리, 누계 2136줄 4026 → 1890, **53.1%**)
@@ -336,9 +337,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.490 (2026-05-22 22:40 KST) — self-hosted runner id=22 `tootalk-macos-1ticket` 신설 (1ticket 머신 + actions-runner v2.334.0 + svc launchd, 기존 id=2 병립) + python@3.13 + .venv 신설 + 86 package install
 - cycle 169.489 (2026-05-22 22:25 KST) — AddFriendDialog search_requested wire fix (main_window _on_open_add_friend connect 부재 회수, async search_users + set_search_results chain)
 - cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환 (BASH_SOURCE/.. resolve, working dir 전환 정합)
-- cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load (prepend_message + valueChanged + 500ms cooldown)
-- cycle 169.465 (2026-05-22 19:15 KST) — account phone/birthdate save normalize + i18n ZH/JA new_contact 4 entry
-- cycle 169.464 (2026-05-22 19:13 KST) — lazy load valueChanged 비활성 (scroll-up bottom snap 회수)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

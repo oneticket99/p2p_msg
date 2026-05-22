@@ -110,9 +110,12 @@ from app.ui._room_group_chat_mixin import RoomGroupChatMixin
 from app.ui._rest_post_mixin import RestPostMixin
 from app.ui._folder_mixin import FolderMixin
 from app.ui._chat_header_mixin import ChatHeaderMixin
+from app.ui._update_lifecycle_mixin import UpdateLifecycleMixin
+from app.ui._auth_chain_mixin import AuthChainMixin
+from app.ui._chat_navigation_mixin import ChatNavigationMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -439,105 +442,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # auto-update 백그라운드 task — cycle 139 startup integration
     # ------------------------------------------------------------------
 
-    def _start_update_check_task(self) -> None:
-        """``periodic_check`` 코루틴 의 asyncio task 등록.
-
-        qasync 통합 환경 의 정상 경로 — 시작 시 1회 + 매 24시간 polling.
-        running loop 부재 환경 (pytest QApplication only / 순수 unittest) 의
-        graceful skip + log.debug. 정상 환경 에서는 task 가 background 살아 있다.
-        """
-
-        # 한글 주석: 환경변수 override — Phase 5 productization 시 .env 정합
-        server_url = (
-            os.environ.get("UPDATE_SERVER_URL", "").strip()
-            or _DEFAULT_UPDATE_SERVER_URL
-        )
-
-        # 한글 주석: running loop 우선 — qasync 통합 환경 의 정상 경로.
-        # 부재 시 graceful skip (running loop 부재 = pytest unittest 환경).
-        loop: Optional[asyncio.AbstractEventLoop] = None
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-
-        if loop is None:
-            log.debug(
-                "[main_window] asyncio running loop 부재 — auto-update task skip"
-            )
-            self._update_task = None
-            return
-
-        try:
-            self._update_task = asyncio.ensure_future(
-                periodic_check(server_url, self._on_new_version),
-                loop=loop,
-            )
-            log.info(
-                "[main_window] auto-update periodic_check task 등록 — server=%s",
-                server_url,
-            )
-        except RuntimeError as exc:
-            # 한글 주석: loop closed 등 의 graceful catch
-            log.warning(
-                "[main_window] auto-update task 등록 실패 — skip (%r)", exc
-            )
-            self._update_task = None
-
-    def _on_new_version(self, latest_info: dict) -> None:
-        """신 버전 검출 시 ``UpdateDialog`` instantiation + 사용자 GO 대기.
-
-        ``periodic_check`` callback 진입점. UpdateDialog 의 modal 호출 +
-        사용자 GO 시 download chain trigger (실 download = Phase 5 본격
-        cycle 위탁 — 본 cycle 의 skeleton dialog 표시 까지).
-
-        Parameters
-        ----------
-        latest_info : dict
-            ``check_latest_version`` 응답 — ``{"version": ..., "download_url":
-            ..., "sha256": ..., "release_notes": ...}`` 형태.
-        """
-
-        latest_version = latest_info.get("version", "(unknown)")
-        log.info(
-            "[main_window] 신 버전 검출 — current=%s latest=%s",
-            CURRENT_VERSION,
-            latest_version,
-        )
-        try:
-            dialog = UpdateDialog(
-                current_version=CURRENT_VERSION,
-                latest_info=latest_info,
-                parent=self,
-                on_user_go=None,  # 한글 주석: 실 download chain = Phase 5 본격 cycle
-            )
-            # 한글 주석: dialog 참조 보관 — gc 회피 + 테스트 가시성
-            self._current_update_dialog = dialog
-            dialog.exec()
-        except Exception as exc:  # noqa: BLE001
-            log.warning(
-                "[main_window] UpdateDialog instantiation 실패 — graceful skip (%r)",
-                exc,
-            )
-
-    def _cancel_update_task(self) -> None:
-        """shutdown chain 의 update task cancel + cleanup.
-
-        ``closeEvent`` 진입 시 호출. task 부재 / 이미 종료 시 noop.
-        CancelledError 는 정상 종료 신호이므로 swallow.
-        """
-
-        if self._update_task is None:
-            return
-        if self._update_task.done():
-            self._update_task = None
-            return
-        try:
-            self._update_task.cancel()
-            log.info("[main_window] auto-update task cancel 송신")
-        except Exception as exc:  # noqa: BLE001
-            log.warning("[main_window] auto-update task cancel 실패 — %r", exc)
-        self._update_task = None
+    # ------------------------------------------------------------------
+    # cycle 169.526 — auto-update 3 method → app/ui/_update_lifecycle_mixin.py 분리
+    # (UpdateLifecycleMixin 상속, codex 2.5 책임 분리 11차 LOW batch)
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.520 — 메뉴 구성 + admin moderation chain → app/ui/_menu_bar_mixin.py 분리
@@ -548,112 +456,14 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # 계정 슬롯
     # ------------------------------------------------------------------
 
-    def _require_auth_client(self) -> Optional[AuthClient]:
-        """AuthClient 미주입 시 경고."""
-
-        if self._auth_client is None:
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "AuthClient 미초기화 — main 진입점 의무")
-            return None
-        return self._auth_client
-
-    @pyqtSlot()
-    def _on_open_signup(self) -> None:
-        """회원가입 다이얼로그."""
-
-        client = self._require_auth_client()
-        if client is None:
-            return
-        dialog = SignupDialog(client, self)
-        dialog.exec()
-
-    @pyqtSlot()
-    def _on_open_login(self) -> None:
-        """로그인 다이얼로그 — PASS 시 세션 토큰 보관."""
-
-        client = self._require_auth_client()
-        if client is None:
-            return
-        dialog = LoginDialog(client, self)
-        if dialog.exec() == dialog.DialogCode.Accepted:
-            self._session_token = dialog.token
-            self._current_user_id = dialog.user_id
-            # cycle 169.271 — 사용자 critique bot 401 root cause trace
-            log.warning(
-                "[main_window] _session_token set token_present=%s token_len=%d user_id=%s",
-                bool(self._session_token), len(self._session_token or ""), self._current_user_id,
-            )
-            log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
-            # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
-            self._post_login_refresh()
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_info(
-                self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
-            )
+    # ------------------------------------------------------------------
+    # cycle 169.526 — 회원가입/로그인/재설정/로그아웃 6 method →
+    # app/ui/_auth_chain_mixin.py 분리 (AuthChainMixin 상속, codex 2.5 11차)
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.519 — _fetch_unread_counts → app/ui/_chat_helper_mixin.py 분리
     # ------------------------------------------------------------------
-
-    def _post_login_refresh(self) -> None:
-        """login PASS 직후 friend + room server fetch + chat_list_panel populate (cycle 169.107).
-
-        FriendsClient.list_friends + RoomsClient.list_rooms 호출 (async).
-        graceful — client 부재 시 default seed 만 표시.
-        """
-        import asyncio
-
-        async def _fetch_chain() -> None:
-            try:
-                fc = getattr(self, "_friends_client", None)
-                if fc is not None and self._session_token:
-                    try:
-                        friends = await fc.list_friends(self._session_token, status="accepted")  # type: ignore[attr-defined]
-                        self._friend_list.set_friends(friends, viewer_id=self._current_user_id or 0)
-                        log.info("[post_login] friends fetch — count=%d", len(friends))
-                    except Exception as exc:  # noqa: BLE001
-                        log.warning("[post_login] friends fetch fail — %r", exc)
-                rc = getattr(self, "_rooms_client", None)
-                if rc is not None and self._session_token:
-                    try:
-                        rooms = await rc.list_rooms(self._session_token)  # type: ignore[attr-defined]
-                        if hasattr(self, "_room_list"):
-                            self._room_list.set_rooms(rooms)
-                        log.info("[post_login] rooms fetch — count=%d", len(rooms))
-                    except Exception as exc:  # noqa: BLE001
-                        log.warning("[post_login] rooms fetch fail — %r", exc)
-            finally:
-                self._refresh_chat_list_panel()
-                # cycle 169.469 — startup 시점 unread batch fetch fire
-                asyncio.ensure_future(self._fetch_unread_counts())
-                # cycle 169.500 — startup 시점 pending request count badge 갱신
-                asyncio.ensure_future(self._refresh_pending_badge())
-
-        try:
-            asyncio.ensure_future(_fetch_chain())
-        except Exception as exc:  # noqa: BLE001
-            log.warning("[post_login] _fetch_chain spawn fail — %r", exc)
-            self._refresh_chat_list_panel()
-
-    @pyqtSlot()
-    def _on_open_reset(self) -> None:
-        """비밀번호 재설정."""
-
-        client = self._require_auth_client()
-        if client is None:
-            return
-        PasswordResetDialog(client, self).exec()
-
-    @pyqtSlot()
-    def _on_logout(self) -> None:
-        """세션 토큰 폐기 + LoginDialog re-spawn (cycle 169.498)."""
-
-        from app.ui.confirm_dialog import ConfirmDialog
-        if self._session_token is None:
-            ConfirmDialog.show_info(self, "TooTalk", "로그인 상태 아님")
-            return
-        # 한글 주석 — tray menu logout chain 동일 활용
-        self._perform_logout_and_relogin()
 
     # ------------------------------------------------------------------
     # cycle 144 — 친구 관리 슬롯
@@ -677,85 +487,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             "[main_window] friend_list page 활성 viewer_id=%d", viewer_id
         )
 
-    def _refresh_chat_list_panel(self) -> None:
-        """친구 + 방 + 봇 data 의 ChatListEntry 변환 + chat_list_panel populate (cycle 169.106).
-
-        사용자 directive — "chatlist 는 추가된 친구 + 단톡방 + 봇톡 출력".
-        default seed (투네이션 고객센터 봇) retain + friend/room 실 data 추가.
-        """
-        from datetime import datetime
-        from app.ui.chat_list_panel import ChatListEntry
-
-        entries: list[ChatListEntry] = []
-
-        # 한글 주석 — 투네이션 고객센터 봇 default (pinned + online)
-        entries.append(
-            ChatListEntry(
-                kind="bot",
-                target_id=1,
-                name="투네이션 고객센터",
-                last_message="안녕하세요. 무엇을 도와드릴까요? 24시간 LLM 상담 chain.",
-                last_ts=datetime.now(),
-                unread_count=0,
-                is_pinned=True,
-                is_online=True,
-            )
-        )
-
-        # 한글 주석 — friend_list 안 friends → ChatListEntry kind=friend 변환
-        friends = getattr(self._friend_list, "_friends", [])
-        for fr in friends:
-            uid = getattr(fr, "user_id", None) or getattr(fr, "id", None) or 0
-            name = getattr(fr, "username", None) or getattr(fr, "display_name", None) or f"friend_{uid}"
-            online = bool(getattr(fr, "is_online", False) or getattr(fr, "online", False))
-            entries.append(
-                ChatListEntry(
-                    kind="friend",
-                    target_id=int(uid),
-                    name=str(name),
-                    last_message="",
-                    last_ts=None,
-                    unread_count=0,
-                    is_pinned=False,
-                    is_online=online,
-                )
-            )
-
-        # 한글 주석 — room_list 안 rooms → ChatListEntry kind=room 변환
-        rooms = getattr(self._room_list, "_rooms", []) if hasattr(self, "_room_list") else []
-        for rm in rooms:
-            rid = getattr(rm, "room_id", None) or getattr(rm, "id", None) or 0
-            rname = getattr(rm, "name", None) or getattr(rm, "title", None) or f"room_{rid}"
-            entries.append(
-                ChatListEntry(
-                    kind="room",
-                    target_id=int(rid),
-                    name=str(rname),
-                    last_message="",
-                    last_ts=None,
-                    unread_count=0,
-                    is_pinned=False,
-                    is_online=False,
-                )
-            )
-
-        self._chat_list_panel.set_entries(entries)
-        log.info(
-            "[main_window] chat_list_panel refresh — bot=1 friend=%d room=%d",
-            len(friends), len(rooms),
-        )
-        # cycle 169.202 — re-populate 후 active chat retain 또는 default 진입 (사용자 critique image #28)
-        if self._active_chat_kind and self._active_chat_target_id is not None:
-            try:
-                self._chat_list_panel.set_current_chat(
-                    self._active_chat_kind, self._active_chat_target_id,
-                )
-            except Exception:
-                pass
-        else:
-            # 빈 chat default 회피 — 투네이션 고객센터 bot 진입
-            from PyQt6.QtCore import QTimer
-            QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
+    # ------------------------------------------------------------------
+    # cycle 169.526 — _refresh_chat_list_panel → _chat_navigation_mixin.py 분리
+    # (ChatNavigationMixin 상속, codex 2.5 11차)
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.511 — friend search + pending requests chain → _friend_search_mixin.py 분리
@@ -766,45 +501,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가) + SidebarRail / ChatHeader (cycle 153.4 신설)
     # ------------------------------------------------------------------
 
-    @pyqtSlot(str)
-    def _on_sidebar_tab_clicked(self, tab_key: str) -> None:
-        """SidebarRail tab 변경 — stacked widget index 매핑.
-
-        tab_key ∈ {"friends", "rooms", "bots", "settings"} (telegram align label = 채팅/연락처/통화/설정)
-        cycle 169.136 — bot_panel 폐기 + chat_list 통합 (사용자 ack)
-        - friends("채팅") = chat_list 통합 view (이미 friend + room + bot entry populate chain — cycle 169.106)
-        - rooms("연락처") = friends widget (연락처 list)
-        - bots("통화") = call placeholder (Phase 5 actual binding)
-        - settings = SettingsDialog modal
-        """
-        if tab_key == "friends":
-            # cycle 169.185 — "모든 대화방" 통합 view (default — chat_list 친구+방+봇 통합)
-            # cycle 169.283 — 사용자 critique image #55/56/57 회수 — chat_header clear 폐기 (active chat retain)
-            self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-        elif tab_key == "settings":
-            # cycle 169.193 — 편집 tab = FolderManageDialog modal (telegram 폴더 편집 — 사용자 directive 회수)
-            # cycle 169.230 — dialog main 안 centered + height clamp
-            try:
-                from app.ui.folder_manage_dialog import FolderManageDialog
-                user_folders = getattr(self, "_user_folders", [])
-                dialog = FolderManageDialog(user_folders=user_folders, parent=self)
-                # cycle 169.369 — folder_create_requested connect chain (사용자 critique image #123/124 '+ 새 폴더 만들기' 무반응 회수)
-                dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
-                dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
-                # cycle 169.381 — folder_edit_requested chain (사용자 critique image #139/140 수정 button)
-                dialog.folder_edit_requested.connect(self._on_folder_edit_requested)  # type: ignore[arg-type]
-                # cycle 169.373 — active dialog reference retain (만들기 완료 시점 close chain)
-                self._active_folder_dialog = dialog
-                self._exec_dialog_centered(dialog)
-                self._active_folder_dialog = None
-            except Exception as exc:  # pragma: no cover - graceful
-                log.debug("FolderManageDialog open 실패 graceful — %r", exc)
-            self._sidebar_rail.set_active_tab("friends")
-            self._on_sidebar_tab_clicked("friends")
-            # cycle 169.305 — 사용자 critique image #74/75 — dialog close 後 chat_list_panel 의 visibility 강제 retain
-            if hasattr(self, "_chat_list_panel"):
-                self._chat_list_panel.show()
-                self._chat_list_panel.update()
+    # ------------------------------------------------------------------
+    # cycle 169.526 — _on_sidebar_tab_clicked → _chat_navigation_mixin.py 분리
+    # ------------------------------------------------------------------
 
     @pyqtSlot(str)
     def _on_input_message_sent(self, text: str) -> None:
@@ -1083,13 +782,11 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
                     log.debug("block chain 실패 — %r", exc)
             modal.accept()
 
-    @pyqtSlot(str)
     # ------------------------------------------------------------------
     # cycle 169.523 — folder CRUD 7 method → app/ui/_folder_mixin.py 분리
     # (FolderMixin mixin 상속, codex 2.5 책임 분리 9차)
     # ------------------------------------------------------------------
 
-    @pyqtSlot(str, int)
     # ------------------------------------------------------------------
     # cycle 169.522 — _mark_room_read + _post_mark_read → _rest_post_mixin 분리
     # ------------------------------------------------------------------
@@ -1103,86 +800,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # app/ui/_chat_helper_mixin.py 분리 (cycle 169.466/441 origin)
     # ------------------------------------------------------------------
 
-    def _on_chat_selected(self, kind: str, target_id: int) -> None:
-        """ChatListPanel.chat_selected → group room 진입 또는 friend/bot chat 진입 (cycle 169.62)."""
-        log.info("[main_window] chat_selected kind=%s target_id=%d", kind, target_id)
-        if kind == "room":
-            self._on_room_entered(target_id)
-            return
-        # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
-        # cycle 169.159 — telegram align fallback "최근에 접속함" (actual last_seen REST = 별 cycle)
-        chat_panel = getattr(self, "_chat_list_panel", None)
-        name = f"{kind}:{target_id}"
-        status = "최근에 접속함"
-        if chat_panel is not None:
-            for entry in getattr(chat_panel, "_entries", []):
-                if entry.kind == kind and entry.target_id == target_id:
-                    name = entry.name
-                    status = "온라인" if entry.is_online else "최근에 접속함"
-                    break
-        self._chat_header.set_chat(name, status=status)
-        # cycle 169.221 — friend kind 시점 last_seen REST fetch (cycle 169.216 endpoint 연동)
-        # cycle 169.225 — DM history fetch (cycle 169.222 DM room resolve + list_messages)
-        if kind == "friend" and target_id > 0:
-            import asyncio
-            asyncio.ensure_future(self._fetch_user_status(target_id))
-            asyncio.ensure_future(self._fetch_dm_history(target_id))
-        # cycle 169.411 — saved messages history fetch chain (self DM room resolve server-side)
-        if kind == "saved":
-            import asyncio
-            self_id = getattr(self, "_current_user_id", None)
-            if isinstance(self_id, int) and self_id > 0:
-                asyncio.ensure_future(self._fetch_dm_history(self_id))
-        # cycle 169.454 — bot kind history fetch chain (bot DM room resolve actual binding)
-        if kind == "bot":
-            import asyncio
-            asyncio.ensure_future(self._fetch_bot_history())
-        # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
-        try:
-            # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)
-            self._chat_view.save_scroll_offset()
-            self._chat_view.clear_messages()
-            self._active_chat_kind = kind
-            self._active_chat_target_id = target_id
-            # cycle 169.157 — cache replay (server REST fetch = 별 cycle 169.158+)
-            # cycle 169.163 — 1:1 chat (friend/bot) sender label suppress propagate
-            # cycle 169.441 — local SQLite 우선 replay (in-memory cache 부재 시점 fallback)
-            hide_sender = kind in ("friend", "bot", "saved")
-            cached = self._dm_history.get((kind, target_id), [])
-            if cached:
-                for sender, text, ts, is_self in cached:
-                    # cycle 169.462 — history replay 시점 sound 차단 (사용자 critique)
-                    self._chat_view.add_message(
-                        sender, text, ts, is_self=is_self, hide_sender=hide_sender,
-                        play_sound=False,
-                    )
-            else:
-                # 한글 주석 — in-memory cache miss → local SQLite history replay (사용자 directive 영속)
-                self._load_local_history(kind, target_id)
-            # cycle 169.444 — chat_view active room_id 갱신 (lazy load cursor base)
-            self._chat_view.set_active_room(self._kind_room_local(kind, target_id))
-            # cycle 169.457 — chat focus 시점 모든 peer bubble 자동 읽음 처리 (사용자 directive 정합)
-            try:
-                self._chat_view.mark_all_bubbles_read()
-            except Exception as exc:
-                log.debug("[chat_focus] mark_read 실패 — %r", exc)
-            # cycle 169.176 — prev offset restore 시도 + 부재 시 bottom fallback
-            restored = self._chat_view.restore_scroll_offset(kind, target_id)
-            if not restored:
-                self._chat_view.scroll_to_bottom()
-            # cycle 169.167 — chat_list selected row sync (programmatic 진입 path 정합)
-            try:
-                self._chat_list_panel.set_current_chat(kind, target_id)
-            except Exception:  # pragma: no cover - graceful
-                pass
-            log.info("[main_window] chat switched — kind=%s target=%d replay=%d restored=%s",
-                     kind, target_id, len(cached), restored)
-        except Exception as exc:  # pragma: no cover - graceful
-            log.debug("chat_view switch 실패 — %r", exc)
-        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-        self._input_container.setVisible(True)
+    # ------------------------------------------------------------------
+    # cycle 169.526 — _on_chat_selected → _chat_navigation_mixin.py 분리
+    # ------------------------------------------------------------------
 
-    @pyqtSlot()
     # ------------------------------------------------------------------
     # cycle 169.525 — _on_header_sidebar_toggle → _chat_header_mixin.py 분리
     # ------------------------------------------------------------------
@@ -1362,13 +983,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # cycle 169.514 — drawer slot 11종 → app/ui/_drawer_mixin.py 분리
     # ------------------------------------------------------------------
 
-    @pyqtSlot()
-    @pyqtSlot()
     # ------------------------------------------------------------------
     # cycle 169.525 — ChatHeader + remote dropdown 7 method → _chat_header_mixin
     # ------------------------------------------------------------------
 
-    @pyqtSlot()
     # ------------------------------------------------------------------
     # cycle 169.521 — _on_group_info + _on_chat_clear + _on_chat_leave →
     # app/ui/_room_group_chat_mixin.py 분리
