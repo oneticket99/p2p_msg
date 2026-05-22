@@ -308,6 +308,8 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.503 (2026-05-23 00:30 KST) — 평가 4 file fingerprint sync (cycle 169.494~502 9 commit drift 회수 + handoff §8.79.1 entry append)
 - cycle 169.502 (2026-05-23 00:25 KST) — server bot user (id=1) ensure chain — `_ensure_bot_user(pool)` startup hook INSERT IGNORE (bot reply FK violation IntegrityError 1452 silent skip root cause 회수, ssh-deploy-agent verdict 정합)
 - cycle 169.498~501 (2026-05-23 00:10 KST) — tray icon + 친구 요청 chain batch — system tray (close → hide + RMB context menu + LMB restore + logout LoginDialog re-spawn) (498) + PendingRequestsDialog 신설 + Conflict 메시지 swap "이미 요청된 상대" (499) + drawer pending entry + window resize → drawer height 동기 + sidebar pending badge + row chat list 패턴 (avatar + nickname + 요청 시각) (500) + placeholder "받은 요청이 없습니다." QLabel center overlay (501)
 - cycle 169.494~497 (2026-05-22 23:40 KST) — 친구 추가 + bot chat batch chain — main.py FriendsClient 주입 (494) + friends_client TLS verify default 0 + chat list visual delegate 재사용 (495) + alert 폐기 + friend_request actual REST POST 바인딩 (496) + bot chat 답변 사라짐 fix `_fetch_bot_history` cached/server merge + `_append_dm_message` `_kind_room_local` helper 통일 (497) + memory `feedback_auto_commit_push_deploy` 박제
@@ -336,8 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.421 (2026-05-22 12:00 KST) — Phase 5 Item 5 원격 제어 Windows GDI + Linux X11 backend actual binding (NotImplementedError 전수 폐기)
 - cycle 169.420 (2026-05-22 11:50 KST) — Phase 3+ bot framework BotFather 등가 base (migration 0012 + repository + 6 endpoint)
 - cycle 169.419 (2026-05-22 11:42 KST) — emoji pack items + moderation actual binding (skeleton 폐기)
-- cycle 169.418 (2026-05-22 11:30 KST) — streaming_helper 5 platform callback URL return + token-usage rewrite
-- cycle 169.417 (2026-05-22 11:05 KST) — 자동 업데이트 binary swap (macOS shutil.move rollback + Windows DETACHED batch)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

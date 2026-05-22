@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T23:10:00+09:00
+last_verified: 2026-05-23T00:30:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.492
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.502
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-22. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.492 누계.
-> 최근 갱신: 2026-05-22 23:10 KST — cycle 169.488~492 fingerprint sync (5 commit drift 회수). 누계: tools/claude-telegram.sh PROJECT_DIR portable BASH_SOURCE 동적 resolve (169.488) + AddFriendDialog search_requested wire fix main_window connect 부재 회수 + async search_users + set_search_results chain (169.489) + self-hosted runner id=22 `tootalk-macos-1ticket` 신설 1ticket 머신 + python@3.13 + .venv + 86 package install + actions-runner v2.334.0 + svc launchd (169.490) + 친구 검색 한글 확장 server SQL 3 column OR (username + display_name + nickname) + UserSearchResult/SearchResult display_name+nickname field + UI label nickname 우선 (169.491) + .gitignore build/tootalk + .claude/settings.local.json (169.492).
+> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.502 누계.
+> 최근 갱신: 2026-05-23 00:30 KST — cycle 169.494~502 fingerprint sync (9 commit drift 회수). 누계: main_window FriendsClient 주입 + TLS verify default 0 + chat list visual delegate + alert 폐기 + REST POST 바인딩 + bot chat 답변 사라짐 cached/server merge fix (494~497) + tray icon + close hide + LoginDialog re-spawn + PendingRequestsDialog + drawer pending entry + window resize → drawer height self.height() 동기 + sidebar pending badge + row chat list 패턴 (avatar + nickname + 요청 시각) + placeholder center overlay (498~501) + server `_ensure_bot_user(pool)` startup hook INSERT IGNORE (bot reply FK violation IntegrityError 1452 silent skip root cause 회수, ssh-deploy-agent verdict 정합) (502).
 
 ---
 
