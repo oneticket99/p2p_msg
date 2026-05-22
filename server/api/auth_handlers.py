@@ -341,8 +341,10 @@ async def handle_profile_update(request: web.Request) -> web.Response:
     # 한글 주석 — accept field whitelist + actual UPDATE
     update_columns: list[str] = []
     values: list = []
+    # cycle 169.399 — nickname field 추가 (사용자 directive image #163/164) + display_name readonly
+    # username + display_name = 변경 불가 (whitelist 제외). nickname / phone / birthdate / bio = 변경 가능.
     field_map = {
-        "display_name": "display_name",
+        "nickname": "nickname",
         "phone": "phone",
         "birthdate": "birthdate",
         "bio": "bio",
@@ -355,7 +357,7 @@ async def handle_profile_update(request: web.Request) -> web.Response:
             update_columns.append(f"{col} = %s")
             values.append(str(val)[:255])
     if not update_columns:
-        raise web.HTTPBadRequest(reason="display_name / phone / birthdate / bio 중 1개 이상 의무")
+        raise web.HTTPBadRequest(reason="nickname / phone / birthdate / bio 중 1개 이상 의무")
 
     pool = request.app.get("db_pool")
     if pool is None:
@@ -392,20 +394,21 @@ async def handle_profile_get(request: web.Request) -> web.Response:
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
             await cur.execute(
-                "SELECT email, username, display_name, phone, birthdate, bio "
+                "SELECT email, username, display_name, nickname, phone, birthdate, bio "
                 "FROM users WHERE id = %s",
                 (user_id,),
             )
             row = await cur.fetchone()
     if not row:
         raise web.HTTPNotFound(reason=f"user_id {user_id} 부재")
-    email, username, display_name, phone, birthdate, bio = row
+    email, username, display_name, nickname, phone, birthdate, bio = row
     return web.json_response({
         "ok": True,
         "user_id": user_id,
         "email": email,
         "username": username,
         "display_name": display_name or "",
+        "nickname": nickname or "",
         "phone": phone or "",
         "birthdate": birthdate or "",
         "bio": bio or "",

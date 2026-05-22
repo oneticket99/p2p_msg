@@ -222,14 +222,19 @@ def main() -> int:
                     if not ok:
                         log.warning("[profile] GET fail — code=%s msg=%s", error_code, error_message)
                         return
-                    window._current_user_nickname = data.get("display_name", "") or data.get("username", "")
+                    # cycle 169.399 — username + display_name + nickname 분리 (사용자 directive image #163/164)
+                    window._current_username = data.get("username", "")
+                    window._current_display_name = data.get("display_name", "") or data.get("username", "")
+                    window._current_nickname = data.get("nickname", "") or window._current_display_name
+                    # 한글 주석 — backward compat alias (drawer header + avatar text)
+                    window._current_user_nickname = window._current_nickname
                     window._current_user_phone = data.get("phone", "")
                     window._current_user_birthdate = data.get("birthdate", "")
                     window._current_user_bio = data.get("bio", "")
                     window._current_email = data.get("email", "")
-                    log.info("[profile] GET PASS — display_name=%s phone=%s birthdate=%s",
-                             window._current_user_nickname, window._current_user_phone,
-                             window._current_user_birthdate)
+                    log.info("[profile] GET PASS — username=%s display_name=%s nickname=%s",
+                             window._current_username, window._current_display_name,
+                             window._current_nickname)
 
                 profile_worker.finished_with_result.connect(_on_profile_get_finished)  # type: ignore[arg-type]
                 if not hasattr(window, "_profile_workers"):

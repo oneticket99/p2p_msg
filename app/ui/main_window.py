@@ -1949,9 +1949,13 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
-        """내 프로필 dialog open. cycle 169.394 — _current_user_* lookup chain 추가 (사용자 critique image #160)."""
+        """내 프로필 dialog open. cycle 169.399 — avatar = nickname (사용자 directive image #163/164)."""
         from app.ui.my_profile_dialog import MyProfileDialog
-        username = getattr(self, "_current_user_nickname", None) or getattr(self._config, "user_nickname", "사용자")
+        # 한글 주석 — avatar text = nickname 우선 + display_name + username fallback
+        nickname = getattr(self, "_current_nickname", "")
+        display_name = getattr(self, "_current_display_name", "")
+        username_raw = getattr(self, "_current_username", "")
+        username = nickname or display_name or username_raw or getattr(self._config, "user_nickname", "사용자")
         email = getattr(self, "_current_email", "") or ""
         phone = getattr(self, "_current_user_phone", "") or ""
         birthdate = getattr(self, "_current_user_birthdate", "") or ""
@@ -1966,14 +1970,17 @@ class MainWindow(QMainWindow):
         """내 프로필 안 edit click → MyAccountDialog 진입 + save 시 PUT /api/auth/profile."""
         from app.ui.my_account_dialog import MyAccountDialog
         from app.net.account_client import ProfileUpdateWorker
-        # cycle 169.391 — _current_user_* attribute 우선 lookup + config fallback (사용자 critique image #157/158)
-        username = getattr(self, "_current_user_nickname", None) or getattr(self._config, "user_nickname", "사용자")
+        # cycle 169.399 — username + display_name + nickname 분리 (사용자 directive image #163/164)
+        username = getattr(self, "_current_username", None) or getattr(self._config, "user_nickname", "사용자")
+        display_name = getattr(self, "_current_display_name", "") or username
+        nickname = getattr(self, "_current_nickname", "")
         email = getattr(self, "_current_email", "")
         phone = getattr(self, "_current_user_phone", "")
         bio = getattr(self, "_current_user_bio", "")
         birthdate = getattr(self, "_current_user_birthdate", "")
         dialog = MyAccountDialog(
-            username=username, email=email, phone=phone, bio=bio,
+            username=username, display_name=display_name, nickname=nickname,
+            email=email, phone=phone, bio=bio,
             birthdate=birthdate, parent=self,
         )
 
@@ -1983,10 +1990,11 @@ class MainWindow(QMainWindow):
             if not base_url or not token:
                 log.warning("[profile] base_url/token 부재 — PUT skip")
                 return
-            # cycle 169.391 — local cache 즉시 반영 (Config frozen=True → 별도 attribute retain)
-            new_name = (payload.get("display_name") or "").strip()
-            if new_name:
-                self._current_user_nickname = new_name
+            # cycle 169.399 — nickname 갱신 (display_name readonly retain)
+            new_nick = (payload.get("nickname") or "").strip()
+            if new_nick:
+                self._current_nickname = new_nick
+                self._current_user_nickname = new_nick  # alias retain
             new_bio = (payload.get("bio") or "").strip()
             if new_bio:
                 self._current_user_bio = new_bio

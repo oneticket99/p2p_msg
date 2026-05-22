@@ -34,6 +34,8 @@ class MyAccountDialog(QDialog):
         phone: str = "",
         bio: str = "",
         birthdate: str = "",
+        display_name: str = "",
+        nickname: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -116,13 +118,30 @@ class MyAccountDialog(QDialog):
 
         c_layout.addSpacing(12)
 
-        # cycle 169.266 — 이메일 icon 회수 (notification bell → mail 의미) + 사용자 directive horizontal row
-        self._name_edit = self._build_field_row(c_layout, "이름", username, "account")
+        # cycle 169.399 — 사용자 directive image #163/164 — 사용자명 readonly + 닉네임 추가
+        # 사용자명 (username) = readonly (로그인 식별자 불변)
+        self._username_edit = self._build_field_row(c_layout, "사용자명", username, "account")
+        self._username_edit.setReadOnly(True)
+        self._username_edit.setStyleSheet(
+            "QLineEdit { background-color: #131C30; border: 1px solid #2c3a52;"
+            " border-radius: 6px; color: #9ca3af; font-size: 14px; padding: 6px 8px; }"
+        )
+        # 이름 (display_name) = 신청 시점 입력값 retain readonly
+        self._displayname_edit = self._build_field_row(c_layout, "이름", display_name or username, "account")
+        self._displayname_edit.setReadOnly(True)
+        self._displayname_edit.setStyleSheet(
+            "QLineEdit { background-color: #131C30; border: 1px solid #2c3a52;"
+            " border-radius: 6px; color: #9ca3af; font-size: 14px; padding: 6px 8px; }"
+        )
+        # 닉네임 (nickname) = 자유 변경 가능 (avatar text source)
+        self._nickname_edit = self._build_field_row(c_layout, "닉네임", nickname, "account")
         self._phone_edit = self._build_field_row(c_layout, "전화번호", phone, "phone")
         # cycle 169.391 — 생년월일 row 추가 (사용자 critique image #157)
         self._birthdate_edit = self._build_field_row(c_layout, "생년월일", birthdate, "info")
         # cycle 169.384 — 이메일 row 제거 (email = ID retain 사용자 directive image #145/146)
         self._email_value = email
+        self._username_value = username
+        self._displayname_value = display_name or username
 
         c_layout.addStretch(1)
 
@@ -181,7 +200,8 @@ class MyAccountDialog(QDialog):
         """
         self.save_requested.emit(
             {
-                "display_name": self._name_edit.text(),
+                # cycle 169.399 — username + display_name readonly (server-side whitelist 제외 정합)
+                "nickname": self._nickname_edit.text(),
                 "phone": self._phone_edit.text(),
                 "email": self._email_value,
                 "bio": self._bio_edit.toPlainText(),
