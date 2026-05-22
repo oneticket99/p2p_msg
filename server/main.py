@@ -230,6 +230,15 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
             "contacts_handlers 등록 실패 — skip (%s)", exc
         )
 
+    # cycle 169.457 — telegram align 사용자명 검색 친구 추가
+    try:
+        from .api.friends_by_username_handler import register_friends_by_username_routes
+        register_friends_by_username_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "friends_by_username_handler 등록 실패 — skip (%s)", exc
+        )
+
     # remote control endpoint 등록 (cycle 132 — Phase 5 Item 5 진입 prerequisite skeleton)
     # 한글 주석: lazy import + try/except graceful — 모듈 부재 시 server 기동 영향 차단.
     try:

@@ -2056,6 +2056,11 @@ class MainWindow(QMainWindow):
                 self._load_local_history(kind, target_id)
             # cycle 169.444 — chat_view active room_id 갱신 (lazy load cursor base)
             self._chat_view.set_active_room(self._kind_room_local(kind, target_id))
+            # cycle 169.457 — chat focus 시점 모든 peer bubble 자동 읽음 처리 (사용자 directive 정합)
+            try:
+                self._chat_view.mark_all_bubbles_read()
+            except Exception as exc:
+                log.debug("[chat_focus] mark_read 실패 — %r", exc)
             # cycle 169.176 — prev offset restore 시도 + 부재 시 bottom fallback
             restored = self._chat_view.restore_scroll_offset(kind, target_id)
             if not restored:

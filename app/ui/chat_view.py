@@ -232,6 +232,28 @@ class ChatView(QScrollArea):
         self._active_room_id = int(room_id)
         self._lazy_load_active = False  # 새 chat 진입 = lock reset
 
+    def mark_all_bubbles_read(self) -> None:
+        """cycle 169.457 — chat focus 시점 모든 peer bubble.set_read(True).
+
+        사용자 directive — 정식 안 읽음 라벨 chain. chat 진입 시점 = 자동 읽음 처리.
+        """
+        try:
+            for i in range(self._messages_layout.count()):
+                item = self._messages_layout.itemAt(i)
+                if item is None:
+                    continue
+                widget = item.widget()
+                if widget is None:
+                    continue
+                # 한글 주석 — MessageBubble instance 만 set_read 호출
+                if hasattr(widget, "set_read"):
+                    try:
+                        widget.set_read(True)
+                    except Exception:
+                        pass
+        except Exception as exc:
+            log.debug("[mark_all_bubbles_read] 실패 — %r", exc)
+
     def _on_scroll_value_changed(self, value: int) -> None:
         """cycle 169.444 — scrollbar 최상단 도달 시점 lazy load fire."""
         if self._lazy_load_active:

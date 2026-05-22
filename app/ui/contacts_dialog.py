@@ -70,6 +70,8 @@ class ContactsDialog(QDialog):
 
         # cycle 169.450 — telegram align 신규 연락처 추가 button (사용자 directive)
         # 이전 이메일/유저ID 단일 input 폐기 → NewContactDialog (성+이름+전화번호 마스크) chain
+        # cycle 169.450~457 — telegram 2 mode 친구 추가 button row (연락처 + 사용자명)
+        add_row = QHBoxLayout()
         new_contact_btn = QPushButton("+ 새 연락처")
         new_contact_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         new_contact_btn.setStyleSheet(
@@ -79,7 +81,18 @@ class ContactsDialog(QDialog):
             "QPushButton:hover { background-color: #0052cc; }"
         )
         new_contact_btn.clicked.connect(self._on_open_new_contact)  # type: ignore[arg-type]
-        body.addWidget(new_contact_btn)
+        add_row.addWidget(new_contact_btn, stretch=1)
+        by_username_btn = QPushButton("@ 사용자명")
+        by_username_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        by_username_btn.setStyleSheet(
+            "QPushButton { color: #67E8F9; background-color: #1F2937;"
+            " border: 1px solid #67E8F9; border-radius: 8px; padding: 10px 16px;"
+            " font-size: 14px; font-weight: 600; }"
+            "QPushButton:hover { background-color: #2c3a52; }"
+        )
+        by_username_btn.clicked.connect(self._on_open_by_username)  # type: ignore[arg-type]
+        add_row.addWidget(by_username_btn, stretch=1)
+        body.addLayout(add_row)
         # 한글 주석 — placeholder retain 이메일/유저 ID 검색 (별 chain 의무 retain)
         self._add_edit = QLineEdit()
         self._add_edit.setVisible(False)  # cycle 169.450 = telegram align 의 의 dialog chain 의무
@@ -123,6 +136,65 @@ class ContactsDialog(QDialog):
             dialog.exec()
         except Exception as exc:
             log.warning("[new_contact_dialog] spawn 실패 — %r", exc)
+
+    def _on_open_by_username(self) -> None:
+        """cycle 169.457 — telegram align 사용자명 검색 dialog spawn."""
+        try:
+            from app.ui.add_friend_by_username_dialog import AddFriendByUsernameDialog
+            dialog = AddFriendByUsernameDialog(parent=self)
+            dialog.friend_added.connect(self._on_friend_username_submitted)
+            dialog.exec()
+        except Exception as exc:
+            log.warning("[add_friend_by_username] spawn 실패 — %r", exc)
+
+    def _on_friend_username_submitted(self, username: str) -> None:
+        """cycle 169.457 — POST /api/friends/by-username async chain."""
+        if not username:
+            return
+        try:
+            mw = self.parent()
+            while mw is not None and not hasattr(mw, "_session_token"):
+                mw = mw.parent()
+            if mw is None or not getattr(mw, "_session_token", None):
+                log.warning("[friend_by_username] main_window/token 부재 — POST skip")
+                return
+            import asyncio
+            asyncio.ensure_future(self._async_post_friend_username(mw, username))
+        except Exception as exc:
+            log.warning("[friend_by_username] post chain 실패 — %r", exc)
+        self.contact_added.emit(username)
+
+    async def _async_post_friend_username(self, main_window, username: str) -> None:
+        """POST /api/friends/by-username chain."""
+        import aiohttp
+        try:
+            api_base = getattr(main_window._config, "api_base", None) or "https://114.207.112.73"
+            token = getattr(main_window, "_session_token", "") or ""
+            if not token:
+                return
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                async with session.post(
+                    f"{api_base}/api/friends/by-username",
+                    json={"username": username},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status == 201:
+                        data = await resp.json()
+                        log.info(
+                            "[friend_by_username] PASS username=%s friend_id=%s room=%s",
+                            username, data.get("friend_user_id"), data.get("room_id"),
+                        )
+                    elif resp.status == 404:
+                        from app.ui.confirm_dialog import ConfirmDialog
+                        ConfirmDialog.show_warning(
+                            self, "친구 추가", f"@{username} 사용자 부재",
+                        )
+                    else:
+                        log.warning("[friend_by_username] HTTP %d", resp.status)
+        except Exception as exc:
+            log.debug("[friend_by_username] async POST 실패 — %r", exc)
 
     def _on_new_contact_submitted(self, payload: dict) -> None:
         """cycle 169.455 — POST /api/contacts chain + contact_added signal 재 emit.
