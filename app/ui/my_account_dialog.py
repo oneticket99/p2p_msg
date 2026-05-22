@@ -207,16 +207,24 @@ class MyAccountDialog(QDialog):
 
         cycle 169.387 — review finding 회수 (사용자 critique image #152 HTTP 400 display_name 부재).
         server PUT /api/auth/profile = display_name / username key expect.
+        cycle 169.465 — phone/birthdate mask placeholder '_' strip + digit normalize.
         """
+        # cycle 169.465 — phone mask raw 의 digit + '+' 만 retain (server normalize 정합)
+        phone_raw = self._phone_edit.text()
+        phone_digits = "".join(c for c in phone_raw if c.isdigit() or c == "+")
+        phone_clean = phone_digits.replace("_", "")
+        # birthdate YYYY-MM-DD strip placeholder
+        bd_raw = self._birthdate_edit.text()
+        bd_clean = bd_raw.replace("_", "").strip("-").strip()
         self.save_requested.emit(
             {
                 # cycle 169.400 — display_name editable (password reset 매칭 부재 retain — 사용자 directive image #166)
                 "display_name": self._displayname_edit.text(),
                 "nickname": self._nickname_edit.text(),
-                "phone": self._phone_edit.text(),
+                "phone": phone_clean,
                 "email": self._email_value,
                 "bio": self._bio_edit.toPlainText(),
-                "birthdate": self._birthdate_edit.text(),
+                "birthdate": bd_clean,
             }
         )
         self.accept()
