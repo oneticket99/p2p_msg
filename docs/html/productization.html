@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.517)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.517 의 등가 렌더링.
-     cycle 169.512~517 6 commit drift 회수 — 평가 4 file v3 (512) + BotChatMixin 분리 main_window 3675→3478 (513) + DrawerMixin 분리 3478→3152 본격 21.7% (514) + token-usage HTML KeyError fix + bot user 직접 INSERT 검증 PASS (515) + handoff §8.80 신설 28 cycle manifest (516) + memory feedback_ssh_deploy_classifier_reject 신설 (517).
-     last_verified = 2026-05-23T02:50:00+09:00.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.523)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.523 의 등가 렌더링.
+     cycle 169.518~523 6 commit drift 회수 — 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 49.2% (522) + FolderMixin 2045→1890 53.1% (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.
+     last_verified = 2026-05-23T04:05:00+09:00.
      cycle 169.213~231 핵심: README + History prepend + handoff §8.79 7 entry + hook feat grep logic 회수 + last_seen REST + last_seen fetch chain + DM room resolver + DM history fetch chain + rooms.py BPE 회수 + i18n qm frozen bundle 5 locale + drawer header gradient 폐기 단색 Toonation BI + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + height clamp.
      기술 9.7 / 시장 6.1 / 차별화 9.9 / 가치 7.3 / 수익화 5.6 / 운영 9.94 / 가드레일 10.0 / 정합 9.96 / 보안 9.4 = 종합 10.0. -->
 <style>
@@ -56,9 +56,9 @@
   <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
     문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
-    최신 갱신 = 2026-05-23 02:50 KST — cycle 169.512~517 fingerprint sync (6 commit drift 회수).
-    누계: 평가 4 file v3 (512) + BotChatMixin 분리 main_window 3675→3478 (513) + DrawerMixin 분리 3478→3152 본격 21.7% (514) + token-usage HTML KeyError fix + bot user 직접 INSERT 검증 PASS (515) + handoff §8.80 신설 28 cycle manifest (516) + memory feedback_ssh_deploy_classifier_reject 신설 (517).
-    drift 0건 연속 retain · sub-agent 누계 102종 (ssh-deploy 5 + dereliction-detector 2) · pytest 1854 PASS.
+    최신 갱신 = 2026-05-23 04:05 KST — cycle 169.518~523 fingerprint sync (6 commit drift 회수).
+    누계: 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 49.2% (522) + FolderMixin 2045→1890 53.1% (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.
+    drift 0건 연속 retain · sub-agent 누계 105종 (ssh-deploy 5 + dereliction-detector 2 + cavecrew-investigator 3) · pytest 1854 PASS.
   </div>
 </header>
 

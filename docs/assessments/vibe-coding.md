@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T02:50:00+09:00
+last_verified: 2026-05-23T04:05:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.517
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.523
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.517 누계.
-> 최근 갱신: 2026-05-23 02:50 KST — cycle 169.512~517 fingerprint sync (6 commit drift 회수). 누계: 평가 4 file v3 (512) + BotChatMixin 분리 main_window 3675→3478 (513) + DrawerMixin 분리 3478→3152 본격 21.7% (514) + token-usage HTML KeyError fix + bot user 직접 INSERT 검증 PASS (515) + handoff §8.80 신설 28 cycle manifest (516) + memory feedback_ssh_deploy_classifier_reject 신설 (517).
+> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.523 누계.
+> 최근 갱신: 2026-05-23 04:05 KST — cycle 169.518~523 fingerprint sync (6 commit drift 회수). 누계: 평가 4 file v4 (518) + ChatHelperMixin 분리 main_window 3152→2861 (519) + MenuBarMixin + SignalingMixin 병렬 batch 2861→2486 (520) + RoomGroupChatMixin 2486→2241 (521) + RestPostMixin 2241→2045 49.2% (522) + FolderMixin 2045→1890 53.1% (523). 본격 절반 초과 분리 회수 — 10 mixin 누계 65 method 2136 line.
 
 ---
 
