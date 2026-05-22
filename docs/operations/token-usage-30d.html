@@ -210,38 +210,38 @@
 <header>
   <h1>TooTalk · Claude Code 토큰 사용량 보고서 (최근 30일)</h1>
   <p>모델별 / 일별 / 캐시 적중률 / 비용 추정 — 데이터 출처는 로컬 session jsonl 누계 집계</p>
-  <p class="gen">생성 시각: 2026-05-23 02:02:51 KST· 집계 윈도우: 2026-04-23 02:02:51 ~ 2026-05-23 02:02:51</p>
+  <p class="gen">생성 시각: 2026-05-23 06:04:14 KST· 집계 윈도우: 2026-04-23 06:04:14 ~ 2026-05-23 06:04:14</p>
 </header>
 
 <div class="grid">
   <div class="kpi accent">
     <div class="label">총 토큰</div>
-    <div class="value">0</div>
+    <div class="value">777,083,912</div>
     <div class="sub">input + output + cache 합산</div>
   </div>
   <div class="kpi">
     <div class="label">총 assistant 메시지</div>
-    <div class="value">0</div>
+    <div class="value">1,825</div>
     <div class="sub">jsonl entry 의 usage 보유 행</div>
   </div>
   <div class="kpi">
     <div class="label">분석 session</div>
-    <div class="value">0</div>
+    <div class="value">3</div>
     <div class="sub">main + subagent jsonl 151건 스캔</div>
   </div>
   <div class="kpi">
     <div class="label">활성 일수</div>
-    <div class="value">0</div>
-    <div class="sub">일평균 0 token</div>
+    <div class="value">2</div>
+    <div class="sub">일평균 388,541,956 token</div>
   </div>
   <div class="kpi warn">
     <div class="label">추정 비용</div>
-    <div class="value">$0.00</div>
-    <div class="sub">일평균 $0.00</div>
+    <div class="value">$1,535.25</div>
+    <div class="sub">일평균 $767.62</div>
   </div>
   <div class="kpi ok">
     <div class="label">캐시 적중률</div>
-    <div class="value">0.0%</div>
+    <div class="value">98.1%</div>
     <div class="sub">cache_read / (cache_read + create + input)</div>
   </div>
 </div>
@@ -274,7 +274,7 @@
         <th>날짜 (KST)</th><th>메시지</th><th>input</th><th>output</th>
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody></tbody>
+      <tbody><tr><td>2026-05-22</td><td class='num'>623</td><td class='num'>1,210</td><td class='num'>310,357</td><td class='num'>1,557,694</td><td class='num'>138,024,657</td><td class='num strong'>139,893,918</td><td class='num cost'>$259.54</td></tr><tr><td>2026-05-23</td><td class='num'>1,202</td><td class='num'>2,157</td><td class='num'>1,223,082</td><td class='num'>13,333,149</td><td class='num'>622,631,606</td><td class='num strong'>637,189,994</td><td class='num cost'>$1,275.71</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -288,7 +288,7 @@
         <th>모델</th><th>메시지</th><th>input</th><th>output</th>
         <th>cache create</th><th>cache read</th><th>총 토큰</th><th>점유율</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody></tbody>
+      <tbody><tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>1,824</td><td class='num'>3,367</td><td class='num'>1,533,439</td><td class='num'>14,890,843</td><td class='num'>760,656,263</td><td class='num strong'>777,083,912</td><td class='num'>100.00%</td><td class='num cost'>$1,535.25</td></tr><tr><td><span class='chip chip-<synthetic>'><synthetic></span></td><td class='num'>1</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -301,7 +301,7 @@
       <thead><tr>
         <th>날짜 (KST)</th><th>모델</th><th>메시지</th><th>총 토큰</th><th>비용 (USD)</th>
       </tr></thead>
-      <tbody></tbody>
+      <tbody><tr><td>2026-05-22</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>622</td><td class='num'>139,893,918</td><td class='num cost'>$259.54</td></tr><tr><td>2026-05-23</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>1,202</td><td class='num'>637,189,994</td><td class='num cost'>$1,275.71</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -315,7 +315,7 @@
         <th>session</th><th>첫 활동 (KST)</th><th>마지막 활동 (KST)</th>
         <th>모델</th><th>메시지</th><th>총 토큰</th>
       </tr></thead>
-      <tbody></tbody>
+      <tbody><tr><td><code>a98aa026</code></td><td>2026-05-22 21:58</td><td>2026-05-22 21:58</td><td><synthetic>, claude-opus-4-7</td><td class='num'>2</td><td class='num'>39,038</td></tr><tr><td><code>5a7e5efd</code></td><td>2026-05-22 22:00</td><td>2026-05-22 22:01</td><td>claude-opus-4-7</td><td class='num'>19</td><td class='num'>813,332</td></tr><tr><td><code>b5465060</code></td><td>2026-05-22 22:05</td><td>2026-05-23 06:04</td><td>claude-opus-4-7</td><td class='num'>1,804</td><td class='num'>776,231,542</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -345,7 +345,7 @@
       <tr><th>usage 보유 file</th><td>151</td></tr>
       <tr><th>파싱 assistant message</th><td>14,618</td></tr>
       <tr><th>스킵 라인</th><td>0</td></tr>
-      <tr><th>집계 윈도우 (KST)</th><td>2026-04-23 02:02:51 ~ 2026-05-23 02:02:51</td></tr>
+      <tr><th>집계 윈도우 (KST)</th><td>2026-04-23 06:04:14 ~ 2026-05-23 06:04:14</td></tr>
       <tr><th>privacy 보장</th><td>prompt 본문 / message text 노출 없음. token count + timestamp + model 만 추출.</td></tr>
       <tr><th>raw json 출처</th><td><code>docs/operations/token-usage-30d.json</code> 동시 재 산출 (machine-readable mirror)</td></tr>
     </tbody>
@@ -358,7 +358,7 @@
 
 <script>
 // 집계 데이터 inline — directive 외부 API 호출 금지 정합
-const D = {"dates": [], "total": [], "input": [], "output": [], "cache_create": [], "cache_read": [], "cost": [], "model_labels": [], "model_totals": [], "model_costs": []};
+const D = {"dates": ["2026-05-22", "2026-05-23"], "total": [139893918, 637189994], "input": [1210, 2157], "output": [310357, 1223082], "cache_create": [1557694, 13333149], "cache_read": [138024657, 622631606], "cost": [259.5387, 1275.7075], "model_labels": ["claude-opus-4-7", "<synthetic>"], "model_totals": [777083912, 0], "model_costs": [1535.2461, 0.0]};
 
 // 색상 팔레트 — Toonation 브랜드 + 모델 식별
 const COLORS = {

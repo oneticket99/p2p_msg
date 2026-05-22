@@ -1,22 +1,137 @@
 {
-  "generated_at_kst": "2026-05-23 02:02:51 KST",
-  "window_start_kst": "2026-04-23 02:02:51",
-  "window_end_kst": "2026-05-23 02:02:51",
-  "files_scanned": 0,
-  "files_with_usage": 0,
-  "parsed_messages": 0,
-  "sessions": 0,
+  "generated_at_kst": "2026-05-23 06:04:14 KST",
+  "window_start_kst": "2026-04-23 06:04:14",
+  "window_end_kst": "2026-05-23 06:04:14",
+  "files_scanned": 5,
+  "files_with_usage": 3,
+  "parsed_messages": 1825,
+  "sessions": 3,
   "skipped_lines": 0,
   "totals": {
-    "cost_usd": 0.0,
-    "cache_creation_input_tokens": 0,
-    "cache_read_input_tokens": 0
+    "input_tokens": 3367,
+    "output_tokens": 1533439,
+    "cache_creation_input_tokens": 14890843,
+    "cache_read_input_tokens": 760656263,
+    "messages": 1825,
+    "total_tokens": 777083912,
+    "cost_usd": 1535.2461
   },
-  "cache_hit_rate_percent": 0.0,
-  "per_day": [],
-  "per_model": [],
-  "per_day_model": [],
-  "sessions_summary": [],
+  "cache_hit_rate_percent": 98.08,
+  "per_day": [
+    {
+      "date": "2026-05-22",
+      "input_tokens": 1210,
+      "output_tokens": 310357,
+      "cache_creation_input_tokens": 1557694,
+      "cache_read_input_tokens": 138024657,
+      "messages": 623,
+      "total_tokens": 139893918,
+      "cost_usd": 259.5387
+    },
+    {
+      "date": "2026-05-23",
+      "input_tokens": 2157,
+      "output_tokens": 1223082,
+      "cache_creation_input_tokens": 13333149,
+      "cache_read_input_tokens": 622631606,
+      "messages": 1202,
+      "total_tokens": 637189994,
+      "cost_usd": 1275.7075
+    }
+  ],
+  "per_model": [
+    {
+      "model": "claude-opus-4-7",
+      "input_tokens": 3367,
+      "output_tokens": 1533439,
+      "cache_creation_input_tokens": 14890843,
+      "cache_read_input_tokens": 760656263,
+      "messages": 1824,
+      "total_tokens": 777083912,
+      "cost_usd": 1535.2461
+    },
+    {
+      "model": "<synthetic>",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "messages": 1,
+      "total_tokens": 0,
+      "cost_usd": 0.0
+    }
+  ],
+  "per_day_model": [
+    {
+      "date": "2026-05-22",
+      "model": "<synthetic>",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "messages": 1,
+      "total_tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "date": "2026-05-22",
+      "model": "claude-opus-4-7",
+      "input_tokens": 1210,
+      "output_tokens": 310357,
+      "cache_creation_input_tokens": 1557694,
+      "cache_read_input_tokens": 138024657,
+      "messages": 622,
+      "total_tokens": 139893918,
+      "cost_usd": 259.5387
+    },
+    {
+      "date": "2026-05-23",
+      "model": "claude-opus-4-7",
+      "input_tokens": 2157,
+      "output_tokens": 1223082,
+      "cache_creation_input_tokens": 13333149,
+      "cache_read_input_tokens": 622631606,
+      "messages": 1202,
+      "total_tokens": 637189994,
+      "cost_usd": 1275.7075
+    }
+  ],
+  "sessions_summary": [
+    {
+      "session_id": "a98aa026-70fc-4b5f-aaf5-70803ebd278d",
+      "first_kst": "2026-05-22 21:58",
+      "last_kst": "2026-05-22 21:58",
+      "models": [
+        "<synthetic>",
+        "claude-opus-4-7"
+      ],
+      "messages": 2,
+      "total_tokens": 39038,
+      "cost_usd": 0.7372275
+    },
+    {
+      "session_id": "5a7e5efd-6f95-4583-ba71-a5b936cf174e",
+      "first_kst": "2026-05-22 22:00",
+      "last_kst": "2026-05-22 22:01",
+      "models": [
+        "claude-opus-4-7"
+      ],
+      "messages": 19,
+      "total_tokens": 813332,
+      "cost_usd": 3.16607475
+    },
+    {
+      "session_id": "b5465060-3a25-42ae-b0a9-9cfae46d632c",
+      "first_kst": "2026-05-22 22:05",
+      "last_kst": "2026-05-23 06:04",
+      "models": [
+        "claude-opus-4-7"
+      ],
+      "messages": 1804,
+      "total_tokens": 776231542,
+      "cost_usd": 1531.3428285
+    }
+  ],
   "pricing": {
     "claude-opus-4-7": {
       "input": 15.0,

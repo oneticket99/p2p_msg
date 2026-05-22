@@ -17,7 +17,14 @@ from pathlib import Path
 
 KST = timezone(timedelta(hours=9))
 ROOT = Path(__file__).resolve().parent.parent
-SESSIONS_DIR = Path.home() / ".claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg"
+# 한글 주석 — cycle 169.541: working dir 동적 resolve + legacy path 합산 (이전 oneticket_toonation + 현 1ticket 양쪽 scan)
+# Claude Code projects dir naming = abs_path 의 `/` + `_` + `.` 모두 `-` swap (leading `/` 의 swap = leading `-`)
+_PROJECT_SLUG = str(ROOT).replace("/", "-").replace("_", "-").replace(".", "-")
+SESSIONS_DIRS = [
+    Path.home() / ".claude/projects" / _PROJECT_SLUG,
+    Path.home() / ".claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg",
+]
+SESSIONS_DIR = SESSIONS_DIRS[0]  # backward compat alias (단일 dir reference 보존)
 JSON_OUT = ROOT / "docs/operations/token-usage-30d.json"
 HTML_OUT = ROOT / "docs/operations/token-usage-30d.html"
 
@@ -55,7 +62,18 @@ def main() -> None:
     skipped_lines = 0
     total_cost = 0.0
 
-    for jsonl in sorted(SESSIONS_DIR.glob("*.jsonl")):
+    # 한글 주석 — cycle 169.541: 양쪽 SESSIONS_DIRS scan + dedupe (session_id stem 기준)
+    _jsonl_paths = []
+    _seen_stems = set()
+    for _d in SESSIONS_DIRS:
+        if not _d.exists():
+            continue
+        for _p in sorted(_d.glob("*.jsonl")):
+            if _p.stem in _seen_stems:
+                continue
+            _seen_stems.add(_p.stem)
+            _jsonl_paths.append(_p)
+    for jsonl in _jsonl_paths:
         files_scanned += 1
         session_id = jsonl.stem
         session_data = {
@@ -279,9 +297,10 @@ def main() -> None:
         t = out['totals']
         active_days = len(per_day_list)
         total_tokens = t.get('total_tokens', 0)
-        cost_usd = t.get('cost_usd', 0.0)
+        # 한글 주석 — cycle 169.541: local var rename `cost_usd` → `cost_total_usd` (module function shadow 회피)
+        cost_total_usd = t.get('cost_usd', 0.0)
         avg_daily_token = total_tokens // active_days if active_days else 0
-        avg_daily_cost = cost_usd / active_days if active_days else 0.0
+        avg_daily_cost = cost_total_usd / active_days if active_days else 0.0
         cache_read = t.get('cache_read_input_tokens', 0)
         cache_creation = t.get('cache_creation_input_tokens', 0)
         input_tokens = t.get('input_tokens', 0)
@@ -299,7 +318,7 @@ def main() -> None:
             (r"(<div class=\"label\">활성 일수</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^ ]+( token</div>)",
              f"\\g<1>{active_days}\\g<2>{_fmt(avg_daily_token)}\\g<3>"),
             (r"(<div class=\"label\">추정 비용</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^<]+(</div>)",
-             f"\\g<1>{_fmt_cost(cost_usd)}\\g<2>{_fmt_cost(avg_daily_cost)}\\g<3>"),
+             f"\\g<1>{_fmt_cost(cost_total_usd)}\\g<2>{_fmt_cost(avg_daily_cost)}\\g<3>"),
             (r"(<div class=\"label\">캐시 적중률</div>\s*<div class=\"value\">)[^<]+(</div>)",
              f"\\g<1>{cache_hit_pct:.1f}%\\g<2>"),
         ]
