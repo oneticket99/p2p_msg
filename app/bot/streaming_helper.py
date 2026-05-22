@@ -389,30 +389,43 @@ class StreamingHelperDispatcher:
 
 
 def fetch_platform_callback(platform: StreamingPlatform) -> str:
-    """platform-specific callback endpoint 의 placeholder.
+    """cycle 169.418 — platform-specific callback endpoint URL 반환 (NotImplementedError 폐기).
 
-    실 binding (별개 cycle) — YouTube Data API + Twitch IRC + CHZZK API +
-    Kick API 의 OAuth + webhook 등록 + chat stream subscribe 의무.
+    각 platform 의 chat stream / event subscribe 의 base endpoint URL return.
+    env var override 패턴 — 사용자 별 baseUrl 직접 설정 가능 (Toonation 통합 옵션 B).
+
+    Notes
+    -----
+    OAuth flow + token refresh + actual subscribe chain = 별개 cycle 의무 retain.
+    본 함수 = 단순 base endpoint URL return — caller responsibility = OAuth + subscribe.
+
+    Returns
+    -------
+    str
+        platform 의 base endpoint URL (env override 우선).
     """
-
+    import os
     if platform == StreamingPlatform.YOUTUBE:
-        raise NotImplementedError(
-            "YouTube Data API + OAuth + chat stream 별개 cycle 의무"
+        # YouTube Data API v3 — liveChatMessages.list endpoint base
+        return os.environ.get(
+            "YOUTUBE_LIVECHAT_URL",
+            "https://www.googleapis.com/youtube/v3/liveChat/messages",
         )
     if platform == StreamingPlatform.TWITCH:
-        raise NotImplementedError(
-            "Twitch IRC + OAuth + helix API 별개 cycle 의무"
-        )
+        # Twitch IRC WebSocket endpoint (TMI)
+        return os.environ.get("TWITCH_IRC_WS_URL", "wss://irc-ws.chat.twitch.tv")
     if platform == StreamingPlatform.CHZZK:
-        raise NotImplementedError(
-            "CHZZK API + 네이버 OAuth + chat polling 별개 cycle 의무"
+        # CHZZK (네이버 치지직) live-status polling endpoint base
+        return os.environ.get(
+            "CHZZK_API_URL", "https://api.chzzk.naver.com/polling/v2/channels"
         )
     if platform == StreamingPlatform.KICK:
-        raise NotImplementedError(
-            "Kick API + OAuth + chat WebSocket 별개 cycle 의무"
+        # Kick Pusher WebSocket endpoint (chatroom events)
+        return os.environ.get(
+            "KICK_PUSHER_URL",
+            "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7",
         )
     if platform == StreamingPlatform.OBS_LOCAL:
-        raise NotImplementedError(
-            "OBS WebSocket (obs-websocket-py) + source 제어 별개 cycle 의무"
-        )
+        # OBS WebSocket v5 default endpoint (localhost)
+        return os.environ.get("OBS_WS_URL", "ws://localhost:4455")
     raise ValueError(f"unknown platform — {platform}")
