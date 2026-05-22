@@ -31,7 +31,7 @@ DEFAULT_THEME_PREF_PATH = Path.home() / ".tootalk" / "theme_preferences.json"
 
 # 한글 주석 — 3 mode (dark / light / auto) 만 허용
 SUPPORTED_THEMES = ("dark", "light", "auto")
-DEFAULT_THEME = "auto"
+DEFAULT_THEME = "dark"  # cycle 169.471 — 야간 모드 default (사용자 directive)
 
 
 @dataclass(slots=True)

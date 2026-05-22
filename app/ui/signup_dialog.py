@@ -88,9 +88,17 @@ class SignupDialog(QDialog):
         logo_row.addWidget(symbol_label)
 
         talk_label = QLabel("Talk")
+        # cycle 169.471 — theme-aware color (palette windowText 기반 light/dark 자동 분기)
+        from PyQt6.QtGui import QPalette as _QPalette
+        from PyQt6.QtWidgets import QApplication as _QApp
+        _app = _QApp.instance()
+        _text_color = "#ffffff"
+        if _app is not None:
+            _lightness = _app.palette().color(_QPalette.ColorRole.Window).lightness()
+            _text_color = "#1f2937" if _lightness >= 128 else "#ffffff"
         talk_label.setStyleSheet(
             "background: transparent;"
-            " color: #ffffff;"
+            f" color: {_text_color};"
             " font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;"
             " font-size: 55px;"
             " font-weight: 700;"

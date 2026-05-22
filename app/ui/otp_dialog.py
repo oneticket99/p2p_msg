@@ -58,7 +58,7 @@ class OtpBox(QLineEdit):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setModal(True)
+        # cycle 169.472 — setModal mis-call 회수 (OtpBox = QLineEdit 의 의 setModal 부재)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setFixedSize(48, 56)
