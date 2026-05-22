@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.490 (2026-05-22 22:40 KST) — self-hosted runner id=22 `tootalk-macos-1ticket` 신설 (1ticket 머신 + actions-runner v2.334.0 + svc launchd, 기존 id=2 병립) + python@3.13 + .venv 신설 + 86 package install
 - cycle 169.489 (2026-05-22 22:25 KST) — AddFriendDialog search_requested wire fix (main_window _on_open_add_friend connect 부재 회수, async search_users + set_search_results chain)
 - cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환 (BASH_SOURCE/.. resolve, working dir 전환 정합)
 - cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load (prepend_message + valueChanged + 500ms cooldown)
@@ -337,7 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.413 (2026-05-22 10:10 KST) — labels.py LABELS_EN 91 missing entry append (KO 137 full cover)
 - cycle 169.412 (2026-05-22 10:00 KST) — QMessageBox 44 call sites 전수 폐기 (ConfirmDialog static factory swap)
 - cycle 169.411 (2026-05-22 09:50 KST) — Phase 1 잔존 3건 (saved messages persist + folder PATCH + 야간 모드 visual indicator)
-- cycle 169.410 (2026-05-22 09:30 KST) — 아이디 찾기 endpoint + FindIdDialog + login link
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
