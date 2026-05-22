@@ -292,6 +292,50 @@ async def handle_logout(request: web.Request) -> web.Response:
     return web.json_response({"ok": True})
 
 
+def _mask_email(email: str) -> str:
+    """이메일 앞 1자 + *** + @domain mask — cycle 169.410 아이디 찾기 응답 정합."""
+    if "@" not in email:
+        return "***"
+    local, _, domain = email.partition("@")
+    if not local:
+        return f"***@{domain}"
+    return f"{local[0]}***@{domain}"
+
+
+async def handle_find_email(request: web.Request) -> web.Response:
+    """POST /api/auth/find/email — 아이디 찾기 (username + phone → masked email).
+
+    cycle 169.410 — 신원 검증 chain. username AND phone 둘 일치 시점만 masked email 반환.
+    enumeration 방어 — 불일치 시점 404 통일.
+    """
+    from server.db.repositories.users import get_user_by_username_and_phone
+
+    payload = await _read_json(request)
+    username = str(payload.get("username", "")).strip()
+    phone = str(payload.get("phone", "")).strip()
+    if not username or not phone:
+        return web.json_response(
+            {"error": "INVALID_INPUT", "message": "username + phone 입력 의무"},
+            status=400,
+        )
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response(
+            {"error": "DB_DISABLED", "message": "DB pool 비활성"},
+            status=503,
+        )
+    row = await get_user_by_username_and_phone(pool, username, phone)
+    if row is None:
+        return web.json_response(
+            {"error": "NOT_FOUND", "message": "일치 사용자 부재 — 입력 정보 재확인 의무"},
+            status=404,
+        )
+    masked = _mask_email(row.email)
+    # cycle 169.410 — audit (FIND_EMAIL action 부재 시 LOGIN_FAILURE 대체 회피, 단순 log)
+    log.info("[find_email] PASS username=%s masked=%s", username, masked)
+    return web.json_response({"ok": True, "email_masked": masked})
+
+
 async def handle_reset_request(request: web.Request) -> web.Response:
     """POST /api/auth/reset/request — silent success (enumeration 방어).
 
@@ -575,6 +619,7 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_post("/api/auth/verify", handle_verify)
     app.router.add_post("/api/auth/login", handle_login)
     app.router.add_post("/api/auth/logout", handle_logout)
+    app.router.add_post("/api/auth/find/email", handle_find_email)  # cycle 169.410
     app.router.add_post("/api/auth/reset/request", handle_reset_request)
     app.router.add_post("/api/auth/reset/consume", handle_reset_consume)
     # cycle 128 — profile + email change + account delete 3 신규 endpoint

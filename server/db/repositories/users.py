@@ -105,6 +105,33 @@ async def get_user_by_username(pool: Any, username: str) -> Optional[UserRow]:
     return UserRow(*row)
 
 
+async def get_user_by_username_and_phone(
+    pool: Any, username: str, phone: str
+) -> Optional[UserRow]:
+    """username + phone 둘 일치 lookup — 아이디 찾기 신원 검증 chain (cycle 169.410).
+
+    Notes
+    -----
+    - 아이디 찾기 endpoint `/api/auth/find/email` 안 신원 검증 source.
+    - username AND phone 둘 일치 시점만 row return (보안 — enumeration 방어).
+    - phone = '' 또는 username = '' → caller 사전 reject.
+    - cycle 169.395 의 의 0010 migration `phone VARCHAR(32)` 정합.
+    """
+
+    sql = (
+        "SELECT id, email, username, password_hash, email_verified, status, "
+        "       created_at, updated_at, last_login_at "
+        "FROM users WHERE username = %s AND phone = %s"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (username, phone))
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return UserRow(*row)
+
+
 async def mark_email_verified(pool: Any, user_id: int) -> None:
     """OTP 검증 PASS 후 email_verified = 1 갱신.
 

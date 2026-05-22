@@ -140,6 +140,15 @@ LABELS_KO: dict[str, str] = {
     "초대_링크_생성": "🔗  초대 링크 생성",  # app/ui/folder_edit_dialog.py:160
     "삭제_2": "🗑 삭제",  # app/ui/message_bubble.py:355
     "반응_추가": "😀 반응 추가",  # app/ui/message_bubble.py:351
+    # cycle 169.410 — 아이디 찾기 / 비밀번호 찾기 dialog 신규 entry
+    "아이디_찾기": "아이디 찾기",
+    "비밀번호_찾기": "비밀번호 찾기",
+    "사용자명": "사용자명",
+    "전화번호": "전화번호",
+    "찾기": "찾기",
+    "찾은_이메일": "찾은 이메일",
+    "사용자명_전화번호_입력_안내": "회원가입 시점 등록한 사용자명 + 전화번호 입력 의무. 일치 시점 가입 이메일 일부 표시.",
+    "사용자명_전화번호_입력_의무": "사용자명 + 전화번호 입력 의무",
 }
 
 
@@ -154,6 +163,15 @@ LABELS_EN: dict[str, str] = {
     "로그인": "Login",
     "취소": "Cancel",
     "회원가입": "Sign Up",
+    # cycle 169.410 — find id entry
+    "아이디_찾기": "Find ID",
+    "비밀번호_찾기": "Find Password",
+    "사용자명": "Username",
+    "전화번호": "Phone Number",
+    "찾기": "Find",
+    "찾은_이메일": "Email Found",
+    "사용자명_전화번호_입력_안내": "Enter the username and phone number used at signup. Matching account email will be partially shown.",
+    "사용자명_전화번호_입력_의무": "Username + phone number required",
     "확인": "OK",
     "저장": "Save",
     "검색": "Search",

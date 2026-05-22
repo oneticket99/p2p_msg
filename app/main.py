@@ -166,6 +166,20 @@ def main() -> int:
                     if login_result == 2:
                         current_dialog = "signup"
                         continue
+                    if login_result == 3:
+                        # cycle 169.410 — 아이디 찾기 dialog 진입 후 login 복귀
+                        from app.ui.find_id_dialog import FindIdDialog
+                        find_dialog = FindIdDialog(base_url=api_base)
+                        find_dialog.exec()
+                        current_dialog = "login"
+                        continue
+                    if login_result == 4:
+                        # cycle 169.410 — 비밀번호 찾기 dialog 진입 후 login 복귀
+                        from app.ui.password_reset_dialog import PasswordResetDialog
+                        reset_dialog = PasswordResetDialog(auth_client=auth_client)
+                        reset_dialog.exec()
+                        current_dialog = "login"
+                        continue
                     if login_result != login.DialogCode.Accepted:
                         logging.getLogger(__name__).info("LoginDialog 취소 — 종료")
                         loop.run_until_complete(auth_client.close())

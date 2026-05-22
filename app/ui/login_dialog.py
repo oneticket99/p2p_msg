@@ -152,6 +152,28 @@ class LoginDialog(QDialog):
         btn_row.addWidget(btn_signup_link)
         outer.addLayout(btn_row)
 
+        # cycle 169.410 — 아이디 찾기 + 비밀번호 찾기 link row (사용자 directive 아이디 찾기 구현)
+        find_row = QHBoxLayout()
+        find_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        btn_find_id = QPushButton(_tr("아이디_찾기"))
+        btn_find_id.setProperty("variant", "ghost")
+        btn_find_id.setFlat(True)
+        btn_find_id.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        btn_find_id.clicked.connect(self._on_find_id_clicked)  # type: ignore[arg-type]
+        find_row.addWidget(btn_find_id)
+
+        sep = QLabel("|")
+        sep.setStyleSheet("color: #4b5563; font-size: 13px;")
+        find_row.addWidget(sep)
+
+        btn_reset_pw = QPushButton(_tr("비밀번호_찾기"))
+        btn_reset_pw.setProperty("variant", "ghost")
+        btn_reset_pw.setFlat(True)
+        btn_reset_pw.setStyleSheet("color: #9ca3af; font-size: 13px;")
+        btn_reset_pw.clicked.connect(self._on_reset_pw_clicked)  # type: ignore[arg-type]
+        find_row.addWidget(btn_reset_pw)
+        outer.addLayout(find_row)
+
         # 한글 주석 — Enter key 시 login trigger
         self._password_edit.returnPressed.connect(self._on_login_clicked)  # type: ignore[arg-type]
 
@@ -218,3 +240,11 @@ class LoginDialog(QDialog):
     def _on_signup_link_clicked(self) -> None:
         """회원가입 link click — QDialog.done(2) signup intent code 반환."""
         self.done(2)
+
+    def _on_find_id_clicked(self) -> None:
+        """cycle 169.410 — 아이디 찾기 link click → done(3) intent."""
+        self.done(3)
+
+    def _on_reset_pw_clicked(self) -> None:
+        """cycle 169.410 — 비밀번호 찾기 link click → done(4) intent."""
+        self.done(4)
