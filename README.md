@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.527 (2026-05-23 05:00 KST) — codex 2.5 main_window 책임 분리 12차 MED batch — `app/ui/_friend_profile_mixin.py` 신설 (FriendProfileMixin: _on_friend_profile_open + _profile_message_clicked + _profile_call_clicked + _profile_mute_clicked + _profile_block_clicked + _lookup_friend_name, 6 method 121 line) + `app/ui/_chat_send_mixin.py` 신설 (ChatSendMixin: _on_input_message_sent + _on_input_file_attached + _on_chat_reply_requested + _on_send_clicked + _append_dm_message, 5 method 269 line) + MainWindow MRO 16 mixin + main_window.py 1321 → 1027줄 (294줄 분리, 누계 2999줄 4026 → 1027, **74.5%**)
 - cycle 169.526 (2026-05-23 04:40 KST) — codex 2.5 main_window 책임 분리 11차 LOW batch — `app/ui/_update_lifecycle_mixin.py` (UpdateLifecycleMixin: _start_update_check_task + _on_new_version + _cancel_update_task, 3 method 128 line) + `app/ui/_auth_chain_mixin.py` (AuthChainMixin: _require_auth_client + _on_open_signup + _on_open_login + _post_login_refresh + _on_open_reset + _on_logout, 6 method 141 line) + `app/ui/_chat_navigation_mixin.py` (ChatNavigationMixin: _refresh_chat_list_panel + _on_sidebar_tab_clicked + _on_chat_selected, 3 method 232 line) + MainWindow MRO 14 mixin + main_window.py 1703 → 1321줄 (382줄 분리 + dead decorator 4 cleanup, 누계 2705줄 4026 → 1321, **67.2%**)
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
 - cycle 169.525 (2026-05-23 04:20 KST) — codex 2.5 main_window 책임 분리 10차 — `app/ui/_chat_header_mixin.py` 신설 (ChatHeaderMixin: _on_header_sidebar_toggle + _on_header_search + _on_header_call + _on_header_remote + _on_remote_request + _spawn_incoming_remote_modal + _on_remote_connect + _on_header_menu, 8 method 187 line) + MainWindow MRO 11 mixin + main_window.py 1890 → 1703줄 (187줄 분리, 누계 2323줄 4026 → 1703, **57.7%**) + cavecrew-investigator 병렬 spawn (잔존 5 mixin 후보 detect — AuthChain + UpdateLifecycle + FriendProfile + ChatSend + ChatNavigation, ~828 line scope)
@@ -335,8 +336,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.492 (2026-05-22 23:00 KST) — .gitignore 2 entry 추가 (build/tootalk/ PyInstaller 산출 + .claude/settings.local.json local 권한 cache)
 - cycle 169.491 (2026-05-22 22:50 KST) — 친구 검색 한글 확장 — server SQL `WHERE username/display_name/nickname LIKE` 3 column OR (한글 nickname/display_name 검색 회수) + UserSearchResult + SearchResult display_name/nickname field 신설 + UI label "닉네임 (@username)" 우선 표기
 - cycle 169.490 (2026-05-22 22:40 KST) — self-hosted runner id=22 `tootalk-macos-1ticket` 신설 (1ticket 머신 + actions-runner v2.334.0 + svc launchd, 기존 id=2 병립) + python@3.13 + .venv 신설 + 86 package install
-- cycle 169.489 (2026-05-22 22:25 KST) — AddFriendDialog search_requested wire fix (main_window _on_open_add_friend connect 부재 회수, async search_users + set_search_results chain)
-- cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환 (BASH_SOURCE/.. resolve, working dir 전환 정합)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
