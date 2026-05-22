@@ -157,6 +157,27 @@ async def handle_register(request: web.Request) -> web.Response:
         )
     except AuthError as exc:
         return _json_error(exc)
+    except Exception as exc:  # noqa: BLE001 — concurrent INSERT race 안 IntegrityError 회수
+        # 한글 주석 — pre-check 통과 후 동시 INSERT race 시점 UNIQUE 위배 catch.
+        # uq_users_email = EMAIL_DUPLICATE, uq_users_username = USERNAME_DUPLICATE 매핑.
+        msg = str(exc)
+        if "uq_users_email" in msg:
+            log.warning("[register] IntegrityError race — email duplicate %r", exc)
+            return web.json_response(
+                {"error": "EMAIL_DUPLICATE", "message": "이미 가입된 이메일"},
+                status=409,
+            )
+        if "uq_users_username" in msg:
+            log.warning("[register] IntegrityError race — username duplicate %r", exc)
+            return web.json_response(
+                {"error": "USERNAME_DUPLICATE", "message": "이미 사용 중인 사용자명"},
+                status=409,
+            )
+        log.error("[register] 내부 오류 — %r", exc, exc_info=True)
+        return web.json_response(
+            {"error": "INTERNAL", "message": "가입 처리 실패 — 잠시 후 재시도"},
+            status=500,
+        )
 
     # cycle 169.67 회수 — reclaim path 의 의 별개 audit + smtp_status response 포함
     user_id = result["user_id"]
