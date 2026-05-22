@@ -29,58 +29,99 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, Dict
 
 from aiohttp import web
 
+from server.db.repositories import emoji_packs as _packs_repo
+
 log = logging.getLogger(__name__)
+
+# cycle 169.415 — slug regex (lowercase + hyphen + digit, 2~64 chars)
+_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
+
+
+def _pack_to_dict(p: _packs_repo.EmojiPackRow) -> Dict[str, Any]:
+    """EmojiPackRow → JSON dict (cycle 169.415)."""
+    return {
+        "id": p.id,
+        "owner_user_id": p.owner_user_id,
+        "name": p.name,
+        "slug": p.slug,
+        "description": p.description,
+        "is_public": p.is_public,
+        "moderation_status": p.moderation_status.value,
+        "download_count": p.download_count,
+    }
+
+
+def _item_to_dict(i: _packs_repo.EmojiPackItemRow) -> Dict[str, Any]:
+    """EmojiPackItemRow → JSON dict."""
+    return {
+        "id": i.id,
+        "pack_id": i.pack_id,
+        "shortcode": i.shortcode,
+        "file_path": i.file_path,
+        "mime_type": i.mime_type,
+        "file_size": i.file_size,
+        "width": i.width,
+        "height": i.height,
+        "moderation_status": i.moderation_status.value,
+    }
 
 
 async def handle_list_packs(request: web.Request) -> web.Response:
-    """GET /api/emoji/packs — 공개 + approved 팩 list (skeleton).
+    """GET /api/emoji/packs — 공개 + approved 팩 list (cycle 169.415 actual binding).
 
-    Phase 5 본격 cycle: emoji_packs.list_public_approved(pool) 의 호출 + pagination.
-
-    응답 schema:
-        {"packs": [{"id", "name", "slug", "description", "download_count"}, ...]}
+    query: ?limit=50&offset=0 (limit cap=200).
+    응답 schema = ``{"packs": [...], "limit": int, "offset": int, "count": int}``.
     """
-
-    # 한글 주석: skeleton 응답 — 본격 cycle 의 실 DB binding 진입 시점 placeholder
-    log.debug("GET /api/emoji/packs skeleton 호출")
-    return web.json_response({"packs": [], "skeleton": True})
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response({"packs": [], "limit": 0, "offset": 0, "count": 0})
+    try:
+        limit = max(1, min(200, int(request.query.get("limit", "50"))))
+        offset = max(0, int(request.query.get("offset", "0")))
+    except ValueError:
+        raise web.HTTPBadRequest(reason="limit/offset 정수 의무")
+    rows = await _packs_repo.list_public_approved(pool, limit=limit, offset=offset)
+    payload = [_pack_to_dict(r) for r in rows]
+    return web.json_response({
+        "packs": payload, "limit": limit, "offset": offset, "count": len(payload),
+    })
 
 
 async def handle_get_pack(request: web.Request) -> web.Response:
-    """GET /api/emoji/packs/{slug} — 단일 팩 + item list (skeleton).
+    """GET /api/emoji/packs/{slug} — 단일 팩 + item list (cycle 169.415 actual binding).
 
-    Phase 5 본격 cycle: get_pack_by_slug + list_items 의 합쳐진 응답.
-
-    응답 schema:
-        {"pack": {...}, "items": [{...}, ...]}
+    응답 schema = ``{"pack": {...} | null, "items": [...]}``.
     """
-
     slug = request.match_info.get("slug", "")
     if not slug:
         raise web.HTTPBadRequest(reason="slug 의무")
-    log.debug("GET /api/emoji/packs/%s skeleton 호출", slug)
-    return web.json_response({"pack": None, "items": [], "skeleton": True})
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response({"pack": None, "items": []})
+    pack = await _packs_repo.get_pack_by_slug(pool, slug)
+    if pack is None:
+        raise web.HTTPNotFound(reason=f"pack slug={slug} 부재")
+    items = await _packs_repo.list_items(pool, pack_id=pack.id)
+    return web.json_response({
+        "pack": _pack_to_dict(pack),
+        "items": [_item_to_dict(i) for i in items],
+    })
 
 
 async def handle_create_pack(request: web.Request) -> web.Response:
-    """POST /api/emoji/packs — 신규 팩 생성 (skeleton).
+    """POST /api/emoji/packs — 신규 팩 생성 (cycle 169.415 actual binding).
 
-    Phase 5 본격 cycle: insert_pack 호출 + slug UNIQUE 충돌 처리 + audit log.
-
-    요청 schema:
-        {"name": "...", "slug": "...", "description": "...", "is_public": false}
-    응답 schema:
-        {"pack_id": 0, "skeleton": true}
+    요청 schema = ``{"name": str, "slug": str, "description": str, "is_public": bool}``.
+    응답 schema = ``{"pack_id": int, "slug": str}``.
     """
-
     user_id = request.get("user_id")
     if user_id is None or not isinstance(user_id, int) or user_id <= 0:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
-
     try:
         body = await request.json()
     except ValueError as exc:
@@ -88,9 +129,40 @@ async def handle_create_pack(request: web.Request) -> web.Response:
     if not isinstance(body, dict):
         raise web.HTTPBadRequest(reason="body object 의무")
 
-    # 한글 주석: skeleton — 본격 cycle 진입 시 slug regex 검증 + insert_pack 호출
-    log.debug("POST /api/emoji/packs skeleton user_id=%d", user_id)
-    return web.json_response({"pack_id": 0, "skeleton": True}, status=200)
+    name = str(body.get("name", "")).strip()
+    slug = str(body.get("slug", "")).strip().lower()
+    description = body.get("description")
+    is_public = bool(body.get("is_public", False))
+
+    if not name or len(name) > 64:
+        raise web.HTTPBadRequest(reason="name 1~64자 의무")
+    if not _SLUG_RE.match(slug):
+        raise web.HTTPBadRequest(reason="slug 형식 부재 (소문자 + 숫자 + hyphen, 2~64자)")
+    if description is not None and not isinstance(description, str):
+        raise web.HTTPBadRequest(reason="description string 의무")
+    if description is not None and len(description) > 255:
+        raise web.HTTPBadRequest(reason="description 255자 cap")
+
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response(
+            {"error": "DB_DISABLED", "message": "DB pool 비활성"}, status=503
+        )
+    # slug UNIQUE 사전 검증 (충돌 시점 graceful 409)
+    existing = await _packs_repo.get_pack_by_slug(pool, slug)
+    if existing is not None:
+        return web.json_response(
+            {"error": "SLUG_CONFLICT", "message": f"slug={slug} 이미 존재"}, status=409
+        )
+    try:
+        pack_id = await _packs_repo.insert_pack(
+            pool, owner_user_id=user_id, name=name, slug=slug,
+            description=description, is_public=is_public,
+        )
+    except ValueError as exc:
+        raise web.HTTPBadRequest(reason=str(exc))
+    log.info("[emoji_pack] create user_id=%d slug=%s pack_id=%d", user_id, slug, pack_id)
+    return web.json_response({"pack_id": pack_id, "slug": slug}, status=201)
 
 
 async def handle_add_item(request: web.Request) -> web.Response:
