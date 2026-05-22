@@ -134,6 +134,10 @@ services:
     networks:
       - tootalk-internal
       - tootalk-edge
+    # 한글 주석 — cycle 169.538: host 8765 bind 추가 (외부 ws://host:8765/ws 직접 access)
+    # 본 저장소 README §3 + app/main config 정합 의무. nginx proxy 경유 = port 443 path 와 병립.
+    ports:
+      - "8765:8765"
     expose:
       - "8765"
 
