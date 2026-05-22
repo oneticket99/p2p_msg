@@ -309,6 +309,8 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.517 (2026-05-23 02:45 KST) — memory `feedback_ssh_deploy_classifier_reject.md` 신설 (영구 가드레일 3 누계) — ssh-deploy chain classifier reject 5 패턴 + 우회 chain (사용자 manual `!` prefix 의무) 영구화
+- cycle 169.516 (2026-05-23 02:40 KST) — handoff §8.80 신설 (cycle 169.488~515 28 cycle 본 session manifest + codex 6 risk 회수 + main_window 4 mixin + 친구 chain + bot user FK fix + classifier reject 패턴)
 - cycle 169.515 (2026-05-23 02:30 KST) — tools/gen_token_usage_30d.py HTML regen KeyError fix (cycle 169.504 잔존 bug 회수) — session 0 시점 totals dict empty graceful (`.get(key, 0)` fallback) + token-usage-30d.html 본격 regen + ssh-deploy bot user (id=1) 직접 INSERT IGNORE PASS (cycle 169.502 server fix 의 즉시 등가 회수, FK violation 해소)
 - cycle 169.514 (2026-05-23 02:15 KST) — codex 2.5 main_window 책임 분리 4차 — `app/ui/_drawer_mixin.py` 신설 (DrawerMixin: _on_hamburger_clicked + _on_drawer_profile/settings/contacts/new_group/new_channel/calls/saved/pending_requests/logout + _on_profile_edit_requested + _on_profile_update_finished + _on_group_created + _on_channel_created + _on_night_mode_toggled, 15 method) + MainWindow MRO 5 mixin (TrayMixin + FriendSearchMixin + BotChatMixin + DrawerMixin + QMainWindow) + main_window.py 3478 → 3152줄 (326줄 분리, 누계 874줄 4026 → 3152, 21.7%)
 - cycle 169.513 (2026-05-23 02:00 KST) — codex 2.5 main_window 책임 분리 3차 — `app/ui/_bot_chat_mixin.py` 신설 (BotChatMixin: _send_bot_message + _fetch_bot_history) + MainWindow MRO `(TrayMixin, FriendSearchMixin, BotChatMixin, QMainWindow)` + main_window.py 3675 → 3478줄 (197줄 분리, 누계 548줄 4026 → 3478, 13.6%)
@@ -337,8 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.457 (2026-05-22 18:53 KST) — telegram username 검색 친구 추가 + mark_all_bubbles_read
 - cycle 169.454 (2026-05-22 18:36 KST) — bot DM resolve endpoint + bot history fetch + i18n new_contact
 - cycle 169.452 (2026-05-22 18:30 KST) — telegram 양방향 contact 매칭 (migration 0015 + reverse signup propagate)
-- cycle 169.450 (2026-05-22 18:10 KST) — NewContactDialog 신설 (telegram align +82 mask)
-- cycle 169.447 (2026-05-22 17:50 KST) — read state tracking base (migration 0014)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
