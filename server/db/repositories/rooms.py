@@ -187,6 +187,21 @@ async def find_or_create_dm_room(pool: Any, user_a: int, user_b: int) -> int:
     return await insert_room(pool, room_code=room_code, owner_id=small, kind="direct")
 
 
+async def find_or_create_bot_room(pool: Any, user_id: int) -> int:
+    """cycle 169.441 — bot chat room 의 lookup or insert chain.
+
+    사용자 directive 모든 채팅방 history persist — 고객센터 봇 대화도 server retain 의무.
+    room_code = `bot-{user_id}` deterministic. kind="direct" retain (1:1 user↔bot).
+    """
+    if user_id <= 0:
+        raise ValueError("bot room user_id 양수 의무")
+    room_code = f"bot-{user_id}"
+    existing = await get_room_by_code(pool, room_code)
+    if existing:
+        return existing.id
+    return await insert_room(pool, room_code=room_code, owner_id=user_id, kind="direct")
+
+
 async def find_or_create_saved_room(pool: Any, user_id: int) -> int:
     """cycle 169.411 — 저장한 메시지 room 의 lookup or insert chain.
 

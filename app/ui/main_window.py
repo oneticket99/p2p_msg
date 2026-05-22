@@ -1520,6 +1520,29 @@ class MainWindow(QMainWindow):
                             import json
                             data = json.loads(text_body)
                             reply = data.get("reply", {}).get("content", "응답 부재")
+                            # cycle 169.441 — server msg_id capture + local cache write-through
+                            _user_msg_id = data.get("user_msg_id")
+                            _bot_msg_id = data.get("bot_msg_id")
+                            try:
+                                from app.db import messages_cache as _mc
+                                import time as _t
+                                self_id = getattr(self, "_current_user_id", None) or 1
+                                bot_room = self_id * 10 + 2  # bot kind local namespace
+                                now_ms = int(_t.time() * 1000)
+                                if isinstance(_user_msg_id, int) and _user_msg_id > 0:
+                                    _mc.insert_message(
+                                        msg_id=_user_msg_id, room_id=bot_room,
+                                        sender_id=self_id, body=text,
+                                        ts_ms=now_ms - 1000, is_self=True,
+                                    )
+                                if isinstance(_bot_msg_id, int) and _bot_msg_id > 0:
+                                    _mc.insert_message(
+                                        msg_id=_bot_msg_id, room_id=bot_room,
+                                        sender_id=1, body=reply,
+                                        ts_ms=now_ms, is_self=False,
+                                    )
+                            except Exception as exc:
+                                log.debug("[bot_chat] local cache 실패 — %r", exc)
                         except json.JSONDecodeError:
                             log.warning("[bot_chat] JSON parse 실패 — body=%s", text_body[:200])
                             reply = "⚠️ 응답 형식 오류. 잠시 후 다시 시도해주세요."
@@ -1746,6 +1769,45 @@ class MainWindow(QMainWindow):
         worker.start()
 
     @pyqtSlot(str, int)
+    def _load_local_history(self, kind: str, target_id: int) -> None:
+        """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
+
+        사용자 directive — 모든 채팅방 이전 대화 영속 + 채팅방 진입 시점 즉시 표시.
+        local cache 부재 시점 server fetch chain (_fetch_dm_history) 만 polling.
+        """
+        try:
+            from app.db import messages_cache as _mc
+            from datetime import datetime as _dt
+            self_id = getattr(self, "_current_user_id", None) or 1
+            if kind == "saved":
+                room_id_local = self_id * 100 + 1
+            elif kind == "bot":
+                room_id_local = self_id * 10 + 2
+            elif kind == "friend":
+                room_id_local = target_id * 100 + 3
+            else:
+                return
+            rows = _mc.list_messages_by_room(room_id=room_id_local, limit=100)
+            if not rows:
+                return
+            # 한글 주석 — DESC fetch → 시간 ASC chat_view replay
+            for r in reversed(rows):
+                sender_name = "나" if r["is_self"] else (
+                    "투네이션 고객센터" if kind == "bot" else f"user#{r['sender_id']}"
+                )
+                ts = _dt.fromtimestamp(r["ts_ms"] / 1000.0) if r["ts_ms"] else _dt.now()
+                effective_self = True if kind == "saved" else bool(r["is_self"])
+                self._chat_view.add_message(
+                    sender_name, r["body"] or "", ts,
+                    is_self=effective_self,
+                    hide_sender=kind in ("friend", "bot", "saved"),
+                )
+            self._chat_view.scroll_to_bottom()
+            log.info("[load_local] kind=%s room=%d msgs=%d replay PASS",
+                     kind, room_id_local, len(rows))
+        except Exception as exc:
+            log.debug("[load_local] 실패 — %r", exc)
+
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
         """ChatListPanel.chat_selected → group room 진입 또는 friend/bot chat 진입 (cycle 169.62)."""
         log.info("[main_window] chat_selected kind=%s target_id=%d", kind, target_id)
@@ -1785,10 +1847,15 @@ class MainWindow(QMainWindow):
             self._active_chat_target_id = target_id
             # cycle 169.157 — cache replay (server REST fetch = 별 cycle 169.158+)
             # cycle 169.163 — 1:1 chat (friend/bot) sender label suppress propagate
-            hide_sender = kind in ("friend", "bot")
+            # cycle 169.441 — local SQLite 우선 replay (in-memory cache 부재 시점 fallback)
+            hide_sender = kind in ("friend", "bot", "saved")
             cached = self._dm_history.get((kind, target_id), [])
-            for sender, text, ts, is_self in cached:
-                self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=hide_sender)
+            if cached:
+                for sender, text, ts, is_self in cached:
+                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=hide_sender)
+            else:
+                # 한글 주석 — in-memory cache miss → local SQLite history replay (사용자 directive 영속)
+                self._load_local_history(kind, target_id)
             # cycle 169.176 — prev offset restore 시도 + 부재 시 bottom fallback
             restored = self._chat_view.restore_scroll_offset(kind, target_id)
             if not restored:

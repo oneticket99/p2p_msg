@@ -346,7 +346,38 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
         except Exception as exc:  # noqa: BLE001
             log.warning("bot_chat audit 실패 user_id=%d: %s", user_id, exc)
 
-    return web.json_response({"reply": _reply_to_wire(reply)})
+    # cycle 169.441 — bot reply server messages INSERT (사용자 directive 모든 채팅방 history persist)
+    # bot_room = find_or_create bot DM room (saved-{uid} 등가 — bot-{uid})
+    user_msg_id: Optional[int] = None
+    bot_msg_id: Optional[int] = None
+    if pool is not None:
+        try:
+            from server.db.repositories.rooms import find_or_create_bot_room
+            from server.db.repositories.messages import insert_text_message
+            bot_room_id = await find_or_create_bot_room(pool, user_id)
+            # last user msg INSERT
+            last_user = None
+            for m in reversed(messages):
+                if m.role == BotRole.USER:
+                    last_user = m
+                    break
+            if last_user is not None:
+                user_msg_id = await insert_text_message(
+                    pool, room_id=bot_room_id, sender_id=user_id, body=last_user.content,
+                )
+            # bot reply INSERT (sender_id = 시스템 bot prefix 1_000_000+user_id retain)
+            # 한글 주석 — bot sender_id = 1 (고객센터 봇 hardcoded — bots table 부재 시점 fallback)
+            bot_msg_id = await insert_text_message(
+                pool, room_id=bot_room_id, sender_id=1, body=reply.content,
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[bot_chat] server messages INSERT 실패 — %r", exc)
+
+    return web.json_response({
+        "reply": _reply_to_wire(reply),
+        "user_msg_id": user_msg_id,
+        "bot_msg_id": bot_msg_id,
+    })
 
 
 def register_bot_routes(app: web.Application) -> None:
