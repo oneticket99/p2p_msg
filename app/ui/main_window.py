@@ -109,9 +109,10 @@ from app.ui._signaling_mixin import SignalingMixin
 from app.ui._room_group_chat_mixin import RoomGroupChatMixin
 from app.ui._rest_post_mixin import RestPostMixin
 from app.ui._folder_mixin import FolderMixin
+from app.ui._chat_header_mixin import ChatHeaderMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -1182,11 +1183,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._input_container.setVisible(True)
 
     @pyqtSlot()
-    def _on_header_sidebar_toggle(self) -> None:
-        """chat header sidebar toggle button — room_list visibility toggle (cycle 169.61)."""
-        visible = self._room_list.isVisible()
-        self._room_list.setVisible(not visible)
-        log.info("[main_window] sidebar toggle — visible=%s", not visible)
+    # ------------------------------------------------------------------
+    # cycle 169.525 — _on_header_sidebar_toggle → _chat_header_mixin.py 분리
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.520 — _on_signaling_* 4 slot → app/ui/_signaling_mixin.py 분리
@@ -1365,195 +1364,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
 
     @pyqtSlot()
     @pyqtSlot()
-    def _on_header_search(self) -> None:
-        """ChatHeader 검색 button — cycle 169.63 ChatListPanel filter focus."""
-        log.info("ChatHeader 검색 click — chat list filter focus")
-        # 한글 주석 — chat_list_panel 안 search input focus + visible 보장
-        if hasattr(self, "_chat_list_panel"):
-            self._chat_list_panel._search_edit.setFocus()
-            self._chat_list_panel._search_edit.selectAll()
-
-    @pyqtSlot()
-    def _on_header_call(self) -> None:
-        """ChatHeader 통화 button — cycle 169.57 CallDialog + CallClient binding.
-
-        음성 통화 default. 영상 toggle 가능. WebRTC SDP/ICE actual exchange =
-        signaling chain 안 fire (별도 cycle).
-        """
-        log.info("ChatHeader 통화 click — CallDialog 진입")
-        from app.ui.call_dialog import CallDialog
-        from app.net.call_client import CallClient
-        # cycle 169.331 — active chat 의 peer name lookup (사용자 critique image #94/95)
-        peer = "상대 사용자"
-        active_kind = getattr(self, "_active_chat_kind", None)
-        active_target = getattr(self, "_active_chat_target_id", None)
-        clp = getattr(self, "_chat_list_panel", None)
-        if clp is not None and active_kind is not None:
-            for entry in getattr(clp, "_entries", []):
-                if entry.kind == active_kind and entry.target_id == active_target:
-                    peer = entry.name or peer
-                    break
-        dialog = CallDialog(peer_name=peer, video_enabled=False, incoming=False, parent=self)
-        stun_url = getattr(self._config, "stun_url", "stun:stun.l.google.com:19302")
-        turn_url = getattr(self._config, "turn_url", "")
-        turn_username = getattr(self._config, "turn_username", "")
-        turn_credential = getattr(self._config, "turn_credential", "")
-        # 한글 주석 — cycle 169.60 회수 — signaling_client + peer_id + TURN inject
-        signaling = getattr(self, "_signaling_client", None)
-        peer_id = getattr(self, "_active_peer_id", None)
-        call_client = CallClient(
-            stun_url=stun_url, signaling_client=signaling, peer_id=peer_id,
-            turn_url=turn_url, turn_username=turn_username, turn_credential=turn_credential,
-        )
-        dialog.attach_client(call_client)
-        self._active_call_client = call_client
-        # 한글 주석 — 통화 시점 즉시 outgoing offer fire (peer_id 부재 시 placeholder mode)
-        import asyncio
-        try:
-            asyncio.ensure_future(call_client.create_offer(video=False))
-        except Exception as exc:
-            log.warning("[call] create_offer schedule fail — %r", exc)
-        # cycle 169.327 — _exec_dialog_centered chain (main outside protrude 차단 + backdrop + ESC)
-        self._exec_dialog_centered(dialog)
-
-    @pyqtSlot()
-    def _on_header_remote(self) -> None:
-        """원격 제어 icon → dropdown menu (원격 요청 + 원격 연결) — cycle 169.330 사용자 directive image #93."""
-        from PyQt6.QtWidgets import QMenu
-        from PyQt6.QtGui import QCursor
-        menu = QMenu(self)
-        menu.setStyleSheet(
-            "QMenu { background-color: #131C30; color: #e5e7eb; border: 1px solid #1f2937; padding: 4px; }"
-            "QMenu::item { padding: 8px 16px; border-radius: 4px; }"
-            "QMenu::item:selected { background-color: #1F2937; }"
-        )
-        # 한글 주석 — 원격 요청 + 원격 연결 2 action
-        act_request = menu.addAction("원격 요청")
-        act_connect = menu.addAction("원격 연결")
-        act_request.triggered.connect(self._on_remote_request)  # type: ignore[arg-type]
-        act_connect.triggered.connect(self._on_remote_connect)  # type: ignore[arg-type]
-        menu.exec(QCursor.pos())
-
-    @pyqtSlot()
-    def _on_remote_request(self) -> None:
-        """원격 요청 → RemoteCallDialog outgoing — 사용자 directive cycle 169.426 용어 정합.
-
-        원격요청 = me → 상대 PC 제어 도움 요청 (me 사용자 = 도움 제공 의도, 상대 PC 제어 의도).
-        타의적 — 상대 PC 보는 사용자 의지. label = '원격 도움 요청 발신 중…'.
-        """
-        try:
-            from app.ui.remote_call_dialog import RemoteCallDialog
-            peer = "상대 사용자"
-            clp = getattr(self, "_chat_list_panel", None)
-            kind = getattr(self, "_active_chat_kind", None)
-            tid = getattr(self, "_active_chat_target_id", None)
-            if clp is not None and kind is not None:
-                for e in getattr(clp, "_entries", []):
-                    if e.kind == kind and e.target_id == tid:
-                        peer = e.name or peer
-                        break
-            dialog = RemoteCallDialog(
-                peer_name=peer, mode="request", parent=self,
-                outgoing_label="원격 도움 요청 발신 중… (상대 PC 제어 의도)",
-            )
-            self._exec_dialog_centered(dialog)
-        except Exception as exc:
-            log.warning("RemoteCallDialog request 실패 — %r", exc)
-
-    def _spawn_incoming_remote_modal(
-        self, peer_name: str, kind: str = "remote_request",
-    ) -> None:
-        """cycle 169.425~426 — 상대 peer 요청 incoming 시점 강제 modal spawn helper.
-
-        사용자 directive 용어 정합:
-        - 원격요청 = 상대 → me → 상대 PC 제어 도움 요청 (타의적, 상대 의지)
-        - 원격연결 = 상대 → me → me PC 제어 시도 (자의적, 상대 의지)
-
-        Parameters
-        ----------
-        peer_name : str
-            요청 송신 상대 표시 이름.
-        kind : str
-            "voice_call" / "remote_request" / "remote_connect" 3 종. status label 분기.
-        """
-        try:
-            from app.ui.remote_call_dialog import RemoteCallDialog
-            label_map = {
-                "voice_call": "음성 통화 수신…",
-                "remote_request": "원격 도움 요청 수신… (상대 PC 제어)",
-                "remote_connect": "원격 제어 요청 수신… (내 PC 제어)",
-            }
-            label = label_map.get(kind, "수신…")
-            dialog = RemoteCallDialog(
-                peer_name=peer_name, mode="incoming", parent=self,
-                incoming_label=label,
-            )
-            self._exec_dialog_centered(dialog)
-        except Exception as exc:
-            log.warning("[incoming_remote] spawn 실패 kind=%s — %r", kind, exc)
-
-    @pyqtSlot()
-    def _on_remote_connect(self) -> None:
-        """원격 연결 → RemoteCallDialog outgoing — 사용자 directive cycle 169.424 회수.
-
-        이전 mode='incoming' 폐기 — incoming UI = 상대 peer 요청 송신 시점 별 trigger (peer signal handler).
-        dropdown 클릭 = outgoing 의무. layout = 원격 요청 same dialog (RemoteCallDialog request mode).
-        """
-        try:
-            from app.ui.remote_call_dialog import RemoteCallDialog
-            peer = "상대 사용자"
-            clp = getattr(self, "_chat_list_panel", None)
-            kind = getattr(self, "_active_chat_kind", None)
-            tid = getattr(self, "_active_chat_target_id", None)
-            if clp is not None and kind is not None:
-                for e in getattr(clp, "_entries", []):
-                    if e.kind == kind and e.target_id == tid:
-                        peer = e.name or peer
-                        break
-            # cycle 169.424~426 — outgoing mode + status text 분기 (원격 연결 = me → 상대 PC 제어 의도)
-            dialog = RemoteCallDialog(
-                peer_name=peer, mode="request", parent=self,
-                outgoing_label="원격 제어 요청 발신 중… (내 PC 제어 위임)",
-            )
-            self._exec_dialog_centered(dialog)
-        except Exception as exc:
-            log.warning("RemoteCallDialog connect 실패 — %r", exc)
-
-    @pyqtSlot()
-    def _on_header_menu(self) -> None:
-        """ChatHeader 메뉴 button — kind 분기 dropdown (group/channel/friend) 사용자 directive image #102."""
-        log.info("ChatHeader 메뉴 click")
-        from PyQt6.QtWidgets import QMenu
-        from PyQt6.QtGui import QCursor
-        kind = getattr(self, "_active_chat_kind", None) or "friend"
-        menu = QMenu(self)
-        menu.setStyleSheet(
-            "QMenu { background-color: #131C30; color: #e5e7eb; border: 1px solid #1f2937; padding: 4px; }"
-            "QMenu::item { padding: 8px 16px; border-radius: 4px; }"
-            "QMenu::item:selected { background-color: #1F2937; }"
-            "QMenu::separator { height: 1px; background: #1f2937; margin: 4px 0; }"
-        )
-        # cycle 169.334 — group/channel kind = telegram align 6 entry (image #102)
-        if kind in ("group", "channel"):
-            act_mute = menu.addAction("알림 끄기")
-            menu.addSeparator()
-            act_info = menu.addAction("그룹 정보 보기" if kind == "group" else "채널 정보 보기")
-            act_manage = menu.addAction("그룹 관리" if kind == "group" else "채널 관리")
-            act_poll = menu.addAction("설문 만들기")
-            act_clear = menu.addAction("대화 내용 비우기")
-            menu.addSeparator()
-            act_leave = menu.addAction("삭제하고 나가기")
-            act_info.triggered.connect(self._on_group_info)  # type: ignore[arg-type]
-            act_manage.triggered.connect(lambda: log.info("[group_manage] placeholder"))  # type: ignore[arg-type]
-            act_poll.triggered.connect(lambda: log.info("[group_poll] placeholder"))  # type: ignore[arg-type]
-            act_clear.triggered.connect(self._on_chat_clear)  # type: ignore[arg-type]
-            act_leave.triggered.connect(self._on_chat_leave)  # type: ignore[arg-type]
-        else:
-            menu.addAction("채팅 정보")
-            menu.addAction("알림 끄기")
-            menu.addSeparator()
-            menu.addAction("채팅 나가기")
-        menu.exec(QCursor.pos())
+    # ------------------------------------------------------------------
+    # cycle 169.525 — ChatHeader + remote dropdown 7 method → _chat_header_mixin
+    # ------------------------------------------------------------------
 
     @pyqtSlot()
     # ------------------------------------------------------------------
