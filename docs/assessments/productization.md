@@ -268,6 +268,11 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.467**: M2 README + M3 History prepend (cycle 169.434~466 16 entry 누계 drift 회수) + L43/46/51/53/55 MD037 underscore backtick wrap
+- **cycle 169.466**: scroll-up prepend incremental 정식 lazy load — `ChatView.prepend_message` + valueChanged 재 활성 + 500ms cooldown + before_msg_id cursor chain (clear+replay 폐기)
+- **cycle 169.465**: account phone/birthdate save normalize (mask placeholder strip) + i18n ZH-CN/JA 4 entry (새로운_연락처/성/이름/등록)
+- **cycle 169.464**: lazy load valueChanged 임시 비활성 (scroll-up bottom snap 회수)
+- **cycle 169.461~463**: 대화 순서 반대 회수 (reversed iteration) + history replay sound 차단 (play_sound param) + scroll position retain (scroll_bottom param)
 - **cycle 169.459**: server messages response ts_ms + message_id field 추가 (사용자 critique image #23) — 이전 대화 ts 갱신 회수 (datetime.now() fallback 폐기)
 - **cycle 169.458**: 채팅방 sort 중구난방 회수 — SQL `ORDER BY ts_ms DESC, id DESC` tiebreaker (모든 kind 적용)
 - **cycle 169.457**: chat_view `mark_all_bubbles_read` + telegram username 검색 친구 추가 (`AddFriendByUsernameDialog` + `POST /api/friends/by-username` + contacts_dialog 2 mode button row)
