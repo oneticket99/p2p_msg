@@ -93,14 +93,15 @@ class HamburgerDrawer(QFrame):
         outer.addWidget(header)
 
         # 한글 주석 — 9 menu entry
-        # cycle 169.364 — labels.tr() chain binding (사용자 critique image #121 한국어 retain)
+        # cycle 169.409 — 실 기능 정합 SVG icon mapping (사용자 directive image #179)
+        # 채널=broadcast, 연락처=contacts, 저장한 메시지=bookmark, 로그아웃=logout 신설 chain.
         menu_defs = [
             ("account", _tr("내_프로필"), self.profile_clicked),
             ("friends", _tr("그룹_만들기"), self.new_group_clicked),
-            ("notification", _tr("채널_만들기"), self.new_channel_clicked),
-            ("account", _tr("연락처"), self.contacts_clicked),
+            ("broadcast", _tr("채널_만들기"), self.new_channel_clicked),
+            ("contacts", _tr("연락처"), self.contacts_clicked),
             ("phone", _tr("전화"), self.calls_clicked),
-            ("data", _tr("저장한_메시지"), self.saved_clicked),
+            ("bookmark", _tr("저장한_메시지"), self.saved_clicked),
             ("settings", _tr("설정"), self.settings_clicked),
         ]
         for icon_name, label, signal in menu_defs:
@@ -108,26 +109,18 @@ class HamburgerDrawer(QFrame):
             btn.clicked.connect(signal.emit)  # type: ignore[arg-type]
             outer.addWidget(btn)
 
-        # 한글 주석 — 야간 모드 toggle row
-        night_row = QFrame()
-        night_layout = QHBoxLayout(night_row)
-        night_layout.setContentsMargins(20, 12, 20, 12)
-        night_icon = QLabel()
-        night_icon.setPixmap(load_pixmap("theme", size=20, color="#9ca3af"))
-        night_layout.addWidget(night_icon)
-        night_label = QLabel(_tr("야간_모드"))
-        night_label.setStyleSheet("color: #e5e7eb; font-size: 14px;")
-        night_layout.addWidget(night_label, stretch=1)
-        self._night_check = QCheckBox()
-        self._night_check.setChecked(True)
-        self._night_check.toggled.connect(self.night_mode_toggled.emit)  # type: ignore[arg-type]
-        night_layout.addWidget(self._night_check)
-        outer.addWidget(night_row)
+        # cycle 169.409 — 야간 모드 row 의 click 시점 즉시 toggle (체크박스 폐기, 사용자 directive image #179)
+        # menu_entry button 활용 — full row click → night_mode_toggled emit (state internal track)
+        self._night_state = True  # default = night mode on
+        night_btn = self._build_menu_entry("theme", _tr("야간_모드"))
+        night_btn.clicked.connect(self._on_night_toggle)  # type: ignore[arg-type]
+        self._night_btn = night_btn
+        outer.addWidget(night_btn)
 
         outer.addStretch(1)
 
         # 한글 주석 — 로그아웃 button (하단)
-        logout_btn = self._build_menu_entry("more", _tr("로그아웃"))
+        logout_btn = self._build_menu_entry("logout", _tr("로그아웃"))
         logout_btn.clicked.connect(self.logout_clicked.emit)  # type: ignore[arg-type]
         outer.addWidget(logout_btn)
 
@@ -204,6 +197,11 @@ class HamburgerDrawer(QFrame):
         self.raise_()
         self.setFocus()
         return 0
+
+    def _on_night_toggle(self) -> None:
+        """cycle 169.409 — 야간 모드 row click 시점 즉시 toggle + signal emit (사용자 directive image #179)."""
+        self._night_state = not self._night_state
+        self.night_mode_toggled.emit(self._night_state)
 
     def update_user_info(self, nickname: str) -> None:
         """cycle 169.403 — drawer header username + avatar 동적 갱신 (사용자 critique image #171)."""
