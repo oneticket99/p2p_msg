@@ -21,6 +21,7 @@ build/work-win/
 build/__pycache__/
 build/*.tar.gz
 build/*.zip
+build/tootalk/
 dist/
 .pytest_cache/
 .mypy_cache/
@@ -67,3 +68,4 @@ deploy/postfix/dkim/
 !deploy/postfix/dkim/.gitkeep
 .claude/dereliction_last_fire.txt
 .claude/dereliction_disabled.flag
+.claude/settings.local.json
