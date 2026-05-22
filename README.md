@@ -308,6 +308,21 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load (prepend_message + valueChanged + 500ms cooldown)
+- cycle 169.465 (2026-05-22 19:15 KST) — account phone/birthdate save normalize + i18n ZH/JA new_contact 4 entry
+- cycle 169.464 (2026-05-22 19:13 KST) — lazy load valueChanged 비활성 (scroll-up bottom snap 회수)
+- cycle 169.461~463 (2026-05-22 19:05 KST) — 대화 순서 반대 회수 + history replay sound 차단 + scroll position retain
+- cycle 169.459 (2026-05-22 19:03 KST) — server messages ts_ms field 추가 (이전 대화 ts 갱신 회수)
+- cycle 169.458 (2026-05-22 19:00 KST) — 채팅방 sort SQL tiebreaker (id DESC)
+- cycle 169.457 (2026-05-22 18:53 KST) — telegram username 검색 친구 추가 + mark_all_bubbles_read
+- cycle 169.454 (2026-05-22 18:36 KST) — bot DM resolve endpoint + bot history fetch + i18n new_contact
+- cycle 169.452 (2026-05-22 18:30 KST) — telegram 양방향 contact 매칭 (migration 0015 + reverse signup propagate)
+- cycle 169.450 (2026-05-22 18:10 KST) — NewContactDialog 신설 (telegram align +82 mask)
+- cycle 169.447 (2026-05-22 17:50 KST) — read state tracking base (migration 0014)
+- cycle 169.446 (2026-05-22 17:45 KST) — FCM push notification base (migration 0013 + Notifier + Stub/FCM)
+- cycle 169.440 (2026-05-22 17:15 KST) — local SQLite cache base (app/db/local_db.py + messages_cache.py)
+- cycle 169.435 (2026-05-22 16:56 KST) — bubble 내부 padding 2배 (10,6,10,4 → 20,12,20,8)
+- cycle 169.434 (2026-05-22 16:50 KST) — unread badge 위치 ts 하단 (telegram screenshot 정합)
 - cycle 169.422 (2026-05-22 12:15 KST) — Phase 5 streaming chat 4 platform actual subscribe (YouTube polling + Twitch IRC + CHZZK CMD100/93101 + Kick Pusher subscribe)
 - cycle 169.421 (2026-05-22 12:00 KST) — Phase 5 Item 5 원격 제어 Windows GDI + Linux X11 backend actual binding (NotImplementedError 전수 폐기)
 - cycle 169.420 (2026-05-22 11:50 KST) — Phase 3+ bot framework BotFather 등가 base (migration 0012 + repository + 6 endpoint)
