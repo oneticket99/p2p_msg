@@ -1,7 +1,8 @@
 ---
 title: "Portable Harness — Claude Code 거버넌스 + Hook + Skill + Sub-agent 병렬화 공용 한벌"
 owner: oneticket99
-last_updated: 2026-05-21
+last_verified: 2026-05-23
+last_updated: 2026-05-23
 status: active
 ---
 
@@ -243,9 +244,9 @@ tools/gen_token_usage_30d.py       # 평가 자동 trigger
 
 ## 13. 참조
 
-- [CLAUDE_HARNESS_IMPORTANT.md](CLAUDE_HARNESS_IMPORTANT.md) — Watcher 정본
-- [CLAUDE.md](CLAUDE.md) — 세션 호출 규약
-- [AGENTS.md](AGENTS.md) — 저장소 맵 + agent 표
+- [CLAUDE_HARNESS_IMPORTANT.md](../CLAUDE_HARNESS_IMPORTANT.md) — Watcher 정본
+- [CLAUDE.md](../CLAUDE.md) — 세션 호출 규약
+- [AGENTS.md](../AGENTS.md) — 저장소 맵 + agent 표
 - `~/.claude/projects/<project_slug>/memory/MEMORY.md` — 가드레일 인덱스
 - `.claude/agents/` — agent 사양
 - `tools/` — Hook script + 자동화

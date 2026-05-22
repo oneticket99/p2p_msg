@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.505~508 (2026-05-23 01:00 KST) — codex review 4 risk batch — 루트 .md 19→18 (PORTABLE_HARNESS.md → docs/) (505) + tools/md_agents.py 신설 (M2/M3/§K 검증) (506) + streaming 4 client test 갱신 (graceful skeleton → actual connect/disconnect, codex 2.3) (507) + ci.yml coverage continue-on-error 제거 (codex 2.4) (508)
 - cycle 169.504 (2026-05-23 00:45 KST) — settings.json D2Coding fontFamily retain + token-usage-30d.json regen (sessions=0 msgs=0) + docs/assessments/current-project-review.md 신설 retain (사용자 6.3/10 readiness 평가)
 - cycle 169.503 (2026-05-23 00:30 KST) — 평가 4 file fingerprint sync (cycle 169.494~502 9 commit drift 회수 + handoff §8.79.1 entry append)
 - cycle 169.502 (2026-05-23 00:25 KST) — server bot user (id=1) ensure chain — `_ensure_bot_user(pool)` startup hook INSERT IGNORE (bot reply FK violation IntegrityError 1452 silent skip root cause 회수, ssh-deploy-agent verdict 정합)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.422 (2026-05-22 12:15 KST) — Phase 5 streaming chat 4 platform actual subscribe (YouTube polling + Twitch IRC + CHZZK CMD100/93101 + Kick Pusher subscribe)
 - cycle 169.421 (2026-05-22 12:00 KST) — Phase 5 Item 5 원격 제어 Windows GDI + Linux X11 backend actual binding (NotImplementedError 전수 폐기)
 - cycle 169.420 (2026-05-22 11:50 KST) — Phase 3+ bot framework BotFather 등가 base (migration 0012 + repository + 6 endpoint)
-- cycle 169.419 (2026-05-22 11:42 KST) — emoji pack items + moderation actual binding (skeleton 폐기)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

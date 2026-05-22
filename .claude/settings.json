@@ -11,7 +11,7 @@
     "feedback_no_triple_particle_chat.md"
   ],
   "language": "korean",
-  "terminal.integrated.fontFamily": "'D2Coding', 'Consolas', monospace",
+  "terminal.integrated.fontFamily": "'MesloLGS NF', 'AppleGothic', monospace",
   "permissions": {
     "allow": [
       "Bash(ssh root@114.207.112.73 *)",

@@ -282,5 +282,6 @@ jobs:
 
       - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
         if: success()
+        # 한글 주석 — cycle 169.508 — continue-on-error 제거 (codex review 2.4 회수).
+        # 본격 차단 gate 의무. PR 머지 차단 정합.
         run: python -m coverage report --fail-under=80
-        continue-on-error: true
