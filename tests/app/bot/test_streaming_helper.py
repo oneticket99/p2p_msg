@@ -226,24 +226,32 @@ class TestAddRemoveCommand:
 
 
 class TestFetchPlatformCallback:
-    """``fetch_platform_callback`` placeholder 검증."""
+    """``fetch_platform_callback`` URL return 검증 (cycle 169.418 NotImplementedError 폐기 + URL return swap, cycle 169.535 test 갱신)."""
 
-    def test_youtube_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="YouTube Data API"):
-            fetch_platform_callback(StreamingPlatform.YOUTUBE)
+    def test_youtube_returns_livechat_url(self) -> None:
+        # 한글 주석 — YouTube Data API v3 liveChatMessages.list endpoint
+        url = fetch_platform_callback(StreamingPlatform.YOUTUBE)
+        assert "googleapis.com" in url
+        assert "youtube/v3/liveChat" in url
 
-    def test_twitch_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="Twitch IRC"):
-            fetch_platform_callback(StreamingPlatform.TWITCH)
+    def test_twitch_returns_irc_ws_url(self) -> None:
+        # 한글 주석 — Twitch IRC WebSocket endpoint (TMI)
+        url = fetch_platform_callback(StreamingPlatform.TWITCH)
+        assert url.startswith("wss://")
+        assert "twitch.tv" in url
 
-    def test_chzzk_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="CHZZK API"):
-            fetch_platform_callback(StreamingPlatform.CHZZK)
+    def test_chzzk_returns_polling_url(self) -> None:
+        # 한글 주석 — CHZZK 폴링 endpoint base
+        url = fetch_platform_callback(StreamingPlatform.CHZZK)
+        assert "chzzk.naver.com" in url
 
-    def test_kick_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="Kick API"):
-            fetch_platform_callback(StreamingPlatform.KICK)
+    def test_kick_returns_pusher_ws_url(self) -> None:
+        # 한글 주석 — Kick Pusher WebSocket endpoint
+        url = fetch_platform_callback(StreamingPlatform.KICK)
+        assert url.startswith("wss://")
+        assert "pusher.com" in url
 
-    def test_obs_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="OBS WebSocket"):
-            fetch_platform_callback(StreamingPlatform.OBS_LOCAL)
+    def test_obs_local_returns_ws_url(self) -> None:
+        # 한글 주석 — OBS WebSocket v5 default localhost
+        url = fetch_platform_callback(StreamingPlatform.OBS_LOCAL)
+        assert url.startswith("ws://localhost:4455")
