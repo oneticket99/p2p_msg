@@ -42,20 +42,42 @@ async def handle_add_friend_by_username(request: web.Request) -> web.Response:
     if target.id == user_id:
         raise web.HTTPBadRequest(reason="자기 자신 친구 추가 불가")
 
-    # 한글 주석 — telegram 등가 — 사용자명 검색 = 단방향 friends INSERT (양측 자동 friends 부재 retain)
-    # 신청자 side만 friend retain. target side notify chain = 별 cycle (friend request inbox).
+    # cycle 169.470 — telegram 등가 — username 검색 = 양방향 friends INSERT (target side 자동 노출)
+    # 신청자 + target 양측 friend retain → 양측 chat_list 등장
     try:
         await _fr_repo.insert_friend(
             pool, user_id=user_id, friend_user_id=target.id, status="accepted",
         )
     except Exception as exc:
-        log.debug("[friends_by_username] INSERT graceful — %r", exc)
+        log.debug("[friends_by_username] INSERT forward graceful — %r", exc)
+    try:
+        await _fr_repo.insert_friend(
+            pool, user_id=target.id, friend_user_id=user_id, status="accepted",
+        )
+    except Exception as exc:
+        log.debug("[friends_by_username] INSERT reverse graceful — %r", exc)
 
     # DM room 생성 + welcome system message
     room_id = 0
     try:
         room_id = await find_or_create_dm_room(pool, user_id, target.id)
-        # 한글 주석 — system message 의 의 retain (target side notify chain — 별 cycle)
+        # cycle 169.470 — system message INSERT (target side notify chain)
+        # 본 사용자 display lookup → "{닉네임}님이 친구 등록했습니다" system message
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT COALESCE(nickname, username) AS display FROM users WHERE id = %s LIMIT 1",
+                    (user_id,),
+                )
+                row = await cur.fetchone()
+        requester_display = str(row[0]) if row else "사용자"
+        body = f"{requester_display}님이 친구 등록했습니다."
+        try:
+            await insert_text_message(
+                pool, room_id=room_id, sender_id=user_id, body=body,
+            )
+        except Exception as exc:
+            log.debug("[friends_by_username] system msg graceful — %r", exc)
         log.info(
             "[friends_by_username] PASS user=%d target=%d (%s) room=%d",
             user_id, target.id, username, room_id,

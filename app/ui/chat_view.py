@@ -258,6 +258,28 @@ class ChatView(QScrollArea):
         # 한글 주석 — index 0 = layout 최상단 (모든 기존 bubble 위 prepend)
         self._messages_layout.insertWidget(0, bubble)
 
+    def apply_last_read(self, last_read_msg_id: int) -> None:
+        """cycle 169.470 — server last_read_msg_id 안 비교 chain → bubble set_read 갱신.
+
+        peer bubble 의 의 msg_id <= last_read 시점 set_read(True) — 안 읽음 라벨 hide.
+        """
+        try:
+            for i in range(self._messages_layout.count()):
+                item = self._messages_layout.itemAt(i)
+                if item is None:
+                    continue
+                widget = item.widget()
+                if widget is None or not hasattr(widget, "msg_id"):
+                    continue
+                try:
+                    mid = widget.msg_id()
+                    if mid > 0:
+                        widget.set_read(mid <= last_read_msg_id)
+                except Exception:
+                    continue
+        except Exception as exc:
+            log.debug("[apply_last_read] 실패 — %r", exc)
+
     def mark_all_bubbles_read(self) -> None:
         """cycle 169.457 — chat focus 시점 모든 peer bubble.set_read(True).
 

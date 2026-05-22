@@ -76,8 +76,32 @@ async def handle_unread_counts(request: web.Request) -> web.Response:
     return web.json_response({"counts": {str(k): v for k, v in counts.items()}})
 
 
+async def handle_last_read_batch(request: web.Request) -> web.Response:
+    """GET /api/rooms/last-read?room_ids=1,2,3 — batch last_read_msg_id (cycle 169.470)."""
+    user_id = request.get("user_id")
+    if not isinstance(user_id, int) or user_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+    raw = request.query.get("room_ids", "").strip()
+    if not raw:
+        return web.json_response({"last_read": {}})
+    try:
+        room_ids = [int(x) for x in raw.split(",") if x.strip()]
+    except ValueError:
+        raise web.HTTPBadRequest(reason="room_ids = comma-separated 정수 의무")
+    if not room_ids or len(room_ids) > 100:
+        raise web.HTTPBadRequest(reason="room_ids 1~100 cap")
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response({"last_read": {}})
+    out = await _rs_repo.get_last_read_batch(
+        pool, user_id=user_id, room_ids=room_ids,
+    )
+    return web.json_response({"last_read": {str(k): v for k, v in out.items()}})
+
+
 def register_read_routes(app: web.Application) -> None:
-    """server.main register entry — 2 endpoint 등록."""
+    """server.main register entry — 3 endpoint 등록."""
     app.router.add_post("/api/rooms/{room_id}/read", handle_mark_read)
     app.router.add_get("/api/rooms/unread", handle_unread_counts)
-    log.info("[api] read 2 endpoint 등록 완료 (cycle 169.447)")
+    app.router.add_get("/api/rooms/last-read", handle_last_read_batch)  # cycle 169.470
+    log.info("[api] read 3 endpoint 등록 완료 (cycle 169.447~470)")

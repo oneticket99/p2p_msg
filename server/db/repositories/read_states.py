@@ -41,6 +41,28 @@ async def get_last_read(
     return int(row[0]) if row else 0
 
 
+async def get_last_read_batch(
+    pool: Any, *, user_id: int, room_ids: List[int],
+) -> Dict[int, int]:
+    """cycle 169.470 — multiple room 의 last_read_msg_id batch 조회 (bubble set_read chain base)."""
+    if not room_ids:
+        return {}
+    placeholders = ",".join(["%s"] * len(room_ids))
+    sql = (
+        f"SELECT room_id, last_read_msg_id FROM read_states "
+        f"WHERE user_id = %s AND room_id IN ({placeholders})"
+    )
+    params = (user_id, *room_ids)
+    out: Dict[int, int] = {rid: 0 for rid in room_ids}
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, params)
+            rows = await cur.fetchall()
+    for r in rows:
+        out[int(r[0])] = int(r[1])
+    return out
+
+
 async def get_unread_counts(
     pool: Any, *, user_id: int, room_ids: List[int],
 ) -> Dict[int, int]:
