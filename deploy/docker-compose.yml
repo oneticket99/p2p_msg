@@ -126,6 +126,8 @@ services:
       TZ: Asia/Seoul
       SIGNAL_SERVER_WS_PORT: 8765
       SIGNAL_SERVER_MODE: ws
+      # 한글 주석 — cycle 169.540: DB_ENABLED 추가 (web service 와 정합, auth endpoint 500 회수)
+      DB_ENABLED: 1
       DB_HOST: mariadb
       DB_PORT: 3306
       DB_USER: ${MARIADB_USER:-tootalk}
@@ -140,6 +142,13 @@ services:
       - "8765:8765"
     expose:
       - "8765"
+    # 한글 주석 — cycle 169.540: Dockerfile HEALTHCHECK 가 8080 hardcoded → ws service (8765 listen) 의 mismatch.
+    # service level override → 8765 port + /healthz endpoint 의 정합.
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8765/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # ─── certbot (Let's Encrypt 인증서 발급/갱신, cycle 112) ──────────────────
   # 한글 주석: profile "certbot" 의 명시 활성 시 만 기동 (`--profile certbot up`).
