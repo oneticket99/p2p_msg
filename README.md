@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.493 (2026-05-22 23:10 KST) — 평가 4 file fingerprint sync (cycle 169.488~492 5 commit drift 회수) + handoff §8.79.1 cycle 169.485~492 8 entry append
 - cycle 169.492 (2026-05-22 23:00 KST) — .gitignore 2 entry 추가 (build/tootalk/ PyInstaller 산출 + .claude/settings.local.json local 권한 cache)
 - cycle 169.491 (2026-05-22 22:50 KST) — 친구 검색 한글 확장 — server SQL `WHERE username/display_name/nickname LIKE` 3 column OR (한글 nickname/display_name 검색 회수) + UserSearchResult + SearchResult display_name/nickname field 신설 + UI label "닉네임 (@username)" 우선 표기
 - cycle 169.490 (2026-05-22 22:40 KST) — self-hosted runner id=22 `tootalk-macos-1ticket` 신설 (1ticket 머신 + actions-runner v2.334.0 + svc launchd, 기존 id=2 병립) + python@3.13 + .venv 신설 + 86 package install
@@ -337,7 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.416 (2026-05-22 10:50 KST) — 원격 제어 macOS Quartz capture + CGEvent input forward actual binding
 - cycle 169.415 (2026-05-22 10:35 KST) — emoji pack GET 2 + POST 1 endpoint actual binding + middleware whitelist
 - cycle 169.414 (2026-05-22 10:20 KST) — i18n ZH-CN+JA sweep 109 entry + ZH-TW fallback chain
-- cycle 169.413 (2026-05-22 10:10 KST) — labels.py LABELS_EN 91 missing entry append (KO 137 full cover)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

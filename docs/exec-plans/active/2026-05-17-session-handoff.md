@@ -270,6 +270,15 @@ status: active
 | `8f07dbe` | 169.482 | signup_dialog double-click guard — `_signup_in_flight` flag (IntegrityError race 차단) |
 | `dacfdcb` | 169.483 | reclaim_unverified_user_atomic MariaDB 1020 retry chain — transaction 전수 재 시도 |
 | `50e94a6` | 169.484 | login + OTP resend double-click guard — `_login_in_flight` + `_resend_in_flight` flags |
+| `a93ea91` | 169.485 | handoff §8.79.1 cycle 169.476~484 9 entry append |
+| `5488bf7` | 169.486 | streaming OAuth flow 4 platform token persistence + refresh chain (migration 0016 + repo + 5 endpoint + 4 platform config) |
+| `b43408c` | 169.487 | 평가 4 file fingerprint sync — cycle 169.482~486 5 commit drift |
+| `deda269` | 169.488 | tools/claude-telegram.sh PROJECT_DIR portable — BASH_SOURCE 동적 resolve (working dir 전환 정합) |
+| `a444698` | 169.489 | AddFriendDialog search_requested wire fix — main_window connect 부재 회수 + async search_users + set_search_results chain |
+| `1724024` | 169.490 | self-hosted runner id=22 `tootalk-macos-1ticket` 신설 — 1ticket 머신 + python@3.13 + .venv + 86 package install + actions-runner v2.334.0 + svc launchd |
+| `01c863f` | 169.491 | 친구 검색 한글 확장 — server SQL `WHERE username/display_name/nickname LIKE` 3 column OR + UserSearchResult/SearchResult display_name+nickname field + UI label nickname 우선 |
+| `d3875b1` | 169.492 | .gitignore — build/tootalk + .claude/settings.local.json |
+| (본 commit) | 169.493 | 평가 4 file fingerprint sync — cycle 169.488~492 5 commit drift |
 
 ### 8.79.2 사용자 critique 회수 chain
 

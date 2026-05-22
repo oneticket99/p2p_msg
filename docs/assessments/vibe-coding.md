@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T21:43:00+09:00
+last_verified: 2026-05-22T23:10:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.486
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.492
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-22. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.486 누계.
-> 최근 갱신: 2026-05-22 21:43 KST — cycle 169.482~486 fingerprint sync (5 commit drift 회수). 누계: signup `_signup_in_flight` double-click guard (169.482) + `reclaim_unverified_user_atomic` MariaDB 1020 retry chain transaction 전수 재 시도 (169.483) + login + OTP resend double-click guard `_login_in_flight` + `_resend_in_flight` (169.484) + handoff §8.79.1 cycle 169.476~484 9 entry append (169.485) + streaming OAuth flow 4 platform token persistence + refresh chain — migration 0016 `streaming_oauth_tokens` + repo 5 method + 5 endpoint (start/callback/refresh/status/delete) + 4 platform endpoint config Twitch/YouTube/CHZZK/Kick (169.486).
+> 평가 기준일: 2026-05-22. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.492 누계.
+> 최근 갱신: 2026-05-22 23:10 KST — cycle 169.488~492 fingerprint sync (5 commit drift 회수). 누계: tools/claude-telegram.sh PROJECT_DIR portable BASH_SOURCE 동적 resolve (169.488) + AddFriendDialog search_requested wire fix main_window connect 부재 회수 + async search_users + set_search_results chain (169.489) + self-hosted runner id=22 `tootalk-macos-1ticket` 신설 1ticket 머신 + python@3.13 + .venv + 86 package install + actions-runner v2.334.0 + svc launchd (169.490) + 친구 검색 한글 확장 server SQL 3 column OR (username + display_name + nickname) + UserSearchResult/SearchResult display_name+nickname field + UI label nickname 우선 (169.491) + .gitignore build/tootalk + .claude/settings.local.json (169.492).
 
 ---
 

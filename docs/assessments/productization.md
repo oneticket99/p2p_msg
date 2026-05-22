@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T21:43:00+09:00
+last_verified: 2026-05-22T23:10:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 21:43 KST — cycle 169.482~486 fingerprint sync (5 commit drift 회수). 누계: signup `_signup_in_flight` double-click guard (169.482) → reclaim_unverified_user_atomic MariaDB 1020 retry chain transaction 전수 (169.483) → login + OTP resend double-click guard `_login_in_flight` + `_resend_in_flight` (169.484) → handoff §8.79.1 cycle 169.476~484 9 entry append (169.485) → streaming OAuth flow 4 platform token persistence + refresh chain — migration 0016 streaming_oauth_tokens + repo 5 method + 5 endpoint (start/callback/refresh/status/delete) + 4 platform endpoint config Twitch/YouTube/CHZZK/Kick (169.486).<br>**이전 갱신**: 2026-05-22 21:20 KST — cycle 169.476~480 sync.
+> **최신 갱신 시점**: 2026-05-22 23:10 KST — cycle 169.488~492 fingerprint sync (5 commit drift 회수). 누계: tools/claude-telegram.sh PROJECT_DIR portable BASH_SOURCE 동적 resolve (169.488) → AddFriendDialog search_requested wire fix main_window connect 부재 회수 + async search_users + set_search_results chain (169.489) → self-hosted runner id=22 `tootalk-macos-1ticket` 신설 1ticket 머신 + python@3.13 + .venv + 86 package install + actions-runner v2.334.0 + svc launchd (169.490) → 친구 검색 한글 확장 server SQL 3 column OR (username + display_name + nickname) + UserSearchResult + SearchResult display_name/nickname field + UI label nickname 우선 (169.491) → .gitignore build/tootalk + .claude/settings.local.json (169.492).<br>**이전 갱신**: 2026-05-22 21:43 KST — cycle 169.482~486 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
