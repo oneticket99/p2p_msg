@@ -138,7 +138,7 @@ class MyAccountDialog(QDialog):
         # 기존 raw digit mask setText 정합 — '82' prefix strip 후 적용
         _raw = "".join(c for c in phone if c.isdigit())
         if _raw.startswith("82") and len(_raw) >= 11:
-            _raw = _raw[2:]  # +82 prefix 제거 → mask 의 의 본문 의 의 10 digit
+            _raw = _raw[2:]  # +82 prefix 제거 → mask 본문 10 digit
         if _raw:
             self._phone_edit.setText(_raw[:10])
         # cycle 169.391 — 생년월일 row 추가 (사용자 critique image #157)
