@@ -1752,9 +1752,13 @@ class MainWindow(QMainWindow):
         높이 = main_window height match. 외부 click 시 popup 자동 close.
         """
         from app.ui.hamburger_drawer import HamburgerDrawer
-        username = getattr(self._config, "user_nickname", "사용자")
-        # cycle 169.118 회수 — toggle behavior — existing drawer 시점 close + return
-        # 두번째 click = close 의무 (사용자 directive verbatim "한번누르면 나오고 다시 들어가면 들어가는")
+        # cycle 169.404 — nickname 우선 (사용자 critique image #175 avatar stale 회수)
+        nickname = getattr(self, "_current_nickname", "") or ""
+        username = (
+            nickname
+            or getattr(self, "_current_user_nickname", None)
+            or getattr(self._config, "user_nickname", "사용자")
+        )
         if getattr(self, "_active_drawer", None) is not None:
             try:
                 self._active_drawer.close_drawer()
@@ -1762,7 +1766,7 @@ class MainWindow(QMainWindow):
                 pass
             self._active_drawer = None
             return
-        drawer = HamburgerDrawer(username=username, parent=self)
+        drawer = HamburgerDrawer(username=username, nickname=nickname, parent=self)
         drawer.profile_clicked.connect(self._on_drawer_profile)  # type: ignore[arg-type]
         drawer.settings_clicked.connect(self._on_drawer_settings)  # type: ignore[arg-type]
         # cycle 169.320 — drawer 5 signal 전 connect (image #84 사용자 directive)

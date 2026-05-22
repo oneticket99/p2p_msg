@@ -43,7 +43,7 @@ class HamburgerDrawer(QFrame):
     logout_clicked = pyqtSignal()
     closed = pyqtSignal()
 
-    def __init__(self, username: str = "사용자", parent: Optional[QWidget] = None) -> None:
+    def __init__(self, username: str = "사용자", nickname: str = "", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         # cycle 169.303 — width 320 → 256 (사용자 directive 20% 감소)
         self.setFixedWidth(256)
@@ -74,14 +74,15 @@ class HamburgerDrawer(QFrame):
         from app.ui._avatar_helper import make_initial_pixmap
         avatar = QLabel()
         avatar.setFixedSize(48, 48)
-        # cycle 169.403 — instance attribute retain (사용자 critique image #171 dynamic refresh chain)
+        # cycle 169.403~404 — instance attribute retain + avatar source = nickname 우선 (사용자 critique image #175)
         self._avatar_label = avatar
-        self._username = username
-        avatar.setPixmap(make_initial_pixmap(username, size=48))
+        avatar_text = nickname or username or "사용자"
+        self._username = avatar_text
+        avatar.setPixmap(make_initial_pixmap(avatar_text, size=48))
         avatar.setStyleSheet("border-radius: 24px;")
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         h_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignLeft)
-        name_label = QLabel(username)
+        name_label = QLabel(avatar_text)
         self._name_label = name_label  # cycle 169.403 — update_user_info chain entry
         # cycle 169.254 — fixedWidth=avatar(48) + AlignCenter → name 의 horizontal center = avatar center column align
         name_label.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600;")

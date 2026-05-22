@@ -77,17 +77,17 @@ class MyAccountDialog(QDialog):
         c_layout.setContentsMargins(24, 24, 24, 24)
         c_layout.setSpacing(12)
 
-        # 큰 avatar
+        # 큰 avatar — cycle 169.404 — avatar source = nickname 우선 (사용자 critique image #172/173/174 inconsistency 회수)
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # cycle 169.249 — nickname initials + palette_solid hash 랜덤 bg (사용자 directive image #7/8/9)
         from app.ui._avatar_helper import make_initial_pixmap
-        avatar.setPixmap(make_initial_pixmap(username, size=120))
+        avatar_text = nickname or display_name or username or "사용자"
+        avatar.setPixmap(make_initial_pixmap(avatar_text, size=120))
         avatar.setStyleSheet("border-radius: 60px;")
         c_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        name_label = QLabel(username or "사용자")
+        name_label = QLabel(avatar_text)
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
         c_layout.addWidget(name_label)
