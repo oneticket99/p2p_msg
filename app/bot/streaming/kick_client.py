@@ -137,33 +137,35 @@ class KickChatClient:
         return self._connected
 
     async def connect(self) -> bool:
-        """Pusher WebSocket connect + pusher:subscribe.
-
-        한글 주석 — Phase 5 cycle 의 actual ``websockets.connect`` + Pusher
-        ``connection_established`` event 의 ``socket_id`` 저장 + ``pusher:
-        subscribe`` 의 ``channel.<chatroom_id>`` subscribe.
-        본 cycle = graceful False.
-
-        Returns
-        -------
-        bool
-            연결 성공 여부. websockets 부재 또는 skeleton = False.
-        """
-
+        """cycle 169.422 — Kick Pusher WebSocket actual handshake chain."""
         if not _WS_AVAILABLE:
             log.warning("[kick] websockets 라이브러리 부재 — graceful False")
             return False
-        # 한글 주석 — Phase 5 cycle 의 actual handshake chain
-        # url = f"{_PUSHER_WSS_BASE}/{self._config.pusher_app_key}"
-        #       f"?protocol={_PUSHER_PROTOCOL}&client=tootalk&version=1.0"
-        # self._ws = await websockets.connect(url)
-        # hello = json.loads(await self._ws.recv())
-        # self._socket_id = json.loads(hello["data"])["socket_id"]
-        # await self._ws.send(json.dumps({
-        #     "event": self.EVENT_SUBSCRIBE,
-        #     "data": {"channel": f"channel.{self._config.chatroom_id}"},
-        # }))
-        return False
+        import json as _json
+        try:
+            url = (
+                f"{_PUSHER_WSS_BASE}/{self._config.pusher_app_key}"
+                f"?protocol={_PUSHER_PROTOCOL}&client=tootalk&version=1.0"
+            )
+            self._ws = await websockets.connect(url)
+            hello_raw = await self._ws.recv()
+            hello = _json.loads(hello_raw)
+            data = hello.get("data")
+            if isinstance(data, str):
+                data = _json.loads(data)
+            self._socket_id = data.get("socket_id") if isinstance(data, dict) else None
+            await self._ws.send(_json.dumps({
+                "event": self.EVENT_SUBSCRIBE,
+                "data": {"channel": f"chatrooms.{self._config.chatroom_id}.v2"},
+            }))
+            self._connected = True
+            log.info("[kick] connect PASS — chatroom=%s socket=%s",
+                     self._config.chatroom_id, self._socket_id)
+            return True
+        except Exception as exc:
+            log.warning("[kick] connect fail — %r", exc)
+            self._ws = None
+            return False
 
     async def disconnect(self) -> None:
         """WebSocket close + socket_id reset."""
@@ -180,35 +182,46 @@ class KickChatClient:
         self._socket_id = None
 
     async def receive_loop(self, max_iterations: Optional[int] = None) -> List[object]:
-        """ChatMessageEvent receive loop.
-
-        한글 주석 — Phase 5 cycle 의 actual event dispatch — ``event`` field
-        의 분기 + ``data`` JSON nested decode + ``sender.username`` +
-        ``content`` 추출 + on_message dispatch. 본 cycle = graceful 빈 list.
-
-        Parameters
-        ----------
-        max_iterations : int | None
-            recv 반복 횟수 한도 (test injection). None = 무한 loop.
-
-        Returns
-        -------
-        list[ChatMessage]
-            수신 message list (skeleton = []).
-        """
-
-        if not self._connected:
+        """cycle 169.422 — Kick Pusher ChatMessageEvent actual parse + dispatch."""
+        if not self._connected or self._ws is None:
             return []
-        # 한글 주석 — Phase 5 cycle 의 actual loop
-        # async for raw in self._ws:
-        #     envelope = json.loads(raw)
-        #     event = envelope.get("event")
-        #     if event == self.EVENT_PING:
-        #         await self._ws.send(json.dumps({"event": self.EVENT_PONG, "data": {}}))
-        #         continue
-        #     if event == self.EVENT_CHAT:
-        #         payload = json.loads(envelope["data"])
-        #         ... ChatMessage → on_message dispatch
-        _ = asyncio
-        _ = max_iterations
-        return []
+        import json as _json
+        messages: List[object] = []
+        iters = 0
+        try:
+            async for raw in self._ws:
+                try:
+                    envelope = _json.loads(raw)
+                except Exception:
+                    continue
+                event = envelope.get("event")
+                if event == self.EVENT_PING:
+                    await self._ws.send(_json.dumps({"event": self.EVENT_PONG, "data": {}}))
+                    continue
+                if event == self.EVENT_CHAT:
+                    data = envelope.get("data")
+                    if isinstance(data, str):
+                        try:
+                            data = _json.loads(data)
+                        except Exception:
+                            data = {}
+                    sender = data.get("sender", {}) if isinstance(data, dict) else {}
+                    msg = {
+                        "platform": self.PLATFORM,
+                        "text": data.get("content", "") if isinstance(data, dict) else "",
+                        "author": sender.get("username", "") if isinstance(sender, dict) else "",
+                        "sender_id": sender.get("id") if isinstance(sender, dict) else None,
+                        "raw": envelope,
+                    }
+                    messages.append(msg)
+                    if self._on_message is not None:
+                        try:
+                            await self._on_message(msg)
+                        except Exception as exc:  # pragma: no cover
+                            log.warning("[kick] on_message exc — %r", exc)
+                iters += 1
+                if max_iterations is not None and iters >= max_iterations:
+                    break
+        except Exception as exc:  # pragma: no cover
+            log.warning("[kick] recv loop exc — %r", exc)
+        return messages

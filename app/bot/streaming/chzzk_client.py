@@ -138,33 +138,43 @@ class ChzzkChatClient:
         return self._connected
 
     async def connect(self) -> bool:
-        """CHZZK chat WebSocket connect + CMD 100 connect packet.
-
-        한글 주석 — Phase 5 cycle 의 actual ``websockets.connect`` + CMD 100
-        envelope (``accTkn`` + ``auth=READ`` + ``uid``) send + CMD 10000 ACK
-        recv + sid 저장. 본 cycle = graceful False.
+        """cycle 169.422 — CHZZK chat WebSocket actual handshake chain.
 
         Returns
         -------
         bool
-            연결 성공 여부. websockets 부재 또는 skeleton = False.
+            연결 + CMD 10000 ACK + sid 저장 성공 여부.
         """
-
         if not _WS_AVAILABLE:
             log.warning("[chzzk] websockets 라이브러리 부재 — graceful False")
             return False
-        # 한글 주석 — Phase 5 cycle 의 actual handshake chain
-        # self._ws = await websockets.connect(_CHAT_WSS_URL)
-        # await self._ws.send(json.dumps({
-        #     "ver": "2", "cmd": self.CMD_CONNECT, "tid": 1,
-        #     "cid": self._config.chat_channel_id, "svcid": "game",
-        #     "bdy": {"uid": self._config.user_id_hash or None,
-        #              "devType": 2001, "accTkn": self._config.access_token,
-        #              "auth": "READ"},
-        # }))
-        # ack = json.loads(await self._ws.recv())
-        # if ack["cmd"] == self.CMD_CONNECT_ACK: self._sid = ack["bdy"]["sid"]
-        return False
+        import json as _json
+        try:
+            self._ws = await websockets.connect(_CHAT_WSS_URL)
+            connect_pkt = {
+                "ver": "2", "cmd": self.CMD_CONNECT, "tid": 1,
+                "cid": self._config.chat_channel_id, "svcid": "game",
+                "bdy": {
+                    "uid": self._config.user_id_hash or None,
+                    "devType": 2001,
+                    "accTkn": self._config.access_token,
+                    "auth": "READ",
+                },
+            }
+            await self._ws.send(_json.dumps(connect_pkt))
+            raw = await self._ws.recv()
+            ack = _json.loads(raw)
+            if ack.get("cmd") == self.CMD_CONNECT_ACK:
+                self._sid = ack.get("bdy", {}).get("sid")
+                self._connected = True
+                log.info("[chzzk] connect PASS — cid=%s sid=%s", self._config.chat_channel_id, self._sid)
+                return True
+            log.warning("[chzzk] ACK 부재 — cmd=%s", ack.get("cmd"))
+            return False
+        except Exception as exc:
+            log.warning("[chzzk] connect fail — %r", exc)
+            self._ws = None
+            return False
 
     async def disconnect(self) -> None:
         """WebSocket close + sid reset."""
@@ -181,31 +191,41 @@ class ChzzkChatClient:
         self._sid = None
 
     async def receive_loop(self, max_iterations: Optional[int] = None) -> List[object]:
-        """CMD 93101 CHAT packet receive loop.
-
-        한글 주석 — Phase 5 cycle 의 actual JSON envelope parse + ``bdy[]``
-        안 의 ``profile.nickname`` + ``msg`` + ``msgTime`` 추출 + on_message
-        dispatch. 본 cycle = graceful 빈 list 반환.
-
-        Parameters
-        ----------
-        max_iterations : int | None
-            recv 반복 횟수 한도 (test injection). None = 무한 loop.
-
-        Returns
-        -------
-        list[ChatMessage]
-            수신 message list (skeleton = []).
-        """
-
-        if not self._connected:
+        """cycle 169.422 — CMD 93101 CHAT packet actual parse + dispatch."""
+        if not self._connected or self._ws is None:
             return []
-        # 한글 주석 — Phase 5 cycle 의 actual loop
-        # async for raw in self._ws:
-        #     envelope = json.loads(raw)
-        #     if envelope["cmd"] == self.CMD_CHAT:
-        #         for entry in envelope["bdy"]:
-        #             ... ChatMessage → on_message dispatch
-        _ = asyncio
-        _ = max_iterations
-        return []
+        import json as _json
+        messages: List[object] = []
+        iters = 0
+        try:
+            async for raw in self._ws:
+                try:
+                    envelope = _json.loads(raw)
+                except Exception:
+                    continue
+                if envelope.get("cmd") == self.CMD_CHAT:
+                    for entry in envelope.get("bdy", []):
+                        profile_raw = entry.get("profile", "{}")
+                        try:
+                            profile = _json.loads(profile_raw) if isinstance(profile_raw, str) else profile_raw
+                        except Exception:
+                            profile = {}
+                        msg = {
+                            "platform": self.PLATFORM,
+                            "text": entry.get("msg", ""),
+                            "author": profile.get("nickname", "") if isinstance(profile, dict) else "",
+                            "msg_time": entry.get("msgTime"),
+                            "raw": entry,
+                        }
+                        messages.append(msg)
+                        if self._on_message is not None:
+                            try:
+                                await self._on_message(msg)
+                            except Exception as exc:  # pragma: no cover
+                                log.warning("[chzzk] on_message exc — %r", exc)
+                iters += 1
+                if max_iterations is not None and iters >= max_iterations:
+                    break
+        except Exception as exc:  # pragma: no cover
+            log.warning("[chzzk] recv loop exc — %r", exc)
+        return messages

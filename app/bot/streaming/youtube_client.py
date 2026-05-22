@@ -120,27 +120,24 @@ class YouTubeChatClient:
         return self._connected
 
     async def connect(self) -> bool:
-        """YouTube API 의 httpx.AsyncClient 의 의 session 준비.
-
-        한글 주석 — Phase 5 cycle 의 actual httpx.AsyncClient + token 의 의
-        ``Authorization: Bearer`` header 적용. 본 cycle = graceful False.
+        """cycle 169.422 — YouTube Data API v3 actual httpx.AsyncClient session 활성.
 
         Returns
         -------
         bool
-            연결 성공 여부. httpx 부재 또는 skeleton = False.
+            연결 성공 여부. httpx 부재 시 False.
         """
-
         if not _HTTPX_AVAILABLE:
             log.warning("[youtube] httpx 라이브러리 부재 — graceful False")
             return False
-        # 한글 주석 — Phase 5 cycle 의 actual httpx.AsyncClient session 준비
-        # self._http = httpx.AsyncClient(
-        #     base_url=_API_BASE,
-        #     headers={"Authorization": f"Bearer {self._config.access_token}"},
-        #     timeout=10.0,
-        # )
-        return False
+        self._http = httpx.AsyncClient(
+            base_url=_API_BASE,
+            headers={"Authorization": f"Bearer {self._config.access_token}"},
+            timeout=10.0,
+        )
+        self._connected = True
+        log.info("[youtube] connect PASS — chat_id=%s", self._config.live_chat_id)
+        return True
 
     async def disconnect(self) -> None:
         """httpx session close + state reset."""
@@ -158,34 +155,65 @@ class YouTubeChatClient:
         self._next_page_token = None
 
     async def receive_loop(self, max_iterations: Optional[int] = None) -> List[object]:
-        """liveChatMessages.list polling loop.
-
-        한글 주석 — Phase 5 cycle 의 actual polling + nextPageToken rotation +
-        on_message dispatch. 본 cycle = graceful 빈 list 반환.
+        """cycle 169.422 — liveChatMessages.list actual polling loop.
 
         Parameters
         ----------
         max_iterations : int | None
-            poll 반복 횟수 한도 (test injection). None = 무한 loop.
+            poll iteration 한도 (test injection). None = 무한 loop.
 
         Returns
         -------
-        list[ChatMessage]
-            수신 message list (skeleton = []).
+        list[object]
+            수신 message dict list (snippet + authorDetails 합산).
         """
-
-        if not self._connected:
+        if not self._connected or self._http is None:
             return []
-        # 한글 주석 — Phase 5 cycle 의 actual loop
-        # while True:
-        #     resp = await self._http.get(
-        #         "/liveChat/messages",
-        #         params={"liveChatId": self._config.live_chat_id,
-        #                 "part": "snippet,authorDetails",
-        #                 "pageToken": self._next_page_token},
-        #     )
-        #     ... items[] → ChatMessage → on_message dispatch
-        #     await asyncio.sleep(self._config.poll_interval_seconds)
-        _ = asyncio
-        _ = max_iterations
-        return []
+        messages: List[object] = []
+        iters = 0
+        while True:
+            if max_iterations is not None and iters >= max_iterations:
+                break
+            iters += 1
+            params: dict = {
+                "liveChatId": self._config.live_chat_id,
+                "part": "snippet,authorDetails",
+            }
+            if self._next_page_token:
+                params["pageToken"] = self._next_page_token
+            try:
+                resp = await self._http.get("/liveChat/messages", params=params)
+                if resp.status_code != 200:
+                    log.warning("[youtube] poll status=%d", resp.status_code)
+                    break
+                data = resp.json()
+            except Exception as exc:  # pragma: no cover - graceful
+                log.warning("[youtube] poll fail — %r", exc)
+                break
+            self._next_page_token = data.get("nextPageToken")
+            poll_ms = data.get("pollingIntervalMillis")
+            for item in data.get("items", []):
+                snippet = item.get("snippet", {})
+                author = item.get("authorDetails", {})
+                msg = {
+                    "platform": self.PLATFORM,
+                    "text": snippet.get("displayMessage", ""),
+                    "author": author.get("displayName", ""),
+                    "author_channel_id": author.get("channelId"),
+                    "published_at": snippet.get("publishedAt"),
+                    "raw": item,
+                }
+                messages.append(msg)
+                if self._on_message is not None:
+                    try:
+                        await self._on_message(msg)
+                    except Exception as exc:  # pragma: no cover
+                        log.warning("[youtube] on_message exc — %r", exc)
+            if max_iterations is None:
+                interval = (
+                    min(_MAX_POLL_INTERVAL_SECONDS, poll_ms / 1000.0)
+                    if isinstance(poll_ms, (int, float))
+                    else self._config.poll_interval_seconds
+                )
+                await asyncio.sleep(interval)
+        return messages

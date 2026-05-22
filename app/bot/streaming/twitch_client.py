@@ -128,28 +128,29 @@ class TwitchChatClient:
         return self._connected
 
     async def connect(self) -> bool:
-        """IRC WebSocket connect + PASS/NICK/JOIN handshake.
-
-        한글 주석 — Phase 5 cycle 의 actual ``websockets.connect`` +
-        ``CAP REQ`` + ``PASS oauth:<token>`` + ``NICK`` + ``JOIN``.
-        본 cycle = graceful False.
+        """cycle 169.422 — Twitch IRC WebSocket actual handshake chain.
 
         Returns
         -------
         bool
-            연결 성공 여부. websockets 부재 또는 skeleton = False.
+            연결 + handshake 성공 여부. websockets 부재 시 False.
         """
-
         if not _WS_AVAILABLE:
             log.warning("[twitch] websockets 라이브러리 부재 — graceful False")
             return False
-        # 한글 주석 — Phase 5 cycle 의 actual handshake chain
-        # self._ws = await websockets.connect(_IRC_WSS_URL)
-        # await self._ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
-        # await self._ws.send(f"PASS oauth:{self._config.oauth_token}")
-        # await self._ws.send(f"NICK {self._config.bot_login}")
-        # await self._ws.send(f"JOIN #{self._config.channel}")
-        return False
+        try:
+            self._ws = await websockets.connect(_IRC_WSS_URL)
+            await self._ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
+            await self._ws.send(f"PASS oauth:{self._config.oauth_token}")
+            await self._ws.send(f"NICK {self._config.bot_login}")
+            await self._ws.send(f"JOIN #{self._config.channel}")
+            self._connected = True
+            log.info("[twitch] connect PASS — channel=#%s", self._config.channel)
+            return True
+        except Exception as exc:
+            log.warning("[twitch] connect fail — %r", exc)
+            self._ws = None
+            return False
 
     async def disconnect(self) -> None:
         """WebSocket close + state reset."""
@@ -165,30 +166,47 @@ class TwitchChatClient:
         self._connected = False
 
     async def receive_loop(self, max_iterations: Optional[int] = None) -> List[object]:
-        """IRC PRIVMSG receive loop.
-
-        한글 주석 — Phase 5 cycle 의 actual IRC parse + PING/PONG keepalive +
-        on_message dispatch. 본 cycle = graceful 빈 list 반환.
-
-        Parameters
-        ----------
-        max_iterations : int | None
-            recv 반복 횟수 한도 (test injection). None = 무한 loop.
+        """cycle 169.422 — IRC PRIVMSG actual parse + PING/PONG keepalive.
 
         Returns
         -------
-        list[ChatMessage]
-            수신 message list (skeleton = []).
+        list[object]
+            수신 message dict list (parsed PRIVMSG).
         """
-
-        if not self._connected:
+        if not self._connected or self._ws is None:
             return []
-        # 한글 주석 — Phase 5 cycle 의 actual loop
-        # async for raw in self._ws:
-        #     if raw.startswith("PING"):
-        #         await self._ws.send(raw.replace("PING", "PONG", 1))
-        #         continue
-        #     ... parse PRIVMSG → ChatMessage → on_message dispatch
-        _ = asyncio
-        _ = max_iterations
-        return []
+        messages: List[object] = []
+        iters = 0
+        try:
+            async for raw in self._ws:
+                line = raw.strip() if isinstance(raw, str) else raw.decode("utf-8", "replace").strip()
+                if line.startswith("PING"):
+                    await self._ws.send(line.replace("PING", "PONG", 1))
+                    continue
+                # 한글 주석 — IRC PRIVMSG parse: `:user!user@user.tmi.twitch.tv PRIVMSG #channel :message`
+                if " PRIVMSG " in line:
+                    try:
+                        prefix, _, rest = line.partition(" PRIVMSG ")
+                        user = prefix.lstrip(":").split("!", 1)[0]
+                        chan, _, text = rest.partition(" :")
+                        msg = {
+                            "platform": self.PLATFORM,
+                            "text": text,
+                            "author": user,
+                            "channel": chan.lstrip("#"),
+                            "raw": line,
+                        }
+                        messages.append(msg)
+                        if self._on_message is not None:
+                            try:
+                                await self._on_message(msg)
+                            except Exception as exc:  # pragma: no cover
+                                log.warning("[twitch] on_message exc — %r", exc)
+                    except Exception as exc:  # pragma: no cover
+                        log.debug("[twitch] parse fail — %r", exc)
+                iters += 1
+                if max_iterations is not None and iters >= max_iterations:
+                    break
+        except Exception as exc:  # pragma: no cover
+            log.warning("[twitch] recv loop exc — %r", exc)
+        return messages
