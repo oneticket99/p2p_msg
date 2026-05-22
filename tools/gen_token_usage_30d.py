@@ -275,24 +275,31 @@ def main() -> None:
         )
 
         # 6 KPI card 갱신 — 총 토큰 + 메시지 + session + 활성 일수 + 추정 비용 + 캐시 적중률
+        # 한글 주석 — cycle 169.515 — session 0 graceful (totals dict empty 시점 .get(0) fallback 의무)
         t = out['totals']
         active_days = len(per_day_list)
-        avg_daily_token = t['total_tokens'] // active_days if active_days else 0
-        avg_daily_cost = t['cost_usd'] / active_days if active_days else 0.0
-        cache_denom = t['cache_read_input_tokens'] + t['cache_creation_input_tokens'] + t['input_tokens']
-        cache_hit_pct = (100.0 * t['cache_read_input_tokens'] / cache_denom) if cache_denom else 0.0
+        total_tokens = t.get('total_tokens', 0)
+        cost_usd = t.get('cost_usd', 0.0)
+        avg_daily_token = total_tokens // active_days if active_days else 0
+        avg_daily_cost = cost_usd / active_days if active_days else 0.0
+        cache_read = t.get('cache_read_input_tokens', 0)
+        cache_creation = t.get('cache_creation_input_tokens', 0)
+        input_tokens = t.get('input_tokens', 0)
+        messages_count = t.get('messages', 0)
+        cache_denom = cache_read + cache_creation + input_tokens
+        cache_hit_pct = (100.0 * cache_read / cache_denom) if cache_denom else 0.0
 
         kpi_patterns = [
             (r"(<div class=\"label\">총 토큰</div>\s*<div class=\"value\">)[^<]+(</div>)",
-             f"\\g<1>{_fmt(t['total_tokens'])}\\g<2>"),
+             f"\\g<1>{_fmt(total_tokens)}\\g<2>"),
             (r"(<div class=\"label\">총 assistant 메시지</div>\s*<div class=\"value\">)[^<]+(</div>)",
-             f"\\g<1>{_fmt(t['messages'])}\\g<2>"),
+             f"\\g<1>{_fmt(messages_count)}\\g<2>"),
             (r"(<div class=\"label\">분석 session</div>\s*<div class=\"value\">)[^<]+(</div>)",
              f"\\g<1>{len(sessions_list)}\\g<2>"),
             (r"(<div class=\"label\">활성 일수</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^ ]+( token</div>)",
              f"\\g<1>{active_days}\\g<2>{_fmt(avg_daily_token)}\\g<3>"),
             (r"(<div class=\"label\">추정 비용</div>\s*<div class=\"value\">)[^<]+(</div>\s*<div class=\"sub\">일평균 )[^<]+(</div>)",
-             f"\\g<1>{_fmt_cost(t['cost_usd'])}\\g<2>{_fmt_cost(avg_daily_cost)}\\g<3>"),
+             f"\\g<1>{_fmt_cost(cost_usd)}\\g<2>{_fmt_cost(avg_daily_cost)}\\g<3>"),
             (r"(<div class=\"label\">캐시 적중률</div>\s*<div class=\"value\">)[^<]+(</div>)",
              f"\\g<1>{cache_hit_pct:.1f}%\\g<2>"),
         ]
@@ -302,7 +309,8 @@ def main() -> None:
             n_kpi += n
 
         # §2 모델별 누계 tbody (synthetic 0-token row 도 표시 — 기존 패턴 유지)
-        total_t = t['total_tokens'] or 1
+        # 한글 주석 — cycle 169.515 — total_tokens 변수 활용 (session 0 graceful)
+        total_t = total_tokens or 1
         per_model_rows = "".join(
             f"<tr><td><span class='chip chip-{m['model']}'>{m['model']}</span></td>"
             f"<td class='num'>{_fmt(m['messages'])}</td>"
