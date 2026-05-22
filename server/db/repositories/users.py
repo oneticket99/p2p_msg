@@ -293,50 +293,73 @@ async def reclaim_unverified_user_atomic(
     )
 
     email_norm = email.lower()
-    async with pool.acquire() as conn:
+
+    # cycle 169.483 — MariaDB error 1020 retry chain (transaction 의 BEGIN..COMMIT 전수 재 시도)
+    import asyncio
+    from asyncmy.errors import OperationalError
+
+    async def _attempt_once() -> tuple[str, Optional[int]]:
+        async with pool.acquire() as conn:
+            try:
+                await conn.begin()
+            except AttributeError:
+                await conn.autocommit(False)
+
+            try:
+                async with conn.cursor() as cur:
+                    await cur.execute(sql_select_user, (email_norm,))
+                    row = await cur.fetchone()
+                    if row is None:
+                        await conn.rollback()
+                        return ("absent", None)
+                    user_id, email_verified = int(row[0]), int(row[1])
+                    updated_at = row[2] if len(row) > 2 else None
+                    if email_verified:
+                        await conn.rollback()
+                        # 한글 주석 — cycle 169.70 회수 — race detect — updated_at 5초 이내 시 EmailRaceVerified 분기
+                        if updated_at is not None:
+                            try:
+                                from datetime import datetime
+                                now = datetime.now()
+                                if hasattr(updated_at, "tzinfo") and updated_at.tzinfo is not None:
+                                    updated_at = updated_at.replace(tzinfo=None)
+                                if abs((now - updated_at).total_seconds()) < 5:
+                                    return ("verified_race", None)
+                            except Exception:
+                                pass
+                        return ("verified", None)
+
+                    await cur.execute(sql_select_uname, (username, user_id))
+                    conflict = await cur.fetchone()
+                    if conflict is not None:
+                        await conn.rollback()
+                        return ("username_conflict", None)
+
+                    # M-2 회수 — reclaim 이전 invalidate (verify race 차단)
+                    await cur.execute(sql_invalidate_otp, (email_norm,))
+                    await cur.execute(sql_update_user, (username, password_hash, user_id))
+                await conn.commit()
+                return ("reclaimed", user_id)
+            except Exception:
+                await conn.rollback()
+                raise
+
+    last_exc: Optional[Exception] = None
+    for attempt_num in range(4):
         try:
-            await conn.begin()
-        except AttributeError:
-            await conn.autocommit(False)
-
-        try:
-            async with conn.cursor() as cur:
-                await cur.execute(sql_select_user, (email_norm,))
-                row = await cur.fetchone()
-                if row is None:
-                    await conn.rollback()
-                    return ("absent", None)
-                user_id, email_verified = int(row[0]), int(row[1])
-                updated_at = row[2] if len(row) > 2 else None
-                if email_verified:
-                    await conn.rollback()
-                    # 한글 주석 — cycle 169.70 회수 — race detect — updated_at 5초 이내 시 EmailRaceVerified 분기
-                    if updated_at is not None:
-                        try:
-                            from datetime import datetime, timedelta
-                            now = datetime.now()
-                            if hasattr(updated_at, "tzinfo") and updated_at.tzinfo is not None:
-                                updated_at = updated_at.replace(tzinfo=None)
-                            if abs((now - updated_at).total_seconds()) < 5:
-                                return ("verified_race", None)
-                        except Exception:
-                            pass
-                    return ("verified", None)
-
-                await cur.execute(sql_select_uname, (username, user_id))
-                conflict = await cur.fetchone()
-                if conflict is not None:
-                    await conn.rollback()
-                    return ("username_conflict", None)
-
-                # M-2 회수 — reclaim 이전 invalidate (verify race 차단)
-                await cur.execute(sql_invalidate_otp, (email_norm,))
-                await cur.execute(sql_update_user, (username, password_hash, user_id))
-            await conn.commit()
-            return ("reclaimed", user_id)
-        except Exception:
-            await conn.rollback()
-            raise
+            return await _attempt_once()
+        except OperationalError as exc:
+            if getattr(exc, "args", [None])[0] != 1020:
+                raise
+            last_exc = exc
+            log.warning(
+                "[reclaim_unverified_user_atomic] MariaDB error 1020 — retry %d/4",
+                attempt_num + 1,
+            )
+            await asyncio.sleep(0.05 * (attempt_num + 1))
+    if last_exc is not None:
+        raise last_exc
+    raise RuntimeError("reclaim_unverified_user_atomic unreachable")
 
 
 async def update_password(pool: Any, user_id: int, new_hash: str) -> None:
