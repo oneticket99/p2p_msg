@@ -38,37 +38,58 @@ class StubNotifier:
 
 
 class FCMNotifier:
-    """Firebase Admin SDK actual binding (cycle 169.446 skeleton — 별 cycle 의 의무 chain).
+    """Firebase Admin SDK actual binding (cycle 169.448 send chain 완성).
 
-    실 binding (별 cycle):
-    1. firebase_admin.initialize_app(credentials.Certificate(path))
-    2. firebase_admin.messaging.Message(token=..., notification=..., data=...)
-    3. firebase_admin.messaging.send(msg) → message_id return
-    4. FCM_INVALID_REGISTRATION → caller deactivate_token chain
+    chain:
+    1. firebase_admin.initialize_app(credentials.Certificate(path)) — singleton
+    2. messaging.Message(token=..., notification=..., data=...)
+    3. messaging.send(msg) → message_id return
+    4. UnregisteredError → caller deactivate_token chain (caller responsibility)
     """
 
     def __init__(self, service_account_path: str) -> None:
         self._sa_path = service_account_path
         self._initialized = False
+        self._available = False
         try:
-            import firebase_admin  # type: ignore[import]  # noqa: F401
+            import firebase_admin  # type: ignore[import]
+            from firebase_admin import credentials  # type: ignore[import]
+            try:
+                firebase_admin.get_app()
+                self._initialized = True
+            except ValueError:
+                cred = credentials.Certificate(service_account_path)
+                firebase_admin.initialize_app(cred)
+                self._initialized = True
+                log.info("[fcm] firebase_admin initialize_app PASS — sa=%s", service_account_path)
             self._available = True
         except ImportError:
             log.warning("[fcm] firebase-admin SDK 부재 — stub fallback")
-            self._available = False
+        except Exception as exc:
+            log.warning("[fcm] init 실패 — %r", exc)
 
     async def send(
         self, token: str, *, title: str, body: str,
         data: Optional[Dict[str, str]] = None,
     ) -> bool:
-        if not self._available:
+        if not self._available or not self._initialized:
             return False
-        # cycle 169.446 = skeleton. 실 send chain = 별 cycle 의무.
-        log.warning(
-            "[fcm.real] skeleton retain — send 실 binding 별 cycle 의무. token=%s... title=%s",
-            token[:16], title,
-        )
-        return False
+        try:
+            from firebase_admin import messaging  # type: ignore[import]
+            msg = messaging.Message(
+                token=token,
+                notification=messaging.Notification(title=title, body=body),
+                data={k: str(v) for k, v in (data or {}).items()},
+            )
+            # 한글 주석 — messaging.send = 동기 호출 (firebase-admin SDK)
+            import asyncio
+            loop = asyncio.get_event_loop()
+            msg_id = await loop.run_in_executor(None, messaging.send, msg)
+            log.info("[fcm.send] PASS token=%s... msg_id=%s", token[:16], msg_id)
+            return True
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[fcm.send] 실패 token=%s... — %r", token[:16], exc)
+            return False
 
 
 _notifier_singleton: Optional[Notifier] = None

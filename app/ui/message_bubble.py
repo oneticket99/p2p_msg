@@ -75,6 +75,10 @@ class MessageBubble(QFrame):
         if self._read_status_label is not None:
             self._read_status_label.setVisible(not is_read)
 
+    def msg_id(self) -> int:
+        """cycle 169.448 — bubble server msg_id 반환 (chat_view 안 last_read 비교 chain base)."""
+        return self._msg_id
+
     # 색상 클래스 상수 — Toonation BI 정합 (cycle 153.6 회수)
     # FRONTEND.md §15 + base-dark.qss QSS#messageBubbleSelf/#messageBubblePeer 정합
     _COLOR_SELF_BG = "#0066FF"      # Toonation Blue primary
@@ -100,6 +104,7 @@ class MessageBubble(QFrame):
         grouped: bool = False,
         hide_sender: bool = False,
         is_read: bool = True,
+        msg_id: int = 0,
     ) -> None:
         super().__init__(parent)
 
@@ -114,7 +119,9 @@ class MessageBubble(QFrame):
         # cycle 169.163 — 1:1 chat 시점 sender label suppress (telegram align image #6)
         self._hide_sender = hide_sender
         # cycle 169.430 — 안읽음/읽음 라벨 (사용자 directive — ts 옆 inline)
+        # cycle 169.448 — msg_id retain (server last_read 비교 base)
         self._is_read = is_read
+        self._msg_id = int(msg_id)
         self._read_status_label: Optional[QLabel] = None
 
         # 본 위젯은 가로로 가득 차도록 두고, 내부 정렬을 통해 좌/우 분기

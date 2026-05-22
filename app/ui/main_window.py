@@ -890,6 +890,23 @@ class MainWindow(QMainWindow):
                 self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
             )
 
+    async def _fetch_unread_counts(self) -> None:
+        """cycle 169.448 — startup 시점 multiple room unread count batch fetch.
+
+        chat_list_panel 안 entry.unread_count populate chain.
+        """
+        import aiohttp
+        try:
+            token = getattr(self, "_session_token", None) or ""
+            if not token:
+                return
+            # 한글 주석 — room_ids 의 dynamic resolve (cycle 169.448 stub — 본 cycle = friend rooms only)
+            # 별 cycle 의무: 모든 active room id 의 batch 조회 (chat_list_panel entries → room_id resolve)
+            log.debug("[fetch_unread] skeleton — 실 room_ids dynamic resolve 별 cycle")
+            return
+        except Exception as exc:
+            log.debug("[fetch_unread] 실패 — %r", exc)
+
     def _post_login_refresh(self) -> None:
         """login PASS 직후 friend + room server fetch + chat_list_panel populate (cycle 169.107).
 
@@ -1376,6 +1393,9 @@ class MainWindow(QMainWindow):
                 from app.db import messages_cache as _mc
                 kind_active = self._active_chat_kind or "saved"
                 room_id_local = self._kind_room_local(kind_active, friend_id)
+                # cycle 169.448 — server room_id retain (mark_read chain base)
+                self._active_room_id_server = int(room_id)
+                _max_msg_id = 0
                 for m in raw_messages:
                     sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
                     text = m.get("text", "")
@@ -1401,8 +1421,14 @@ class MainWindow(QMainWindow):
                                 ts_ms=int(ts_ms) if ts_ms else int(ts.timestamp() * 1000),
                                 is_self=is_self,
                             )
+                            # cycle 169.448 — max msg_id retain (mark_read 호출 base)
+                            if msg_id > _max_msg_id:
+                                _max_msg_id = msg_id
                     except Exception as exc:
                         log.debug("[dm_history] SQLite write-back 실패 — %r", exc)
+                # cycle 169.448 — replay 완료 후 mark_read chain (chat 포커스 정합 의무)
+                if _max_msg_id > 0:
+                    self._mark_room_read(int(room_id), _max_msg_id)
                 self._chat_view.scroll_to_bottom()
                 log.info("[dm_history] friend=%d room=%d msgs=%d viewer=%s replay PASS",
                          friend_id, room_id, len(raw_messages), viewer_uid)
