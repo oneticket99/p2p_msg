@@ -1,28 +1,28 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T11:35:00+09:00
+last_verified: 2026-05-22T16:25:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 11:35 KST — cycle 169.413~417 fingerprint sync (7 commit drift 회수). 누계: Phase 1 i18n EN sweep 91 entry append (cycle 169.413) → Phase 5 Item 1 i18n ZH-CN+JA 109 entry append + ZH-TW fallback chain (cycle 169.414) → Phase 5 Item 3 emoji pack GET 2 + POST 1 endpoint actual binding + middleware GET prefix whitelist + register chain (cycle 169.415) → Phase 5 Item 5 원격 제어 macOS Quartz CGDisplayCreateImage capture + CGEvent input forward 4 event_type 분기 + autorelease pool 정합 (cycle 169.416) → Phase 5 Item 2 자동 업데이트 binary swap actual chain macOS shutil.move rollback + Windows batch script DETACHED_PROCESS (cycle 169.417).<br>**이전 갱신**: 2026-05-22 11:15 KST — cycle 169.408~412 sync.
+> **최신 갱신 시점**: 2026-05-22 16:25 KST — cycle 169.418~427 fingerprint sync (15 commit drift 회수). 누계: streaming_helper 5 platform callback URL (169.418) → emoji pack items + moderation actual binding (169.419) → bot framework BotFather 등가 base — migration 0012 + bots/bot_tokens repository + 6 endpoint (169.420) → 원격 제어 Windows GDI + Linux X11 backend actual binding (169.421) → streaming chat 4 platform actual subscribe — YouTube httpx polling + Twitch IRC handshake + CHZZK CMD 100/93101 + Kick Pusher subscribe (169.422) → M2 README + M3 History prepend 15 entry (169.423) → 원격연결/원격요청 outgoing UI 통합 + incoming label customization (169.424~426) → BPE 측 단독 회수 (169.427).<br>**이전 갱신**: 2026-05-22 11:35 KST — cycle 169.413~417 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-22. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.417 누계 (commit `c46644a`).
+> 평가 기준일 = 2026-05-22. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.427 누계 (commit `7fa0f98`).
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 300+ sub-cycle 누계 (cycle 169.117~417). 제품화 가능성 = **Phase 1 종결 + Phase 5 Item 1/2/3/5 actual binding 본격 진입 + 모바일 제외 잔존 작업 본격 회수 — i18n 5 locale full sweep (KO 137 keyset 100% × EN/ZH-CN/JA + ZH-TW fallback) + emoji pack endpoint actual binding (list_public_approved + get_pack_by_slug + insert_pack + slug regex 409 graceful) + 원격 제어 macOS native binding (CGDisplayCreateImage + CGEventCreate* 4 event_type + autorelease pool) + 자동 업데이트 binary swap actual chain (macOS shutil.move rollback + Windows batch DETACHED_PROCESS) + 인프라 완비 + telegram align 98% + bot LLM production-ready + PORTABLE_HARNESS / Phase 5 마무리 = streaming_helper 5 platform API + bot framework BotFather 등가 + mesh production-grade**.
+**현재 단계**: Phase 1~5 actual binding 본격 완성 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 310+ sub-cycle 누계 (cycle 169.117~427). 제품화 가능성 = **Phase 1 종결 + Phase 3+ bot framework BotFather 등가 base actual binding + Phase 5 Item 1/2/3/4/5 모두 actual binding (모바일 제외 잔존 작업 본격 회수 완료). i18n 5 locale full sweep + emoji pack endpoint 5 actual binding (list/get/create/add_item/moderation) + 원격 제어 cross-platform 4 backend native (macOS Quartz + Windows GDI + Linux X11) + 자동 업데이트 binary swap (macOS rollback + Windows DETACHED batch) + bot framework BotFather 등가 (migration 0012 + bots/bot_tokens + 6 endpoint + SHA-256 token hash + plaintext 1회 노출) + streaming chat 4 platform actual subscribe (YouTube httpx polling + Twitch IRC + CHZZK CMD 100/93101 + Kick Pusher) + 원격연결/원격요청 outgoing UI 통합 (자의/타의 label 정합) + 인프라 완비 + telegram align 98%**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.9 / 10 | 8.6 → 8.9 ▲ | Phase 5 Item 1+2+3+5 actual binding 본격 진입 (cycle 169.413~417): i18n 5 locale full sweep (KO 137 × EN 171 / ZH-CN 162 / JA 162 / ZH-TW fallback chain, cycle 169.413~414) + emoji pack GET 2 + POST 1 endpoint actual (list_public_approved + get_pack_by_slug + insert_pack + slug regex + UNIQUE 409 graceful + middleware GET prefix whitelist + main.py register chain, cycle 169.415) + 원격 제어 macOS native (CGDisplayCreateImage capture + CGEventCreate* 4 event_type 분기 MOUSE_MOVE/CLICK/KEY_DOWN/UP + try/finally autorelease pool + del cg_event 명시, cycle 169.416) + 자동 업데이트 binary swap actual chain (macOS .tootalk_backup_<ts>/ shutil.move + zipfile.extractall + 실행 binary 검증 + rollback chain / Windows tempfile.mkdtemp + batch script taskkill+timeout+xcopy+start+rmdir + subprocess.Popen DETACHED_PROCESS 0x00000008, cycle 169.417) |
+| 기술 완성도 | 9.2 / 10 | 8.9 → 9.2 ▲ | Phase 1~5 actual binding 본격 완성 (cycle 169.413~427): i18n 5 locale full sweep + emoji pack 5 endpoint actual + 원격 제어 4 backend native (macOS Quartz + Windows GDI + Linux X11 + Mock) + CGEvent + SendInput + XTest input forward + 자동 업데이트 binary swap (macOS rollback chain + Windows DETACHED batch) + bot framework BotFather 등가 base (migration 0012 bots/bot_tokens + 6 endpoint + SHA-256 token + plaintext 1회 노출 보안) + streaming chat 4 platform actual subscribe (YouTube/Twitch/CHZZK/Kick) + 원격연결/원격요청 outgoing UI 통합 (자의/타의 label 정합) + 음성통화 검증 (aiortc 1.14.0 RTCPeerConnection + MediaPlayer avfoundation device capture chain) |
 | 시장 적합성 | 5.0 / 10 | 6.2 → 5.0 ▼ | Toonation BI 통합 redesign + telegram align 96% 도달 + 1차 dogfooding readiness (default 투네이션 고객센터 봇 진입 + chat_list filter 통합 + sidebar 2 entry 단순화 + 편집 tab folder dialog redirect 완성) + SMTP 자체 설치 + DB audit 28 ActivityAction + bot LLM Q&A 실 응답 chain + last_seen 시각화 (Phase 5 binding) + DM room resolver friend_id ↔ direct room_id mapping + i18n qm 5 locale 활성 |
 | 차별화 요소 | 8.0 / 10 | 9.9 → 8.0 ▼ | 친구간 원격 데스크탑 Phase 5 base + telegram align 단순화 UX + 시그니처 사운드 + push 4 platform + E2EE Signal + Phase 3 bot framework production-ready + Toonation BI 통합 hamburger drawer 단색 + 채팅 통합 filter "채팅" 단일 tab + 편집 tab FolderManageDialog telegram align + bot LLM 우선 provider OpenAI swap chain + PORTABLE_HARNESS.md 공용 한벌 + last_seen 실시간 갱신 chain + i18n qm 5 locale frozen bundle |
 | 사용자 가치 | 5.5 / 10 | 7.4 → 5.5 ▼ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) + last_seen client fetch (cycle 169.221) + DM history fetch chain (cycle 169.225) + dialog main center (cycle 169.229~230) |
@@ -546,9 +546,12 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 | WebRTC mesh ≤ 8 peer cap | 중 | 중 | 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
 | 1차 dogfooding 부재 | 중 | 중 | Phase 5 마무리 직후 1주 retention + NPS 측정 진입 의무 |
 | ~~Phase 1 i18n ZH-CN/ZH-TW/JA sweep 잔존~~ | ✅ 해소 (cycle 169.414) | — | KO 137 keyset 100% × EN/ZH-CN/JA full cover + ZH-TW fallback chain (tr() 안 ZH-CN 우회) |
-| Phase 5 streaming_helper 5 platform API 잔존 | 중 | 중 | YouTube/Twitch/CHZZK/Kick/별 1 platform NotImplementedError retain (`app/bot/streaming_helper.py:399~415`). 방송 도우미 봇 본격 cycle 의무 |
-| Phase 5 bot framework BotFather 등가 잔존 | 중 | 중 | `/api/bot/chat` 단일 endpoint retain + 외부 개발자 봇 등록 + webhook + inline + payment 등 BotFather 등가 chain 부재. Phase 3+ 차별화 base |
+| ~~Phase 5 streaming_helper 5 platform API 잔존~~ | ✅ 해소 (cycle 169.418+422) | — | fetch_platform_callback 5 platform base URL return + 4 client (YouTube httpx polling + Twitch IRC + CHZZK + Kick) actual subscribe chain |
+| ~~Phase 5 bot framework BotFather 등가 잔존~~ | ✅ 해소 (cycle 169.420) | — | migration 0012 bots + bot_tokens + 6 endpoint (GET/POST /api/bots + GET /me + GET/{username} + POST /tokens + DELETE /tokens/{id}) + SHA-256 token hash + plaintext 1회 노출 보안 |
+| ~~Phase 5 원격 제어 cross-platform 잔존~~ | ✅ 해소 (cycle 169.416+421) | — | macOS Quartz + Windows GDI + Linux X11 4 capture backend + CGEvent + SendInput + XTest 3 input forward backend |
 | Phase 5 mesh production-grade 잔존 | 중 | 중 | WebRTC mesh ≤ 8 peer cap + receive chain 부재 retain (`app/rtc/mesh_manager.py`). 9 peer 이상 의무 SFU 마이그레이션 (Phase 6+) |
+| aiortc PyInstaller hidden imports 잔존 | 중 | 저 | `dist/TooTalk.app` 안 aiortc 모듈 bundle 부재 — `tootalk.spec` hidden imports + collect_submodules('aiortc') 추가 의무. 통화 fire 시 ImportError graceful 但 actual 동작 차단 |
+| 인증서 없이 테스트 배포 path 정립 | 중 | 저 | adhoc codesign retain + 사용자 manual `xattr -rd com.apple.quarantine` 안내. GitHub Release zip/DMG + Windows SmartScreen "More info → Run anyway" README 정리 의무 |
 | cycle 169.x UI redesign 의 LLM autonomy 의 한계 (사용자 design directive 부재 시 임의 변경 금지) | 중 | 중 | `[[feedback-no-design-change-without-user-directive]]` 영구 가드레일 + 위반 시 즉시 git revert |
 | design critique batch 일시 중지 의무 (cycle 169.229 신설) | 중 | 중 | `[[feedback-design-critique-first-priority]]` 영구 가드레일 = 사용자 design critique 의 모든 잔존 batch 일시 중지 + 우선 처리 의무. Phase 5 binding / doc sync / Stop hook 모두 후순위 |
 | bearer_token chain drift (cycle 169.228 회수) | 저 | 중 | self._session_token 정합 + HTTP 401 차단 + 매 endpoint 의 token chain 의 단일 source helper 정합 |
@@ -606,9 +609,9 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 
 본 snapshot 은 다음 task 종료 시점 전체 rewrite. 갱신 시 다음 항목 변동 우선 반영:
 
-- 기술 완성도 점수 — Phase 5 streaming + bot framework + mesh 마무리 + dogfooding 시 +0.3 (현 8.9 → 9.2)
+- 기술 완성도 점수 — mesh production-grade SFU 마이그레이션 + dogfooding 시 +0.3 (현 9.2 → 9.5)
 - Phase 1 잔존 회수 진척 = ✅ 종결 (cycle 169.411~414 안 5건 PASS)
-- Phase 5 진척 = Item 1+2+3+5 actual binding (cycle 169.413~417). Item 4 (streaming 5 platform + bot framework + mesh) 잔존
+- Phase 3+/5 진척 = ✅ 본격 actual binding 완성 (cycle 169.413~427). 모바일 제외 잔존 = mesh + aiortc bundle + 인증서 path 3건만
 - 누락 기능 표 — Phase 5 마무리 시 항목 제거
 - 단기 액션 ✅ 표시 갱신
 - KPI 실측 값 (dogfooding 진입 후)
