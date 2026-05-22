@@ -308,25 +308,25 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
-- cycle 169.231 (2026-05-21 12:34 KST) — 평가 4 file fingerprint sync (cycle 169.230 dialog center helper 회수)
-- cycle 169.230 (2026-05-21 12:34 KST) — dialog main center _exec_dialog_centered helper (3 dialog 적용)
-- cycle 169.229 (2026-05-21 12:34 KST) — design critique 최우선 가드레일 memory permanent (모든 잔존 batch 우선 회수)
-- cycle 169.228 (2026-05-21 12:34 KST) — bearer_token chain 회수 self._session_token 정합 (HTTP 401 fix)
-- cycle 169.227 (2026-05-21 12:34 KST) — hamburger drawer header gradient 폐기 단색 #0066FF
-- cycle 169.226 (2026-05-21 12:34 KST) — i18n qm bundle PyInstaller spec datas
-- cycle 169.225 (2026-05-21 12:34 KST) — client DM history fetch async helper (_fetch_dm_history)
-- cycle 169.224 (2026-05-21 12:34 KST) — doc-gardener spawn (DM resolver chain 정합 확인)
-- cycle 169.223 (2026-05-21 12:34 KST) — 평가 4 file fingerprint sync (DM resolver REST endpoint 회수)
-- cycle 169.222 (2026-05-21 12:34 KST) — DM room resolver REST endpoint + find_or_create_dm_room
-- cycle 169.219~221 (2026-05-21 12:34 KST) — client last_seen fetch async helper (_fetch_user_status)
-- cycle 169.218 (2026-05-21 12:34 KST) — doc-gardener spawn (last_seen REST chain 정합 확인)
-- cycle 169.217 (2026-05-21 12:34 KST) — 평가 4 file fingerprint sync (cycle 169.216 last_seen endpoint 회수)
-- cycle 169.216 (2026-05-21 12:34 KST) — server last_seen REST endpoint + auth_handlers
-- cycle 169.215 (2026-05-21 12:34 KST) — dereliction hook grep logic fix (--grep filter 폐기 → git log -n N pretty grep -c)
-- cycle 169.214 (2026-05-21 12:34 KST) — History.md 역순 prepend cycle 169.118~212 (@history)
-- cycle 169.213 (2026-05-21 12:34 KST) — README.md cycle 169.144~212 prepend 30행 trim (@release)
-- cycle 169.212 (2026-05-21 11:21 KST) — hook_dereliction_check.sh stderr redirect (claude Stop hook display 정합)
-- cycle 169.211 (2026-05-21 11:07 KST) — 평가 4 file fingerprint sync (cycle 169.206~210 5 cycle drift 회수)
+- cycle 169.422 (2026-05-22 12:15 KST) — Phase 5 streaming chat 4 platform actual subscribe (YouTube polling + Twitch IRC + CHZZK CMD100/93101 + Kick Pusher subscribe)
+- cycle 169.421 (2026-05-22 12:00 KST) — Phase 5 Item 5 원격 제어 Windows GDI + Linux X11 backend actual binding (NotImplementedError 전수 폐기)
+- cycle 169.420 (2026-05-22 11:50 KST) — Phase 3+ bot framework BotFather 등가 base (migration 0012 + repository + 6 endpoint)
+- cycle 169.419 (2026-05-22 11:42 KST) — emoji pack items + moderation actual binding (skeleton 폐기)
+- cycle 169.418 (2026-05-22 11:30 KST) — streaming_helper 5 platform callback URL return + token-usage rewrite
+- cycle 169.417 (2026-05-22 11:05 KST) — 자동 업데이트 binary swap (macOS shutil.move rollback + Windows DETACHED batch)
+- cycle 169.416 (2026-05-22 10:50 KST) — 원격 제어 macOS Quartz capture + CGEvent input forward actual binding
+- cycle 169.415 (2026-05-22 10:35 KST) — emoji pack GET 2 + POST 1 endpoint actual binding + middleware whitelist
+- cycle 169.414 (2026-05-22 10:20 KST) — i18n ZH-CN+JA sweep 109 entry + ZH-TW fallback chain
+- cycle 169.413 (2026-05-22 10:10 KST) — labels.py LABELS_EN 91 missing entry append (KO 137 full cover)
+- cycle 169.412 (2026-05-22 10:00 KST) — QMessageBox 44 call sites 전수 폐기 (ConfirmDialog static factory swap)
+- cycle 169.411 (2026-05-22 09:50 KST) — Phase 1 잔존 3건 (saved messages persist + folder PATCH + 야간 모드 visual indicator)
+- cycle 169.410 (2026-05-22 09:30 KST) — 아이디 찾기 endpoint + FindIdDialog + login link
+- cycle 169.409 (2026-05-22 09:15 KST) — drawer SVG 4 신설 (broadcast/bookmark/logout/contacts) + 야간 모드 click toggle
+- cycle 169.408 (2026-05-22 09:00 KST) — 평가 4 file fingerprint sync (cycle 169.402~407)
+- cycle 169.407 (2026-05-22 08:45 KST) — MyProfileDialog info row horizontal inline
+- cycle 169.404 (2026-05-22 08:30 KST) — avatar source nickname → display_name → username fallback 통일
+- cycle 169.399 (2026-05-22 08:00 KST) — migration 0011 nickname field + MyAccountDialog binding
+- cycle 169.395 (2026-05-22 07:30 KST) — migration 0010 user profile fields (display_name + phone + birthdate + bio) + actual UPDATE SQL
 - cycle 169.210 (2026-05-21 11:07 KST) — bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive)
 - cycle 169.209 (2026-05-21 11:03 KST) — bot LLM ContentTypeError 회수 (graceful HTTP status + JSON parse 분기)
 - cycle 169.208 (2026-05-21 11:01 KST) — PORTABLE_HARNESS.md GPLv3 항목 제거 (사용자 directive)
