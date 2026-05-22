@@ -1142,8 +1142,53 @@ class MainWindow(QMainWindow):
             return
 
         dlg = AddFriendDialog(parent=self)
+        # 한글 주석 — cycle 169.489 — search_requested wire fix. 이전 cycle 부재 → 검색 버튼 noop 회수
+        self._add_friend_dlg_ref = dlg
+        dlg.search_requested.connect(self._on_friend_search_requested)
         dlg.friend_requested.connect(self._on_friend_requested)
         dlg.exec()
+        self._add_friend_dlg_ref = None
+
+    def _on_friend_search_requested(self, keyword: str) -> None:
+        """AddFriendDialog search_requested 슬롯 — FriendsClient.search_users 호출 + set_search_results 갱신.
+
+        cycle 169.489 — 검색 wire 부재 회수. friends_client 부재 graceful skip.
+        """
+        import asyncio
+        from app.ui.add_friend_dialog import SearchResult
+
+        log.info("[main_window] friend_search_requested keyword=%r", keyword)
+        dlg = getattr(self, "_add_friend_dlg_ref", None)
+        if dlg is None:
+            log.warning("[friend_search] dlg ref 부재 — skip")
+            return
+        fc = getattr(self, "_friends_client", None)
+        if fc is None or self._session_token is None:
+            log.warning("[friend_search] friends_client/session_token 부재 — skip")
+            dlg.set_search_results([])
+            return
+
+        async def _do_search() -> None:
+            try:
+                results = await fc.search_users(keyword=keyword, limit=20)
+                ui_results = [
+                    SearchResult(
+                        user_id=int(r.id),
+                        username=str(r.username),
+                        email_verified=bool(r.email_verified),
+                    )
+                    for r in results
+                ]
+                dlg.set_search_results(ui_results)
+                log.info("[friend_search] count=%d", len(ui_results))
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[friend_search] fail — %r", exc)
+                dlg.set_search_results([])
+
+        try:
+            asyncio.ensure_future(_do_search())
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[friend_search] spawn fail — %r", exc)
 
     def _on_friend_requested(self, user_id: int, nickname: str) -> None:
         """AddFriendDialog 의 friend_requested 시그널 수신 — REST POST 호출 placeholder.

@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.489 (2026-05-22 22:25 KST) — AddFriendDialog search_requested wire fix (main_window _on_open_add_friend connect 부재 회수, async search_users + set_search_results chain)
 - cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환 (BASH_SOURCE/.. resolve, working dir 전환 정합)
 - cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load (prepend_message + valueChanged + 500ms cooldown)
 - cycle 169.465 (2026-05-22 19:15 KST) — account phone/birthdate save normalize + i18n ZH/JA new_contact 4 entry
@@ -337,7 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.412 (2026-05-22 10:00 KST) — QMessageBox 44 call sites 전수 폐기 (ConfirmDialog static factory swap)
 - cycle 169.411 (2026-05-22 09:50 KST) — Phase 1 잔존 3건 (saved messages persist + folder PATCH + 야간 모드 visual indicator)
 - cycle 169.410 (2026-05-22 09:30 KST) — 아이디 찾기 endpoint + FindIdDialog + login link
-- cycle 169.409 (2026-05-22 09:15 KST) — drawer SVG 4 신설 (broadcast/bookmark/logout/contacts) + 야간 모드 click toggle
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
