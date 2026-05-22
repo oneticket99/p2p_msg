@@ -2358,8 +2358,8 @@ class MainWindow(QMainWindow):
     def _on_remote_request(self) -> None:
         """원격 요청 → RemoteCallDialog outgoing — 사용자 directive cycle 169.426 용어 정합.
 
-        원격요청 = me 측 → 상대 PC 제어 도움 요청 (me 측 = 도움 제공 의도, 상대 PC 제어 의도).
-        타의적 — 상대 PC 보는 측 의지. label = '원격 도움 요청 발신 중…'.
+        원격요청 = me → 상대 PC 제어 도움 요청 (me 사용자 = 도움 제공 의도, 상대 PC 제어 의도).
+        타의적 — 상대 PC 보는 사용자 의지. label = '원격 도움 요청 발신 중…'.
         """
         try:
             from app.ui.remote_call_dialog import RemoteCallDialog
@@ -2386,8 +2386,8 @@ class MainWindow(QMainWindow):
         """cycle 169.425~426 — 상대 peer 요청 incoming 시점 강제 modal spawn helper.
 
         사용자 directive 용어 정합:
-        - 원격요청 = 상대 → me 측 → 상대 PC 제어 도움 요청 (타의적, 상대 의지)
-        - 원격연결 = 상대 → me 측 → me PC 제어 시도 (자의적, 상대 의지)
+        - 원격요청 = 상대 → me → 상대 PC 제어 도움 요청 (타의적, 상대 의지)
+        - 원격연결 = 상대 → me → me PC 제어 시도 (자의적, 상대 의지)
 
         Parameters
         ----------
@@ -2430,7 +2430,7 @@ class MainWindow(QMainWindow):
                     if e.kind == kind and e.target_id == tid:
                         peer = e.name or peer
                         break
-            # cycle 169.424~426 — outgoing mode + status text 분기 (원격 연결 = me 측 → 상대 PC 제어 의도)
+            # cycle 169.424~426 — outgoing mode + status text 분기 (원격 연결 = me → 상대 PC 제어 의도)
             dialog = RemoteCallDialog(
                 peer_name=peer, mode="request", parent=self,
                 outgoing_label="원격 제어 요청 발신 중… (내 PC 제어 위임)",
