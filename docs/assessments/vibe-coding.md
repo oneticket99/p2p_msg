@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T01:50:00+09:00
+last_verified: 2026-05-23T02:50:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.511
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.517
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.511 누계.
-> 최근 갱신: 2026-05-23 01:50 KST — cycle 169.503~511 fingerprint sync (9 commit drift 회수). 누계: 평가 4 file v2 (503) + token-usage regen + current-project-review codex snapshot 6.3/10 (504) + codex review 4 risk batch root-freeze + md_agents + streaming test + coverage gate (505~508) + TrayMixin 분리 main_window 4026→3862 (509) + productization 7.1→6.5 codex 정합 (510) + FriendSearchMixin 분리 3862→3675 + M6 wbs 14 row INSERT (511).
+> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.517 누계.
+> 최근 갱신: 2026-05-23 02:50 KST — cycle 169.512~517 fingerprint sync (6 commit drift 회수). 누계: 평가 4 file v3 (512) + BotChatMixin 분리 main_window 3675→3478 (513) + DrawerMixin 분리 3478→3152 본격 21.7% (514) + token-usage HTML KeyError fix + bot user 직접 INSERT 검증 PASS (515) + handoff §8.80 신설 28 cycle manifest (516) + memory feedback_ssh_deploy_classifier_reject 신설 (517).
 
 ---
 
