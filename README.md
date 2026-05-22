@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.494~497 (2026-05-22 23:40 KST) — 친구 추가 + bot chat batch chain — main.py FriendsClient 주입 (494) + friends_client TLS verify default 0 + chat list visual delegate 재사용 (495) + alert 폐기 + friend_request actual REST POST 바인딩 (496) + bot chat 답변 사라짐 fix `_fetch_bot_history` cached/server merge + `_append_dm_message` `_kind_room_local` helper 통일 (497) + memory `feedback_auto_commit_push_deploy` 박제
 - cycle 169.493 (2026-05-22 23:10 KST) — 평가 4 file fingerprint sync (cycle 169.488~492 5 commit drift 회수) + handoff §8.79.1 cycle 169.485~492 8 entry append
 - cycle 169.492 (2026-05-22 23:00 KST) — .gitignore 2 entry 추가 (build/tootalk/ PyInstaller 산출 + .claude/settings.local.json local 권한 cache)
 - cycle 169.491 (2026-05-22 22:50 KST) — 친구 검색 한글 확장 — server SQL `WHERE username/display_name/nickname LIKE` 3 column OR (한글 nickname/display_name 검색 회수) + UserSearchResult + SearchResult display_name/nickname field 신설 + UI label "닉네임 (@username)" 우선 표기
@@ -337,7 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.417 (2026-05-22 11:05 KST) — 자동 업데이트 binary swap (macOS shutil.move rollback + Windows DETACHED batch)
 - cycle 169.416 (2026-05-22 10:50 KST) — 원격 제어 macOS Quartz capture + CGEvent input forward actual binding
 - cycle 169.415 (2026-05-22 10:35 KST) — emoji pack GET 2 + POST 1 endpoint actual binding + middleware whitelist
-- cycle 169.414 (2026-05-22 10:20 KST) — i18n ZH-CN+JA sweep 109 entry + ZH-TW fallback chain
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

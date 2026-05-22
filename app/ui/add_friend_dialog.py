@@ -143,10 +143,17 @@ else:
             root.addLayout(search_row)
 
             # ── 검색 결과 list ────────────────────────────
+            # 한글 주석 — cycle 169.495 — chat list 패턴 visual 동기 (사용자 directive image #13).
+            # ChatListItemDelegate 재사용 — avatar circle + name (14px bold) + subtitle (12px gray) + ts row.
             self._result_list = QListWidget(self)
             self._result_list.setSelectionMode(
                 QListWidget.SelectionMode.SingleSelection
             )
+            try:
+                from app.ui.chat_list_panel import ChatListItemDelegate
+                self._result_list.setItemDelegate(ChatListItemDelegate(self._result_list))
+            except Exception as exc:  # noqa: BLE001 — graceful import fail
+                log.debug("ChatListItemDelegate import fail graceful — %r", exc)
             root.addWidget(self._result_list, stretch=1)
 
             # ── nickname 입력 (선택) ──────────────────────
@@ -190,17 +197,26 @@ else:
                 self._result_list.addItem(placeholder)
                 return
 
+            # 한글 주석 — cycle 169.495 — ChatListEntry 변환 + UserRole + 2 set (delegate paint source).
+            # name = nickname > display_name > username 우선. subtitle = @username (verify ✓ 보조).
+            from app.ui.chat_list_panel import ChatListEntry
             for result in self._results:
-                badge = " ✓" if result.email_verified else ""
-                # 한글 주석 — cycle 169.491 — display_name + nickname 보조 표기.
-                # 표시 우선순위: nickname (있으면) → display_name (있으면) → username only.
                 primary = result.nickname or result.display_name or result.username
-                if primary == result.username:
-                    label = f"{result.username}{badge}"
-                else:
-                    label = f"{primary} (@{result.username}){badge}"
-                item = QListWidgetItem(label)
+                badge = " ✓" if result.email_verified else ""
+                subtitle = f"@{result.username}{badge}"
+                entry = ChatListEntry(
+                    kind="friend",
+                    target_id=result.user_id,
+                    name=primary,
+                    last_message=subtitle,
+                    last_ts=None,
+                    unread_count=0,
+                    is_pinned=False,
+                    is_online=False,
+                )
+                item = QListWidgetItem()
                 item.setData(Qt.ItemDataRole.UserRole, result.user_id)
+                item.setData(Qt.ItemDataRole.UserRole + 2, entry)
                 self._result_list.addItem(item)
 
         def selected_user_id(self) -> Optional[int]:
@@ -251,14 +267,16 @@ else:
                     )
 
         def _on_request_clicked(self) -> None:
-            """친구 추가 버튼 슬롯 — 선택 검증 + 시그널 emit."""
+            """친구 추가 버튼 슬롯 — 선택 검증 + 시그널 emit.
+
+            cycle 169.496 — alert 폐기 (사용자 directive image #18). selection 부재 시점
+            silent return (단순 noop) — list 자체가 비어있으면 button click 의미 부재.
+            """
 
             target_id = self.selected_user_id()
             if target_id is None:
-                from app.ui.confirm_dialog import ConfirmDialog
-                ConfirmDialog.show_warning(
-                    self, "TooTalk", "검색 결과 1행 선택 의무"
-                )
+                # 한글 주석 — 선택 부재 시점 silent return (alert 폐기). log 만 retain.
+                log.info("[add_friend] click ignored — selection 부재")
                 return
             nickname = self.nickname()
             log.info(

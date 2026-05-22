@@ -246,12 +246,21 @@ class FriendsClient:
             self._client = None
 
     def _ensure_client(self) -> "httpx.AsyncClient":
-        """httpx.AsyncClient lazy init — Bearer header default."""
+        """httpx.AsyncClient lazy init — Bearer header default.
+
+        cycle 169.494 — TLS verify TOOTALK_TLS_VERIFY env 정합. demo self-signed cert
+        verify=False fallback. AuthClient aiohttp ssl.CERT_NONE 패턴 등가.
+        """
 
         if self._client is None:
+            # 한글 주석 — TOOTALK_TLS_VERIFY=0 시점 verify=False (self-signed cert 정합).
+            # default "0" — 다른 client (_ssl_util.build_ssl_context) 동기. production = TOOTALK_TLS_VERIFY=1 명시 의무.
+            import os
+            tls_verify = os.environ.get("TOOTALK_TLS_VERIFY", "0") != "0"
             self._client = httpx.AsyncClient(
                 headers={"Authorization": f"Bearer {self._token}"},
                 timeout=httpx.Timeout(10.0),
+                verify=tls_verify,
             )
         return self._client
 

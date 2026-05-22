@@ -207,11 +207,23 @@ def main() -> int:
                 "[auth] PASS user_id=%s token_set=%s", session_user_id, bool(session_token)
             )
 
-        # 6) MainWindow 표시
+        # 6) FriendsClient instantiate (cycle 169.494 — main_window 주입 부재 회수)
+        # 한글 주석 — 친구 검색 dialog `_on_friend_search_requested` 안 friends_client None 분기 회수.
+        # session_token 정합 (auth PASS 후) + api_base 동일 binding.
+        friends_client_obj = None
+        if session_token:
+            try:
+                from app.net.friends_client import FriendsClient
+                friends_client_obj = FriendsClient(base_url=api_base, token=session_token)
+            except (ImportError, RuntimeError, ValueError) as exc:  # pragma: no cover - graceful
+                logging.getLogger(__name__).debug("FriendsClient 부재 graceful — %r", exc)
+
+        # 7) MainWindow 표시
         window = MainWindow(
             config=config,
             auth_client=auth_client,
             reactions_client=reactions_client,
+            friends_client=friends_client_obj,
         )
         # 한글 주석 — cycle 169.54 회수 — 인증 정보 propagate (MainWindow token + user_id)
         if session_user_id is not None:

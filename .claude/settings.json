@@ -16,6 +16,12 @@
       "Bash(ssh root@114.207.112.73 *)",
       "Bash(scp * root@114.207.112.73:*)",
       "Bash(rsync -e ssh * root@114.207.112.73:*)",
+      "Bash(ssh -o StrictHostKeyChecking=* root@114.207.112.73 *)",
+      "Bash(/usr/bin/expect *)",
+      "Bash(expect *)",
+      "Bash(sshpass *)",
+      "Bash(bash /tmp/ssh_*)",
+      "Bash(SSHPASS=* *)",
       "Write(.claude/agents/ssh-deploy-agent.md)",
       "Edit(.claude/agents/ssh-deploy-agent.md)"
     ]

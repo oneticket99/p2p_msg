@@ -1204,9 +1204,31 @@ class MainWindow(QMainWindow):
             user_id,
             nickname,
         )
-        self._status_bar.showMessage(
-            f"친구 요청 발신 — user_id={user_id}", 3000
-        )
+        # 한글 주석 — cycle 169.496 — actual REST POST binding (이전 placeholder 회수).
+        # friends_client.request_friend(user_id, nickname) async + dialog close + status bar.
+        import asyncio
+        fc = getattr(self, "_friends_client", None)
+        if fc is None or self._session_token is None:
+            log.warning("[friend_request] friends_client/session_token 부재 — skip")
+            self._status_bar.showMessage("친구 요청 실패 — 인증 부재", 3000)
+            return
+
+        async def _do_request() -> None:
+            dlg = getattr(self, "_add_friend_dlg_ref", None)
+            try:
+                friend_id = await fc.request_friend(user_id, nickname or None)
+                log.info("[friend_request] PASS friend_row_id=%d", friend_id)
+                self._status_bar.showMessage(f"친구 요청 발신 — user_id={user_id}", 3000)
+                if dlg is not None:
+                    dlg.accept()
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[friend_request] fail — %r", exc)
+                self._status_bar.showMessage(f"친구 요청 실패 — {exc.__class__.__name__}", 4000)
+
+        try:
+            asyncio.ensure_future(_do_request())
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[friend_request] spawn fail — %r", exc)
 
     # ------------------------------------------------------------------
     # 채팅 슬롯 — 1:1 + 그룹 (cycle 139 추가) + SidebarRail / ChatHeader (cycle 153.4 신설)
@@ -1382,15 +1404,10 @@ class MainWindow(QMainWindow):
             # 한글 주석 — room_id derive: bot=1*10+kind_offset, friend=target_id*100, saved=self_id*100
             self_id = getattr(self, "_current_user_id", None) or 0
             sender_id = self_id if is_self else target_id
-            # local cache room_id 의 의 namespace 분리 (server room_id 부재 시점 — temporary)
-            if kind == "saved":
-                room_id_local = (self_id or 1) * 100 + 1
-            elif kind == "bot":
-                room_id_local = target_id * 10 + 2
-            elif kind == "friend":
-                room_id_local = target_id * 100 + 3
-            else:
-                room_id_local = target_id * 100 + 9
+            # 한글 주석 — cycle 169.497 — _kind_room_local helper 사용 (공식 통일).
+            # 이전 cycle 169.440 의 bot 공식 = target_id * 10 + 2 → cycle 169.444 안 self_id * 10 + 2 swap.
+            # _load_local_history 와 read 공식 불일치 회수.
+            room_id_local = self._kind_room_local(kind, target_id)
             ts_ms = int(ts.timestamp() * 1000) if ts else 0
             _mc.insert_message(
                 msg_id=0,  # server msg_id 부재 — uuid-only path retain
@@ -2076,11 +2093,21 @@ class MainWindow(QMainWindow):
                     page = await resp.json()
                     raw_messages = page.get("messages", [])
             if self._active_chat_kind == "bot":
-                self._chat_view.clear_messages()
+                # 한글 주석 — cycle 169.497 — clear_messages 폐기 (bot reply 사라짐 회수).
+                # 사용자 critique — 다른 chat focus 이동 후 재 진입 시점 bot 응답 폐기 root cause.
+                # server fetch raw_messages 안 본인 메시지 + bot reply 모두 정합 — cached + server merge.
+                # `_dm_history[("bot",1)]` cache 와 server fetch 의 msg_id 정합으로 dedup.
                 from app.db import messages_cache as _mc
                 room_id_local = self._kind_room_local("bot", 1)
                 # cycle 169.461 — server DESC fetch → ASC iteration 의무 (사용자 critique image #24)
                 raw_messages = list(reversed(raw_messages))
+                # 한글 주석 — 기존 cache key/text/ts triple set (dedup base)
+                key = ("bot", 1)
+                existing = set()
+                for sender_e, text_e, ts_e, is_self_e in self._dm_history.get(key, []):
+                    existing.add((bool(is_self_e), str(text_e), int(ts_e.timestamp() * 1000) if ts_e else 0))
+                # 한글 주석 — chat_view 안 기존 message 의 retain (clear 폐기) + server fetch 안 신규 만 append + 정렬
+                new_entries: list[tuple[str, str, "datetime", bool, int]] = []
                 for m in raw_messages:
                     sender_id = int(m.get("sender_id") or 0)
                     is_self = sender_id == self_id
@@ -2088,10 +2115,10 @@ class MainWindow(QMainWindow):
                     text = m.get("body") or m.get("text") or ""
                     ts_ms = m.get("ts_ms") or 0
                     ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                    self._chat_view.add_message(
-                        sender, text, ts, is_self=is_self, hide_sender=True,
-                        play_sound=False,  # cycle 169.462 — history replay sound 차단
-                    )
+                    triplet = (is_self, text, int(ts_ms))
+                    if triplet in existing:
+                        continue
+                    new_entries.append((sender, text, ts, is_self, sender_id))
                     msg_id = m.get("message_id") or m.get("id") or 0
                     if isinstance(msg_id, int) and msg_id > 0:
                         try:
@@ -2103,9 +2130,41 @@ class MainWindow(QMainWindow):
                             )
                         except Exception:
                             pass
+                # 한글 주석 — chat_view 가 cached 의무 retain 한 상태 — clear + server full rewrite 패턴 의무
+                # 이유: cached 안 retain 의무 row 일부 만 + server full row set 가 truth source.
+                # 단 server insert race 시점 bot reply 부재 → cached fallback 의무.
+                if new_entries or not self._dm_history.get(key):
+                    self._chat_view.clear_messages()
+                    # cached + server merge — server timestamp 기준 정렬
+                    merged: list[tuple[str, str, "datetime", bool]] = []
+                    for m in raw_messages:
+                        sender_id = int(m.get("sender_id") or 0)
+                        is_self = sender_id == self_id
+                        sender = "투네이션 고객센터" if not is_self else "나"
+                        text = m.get("body") or m.get("text") or ""
+                        ts_ms = m.get("ts_ms") or 0
+                        ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
+                        merged.append((sender, text, ts, is_self))
+                    # 한글 주석 — cached 안 server response 안 안 들어있는 entry 보충 (server insert race fallback)
+                    server_set = set()
+                    for s, t, ts_v, slf in merged:
+                        server_set.add((slf, t, int(ts_v.timestamp() * 1000) if ts_v else 0))
+                    for sender_e, text_e, ts_e, is_self_e in self._dm_history.get(key, []):
+                        triplet = (bool(is_self_e), str(text_e), int(ts_e.timestamp() * 1000) if ts_e else 0)
+                        if triplet not in server_set:
+                            merged.append((sender_e, text_e, ts_e, bool(is_self_e)))
+                    merged.sort(key=lambda x: int(x[2].timestamp() * 1000) if x[2] else 0)
+                    for sender, text, ts, is_self in merged:
+                        self._chat_view.add_message(
+                            sender, text, ts, is_self=is_self, hide_sender=True,
+                            play_sound=False,
+                        )
+                    # 한글 주석 — `_dm_history` 도 merged 의 truth 로 갱신 (다음 cached replay 의 source)
+                    self._dm_history[key] = list(merged)
                 self._chat_view.scroll_to_bottom()
                 self._active_room_id_server = int(room_id)
-                log.info("[bot_history] room=%d msgs=%d replay PASS", room_id, len(raw_messages))
+                log.info("[bot_history] room=%d msgs=%d new=%d replay PASS",
+                         room_id, len(raw_messages), len(new_entries))
         except Exception as exc:
             log.debug("[bot_history] 실패 — %r", exc)
 
