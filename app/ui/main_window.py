@@ -1866,16 +1866,21 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(int)
     def _on_lazy_load_requested(self, room_id_local: int) -> None:
-        """cycle 169.444~445 — chat_view scroll-up 시점 추가 history fetch chain.
+        """cycle 169.466 — chat_view scroll-up 시점 incremental prepend chain (정식 lazy load).
 
-        1차 = local SQLite 안 before_msg_id cursor 활용 추가 메시지 fetch
-        2차 = local 부재 시점 server REST fetch + SQLite write-back (cycle 169.445)
+        chain:
+        1. before_msg_id = local SQLite 안 현 min_msg_id
+        2. fetch 30 older rows
+        3. 부재 시점 = server REST fetch + SQLite write-back chain (별 trigger)
+        4. retain 시점 = chat_view.prepend_message 호출 (layout insertWidget(0)) → scroll position 자연 retain
+
+        clear+replay 폐기 (cycle 169.464 회수 정합).
         """
         try:
             from app.db import messages_cache as _mc
+            from datetime import datetime as _dt
             min_id = _mc.get_min_msg_id(room_id_local)
             if min_id is None or min_id <= 1:
-                # cycle 169.445 — local 부재 시점 server REST fetch chain trigger
                 log.info("[lazy_load] room=%d local cache exhausted — server fetch fire", room_id_local)
                 import asyncio
                 kind = self._active_chat_kind or "saved"
@@ -1896,17 +1901,29 @@ class MainWindow(QMainWindow):
             if not rows:
                 self._chat_view._lazy_load_active = False
                 return
-            # 한글 주석 — 기존 bubble 위 prepend = layout 정합 별 cycle. 본 cycle = chat_view clear + 전체 re-replay
-            # cycle 169.463 — lazy load 시점 scroll position retain (사용자 critique scroll-up 시점 bottom 강제 차단)
-            from PyQt6.QtCore import QTimer
-            scrollbar = self._chat_view.verticalScrollBar()
-            saved_value = scrollbar.value()
-            self._chat_view.clear_messages()
+            # cycle 169.466 — incremental prepend (clear+replay 폐기)
+            # rows = DESC ts fetch — prepend chain = oldest 부터 insertWidget(0) iteration (역순)
+            # 결과: insertWidget(0, oldest) → insertWidget(0, older) → ... → bubble order 정합 (oldest TOP)
             kind = self._active_chat_kind or "saved"
-            self._load_local_history(kind, self._active_chat_target_id or 0, scroll_bottom=False)
-            # 한글 주석 — load 후 scroll position 복원 (top 부근 유지)
-            QTimer.singleShot(50, lambda: scrollbar.setValue(min(saved_value, scrollbar.maximum())))
-            log.info("[lazy_load] PASS — room=%d fetched=%d", room_id_local, len(rows))
+            hide_sender = kind in ("friend", "bot", "saved")
+            self_id = getattr(self, "_current_user_id", None) or 1
+            # 한글 주석 — DESC fetch 결과 그대로 iterate — insertWidget(0) 시점 reverse 효과 (oldest = 마지막 prepend = 최상단)
+            for r in rows:
+                is_self_flag = bool(r["is_self"])
+                if kind == "saved":
+                    is_self_flag = True
+                sender = "나" if is_self_flag else (
+                    "투네이션 고객센터" if kind == "bot" else f"user#{r['sender_id']}"
+                )
+                ts = _dt.fromtimestamp(r["ts_ms"] / 1000.0) if r["ts_ms"] else _dt.now()
+                self._chat_view.prepend_message(
+                    sender=sender, text=r["body"] or "", ts=ts,
+                    is_self=is_self_flag,
+                    hide_sender=hide_sender,
+                    msg_id=int(r["msg_id"]) if r["msg_id"] else 0,
+                )
+            log.info("[lazy_load] prepend PASS — room=%d fetched=%d", room_id_local, len(rows))
+            # 한글 주석 — _lazy_load_active = False 유지 (chat 전환 시점 reset) — 잦은 prepend 차단
         except Exception as exc:
             log.debug("[lazy_load] 실패 — %r", exc)
             self._chat_view._lazy_load_active = False

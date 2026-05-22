@@ -225,14 +225,38 @@ class ChatView(QScrollArea):
         self._lazy_load_threshold_px: int = 30
         self._lazy_load_active: bool = False  # 중복 fire 차단
         self._active_room_id: int = 0  # 현 chat room_id (local namespace)
-        # cycle 169.464 — lazy load valueChanged 비활성 (사용자 critique scroll-up 시점 강제 bottom snap 회수)
-        # 실 lazy load chain 정합 = 별 cycle (prepend incremental layout 의무)
-        # self.verticalScrollBar().valueChanged.connect(self._on_scroll_value_changed)
+        # cycle 169.466 — lazy load valueChanged 재 활성 (prepend incremental chain 정합)
+        # _on_scroll_value_changed → lazy_load_requested → main_window prepend chain (clear+replay 폐기)
+        self.verticalScrollBar().valueChanged.connect(self._on_scroll_value_changed)  # type: ignore[arg-type]
 
     def set_active_room(self, room_id: int) -> None:
         """cycle 169.444 — chat 전환 시점 active room_id 갱신 (lazy load chain 의 cursor)."""
         self._active_room_id = int(room_id)
         self._lazy_load_active = False  # 새 chat 진입 = lock reset
+
+    def prepend_message(
+        self,
+        sender: str,
+        text: str,
+        ts: datetime,
+        is_self: bool = False,
+        *,
+        hide_sender: bool = False,
+        msg_id: int = 0,
+    ) -> None:
+        """cycle 169.466 — 기존 bubble 위 prepend 의무 (lazy load incremental chain).
+
+        clear+replay 대신 layout 최상단 insertWidget(0) — scroll position retain 정합.
+        rangeChanged 자동 scroll bottom 차단 (play_sound=False 정합).
+        """
+        bubble = MessageBubble(
+            sender=sender, text=text, ts=ts, is_self=is_self,
+            parent=self._content,
+            grouped=False, hide_sender=hide_sender,
+            msg_id=int(msg_id),
+        )
+        # 한글 주석 — index 0 = layout 최상단 (모든 기존 bubble 위 prepend)
+        self._messages_layout.insertWidget(0, bubble)
 
     def mark_all_bubbles_read(self) -> None:
         """cycle 169.457 — chat focus 시점 모든 peer bubble.set_read(True).
@@ -257,12 +281,26 @@ class ChatView(QScrollArea):
             log.debug("[mark_all_bubbles_read] 실패 — %r", exc)
 
     def _on_scroll_value_changed(self, value: int) -> None:
-        """cycle 169.444 — scrollbar 최상단 도달 시점 lazy load fire."""
+        """cycle 169.444~466 — scrollbar 최상단 도달 시점 lazy load fire (debounce).
+
+        chain:
+        - value <= threshold + active_room_id > 0 + lazy_load_active False 시점 fire
+        - lazy_load_active True 시점 prepend chain 진행 중 — 중복 fire 차단
+        - 사용자 scroll-up 시점 1회 fire 후 prepend 완료 → 사용자 추가 scroll-up 시점 다시 fire
+          (사용자 critique 'scroll-up 시점 강제 bottom snap' 회수 의무 — prepend chain = scroll position retain)
+        """
         if self._lazy_load_active:
             return
         if value <= self._lazy_load_threshold_px and self._active_room_id > 0:
             self._lazy_load_active = True
             self.lazy_load_requested.emit(self._active_room_id)
+            # 한글 주석 — prepend 완료 후 짧은 timer 의무 — 다음 scroll-up 진입 시점 재 fire 가능
+            from PyQt6.QtCore import QTimer
+            QTimer.singleShot(500, self._release_lazy_lock)
+
+    def _release_lazy_lock(self) -> None:
+        """cycle 169.466 — lazy load lock 해제 (prepend 완료 후 짧은 cooldown chain)."""
+        self._lazy_load_active = False
 
     # ------------------------------------------------------------------
     # public API
