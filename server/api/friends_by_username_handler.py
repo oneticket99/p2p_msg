@@ -43,7 +43,7 @@ async def handle_add_friend_by_username(request: web.Request) -> web.Response:
         raise web.HTTPBadRequest(reason="자기 자신 친구 추가 불가")
 
     # 한글 주석 — telegram 등가 — 사용자명 검색 = 단방향 friends INSERT (양측 자동 friends 부재 retain)
-    # 신청자 side만 friend retain. target side 의 의 의 의 의 의 별 cycle (friend request inbox chain) 의무.
+    # 신청자 side만 friend retain. target side notify chain = 별 cycle (friend request inbox).
     try:
         await _fr_repo.insert_friend(
             pool, user_id=user_id, friend_user_id=target.id, status="accepted",
