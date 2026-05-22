@@ -152,6 +152,11 @@ LABELS_KO: dict[str, str] = {
     # cycle 169.411 — 야간 모드 state badge
     "켜짐": "켜짐",
     "꺼짐": "꺼짐",
+    # cycle 169.454 — 신규 연락처 dialog (telegram align)
+    "새로운_연락처": "새로운 연락처",
+    "성": "성",
+    "이름": "이름",
+    "등록": "등록",
 }
 
 
@@ -177,6 +182,10 @@ LABELS_EN: dict[str, str] = {
     "사용자명_전화번호_입력_의무": "Username + phone number required",
     "켜짐": "ON",
     "꺼짐": "OFF",
+    "새로운_연락처": "New Contact",
+    "성": "Last Name",
+    "이름": "First Name",
+    "등록": "Add",
     "확인": "OK",
     "저장": "Save",
     "검색": "Search",

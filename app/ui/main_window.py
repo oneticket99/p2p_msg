@@ -1900,13 +1900,68 @@ class MainWindow(QMainWindow):
             self._chat_view._lazy_load_active = False
 
     async def _fetch_bot_history(self) -> None:
-        """cycle 169.445 — bot chat history server fetch chain.
+        """cycle 169.445~454 — bot chat history server fetch chain (actual binding).
 
-        GET /api/auth/dm/{self_id}/room → bot-{uid} room_id resolve 부재.
-        실제 = /api/rooms 직접 lookup by room_code=bot-{uid}. 별 endpoint 의무 retain — 본 cycle = graceful skip.
+        GET /api/auth/dm/bot/room → bot-{uid} room_id resolve (cycle 169.454 endpoint).
+        + GET /api/rooms/{rid}/messages bulk + SQLite write-back.
         """
-        # 한글 주석 — bot DM room resolve endpoint 부재 (saved 와 별 path). 별 cycle 의무.
-        log.debug("[bot_history] resolve endpoint 부재 — 별 cycle 진입 의무")
+        import aiohttp
+        from datetime import datetime
+        try:
+            token = getattr(self, "_session_token", None) or ""
+            self_id = getattr(self, "_current_user_id", None) or 0
+            if not token or self_id <= 0:
+                return
+            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            headers = {"Authorization": f"Bearer {token}"}
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+                async with session.get(
+                    f"{api_base}/api/auth/dm/bot/room",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        return
+                    dm = await resp.json()
+                    room_id = dm.get("room_id")
+                if not room_id:
+                    return
+                async with session.get(
+                    f"{api_base}/api/rooms/{room_id}/messages?limit=50&offset=0",
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as resp:
+                    if resp.status != 200:
+                        return
+                    page = await resp.json()
+                    raw_messages = page.get("messages", [])
+            if self._active_chat_kind == "bot":
+                self._chat_view.clear_messages()
+                from app.db import messages_cache as _mc
+                room_id_local = self._kind_room_local("bot", 1)
+                for m in raw_messages:
+                    sender_id = int(m.get("sender_id") or 0)
+                    is_self = sender_id == self_id
+                    sender = "투네이션 고객센터" if not is_self else "나"
+                    text = m.get("body") or m.get("text") or ""
+                    ts_ms = m.get("ts_ms") or 0
+                    ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
+                    self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
+                    msg_id = m.get("message_id") or m.get("id") or 0
+                    if isinstance(msg_id, int) and msg_id > 0:
+                        try:
+                            _mc.insert_message(
+                                msg_id=msg_id, room_id=room_id_local,
+                                sender_id=sender_id or 1, body=text,
+                                ts_ms=int(ts_ms) if ts_ms else int(ts.timestamp() * 1000),
+                                is_self=is_self,
+                            )
+                        except Exception:
+                            pass
+                self._chat_view.scroll_to_bottom()
+                self._active_room_id_server = int(room_id)
+                log.info("[bot_history] room=%d msgs=%d replay PASS", room_id, len(raw_messages))
+        except Exception as exc:
+            log.debug("[bot_history] 실패 — %r", exc)
 
     def _load_local_history(self, kind: str, target_id: int) -> None:
         """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
@@ -1977,6 +2032,10 @@ class MainWindow(QMainWindow):
             self_id = getattr(self, "_current_user_id", None)
             if isinstance(self_id, int) and self_id > 0:
                 asyncio.ensure_future(self._fetch_dm_history(self_id))
+        # cycle 169.454 — bot kind history fetch chain (bot DM room resolve actual binding)
+        if kind == "bot":
+            import asyncio
+            asyncio.ensure_future(self._fetch_bot_history())
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
             # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)

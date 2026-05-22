@@ -507,6 +507,24 @@ async def handle_user_status(request: web.Request) -> web.Response:
     })
 
 
+async def handle_bot_room_resolve(request: web.Request) -> web.Response:
+    """GET /api/auth/dm/bot/room — cycle 169.454 — bot chat room resolver.
+
+    viewer ↔ 고객센터 봇 의 1:1 DM room lookup 또는 신설.
+    room_code = `bot-{viewer_id}` deterministic.
+    응답 = ``{room_id: int, room_code: str}``.
+    """
+    viewer_id = request.get("user_id")
+    if not isinstance(viewer_id, int) or viewer_id <= 0:
+        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
+    pool = request.app.get("db_pool")
+    if pool is None:
+        raise web.HTTPServiceUnavailable(reason="DB pool 부재")
+    from server.db.repositories.rooms import find_or_create_bot_room
+    room_id = await find_or_create_bot_room(pool, viewer_id)
+    return web.json_response({"room_id": room_id, "room_code": f"bot-{viewer_id}"})
+
+
 async def handle_dm_room_resolve(request: web.Request) -> web.Response:
     """GET /api/auth/dm/{user_id}/room — cycle 169.222 — DM room_id resolver.
 
@@ -634,4 +652,5 @@ def register_auth_routes(app: web.Application) -> None:
     app.router.add_get(r"/api/auth/users/{user_id:\d+}/status", handle_user_status)
     # cycle 169.222 — DM room resolver (friend_id ↔ direct room_id mapping)
     app.router.add_get(r"/api/auth/dm/{user_id:\d+}/room", handle_dm_room_resolve)
+    app.router.add_get("/api/auth/dm/bot/room", handle_bot_room_resolve)  # cycle 169.454
     log.info("[api] auth 12 endpoint 등록 완료")

@@ -29,6 +29,7 @@ from PyQt6.QtWidgets import (
 
 from app.ui._close_button import make_close_button
 from app.ui._icons import load_icon
+from app.i18n.labels import tr as _tr
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class NewContactDialog(QDialog):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("새로운 연락처")
+        self.setWindowTitle(_tr("새로운_연락처"))
         self.setModal(True)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(480, 460)
@@ -68,7 +69,7 @@ class NewContactDialog(QDialog):
 
         # 한글 주석 — header row (title + close)
         header_row = QHBoxLayout()
-        title = QLabel("새로운 연락처")
+        title = QLabel(_tr("새로운_연락처"))
         title.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
         header_row.addWidget(title)
         header_row.addStretch(1)
@@ -78,17 +79,17 @@ class NewContactDialog(QDialog):
 
         # 한글 주석 — 성 row (icon + label + input)
         self._last_name_edit = self._build_input_row(
-            body, icon_name=None, label="성", placeholder="",
+            body, icon_name=None, label=_tr("성"), placeholder="",
         )
 
         # 한글 주석 — 이름 row (icon = account)
         self._first_name_edit = self._build_input_row(
-            body, icon_name="account", label="이름", placeholder="",
+            body, icon_name="account", label=_tr("이름"), placeholder="",
         )
 
         # 한글 주석 — 전화번호 row (icon = phone + setInputMask telegram align)
         self._phone_edit = self._build_input_row(
-            body, icon_name="phone", label="전화번호", placeholder="+82",
+            body, icon_name="phone", label=_tr("전화번호"), placeholder="+82",
         )
         # 한글 주석 — telegram align mask "+82 __ ____ ____" (한국 휴대폰 010 prefix → +82 10)
         # InputMask placeholder = "_". cap = 11 digit (+82 prefix retain — 10 digit input)
@@ -99,7 +100,7 @@ class NewContactDialog(QDialog):
         # 한글 주석 — action row (취소 + 등록)
         action_row = QHBoxLayout()
         action_row.addStretch(1)
-        cancel_btn = QPushButton("취소")
+        cancel_btn = QPushButton(_tr("취소"))
         cancel_btn.setFixedHeight(36)
         cancel_btn.setMinimumWidth(80)
         cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -110,7 +111,7 @@ class NewContactDialog(QDialog):
         )
         cancel_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
         action_row.addWidget(cancel_btn)
-        submit_btn = QPushButton("등록")
+        submit_btn = QPushButton(_tr("등록"))
         submit_btn.setFixedHeight(36)
         submit_btn.setMinimumWidth(80)
         submit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
