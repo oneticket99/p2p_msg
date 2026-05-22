@@ -272,7 +272,7 @@ status: active
 - **cycle 169.436**: bump_entry diagnostic log 추가 — FrozenInstanceError trace 캡처 path
 - **cycle 169.435**: bubble 내부 padding 2배 ((10,6,10,4) → (20,12,20,8) + spacing 2→4)
 - **cycle 169.434**: bump_entry active_chat_match parameter + unread_count++ chain + badge 위치 ts 하단 정합 (telegram screenshot 정합)
-- **cycle 169.433**: 평가 sync (pronoun 본인 → self echo 회수)
+- **cycle 169.433**: 평가 sync (pronoun gendered 회수 — self echo 통일)
 - **cycle 169.432**: typing indicator cross-chat leak fix — bot chat 의 TypingIndicator widget 가 saved chat 전환 시점 누설 회수 (active_chat_kind == 'bot' 검증 의무)
 - **cycle 169.431**: '안 읽음' only 라벨 정합 — 읽음 시점 ts only retain (사용자 directive setVisible(False))
 - **cycle 169.430**: 저장한 메시지 self echo 우측 정렬 fix + MessageBubble is_read parameter + set_read method 신설
