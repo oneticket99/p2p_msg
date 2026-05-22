@@ -256,6 +256,160 @@ class MacOSQuartzBackend:
         )
 
 
+class WindowsGDIBackend:
+    """cycle 169.421 — Windows BitBlt capture actual binding via ctypes user32+gdi32.
+
+    chain (entire desktop):
+    1. GetDC(NULL) → screen HDC
+    2. CreateCompatibleDC + CreateCompatibleBitmap + SelectObject
+    3. BitBlt(SRCCOPY) → memory DC
+    4. GetDIBits(BI_RGB) → BGRA bytes (32-bit DIB)
+    5. DeleteObject + DeleteDC + ReleaseDC (memory leak 차단 의무)
+
+    Notes
+    -----
+    GetDIBits BITMAPINFOHEADER biHeight = 음수 (top-down DIB) 활용 — 자동 row reverse.
+    """
+
+    @classmethod
+    def is_available(cls) -> bool:
+        if sys.platform not in ("win32", "cygwin"):
+            return False
+        try:
+            import ctypes  # noqa: F401
+            from ctypes import wintypes  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def capture(self) -> CapturedFrame:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.windll.user32
+        gdi32 = ctypes.windll.gdi32
+        SRCCOPY = 0x00CC0020
+        BI_RGB = 0
+        DIB_RGB_COLORS = 0
+        SM_CXSCREEN = 0
+        SM_CYSCREEN = 1
+
+        width = user32.GetSystemMetrics(SM_CXSCREEN)
+        height = user32.GetSystemMetrics(SM_CYSCREEN)
+        screen_dc = user32.GetDC(None)
+        if not screen_dc:
+            raise RuntimeError("GetDC 실패 — Windows desktop DC 부재")
+        mem_dc = gdi32.CreateCompatibleDC(screen_dc)
+        if not mem_dc:
+            user32.ReleaseDC(None, screen_dc)
+            raise RuntimeError("CreateCompatibleDC 실패")
+        bitmap = gdi32.CreateCompatibleBitmap(screen_dc, width, height)
+        if not bitmap:
+            gdi32.DeleteDC(mem_dc)
+            user32.ReleaseDC(None, screen_dc)
+            raise RuntimeError("CreateCompatibleBitmap 실패")
+        try:
+            gdi32.SelectObject(mem_dc, bitmap)
+            gdi32.BitBlt(mem_dc, 0, 0, width, height, screen_dc, 0, 0, SRCCOPY)
+
+            class BITMAPINFOHEADER(ctypes.Structure):
+                _fields_ = [
+                    ("biSize", wintypes.DWORD),
+                    ("biWidth", wintypes.LONG),
+                    ("biHeight", wintypes.LONG),
+                    ("biPlanes", wintypes.WORD),
+                    ("biBitCount", wintypes.WORD),
+                    ("biCompression", wintypes.DWORD),
+                    ("biSizeImage", wintypes.DWORD),
+                    ("biXPelsPerMeter", wintypes.LONG),
+                    ("biYPelsPerMeter", wintypes.LONG),
+                    ("biClrUsed", wintypes.DWORD),
+                    ("biClrImportant", wintypes.DWORD),
+                ]
+
+            bmi = BITMAPINFOHEADER()
+            bmi.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+            bmi.biWidth = width
+            bmi.biHeight = -height  # 한글 주석 — 음수 = top-down DIB (auto row reverse)
+            bmi.biPlanes = 1
+            bmi.biBitCount = 32
+            bmi.biCompression = BI_RGB
+
+            buf_size = width * height * 4
+            buffer = (ctypes.c_ubyte * buf_size)()
+            res = gdi32.GetDIBits(
+                mem_dc, bitmap, 0, height, buffer,
+                ctypes.byref(bmi), DIB_RGB_COLORS,
+            )
+            if res == 0:
+                raise RuntimeError("GetDIBits 실패")
+            return CapturedFrame(
+                width=width, height=height, format=CaptureFormat.BGRA,
+                buffer=bytes(buffer), capture_time_ms=int(time.time() * 1000),
+            )
+        finally:
+            # 한글 주석 — GDI 객체 release 의무 (memory leak 차단 — 사용자 directive 2026-05-21)
+            gdi32.DeleteObject(bitmap)
+            gdi32.DeleteDC(mem_dc)
+            user32.ReleaseDC(None, screen_dc)
+
+
+class LinuxX11Backend:
+    """cycle 169.421 — Linux X11 XGetImage capture actual binding via python-xlib.
+
+    chain:
+    1. Xlib.display.Display() → connect default display
+    2. root.get_image(0,0,w,h, ZPixmap, 0xffffffff) → image bytes
+    3. Display.close() (resource release 의무)
+
+    Notes
+    -----
+    Xlib data = BGRX (32bit) — BGRA로 reformat (alpha=0xff fill).
+    """
+
+    @classmethod
+    def is_available(cls) -> bool:
+        if sys.platform != "linux":
+            return False
+        try:
+            import Xlib.display  # type: ignore[import]  # noqa: F401
+            from Xlib import X  # type: ignore[import]  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def capture(self) -> CapturedFrame:
+        from Xlib import X  # type: ignore[import]
+        import Xlib.display  # type: ignore[import]
+
+        display = Xlib.display.Display()
+        try:
+            root = display.screen().root
+            geom = root.get_geometry()
+            width = int(geom.width)
+            height = int(geom.height)
+            raw = root.get_image(0, 0, width, height, X.ZPixmap, 0xFFFFFFFF)
+            data = bytes(raw.data)  # BGRX 32-bit
+            if len(data) != width * height * 4:
+                raise RuntimeError(
+                    f"X11 buffer 크기 불일치 — len={len(data)} 기대 {width*height*4}"
+                )
+            # 한글 주석 — BGRX → BGRA reformat (alpha=0xff fill)
+            ba = bytearray(data)
+            for i in range(3, len(ba), 4):
+                ba[i] = 0xFF
+            return CapturedFrame(
+                width=width, height=height, format=CaptureFormat.BGRA,
+                buffer=bytes(ba), capture_time_ms=int(time.time() * 1000),
+            )
+        finally:
+            # 한글 주석 — display close 의무 (Xlib socket release)
+            try:
+                display.close()
+            except Exception:
+                pass
+
+
 def select_capture_backend(
     platform_name: Optional[str] = None,
 ) -> Type[CaptureBackend]:
@@ -290,13 +444,11 @@ def select_capture_backend(
     if name == "darwin":
         return MacOSQuartzBackend  # type: ignore[return-value]
     if name in ("win32", "cygwin"):
-        raise NotImplementedError(
-            f"{name} capture backend 별개 cycle 의무 — Win32 BitBlt + ctypes"
-        )
+        # cycle 169.421 — Windows GDI actual binding
+        return WindowsGDIBackend  # type: ignore[return-value]
     if name == "linux":
-        raise NotImplementedError(
-            "linux capture backend 별개 cycle 의무 — X11 XGetImage + Xlib"
-        )
+        # cycle 169.421 — Linux X11 actual binding
+        return LinuxX11Backend  # type: ignore[return-value]
     raise ValueError(f"unknown platform_name — {name}")
 
 

@@ -233,14 +233,186 @@ def select_input_backend(
     if name == "darwin":
         return MacOSCGEventBackend  # type: ignore[return-value]
     if name in ("win32", "cygwin"):
-        raise NotImplementedError(
-            f"{name} input backend 별개 cycle 의무 — Win32 SendInput + ctypes"
-        )
+        # cycle 169.421 — Windows SendInput actual binding
+        return WindowsSendInputBackend  # type: ignore[return-value]
     if name == "linux":
-        raise NotImplementedError(
-            "linux input backend 별개 cycle 의무 — X11 XTestFakeKeyEvent + Xlib"
-        )
+        # cycle 169.421 — Linux XTestFakeKey actual binding
+        return LinuxXTestBackend  # type: ignore[return-value]
     raise ValueError(f"unknown platform_name — {name}")
+
+
+class WindowsSendInputBackend:
+    """cycle 169.421 — Windows SendInput actual binding via ctypes user32.
+
+    chain:
+    1. INPUT struct 생성 (MOUSE_INPUT 또는 KEYBD_INPUT union)
+    2. SendInput(1, pointer, sizeof(INPUT)) → OS event queue 주입
+    3. MOUSE_MOVE = MOUSEEVENTF_ABSOLUTE + screen coord scaling (0~65535)
+
+    Notes
+    -----
+    Accessibility 권한 부재 (Windows = UAC retain). MOUSE_INPUT 의 dx/dy = absolute pixel
+    or normalized (MOUSEEVENTF_ABSOLUTE) 의 dual binding.
+    """
+
+    @classmethod
+    def is_available(cls) -> bool:
+        if sys.platform not in ("win32", "cygwin"):
+            return False
+        try:
+            import ctypes  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def apply(self, event: RemoteInput) -> None:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.windll.user32
+
+        # 한글 주석 — INPUT struct 정의 (ULONG_PTR 의 64bit 정합)
+        ULONG_PTR = ctypes.c_size_t
+
+        class MOUSEINPUT(ctypes.Structure):
+            _fields_ = [
+                ("dx", wintypes.LONG), ("dy", wintypes.LONG),
+                ("mouseData", wintypes.DWORD), ("dwFlags", wintypes.DWORD),
+                ("time", wintypes.DWORD), ("dwExtraInfo", ULONG_PTR),
+            ]
+
+        class KEYBDINPUT(ctypes.Structure):
+            _fields_ = [
+                ("wVk", wintypes.WORD), ("wScan", wintypes.WORD),
+                ("dwFlags", wintypes.DWORD), ("time", wintypes.DWORD),
+                ("dwExtraInfo", ULONG_PTR),
+            ]
+
+        class _INPUT_UNION(ctypes.Union):
+            _fields_ = [("mi", MOUSEINPUT), ("ki", KEYBDINPUT)]
+
+        class INPUT(ctypes.Structure):
+            _fields_ = [("type", wintypes.DWORD), ("u", _INPUT_UNION)]
+
+        INPUT_MOUSE = 0
+        INPUT_KEYBOARD = 1
+        MOUSEEVENTF_MOVE = 0x0001
+        MOUSEEVENTF_LEFTDOWN = 0x0002
+        MOUSEEVENTF_LEFTUP = 0x0004
+        MOUSEEVENTF_RIGHTDOWN = 0x0008
+        MOUSEEVENTF_RIGHTUP = 0x0010
+        MOUSEEVENTF_ABSOLUTE = 0x8000
+        KEYEVENTF_KEYUP = 0x0002
+        SM_CXSCREEN, SM_CYSCREEN = 0, 1
+
+        payload = event.payload
+        inp = INPUT()
+        if event.event_type == InputEventType.MOUSE_MOVE:
+            sw = user32.GetSystemMetrics(SM_CXSCREEN) or 1920
+            sh = user32.GetSystemMetrics(SM_CYSCREEN) or 1080
+            # 한글 주석 — MOUSEEVENTF_ABSOLUTE = 0~65535 normalized 좌표
+            inp.type = INPUT_MOUSE
+            inp.u.mi = MOUSEINPUT(
+                dx=int(float(payload["x"]) * 65535 / sw),
+                dy=int(float(payload["y"]) * 65535 / sh),
+                mouseData=0,
+                dwFlags=MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE,
+                time=0, dwExtraInfo=0,
+            )
+        elif event.event_type == InputEventType.MOUSE_CLICK:
+            button = str(payload.get("button", "left")).lower()
+            pressed = bool(payload.get("pressed", True))
+            if button == "right":
+                flags = MOUSEEVENTF_RIGHTDOWN if pressed else MOUSEEVENTF_RIGHTUP
+            else:
+                flags = MOUSEEVENTF_LEFTDOWN if pressed else MOUSEEVENTF_LEFTUP
+            inp.type = INPUT_MOUSE
+            inp.u.mi = MOUSEINPUT(
+                dx=0, dy=0, mouseData=0, dwFlags=flags, time=0, dwExtraInfo=0,
+            )
+        elif event.event_type in (InputEventType.KEY_DOWN, InputEventType.KEY_UP):
+            vk = int(payload["keycode"])
+            flags = 0 if event.event_type == InputEventType.KEY_DOWN else KEYEVENTF_KEYUP
+            inp.type = INPUT_KEYBOARD
+            inp.u.ki = KEYBDINPUT(
+                wVk=vk, wScan=0, dwFlags=flags, time=0, dwExtraInfo=0,
+            )
+        else:
+            raise ValueError(f"unsupported event_type — {event.event_type}")
+        res = user32.SendInput(1, ctypes.byref(inp), ctypes.sizeof(INPUT))
+        if res != 1:
+            raise RuntimeError(f"SendInput 실패 — {event.event_type.value} res={res}")
+
+
+class LinuxXTestBackend:
+    """cycle 169.421 — Linux XTestFakeKey actual binding via python-xlib.
+
+    chain (event_type 분기):
+    1. MOUSE_MOVE → ext.xtest.fake_input(MotionNotify, x, y)
+    2. MOUSE_CLICK → ext.xtest.fake_input(ButtonPress|ButtonRelease, button)
+    3. KEY_DOWN/UP → ext.xtest.fake_input(KeyPress|KeyRelease, keycode)
+    4. display.sync() flush
+
+    Notes
+    -----
+    XTEST extension 필수 (대부분 X11 server 활성 retain). Wayland = XTest 부재 → graceful raise.
+    """
+
+    @classmethod
+    def is_available(cls) -> bool:
+        if sys.platform != "linux":
+            return False
+        try:
+            import Xlib.display  # type: ignore[import]  # noqa: F401
+            from Xlib.ext import xtest  # type: ignore[import]  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def __init__(self) -> None:
+        import Xlib.display  # type: ignore[import]
+        self._display = Xlib.display.Display()
+        # XTEST 활성 검증
+        if not self._display.query_extension("XTEST"):
+            self._display.close()
+            raise RuntimeError("X11 XTEST extension 부재 — Wayland?")
+
+    def __del__(self) -> None:
+        d = getattr(self, "_display", None)
+        if d is not None:
+            try:
+                d.close()
+            except Exception:
+                pass
+            self._display = None
+
+    def apply(self, event: RemoteInput) -> None:
+        from Xlib import X  # type: ignore[import]
+        from Xlib.ext import xtest  # type: ignore[import]
+
+        payload = event.payload
+        if event.event_type == InputEventType.MOUSE_MOVE:
+            xtest.fake_input(
+                self._display, X.MotionNotify,
+                x=int(payload["x"]), y=int(payload["y"]),
+            )
+        elif event.event_type == InputEventType.MOUSE_CLICK:
+            button = str(payload.get("button", "left")).lower()
+            pressed = bool(payload.get("pressed", True))
+            btn_num = 3 if button == "right" else 1
+            et = X.ButtonPress if pressed else X.ButtonRelease
+            xtest.fake_input(self._display, et, btn_num)
+        elif event.event_type == InputEventType.KEY_DOWN:
+            xtest.fake_input(
+                self._display, X.KeyPress, int(payload["keycode"]),
+            )
+        elif event.event_type == InputEventType.KEY_UP:
+            xtest.fake_input(
+                self._display, X.KeyRelease, int(payload["keycode"]),
+            )
+        else:
+            raise ValueError(f"unsupported event_type — {event.event_type}")
+        self._display.sync()
 
 
 def apply_events(
