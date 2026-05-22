@@ -108,9 +108,10 @@ from app.ui._menu_bar_mixin import MenuBarMixin
 from app.ui._signaling_mixin import SignalingMixin
 from app.ui._room_group_chat_mixin import RoomGroupChatMixin
 from app.ui._rest_post_mixin import RestPostMixin
+from app.ui._folder_mixin import FolderMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -1082,166 +1083,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             modal.accept()
 
     @pyqtSlot(str)
-    def _on_folder_selected(self, folder_id: str) -> None:
-        """folder click → chat_list_panel filter + edit popup (cycle 169.75)."""
-        log.info("[main_window] folder_selected — folder_id=%s", folder_id)
-        # cycle 169.75 회수 — 편집 click → FolderManageDialog popup
-        if folder_id == "edit":
-            from app.ui.folder_manage_dialog import FolderManageDialog
-            user_folders = getattr(self, "_user_folders", [])
-            dialog = FolderManageDialog(user_folders=user_folders, parent=self)
-            dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
-            dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
-            dialog.folder_edit_requested.connect(self._on_folder_edit_requested)  # type: ignore[arg-type]
-            dialog.exec()
-            return
-        if hasattr(self, "_chat_list_panel"):
-            self._chat_list_panel.set_active_folder(folder_id)
-
-    @pyqtSlot()
-    def _on_folder_create_requested(self) -> None:
-        """새 폴더 만들기 → FolderEditDialog popup (cycle 169.75)."""
-        # cycle 169.230 — FolderEditDialog main 안 centered exec (image #31 회수)
-        from app.ui.folder_edit_dialog import FolderEditDialog
-        dialog = FolderEditDialog(parent=self)
-        dialog.folder_saved.connect(self._on_folder_saved)  # type: ignore[arg-type]
-        dialog.chat_picker_requested.connect(  # type: ignore[arg-type]
-            lambda mode: self._open_chat_picker(dialog, mode)
-        )
-        self._exec_dialog_centered(dialog)
-
-    def _open_chat_picker(self, edit_dialog, mode: str) -> None:
-        """FolderEditDialog 안 대화방 추가 click → ChatPickerDialog."""
-        from app.ui.chat_picker_dialog import ChatPickerDialog
-        entries = list(getattr(self._chat_list_panel, "_entries", []))
-        picker = ChatPickerDialog(chat_entries=entries, mode=mode, parent=edit_dialog)
-
-        def _on_selected(chats):
-            if mode == "include":
-                edit_dialog.add_included_chats(chats)
-            else:
-                edit_dialog.add_excluded_chats(chats)
-        picker.chats_selected.connect(_on_selected)  # type: ignore[arg-type]
-        # cycle 169.370 — _exec_dialog_centered chain (main center modal + backdrop + ESC)
-        self._exec_dialog_centered(picker)
-
-    @pyqtSlot(dict)
-    def _on_folder_saved(self, folder_data: dict) -> None:
-        """FolderEditDialog 만들기 PASS → user_folders append/replace + REST 영속화 + sidebar refresh.
-
-        cycle 169.388 — edit mode (사용자 critique image #153) — _is_edit flag retain 시점
-        기존 folder_id 의 user_folders entry replace + UPDATE chain (INSERT 부재).
-        """
-        if not hasattr(self, "_user_folders"):
-            self._user_folders = []
-        is_edit = folder_data.pop("_is_edit", False)
-        if is_edit:
-            target_fid = str(folder_data.get("folder_id", ""))
-            self._user_folders = [
-                folder_data if str(f.get("folder_id", "")) == target_fid else f
-                for f in self._user_folders
-            ]
-            # 한글 주석 — replace 부재 시 append fallback
-            if not any(str(f.get("folder_id", "")) == target_fid for f in self._user_folders):
-                self._user_folders.append(folder_data)
-        else:
-            self._user_folders.append(folder_data)
-        # cycle 169.385 — included_chats debug log (사용자 critique image #148 folder filter fail 회수)
-        log.warning(
-            "[folder_saved] name=%s included=%d excluded=%d included_data=%s",
-            folder_data.get("name"),
-            len(folder_data.get("included_chats", [])),
-            len(folder_data.get("excluded_chats", [])),
-            folder_data.get("included_chats", [])[:3],
-        )
-        # cycle 169.373 — sidebar_rail folder entry 동적 갱신 (사용자 critique image #129)
-        if hasattr(self, "_sidebar_rail") and hasattr(self._sidebar_rail, "set_folder_entries"):
-            try:
-                self._sidebar_rail.set_folder_entries(self._user_folders)
-            except Exception as exc:
-                log.debug("sidebar_rail set_folder_entries fail — %r", exc)
-        # cycle 169.378 — chat_list_panel folder metadata sync (사용자 critique image #134 filter 의무)
-        clp = getattr(self, "_chat_list_panel", None)
-        if clp is not None and hasattr(clp, "set_user_folders"):
-            try:
-                clp.set_user_folders(self._user_folders)
-            except Exception as exc:
-                log.debug("chat_list_panel set_user_folders fail — %r", exc)
-        # cycle 169.373 — active FolderManageDialog close chain (사용자 critique image #127)
-        active_folder_dialog = getattr(self, "_active_folder_dialog", None)
-        if active_folder_dialog is not None:
-            try:
-                active_folder_dialog.reject()
-            except Exception:
-                pass
-            self._active_folder_dialog = None
-        # cycle 169.77 회수 — FolderCreateWorker REST 영속화 chain
-        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
-        token = getattr(self, "_auth_token", None)
-        if not base_url or not token:
-            log.warning("[folder] base_url/token 부재 — REST 영속화 skip")
-            return
-        # cycle 169.411 — edit mode PATCH endpoint chain (Phase 1 잔존 회수)
-        if is_edit:
-            from app.net.folder_client import FolderUpdateWorker
-            target_fid = str(folder_data.get("folder_id", ""))
-            worker = FolderUpdateWorker(base_url, token, target_fid, folder_data, parent=self)
-        else:
-            from app.net.folder_client import FolderCreateWorker
-            worker = FolderCreateWorker(base_url, token, folder_data, parent=self)
-        worker.finished_with_result.connect(self._on_folder_persist_finished)  # type: ignore[arg-type]
-        # cycle 169.79 회수 — worker list append (MED-2 dangling 차단)
-        if not hasattr(self, "_folder_workers"):
-            self._folder_workers = []
-        self._folder_workers.append(worker)
-        worker.finished.connect(lambda w=worker: self._folder_workers.remove(w))  # type: ignore[arg-type]
-        worker.start()
-
-    @pyqtSlot(bool, str, str, dict)
-    def _on_folder_persist_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """FolderCreateWorker finished — log + folder_id 갱신."""
-        if ok:
-            log.info("[folder] REST 영속화 PASS — id=%s", data.get("id"))
-        else:
-            log.warning("[folder] REST 영속화 실패 — code=%s msg=%s", error_code, error_message)
-
-    @pyqtSlot(str)
-    def _on_folder_edit_requested(self, folder_id: str) -> None:
-        """folder edit click → FolderEditDialog open with existing data (cycle 169.381 사용자 critique image #139/140)."""
-        user_folders = getattr(self, "_user_folders", [])
-        existing = next((f for f in user_folders if str(f.get("folder_id", "")) == folder_id), None)
-        if existing is None:
-            log.warning("[folder_edit] folder_id=%s 부재", folder_id)
-            return
-        from app.ui.folder_edit_dialog import FolderEditDialog
-        dialog = FolderEditDialog(existing=existing, parent=self)
-        dialog.folder_saved.connect(self._on_folder_saved)  # type: ignore[arg-type]
-        dialog.chat_picker_requested.connect(
-            lambda mode: self._open_chat_picker(dialog, mode)
-        )  # type: ignore[arg-type]
-        self._exec_dialog_centered(dialog)
-
-    @pyqtSlot(str)
-    def _on_folder_delete_requested(self, folder_id: str) -> None:
-        """folder delete request + REST DELETE chain (cycle 169.77)."""
-        user_folders = getattr(self, "_user_folders", [])
-        self._user_folders = [f for f in user_folders if f.get("folder_id") != folder_id]
-        log.info("[main_window] folder deleted — folder_id=%s", folder_id)
-        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
-        token = getattr(self, "_auth_token", None)
-        if not base_url or not token:
-            return
-        from app.net.folder_client import FolderDeleteWorker
-        worker = FolderDeleteWorker(base_url, token, folder_id, parent=self)
-        worker.finished_with_result.connect(  # type: ignore[arg-type]
-            lambda ok, *_: log.info("[folder] DELETE finished ok=%s", ok)
-        )
-        # cycle 169.79 회수 — worker list append
-        if not hasattr(self, "_folder_workers"):
-            self._folder_workers = []
-        self._folder_workers.append(worker)
-        worker.finished.connect(lambda w=worker: self._folder_workers.remove(w))  # type: ignore[arg-type]
-        worker.start()
+    # ------------------------------------------------------------------
+    # cycle 169.523 — folder CRUD 7 method → app/ui/_folder_mixin.py 분리
+    # (FolderMixin mixin 상속, codex 2.5 책임 분리 9차)
+    # ------------------------------------------------------------------
 
     @pyqtSlot(str, int)
     # ------------------------------------------------------------------

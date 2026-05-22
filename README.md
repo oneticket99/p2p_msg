@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 상세 History.md 전체 보존.
 
 - [2026-05-23 00:17:49] 현재 프로젝트 전수 검토 요약 문서 추가 (docs/assessments/current-project-review.md)
+- cycle 169.523 (2026-05-23 04:00 KST) — codex 2.5 main_window 책임 분리 9차 — `app/ui/_folder_mixin.py` 신설 (FolderMixin: _on_folder_selected + _on_folder_create_requested + _open_chat_picker + _on_folder_saved + _on_folder_persist_finished + _on_folder_edit_requested + _on_folder_delete_requested, 7 method 160 line) + MainWindow MRO 10 mixin + main_window.py 2045 → 1890줄 (155줄 분리, 누계 2136줄 4026 → 1890, **53.1%**)
 - cycle 169.522 (2026-05-23 03:45 KST) — codex 2.5 main_window 책임 분리 8차 — `app/ui/_rest_post_mixin.py` 신설 (RestPostMixin: _post_and_resolve + _send_saved_message_rest + _mark_room_read + _post_mark_read + _on_invite_requested + _dispatch_invite_chain, 6 method 196 line) + MainWindow MRO 9 mixin + main_window.py 2241 → 2045줄 (196줄 분리, 누계 1981줄 4026 → 2045, **49.2%**) + cavecrew-investigator 병렬 spawn (`__init__` 9 logical block 본격 verify)
 - cycle 169.521 (2026-05-23 03:30 KST) — codex 2.5 main_window 책임 분리 7차 — `app/ui/_room_group_chat_mixin.py` 신설 (RoomGroupChatMixin: _on_group_info + _on_chat_clear + _on_chat_leave + _on_room_entered + _on_group_message_send + _dispatch_message_chain + _on_open_members_panel, 7 method 250 line) + MainWindow MRO 8 mixin + main_window.py 2486 → 2241줄 (245줄 분리, 누계 1785줄 4026 → 2241, 44.3%) + cavecrew-investigator 병렬 spawn (__init__ 분해 plan 13 helper + REST_POST_CHAIN 3 group 9 method reco)
 - cycle 169.520 (2026-05-23 03:15 KST) — codex 2.5 main_window 책임 분리 6차 (병렬 batch) — `app/ui/_menu_bar_mixin.py` (MenuBarMixin: _build_menu_bar + _is_admin_role + set_user_role + _rebuild_admin_menu + _on_open_emoji_moderation + _dispatch_moderation_queue_fetch + _on_moderation_decision, 7 method) + `app/ui/_signaling_mixin.py` (SignalingMixin: _on_signaling_offer + _on_signaling_answer + _on_signaling_ice + _on_signaling_peer_joined, 4 method) + MainWindow MRO 7 mixin + main_window.py 2861 → 2486줄 (375줄 분리, 누계 1540줄 4026 → 2486, 38.3%)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.465 (2026-05-22 19:15 KST) — account phone/birthdate save normalize + i18n ZH/JA new_contact 4 entry
 - cycle 169.464 (2026-05-22 19:13 KST) — lazy load valueChanged 비활성 (scroll-up bottom snap 회수)
 - cycle 169.461~463 (2026-05-22 19:05 KST) — 대화 순서 반대 회수 + history replay sound 차단 + scroll position retain
-- cycle 169.459 (2026-05-22 19:03 KST) — server messages ts_ms field 추가 (이전 대화 ts 갱신 회수)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
