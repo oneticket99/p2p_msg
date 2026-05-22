@@ -5,7 +5,7 @@ last_verified: 2026-05-22T16:25:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 16:25 KST — cycle 169.418~427 fingerprint sync (15 commit drift 회수). 누계: streaming_helper 5 platform callback URL (169.418) → emoji pack items + moderation actual binding (169.419) → bot framework BotFather 등가 base — migration 0012 + bots/bot_tokens repository + 6 endpoint (169.420) → 원격 제어 Windows GDI + Linux X11 backend actual binding (169.421) → streaming chat 4 platform actual subscribe — YouTube httpx polling + Twitch IRC handshake + CHZZK CMD 100/93101 + Kick Pusher subscribe (169.422) → M2 README + M3 History prepend 15 entry (169.423) → 원격연결/원격요청 outgoing UI 통합 + incoming label customization (169.424~426) → BPE 측 단독 회수 (169.427).<br>**이전 갱신**: 2026-05-22 11:35 KST — cycle 169.413~417 sync.
+> **최신 갱신 시점**: 2026-05-22 16:25 KST — cycle 169.418~427 fingerprint sync (15 commit drift 회수). 누계: streaming_helper 5 platform callback URL (169.418) → emoji pack items + moderation actual binding (169.419) → bot framework BotFather 등가 base — migration 0012 + bots/bot_tokens repository + 6 endpoint (169.420) → 원격 제어 Windows GDI + Linux X11 backend actual binding (169.421) → streaming chat 4 platform actual subscribe — YouTube httpx polling + Twitch IRC handshake + CHZZK CMD 100/93101 + Kick Pusher subscribe (169.422) → M2 README + M3 History prepend 15 entry (169.423) → 원격연결/원격요청 outgoing UI 통합 + incoming label customization (169.424~426) → BPE U+CE21 단독 회수 (169.427).<br>**이전 갱신**: 2026-05-22 11:35 KST — cycle 169.413~417 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
