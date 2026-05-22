@@ -115,9 +115,11 @@ from app.ui._auth_chain_mixin import AuthChainMixin
 from app.ui._chat_navigation_mixin import ChatNavigationMixin
 from app.ui._friend_profile_mixin import FriendProfileMixin
 from app.ui._chat_send_mixin import ChatSendMixin
+from app.ui._dialog_center_mixin import DialogCenterMixin
+from app.ui._menu_actions_mixin import MenuActionsMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, DialogCenterMixin, MenuActionsMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -471,23 +473,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # cycle 144 — 친구 관리 슬롯
     # ------------------------------------------------------------------
 
-    def _on_open_friend_list(self) -> None:
-        """"친구 목록" 메뉴 슬롯 — FriendListWidget page 활성.
-
-        REST 호출 chain (GET /api/friends) 의 actual binding = 별개 cycle 의 의무.
-        본 슬롯 = stacked page 의 토글 + viewer_id 갱신 만.
-        """
-
-        viewer_id = self._current_user_id or 0
-        self._friend_list.set_friends(
-            self._friend_list._friends, viewer_id=viewer_id
-        )
-        # cycle 169.106 회수 — friend_list 갱신 직후 chat_list_panel populate chain
-        self._refresh_chat_list_panel()
-        self._stacked.setCurrentIndex(self._STACK_FRIENDS)
-        log.info(
-            "[main_window] friend_list page 활성 viewer_id=%d", viewer_id
-        )
+    # ------------------------------------------------------------------
+    # cycle 169.528 — _on_open_friend_list → _menu_actions_mixin.py 분리
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.526 — _refresh_chat_list_panel → _chat_navigation_mixin.py 분리
@@ -620,167 +608,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # (DrawerMixin mixin 상속, codex 2.5 책임 분리 4차)
     # ------------------------------------------------------------------
 
-    def _exec_dialog_centered(self, dialog) -> int:
-        """cycle 169.267 — child overlay + backdrop dim + manual modal event loop.
+    # ------------------------------------------------------------------
+    # cycle 169.528 — _exec_dialog_centered → _dialog_center_mixin.py 분리 (193 line)
+    # ------------------------------------------------------------------
 
-        사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
-        의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
-        """
-        # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
-        from PyQt6.QtCore import Qt as _Qt, QEventLoop, QEvent
-        from PyQt6.QtGui import QKeyEvent, QMouseEvent
-        from PyQt6.QtWidgets import QFrame, QSplitter as _QSplitter
-        # cycle 169.312 — splitter sizes snapshot (dialog open 시점 chat_list panel collapse 회피)
-        _central = self.centralWidget()
-        _splitter_sizes: list[int] = []
-        if isinstance(_central, _QSplitter):
-            _splitter_sizes = _central.sizes()
-            log.warning("[dialog_open] splitter sizes captured=%s", _splitter_sizes)
-        # cycle 169.314 — active_tab snapshot (folder dialog 후 tab 의 entries filter mismatch → 빈 list 회피)
-        _clp_pre = getattr(self, "_chat_list_panel", None)
-        _active_tab_pre = getattr(_clp_pre, "_active_tab", "chats") if _clp_pre else "chats"
-        log.warning("[dialog_open] active_tab captured=%s", _active_tab_pre)
-        # cycle 169.307 — main_window child overlay (centralWidget = splitter, child 시점 panel add 깨짐 회수)
-        backdrop = QFrame(self)
-        backdrop.setObjectName("dialogBackdrop")
-        backdrop.setAutoFillBackground(True)
-        backdrop.setStyleSheet(
-            "QFrame#dialogBackdrop { background-color: rgba(0, 0, 0, 160); }"
-        )
-        backdrop.setGeometry(self.rect())
-        backdrop.show()
-        backdrop.raise_()
-        # cycle 169.321 — backdrop click reject chain (사용자 directive image #85 — close button 부재 시 fallback)
-        def _backdrop_click(event):
-            if event.button() == _Qt.MouseButton.LeftButton:
-                if hasattr(dialog, "reject"):
-                    dialog.reject()
-        backdrop.mousePressEvent = _backdrop_click  # type: ignore[assignment]
-        dialog.hide()
-        dialog.setParent(self)
-        dialog.setWindowFlags(_Qt.WindowType.Widget)
-        parent_for_dialog = self
-        # cycle 169.299 — debug log 추가 (사용자 critique 의 실 size capture)
-        parent_rect = parent_for_dialog.rect()
-        log.warning(
-            "[dialog_centered] parent_rect=%dx%d dialog initial=%dx%d cls=%s",
-            parent_rect.width(), parent_rect.height(),
-            dialog.width(), dialog.height(), dialog.__class__.__name__,
-        )
-        max_w = max(parent_rect.width() - 40, 360)
-        max_h = max(parent_rect.height() - 40, 400)
-        dlg_w = min(dialog.width(), max_w)
-        dlg_h = min(dialog.height(), max_h)
-        dialog.setFixedSize(dlg_w, dlg_h)
-        dw, dh = dialog.width(), dialog.height()
-        log.warning("[dialog_centered] after setFixedSize=%dx%d", dw, dh)
-        x = (parent_rect.width() - dw) // 2
-        y = (parent_rect.height() - dh) // 2
-        dialog.move(x, y)
-        # cycle 169.302 — signal connect chain (bound method override snapshot 회피)
-        loop = QEventLoop()
-        dialog._embed_result = 0
-        accepted_sig = getattr(dialog, "accepted", None)
-        rejected_sig = getattr(dialog, "rejected", None)
-        def _on_accepted():
-            dialog._embed_result = 1
-            loop.quit()
-        def _on_rejected():
-            dialog._embed_result = 0
-            loop.quit()
-        if accepted_sig is not None and hasattr(accepted_sig, "connect"):
-            accepted_sig.connect(_on_accepted)
-        if rejected_sig is not None and hasattr(rejected_sig, "connect"):
-            rejected_sig.connect(_on_rejected)
-        # 한글 주석 — QDialog fallback (signal 부재 시 method override)
-        if accepted_sig is None:
-            orig_accept = dialog.accept
-            def _accept():
-                dialog._embed_result = 1
-                try:
-                    orig_accept()
-                except Exception:
-                    pass
-                loop.quit()
-            dialog.accept = _accept
-        if rejected_sig is None:
-            orig_reject = dialog.reject
-            def _reject():
-                dialog._embed_result = 0
-                try:
-                    orig_reject()
-                except Exception:
-                    pass
-                loop.quit()
-            dialog.reject = _reject
-        # cycle 169.321 — ESC key handler (FramelessWindowHint 시점 의 QDialog 기본 ESC 회복)
-        _orig_keyPress = getattr(dialog, "keyPressEvent", None)
-        def _key_press(event):
-            if event.key() == _Qt.Key.Key_Escape:
-                if hasattr(dialog, "reject"):
-                    dialog.reject()
-                return
-            if _orig_keyPress is not None:
-                _orig_keyPress(event)
-        dialog.keyPressEvent = _key_press  # type: ignore[assignment]
-        dialog.show()
-        dialog.raise_()
-        dialog.setFocus()
-        # cycle 169.351 — child widget visible 강제 (QStackedWidget 등 nested widget 시점 obscure 차단)
-        log.warning("[dialog_centered] dialog.isVisible=%s size=%dx%d pos=(%d,%d) children=%d",
-                    dialog.isVisible(), dialog.width(), dialog.height(),
-                    dialog.x(), dialog.y(), len(dialog.findChildren(QWidget)))
-        for child in dialog.findChildren(QWidget):
-            child.show()
-        dialog.update()
-        dialog.repaint()
-        loop.exec()
-        dialog.hide()
-        dialog.setParent(None)  # cycle 169.307 — dialog widget tree 분리 (close 後 main_window layout 회복)
-        result = dialog._embed_result
-        backdrop.hide()
-        backdrop.deleteLater()
-        # cycle 169.311 — close 後 strict restore + debug log
-        clp = getattr(self, "_chat_list_panel", None)
-        if clp is not None:
-            entries_count = len(getattr(clp, "_entries", []))
-            log.warning(
-                "[dialog_close] chat_list_panel entries=%d visible=%s parent=%s",
-                entries_count, clp.isVisible(), clp.parent().__class__.__name__ if clp.parent() else None,
-            )
-            clp.show()
-            inner_list = getattr(clp, "_list", None)
-            if inner_list is not None:
-                inner_list.show()
-                inner_list.setVisible(True)
-            empty_label = getattr(clp, "_empty_label", None)
-            # cycle 169.314 — active_tab restore (dialog open 직전 snapshot) + _render() 재호출
-            if hasattr(clp, "set_active_tab"):
-                try:
-                    clp.set_active_tab(_active_tab_pre)
-                    log.warning("[dialog_close] active_tab restored=%s actual=%s",
-                                _active_tab_pre, getattr(clp, "_active_tab", "?"))
-                except Exception:
-                    pass
-            if hasattr(clp, "_render"):
-                try:
-                    clp._render()
-                except Exception:
-                    pass
-            clp.update()
-            clp.repaint()
-        # cycle 169.312 — splitter sizes restore (chat_list panel width 0 collapse 차단)
-        if _splitter_sizes:
-            _central2 = self.centralWidget()
-            if isinstance(_central2, _QSplitter):
-                _central2.setSizes(_splitter_sizes)
-                log.warning("[dialog_close] splitter sizes restored=%s actual=%s",
-                            _splitter_sizes, _central2.sizes())
-        if self.centralWidget():
-            self.centralWidget().update()
-            self.centralWidget().repaint()
-        self.update()
-        return result
 
     # ------------------------------------------------------------------
     # cycle 169.514 — drawer slot 11종 → app/ui/_drawer_mixin.py 분리
@@ -890,82 +721,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         log.warning("[main_window] invite_failed — %s", message)
         self._status_bar.showMessage(message, 4000)
 
-    @pyqtSlot()
-    def _on_open_direct_chat(self) -> None:
-        """1:1 직접 메시지 페이지 회귀 (cycle 139 신설)."""
-
-        self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
-        self._input_container.setVisible(True)
-        log.debug("[main_window] direct chat 페이지 진입")
-
     # ------------------------------------------------------------------
-    # 설정/방 다이얼로그
+    # cycle 169.528 — _on_open_direct_chat + _on_open_settings_dialog +
+    # _on_open_room_dialog + _on_show_about → _menu_actions_mixin.py 분리
     # ------------------------------------------------------------------
-
-    @pyqtSlot()
-    def _on_open_settings_dialog(self) -> None:
-        """환경설정 다이얼로그 — 시그니처 사운드 음소거/볼륨 즉시 반영.
-
-        cycle 169.250 — _exec_dialog_centered apply (main embed center + 사용자 critique image #10 회수).
-        """
-
-        dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
-        result = self._exec_dialog_centered(dialog)
-        log.debug("SettingsDialog 종료 — result=%s", result)
-
-    @pyqtSlot()
-    def _on_open_room_dialog(self) -> None:
-        """"방 입장" 다이얼로그 — room_id + peer_id 입력 (기존 호환)."""
-
-        room_id, ok1 = QInputDialog.getText(
-            self,
-            "방 입장",
-            "Room ID 를 입력하세요:",
-            QLineEdit.EchoMode.Normal,
-            self._state.room_id or "demo",
-        )
-        if not ok1 or not room_id.strip():
-            return
-
-        peer_id, ok2 = QInputDialog.getText(
-            self,
-            "방 입장",
-            "Peer ID (self 식별자) 를 입력하세요:",
-            QLineEdit.EchoMode.Normal,
-            self._state.peer_id or self._config.user_nickname,
-        )
-        if not ok2 or not peer_id.strip():
-            return
-
-        self._state.set_identity(room_id=room_id.strip(), peer_id=peer_id.strip())
-        log.info(
-            "방 입장 의도 등록 — room=%s peer=%s (실 연결은 Task #16 에서)",
-            room_id,
-            peer_id,
-        )
-        self._chat_view.add_message(
-            sender="system",
-            text=f"방 입장 의도 등록: room={room_id} · peer={peer_id}",
-            ts=datetime.now(),
-            is_self=False,
-        )
-
-    @pyqtSlot()
-    def _on_show_about(self) -> None:
-        """About 다이얼로그 — 서비스명·버전·라이선스 안내."""
-
-        from app import __version__ as app_version
-        from app.ui.confirm_dialog import ConfirmDialog
-
-        ConfirmDialog.show_info(
-            self,
-            "TooTalk 정보",
-            (
-                f"TooTalk\n버전: {app_version}\n\n"
-                "PyQt6 기반 데스크탑 P2P 메신저 (WebRTC DataChannel 직결).\n"
-                "코드명: p2p_msg · Phase 1 MVP"
-            ),
-        )
 
     # ------------------------------------------------------------------
     # 윈도우 종료 훅
