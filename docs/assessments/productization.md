@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T16:25:00+09:00
+last_verified: 2026-05-22T20:38:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-22 16:25 KST — cycle 169.418~427 fingerprint sync (15 commit drift 회수). 누계: streaming_helper 5 platform callback URL (169.418) → emoji pack items + moderation actual binding (169.419) → bot framework BotFather 등가 base — migration 0012 + bots/bot_tokens repository + 6 endpoint (169.420) → 원격 제어 Windows GDI + Linux X11 backend actual binding (169.421) → streaming chat 4 platform actual subscribe — YouTube httpx polling + Twitch IRC handshake + CHZZK CMD 100/93101 + Kick Pusher subscribe (169.422) → M2 README + M3 History prepend 15 entry (169.423) → 원격연결/원격요청 outgoing UI 통합 + incoming label customization (169.424~426) → BPE U+CE21 단독 회수 (169.427).<br>**이전 갱신**: 2026-05-22 11:35 KST — cycle 169.413~417 sync.
+> **최신 갱신 시점**: 2026-05-22 20:38 KST — cycle 169.469~474 fingerprint sync (5 commit drift 회수). 누계: startup unread batch fetch actual binding (169.469) → friend username 양방향 friends + last_read batch endpoint + apply_last_read chain (169.470) → default theme dark + Talk label theme-aware color + OTP signup setModal crash fix (169.471~472) → handle_register IntegrityError race catch — uq_users_email/username 의 EMAIL_DUPLICATE/USERNAME_DUPLICATE 매핑 (169.473) → reset_test_users.sh DRY_RUN default + 17 FK 종속 table cleanup script (169.474).<br>**이전 갱신**: 2026-05-22 16:25 KST — cycle 169.418~427 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
