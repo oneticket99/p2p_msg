@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T06:10:00+09:00
+last_verified: 2026-05-23T06:30:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.530
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.533
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.530 누계.
-> 최근 갱신: 2026-05-23 06:10 KST — cycle 169.525~530 fingerprint sync (6 commit drift 회수). 누계: ChatHeaderMixin 1890→1703 **57.7%** (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + `__init__` 302 line CRITICAL blocker 9 helper split 643→600 **85.1%** (530). **본격 main_window 책임 분리 phase 본격 종료** — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).
+> 평가 기준일: 2026-05-23. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.533 누계.
+> 최근 갱신: 2026-05-23 06:30 KST — cycle 169.533 codex 2.7 재 평가 (main_window 책임 분리 phase 본격 종료 + PyQt6 actual instantiation smoke PASS). 누계 fingerprint sync (cycle 169.525~533): ChatHeaderMixin 1890→1703 **57.7%** (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + `__init__` 302 line CRITICAL blocker 9 helper split 643→600 **85.1%** (530) + handoff §8.81 신설 (532) + PyQt6 instantiation smoke PASS + codex 2.7 재 평가 종합 6.5 → 6.8 (533). **본격 main_window 책임 분리 phase 본격 종료** — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).
 
 ---
 
