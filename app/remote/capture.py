@@ -198,11 +198,61 @@ class MacOSQuartzBackend:
             return False
         return True
 
-    def capture(self) -> CapturedFrame:
-        """실 capture 미구현 — 별개 cycle 의 PyObjC binding 의무."""
+    def __init__(self, display_id: Optional[int] = None) -> None:
+        """display_id None 시점 main display (CGMainDisplayID) retain (cycle 169.416)."""
+        self._display_id = display_id
 
-        raise NotImplementedError(
-            "MacOSQuartzBackend.capture — PyObjC + Quartz binding 의 별개 cycle 의무"
+    def capture(self) -> CapturedFrame:
+        """cycle 169.416 — PyObjC + Quartz CGDisplayCreateImage actual binding.
+
+        chain:
+        1. CGMainDisplayID() (display_id None 시점)
+        2. CGDisplayCreateImage(did) → CGImageRef
+        3. CGImageGetWidth/Height + GetDataProvider + CopyData → BGRA bytes
+        4. CFRelease 의 CGImageRef + CFData (memory leak 차단, 사용자 directive 2026-05-21)
+
+        Returns
+        -------
+        CapturedFrame
+            BGRA bytes (width × height × 4).
+
+        Raises
+        ------
+        RuntimeError
+            CGDisplayCreateImage 실패 (display 부재 또는 권한 부재).
+        """
+        import Quartz  # type: ignore[import]
+        import CoreFoundation  # type: ignore[import]
+
+        did = self._display_id if self._display_id is not None else Quartz.CGMainDisplayID()
+        image_ref = Quartz.CGDisplayCreateImage(did)
+        if image_ref is None:
+            raise RuntimeError(
+                "CGDisplayCreateImage 실패 — 권한 부재 또는 display 부재"
+            )
+        try:
+            width = int(Quartz.CGImageGetWidth(image_ref))
+            height = int(Quartz.CGImageGetHeight(image_ref))
+            provider = Quartz.CGImageGetDataProvider(image_ref)
+            cfdata = Quartz.CGDataProviderCopyData(provider)
+            if cfdata is None:
+                raise RuntimeError("CGDataProviderCopyData 실패")
+            try:
+                length = int(CoreFoundation.CFDataGetLength(cfdata))
+                ptr = CoreFoundation.CFDataGetBytePtr(cfdata)
+                buffer = bytes(ptr[:length])
+            finally:
+                # 한글 주석 — CFData CFRelease 의무 (PyObjC autorelease pool 외부)
+                del cfdata  # PyObjC GC 자동 release retain (autoreleased object)
+        finally:
+            # 한글 주석 — CGImageRef autoreleased 의 의 PyObjC GC retain
+            del image_ref
+        return CapturedFrame(
+            width=width,
+            height=height,
+            format=CaptureFormat.BGRA,
+            buffer=buffer,
+            capture_time_ms=int(time.time() * 1000),
         )
 
 

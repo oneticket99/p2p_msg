@@ -136,13 +136,72 @@ class MacOSCGEventBackend:
             return False
         return True
 
-    def apply(self, event: RemoteInput) -> None:
-        """실 apply 미구현 — 별개 cycle 의 PyObjC CGEvent binding 의무."""
+    def __init__(self) -> None:
+        """cycle 169.416 — CGEventSourceCreate 1회 process-wide retain (memory release 의무)."""
+        import Quartz  # type: ignore[import]
+        # kCGEventSourceStateHIDSystemState = 0 (combined session)
+        self._source = Quartz.CGEventSourceCreate(0)
+        if self._source is None:
+            raise RuntimeError("CGEventSourceCreate 실패 — Accessibility 권한 부재")
 
-        raise NotImplementedError(
-            "MacOSCGEventBackend.apply — PyObjC + Quartz CGEvent binding "
-            "+ Accessibility permission grant 의 별개 cycle 의무"
-        )
+    def __del__(self) -> None:
+        """explicit close 부재 시점 GC fallback (autorelease pool retain)."""
+        # 한글 주석 — PyObjC autoreleased 의 GC retain (CFRelease 자동)
+        self._source = None
+
+    def apply(self, event: RemoteInput) -> None:
+        """cycle 169.416 — PyObjC + Quartz CGEvent actual binding.
+
+        chain (event_type 4 분기):
+        1. MOUSE_MOVE → CGEventCreateMouseEvent + CGEventPost(HID)
+        2. MOUSE_CLICK → kCGEventLeft/RightMouseDown/Up + CGEventPost
+        3. KEY_DOWN/UP → CGEventCreateKeyboardEvent + CGEventPost
+        4. CFRelease retain — try/finally autorelease pool 정합 (사용자 directive 2026-05-21)
+
+        Raises
+        ------
+        RuntimeError
+            CGEventCreate* 실패 또는 Accessibility 권한 부재.
+        """
+        import Quartz  # type: ignore[import]
+
+        ev_type = event.event_type
+        payload = event.payload
+        cg_event = None
+        try:
+            if ev_type == InputEventType.MOUSE_MOVE:
+                pt = Quartz.CGPoint(x=float(payload["x"]), y=float(payload["y"]))
+                cg_event = Quartz.CGEventCreateMouseEvent(
+                    self._source, Quartz.kCGEventMouseMoved, pt, Quartz.kCGMouseButtonLeft
+                )
+            elif ev_type == InputEventType.MOUSE_CLICK:
+                pt = Quartz.CGPoint(x=float(payload["x"]), y=float(payload["y"]))
+                button = str(payload.get("button", "left")).lower()
+                pressed = bool(payload.get("pressed", True))
+                if button == "right":
+                    cg_type = Quartz.kCGEventRightMouseDown if pressed else Quartz.kCGEventRightMouseUp
+                    mb = Quartz.kCGMouseButtonRight
+                else:
+                    cg_type = Quartz.kCGEventLeftMouseDown if pressed else Quartz.kCGEventLeftMouseUp
+                    mb = Quartz.kCGMouseButtonLeft
+                cg_event = Quartz.CGEventCreateMouseEvent(self._source, cg_type, pt, mb)
+            elif ev_type == InputEventType.KEY_DOWN:
+                cg_event = Quartz.CGEventCreateKeyboardEvent(
+                    self._source, int(payload["keycode"]), True
+                )
+            elif ev_type == InputEventType.KEY_UP:
+                cg_event = Quartz.CGEventCreateKeyboardEvent(
+                    self._source, int(payload["keycode"]), False
+                )
+            else:
+                raise ValueError(f"unsupported event_type — {ev_type}")
+            if cg_event is None:
+                raise RuntimeError(f"CGEventCreate* 실패 — {ev_type.value}")
+            Quartz.CGEventPost(Quartz.kCGHIDEventTap, cg_event)
+        finally:
+            # 한글 주석 — PyObjC autoreleased 의 GC retain (CFRelease 자동 — del 명시)
+            if cg_event is not None:
+                del cg_event
 
 
 def select_input_backend(
