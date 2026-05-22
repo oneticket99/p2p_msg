@@ -74,11 +74,15 @@ class HamburgerDrawer(QFrame):
         from app.ui._avatar_helper import make_initial_pixmap
         avatar = QLabel()
         avatar.setFixedSize(48, 48)
+        # cycle 169.403 — instance attribute retain (사용자 critique image #171 dynamic refresh chain)
+        self._avatar_label = avatar
+        self._username = username
         avatar.setPixmap(make_initial_pixmap(username, size=48))
         avatar.setStyleSheet("border-radius: 24px;")
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         h_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignLeft)
         name_label = QLabel(username)
+        self._name_label = name_label  # cycle 169.403 — update_user_info chain entry
         # cycle 169.254 — fixedWidth=avatar(48) + AlignCenter → name 의 horizontal center = avatar center column align
         name_label.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 600;")
         name_label.setFixedWidth(48)
@@ -199,6 +203,16 @@ class HamburgerDrawer(QFrame):
         self.raise_()
         self.setFocus()
         return 0
+
+    def update_user_info(self, nickname: str) -> None:
+        """cycle 169.403 — drawer header username + avatar 동적 갱신 (사용자 critique image #171)."""
+        if not nickname:
+            return
+        self._username = nickname
+        if hasattr(self, "_name_label") and self._name_label is not None:
+            self._name_label.setText(nickname)
+        if hasattr(self, "_avatar_label") and self._avatar_label is not None:
+            self._avatar_label.setPixmap(make_initial_pixmap(nickname, size=48))
 
     def _build_menu_entry(self, icon_name: str, label: str) -> QPushButton:
         """단일 menu row button — icon + label."""

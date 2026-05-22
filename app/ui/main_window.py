@@ -1961,6 +1961,8 @@ class MainWindow(QMainWindow):
             username=username, nickname=nickname, display_name=display_name,
             email=email, phone=phone, birthdate=birthdate, parent=self,
         )
+        # cycle 169.403 — active profile dialog reference retain (save 後 즉시 refresh chain)
+        self._active_profile_dialog = dialog
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
 
@@ -1998,6 +2000,26 @@ class MainWindow(QMainWindow):
                 self._current_nickname = new_nick
                 self._current_user_nickname = new_nick  # alias retain
             new_bio = (payload.get("bio") or "").strip()
+            # cycle 169.403 — active MyProfileDialog + HamburgerDrawer 즉시 refresh (사용자 critique image #169/171)
+            active_profile = getattr(self, "_active_profile_dialog", None)
+            if active_profile is not None and hasattr(active_profile, "refresh_profile"):
+                try:
+                    active_profile.refresh_profile(
+                        nickname=self._current_nickname or "",
+                        display_name=self._current_display_name or "",
+                        phone=payload.get("phone", "") or self._current_user_phone or "",
+                        birthdate=payload.get("birthdate", "") or self._current_user_birthdate or "",
+                        username=getattr(self, "_current_username", "") or "",
+                        email=getattr(self, "_current_email", "") or "",
+                    )
+                except Exception as exc:
+                    log.debug("active profile refresh fail — %r", exc)
+            active_drawer = getattr(self, "_active_drawer", None)
+            if active_drawer is not None and hasattr(active_drawer, "update_user_info"):
+                try:
+                    active_drawer.update_user_info(self._current_nickname or self._current_display_name or "")
+                except Exception as exc:
+                    log.debug("active drawer refresh fail — %r", exc)
             if new_bio:
                 self._current_user_bio = new_bio
             new_phone = (payload.get("phone") or "").strip()

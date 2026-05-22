@@ -104,6 +104,9 @@ class MyProfileDialog(QDialog):
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # cycle 169.403 — instance attribute retain (dynamic refresh chain)
+        self._avatar_label = avatar
+        self._name_label_ref: Optional[QLabel] = None
         avatar.setPixmap(make_initial_pixmap(avatar_text, size=120))
         avatar.setStyleSheet("border-radius: 60px;")
         header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -112,6 +115,7 @@ class MyProfileDialog(QDialog):
 
         # 한글 주석 — name (h1 bold center)
         name_label = QLabel(avatar_text)
+        self._name_label_ref = name_label  # cycle 169.403 — refresh chain entry
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
         header_layout.addWidget(name_label)
@@ -132,6 +136,8 @@ class MyProfileDialog(QDialog):
         b_layout.setContentsMargins(24, 20, 24, 16)
         b_layout.setSpacing(4)
 
+        # cycle 169.403 — info rows 안 value label ref retain (dynamic refresh chain)
+        self._info_value_labels: dict[str, QLabel] = {}
         # cycle 169.401 — info rows 안 닉네임 + 이름 row 추가 (사용자 critique image #168)
         # order — 닉네임 + 이름 + 전화번호 + 사용자명 + 생년월일 + 이메일
         for label_text, value in [
@@ -159,6 +165,34 @@ class MyProfileDialog(QDialog):
 
         outer.addWidget(body, stretch=1)
 
+    def refresh_profile(
+        self,
+        nickname: str = "",
+        display_name: str = "",
+        phone: str = "",
+        birthdate: str = "",
+        username: str = "",
+        email: str = "",
+    ) -> None:
+        """cycle 169.403 — profile field 동적 갱신 (사용자 critique image #169 즉시 reflect)."""
+        avatar_text = nickname or display_name or username or "사용자"
+        if hasattr(self, "_avatar_label") and self._avatar_label is not None:
+            self._avatar_label.setPixmap(make_initial_pixmap(avatar_text, size=120))
+        if hasattr(self, "_name_label_ref") and self._name_label_ref is not None:
+            self._name_label_ref.setText(avatar_text)
+        updates = {
+            "닉네임": nickname or "부재",
+            "이름": display_name or "부재",
+            "전화번호": phone or "부재",
+            "사용자명": f"@{username}" if username else "부재",
+            "생년월일": birthdate or "부재",
+            "이메일": email or "부재",
+        }
+        for label_text, value in updates.items():
+            lbl = self._info_value_labels.get(label_text)
+            if lbl is not None:
+                lbl.setText(value)
+
     def _build_info_row(self, layout: QVBoxLayout, label_text: str, value: str) -> None:
         """텔레그램 align info row — value bold + label subtitle (수직 stack)."""
         wrap = QFrame()
@@ -171,6 +205,9 @@ class MyProfileDialog(QDialog):
         val_color = "#0066FF" if is_username else "#e5e7eb"
         val.setStyleSheet(f"color: {val_color}; font-size: 16px; font-weight: 600;")
         wrap_layout.addWidget(val)
+        # cycle 169.403 — value label ref retain (refresh_profile chain)
+        if hasattr(self, "_info_value_labels"):
+            self._info_value_labels[label_text] = val
         lbl = QLabel(label_text)
         lbl.setStyleSheet("color: #9ca3af; font-size: 12px;")
         wrap_layout.addWidget(lbl)
