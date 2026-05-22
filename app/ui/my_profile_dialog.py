@@ -39,6 +39,8 @@ class MyProfileDialog(QDialog):
         phone: str = "",
         email: str = "",
         birthdate: str = "",
+        display_name: str = "",
+        nickname: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
         # 한글 주석 — cycle 169.279 email retain (사용자 critique image #51 — login email)
@@ -95,19 +97,21 @@ class MyProfileDialog(QDialog):
         top_row.addWidget(close_btn)
         header_layout.addLayout(top_row)
 
+        # 한글 주석 — cycle 169.401 — avatar text source = nickname 우선 (사용자 directive image #168)
+        avatar_text = nickname or display_name or username or "사용자"
         # 한글 주석 — large avatar center top + nickname initials + palette_solid 랜덤 bg (cycle 169.249)
         from app.ui._avatar_helper import make_initial_pixmap
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setPixmap(make_initial_pixmap(username, size=120))
+        avatar.setPixmap(make_initial_pixmap(avatar_text, size=120))
         avatar.setStyleSheet("border-radius: 60px;")
         header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         header_layout.addSpacing(12)
 
         # 한글 주석 — name (h1 bold center)
-        name_label = QLabel(username or "사용자")
+        name_label = QLabel(avatar_text)
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
         header_layout.addWidget(name_label)
@@ -128,8 +132,11 @@ class MyProfileDialog(QDialog):
         b_layout.setContentsMargins(24, 20, 24, 16)
         b_layout.setSpacing(4)
 
-        # info rows (텔레그램 ref order — 전화번호 + 사용자명 + 생년월일 + 이메일)
+        # cycle 169.401 — info rows 안 닉네임 + 이름 row 추가 (사용자 critique image #168)
+        # order — 닉네임 + 이름 + 전화번호 + 사용자명 + 생년월일 + 이메일
         for label_text, value in [
+            ("닉네임", nickname or "부재"),
+            ("이름", display_name or "부재"),
             ("전화번호", phone or "부재"),
             ("사용자명", f"@{username}" if username else "부재"),
             ("생년월일", birthdate or "부재"),

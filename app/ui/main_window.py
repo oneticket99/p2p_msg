@@ -1949,18 +1949,17 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_drawer_profile(self) -> None:
-        """내 프로필 dialog open. cycle 169.399 — avatar = nickname (사용자 directive image #163/164)."""
+        """내 프로필 dialog open. cycle 169.401 — nickname + display_name + username 3 entry 분리 (사용자 critique image #168)."""
         from app.ui.my_profile_dialog import MyProfileDialog
-        # 한글 주석 — avatar text = nickname 우선 + display_name + username fallback
-        nickname = getattr(self, "_current_nickname", "")
-        display_name = getattr(self, "_current_display_name", "")
-        username_raw = getattr(self, "_current_username", "")
-        username = nickname or display_name or username_raw or getattr(self._config, "user_nickname", "사용자")
+        nickname = getattr(self, "_current_nickname", "") or ""
+        display_name = getattr(self, "_current_display_name", "") or ""
+        username = getattr(self, "_current_username", "") or getattr(self._config, "user_nickname", "사용자")
         email = getattr(self, "_current_email", "") or ""
         phone = getattr(self, "_current_user_phone", "") or ""
         birthdate = getattr(self, "_current_user_birthdate", "") or ""
         dialog = MyProfileDialog(
-            username=username, email=email, phone=phone, birthdate=birthdate, parent=self,
+            username=username, nickname=nickname, display_name=display_name,
+            email=email, phone=phone, birthdate=birthdate, parent=self,
         )
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
