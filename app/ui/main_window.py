@@ -2356,7 +2356,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_remote_request(self) -> None:
-        """원격 요청 → RemoteCallDialog (outgoing mode) — cycle 169.338 사용자 directive."""
+        """원격 요청 → RemoteCallDialog outgoing — 사용자 directive cycle 169.426 용어 정합.
+
+        원격요청 = me 측 → 상대 PC 제어 도움 요청 (me 측 = 도움 제공 의도, 상대 PC 제어 의도).
+        타의적 — 상대 PC 보는 측 의지. label = '원격 도움 요청 발신 중…'.
+        """
         try:
             from app.ui.remote_call_dialog import RemoteCallDialog
             peer = "상대 사용자"
@@ -2368,7 +2372,10 @@ class MainWindow(QMainWindow):
                     if e.kind == kind and e.target_id == tid:
                         peer = e.name or peer
                         break
-            dialog = RemoteCallDialog(peer_name=peer, mode="request", parent=self)
+            dialog = RemoteCallDialog(
+                peer_name=peer, mode="request", parent=self,
+                outgoing_label="원격 도움 요청 발신 중… (상대 PC 제어 의도)",
+            )
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("RemoteCallDialog request 실패 — %r", exc)
@@ -2376,9 +2383,11 @@ class MainWindow(QMainWindow):
     def _spawn_incoming_remote_modal(
         self, peer_name: str, kind: str = "remote_request",
     ) -> None:
-        """cycle 169.425 — 상대 peer 요청 incoming 시점 강제 modal spawn 의 의 helper.
+        """cycle 169.425~426 — 상대 peer 요청 incoming 시점 강제 modal spawn helper.
 
-        사용자 directive — 음성통화/원격연결/원격요청 incoming = 같은 layout (RemoteCallDialog incoming) + label 상황별 변경.
+        사용자 directive 용어 정합:
+        - 원격요청 = 상대 → me 측 → 상대 PC 제어 도움 요청 (타의적, 상대 의지)
+        - 원격연결 = 상대 → me 측 → me PC 제어 시도 (자의적, 상대 의지)
 
         Parameters
         ----------
@@ -2391,8 +2400,8 @@ class MainWindow(QMainWindow):
             from app.ui.remote_call_dialog import RemoteCallDialog
             label_map = {
                 "voice_call": "음성 통화 수신…",
-                "remote_request": "원격 요청 수신…",
-                "remote_connect": "원격 연결 수신…",
+                "remote_request": "원격 도움 요청 수신… (상대 PC 제어)",
+                "remote_connect": "원격 제어 요청 수신… (내 PC 제어)",
             }
             label = label_map.get(kind, "수신…")
             dialog = RemoteCallDialog(
@@ -2421,10 +2430,10 @@ class MainWindow(QMainWindow):
                     if e.kind == kind and e.target_id == tid:
                         peer = e.name or peer
                         break
-            # cycle 169.424 — outgoing mode + status text 분기 (원격 연결 발신)
+            # cycle 169.424~426 — outgoing mode + status text 분기 (원격 연결 = me 측 → 상대 PC 제어 의도)
             dialog = RemoteCallDialog(
                 peer_name=peer, mode="request", parent=self,
-                outgoing_label="원격 연결 발신 중…",
+                outgoing_label="원격 제어 요청 발신 중… (내 PC 제어 위임)",
             )
             self._exec_dialog_centered(dialog)
         except Exception as exc:
