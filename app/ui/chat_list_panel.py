@@ -354,7 +354,7 @@ class ChatListPanel(QFrame):
                     "[bump_entry] MATCH PASS — kind=%s tid=%s preview=%r unread=%d",
                     kind, target_id, last_message[:40], entry.unread_count,
                 )
-                # sort 재 정렬 (pinned + ts desc)
+                # sort 재 정렬 (pinned + ts desc) — saved 강제 sort 폐기 (사용자 critique 눈가리개)
                 self._entries = sorted(
                     self._entries,
                     key=lambda e: (not e.is_pinned, -(e.last_ts.timestamp() if e.last_ts else 0)),
