@@ -127,6 +127,8 @@ class OTPDialog(QDialog):
         self._user_id: Optional[int] = None
         # cycle 169.480 — double-fire guard (paste 의 textChanged + _on_last_box_filled + explicit verify 의 race 차단)
         self._verify_in_flight: bool = False
+        # cycle 169.484 — resend button double-click guard
+        self._resend_in_flight: bool = False
 
         self.setWindowTitle(f"TooTalk · {_tr('OTP 인증')}")
         self.setMinimumWidth(420)
@@ -352,11 +354,16 @@ class OTPDialog(QDialog):
 
         qasync nested modal 안 ensure_future dispatch fail 회수.
         background QThread + Qt signal/slot — asyncio 의존 폐기.
+        cycle 169.484 — resend double-click guard.
         """
+        if self._resend_in_flight:
+            log.info("[OTP resend] double-fire 차단 — _resend_in_flight retain")
+            return
         log.info("[OTP resend] button clicked — remaining=%d", self._resend_remaining)
         if self._resend_remaining <= 0:
             _ConfirmDialog.show_warning(self, "TooTalk", _tr("재 송신 횟수 초과 (24시간)"))
             return
+        self._resend_in_flight = True
 
         # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
         self._resend_remaining -= 1
@@ -382,7 +389,11 @@ class OTPDialog(QDialog):
         self._resend_worker.start()
 
     def _on_resend_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """HttpJsonWorker finished slot — main thread dispatch."""
+        """HttpJsonWorker finished slot — main thread dispatch.
+
+        cycle 169.484 — _resend_in_flight reset.
+        """
+        self._resend_in_flight = False
         log.info("[OTP resend] finished ok=%s code=%s", ok, error_code)
         if ok:
             _ConfirmDialog.show_info(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))

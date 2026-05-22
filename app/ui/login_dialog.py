@@ -65,6 +65,8 @@ class LoginDialog(QDialog):
         self._user_id: Optional[int] = None
         # cycle 169.279 — email retain (MyProfileDialog 의 의 사용자 directive image #51)
         self._email: Optional[str] = None
+        # cycle 169.484 — double-click guard (로그인 button race 차단)
+        self._login_in_flight: bool = False
 
         self.setWindowTitle(f"TooTalk · {_tr('로그인')}")
         self.setMinimumWidth(420)
@@ -198,7 +200,13 @@ class LoginDialog(QDialog):
         return self._user_id
 
     def _on_login_clicked(self) -> None:
-        """cycle 169.49 회수 — QThread + sync urllib worker."""
+        """cycle 169.49 회수 — QThread + sync urllib worker.
+
+        cycle 169.484 — double-click guard (login button race 차단).
+        """
+        if self._login_in_flight:
+            log.info("[로그인] double-fire 차단 — _login_in_flight retain")
+            return
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
         from app.ui.confirm_dialog import ConfirmDialog
@@ -209,6 +217,7 @@ class LoginDialog(QDialog):
         if not base_url:
             ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
+        self._login_in_flight = True
         self._login_worker = HttpJsonWorker(
             base_url,
             "/api/auth/login",
@@ -219,7 +228,11 @@ class LoginDialog(QDialog):
         self._login_worker.start()
 
     def _on_login_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
-        """HttpJsonWorker finished slot — login 응답 처리."""
+        """HttpJsonWorker finished slot — login 응답 처리.
+
+        cycle 169.484 — _login_in_flight reset.
+        """
+        self._login_in_flight = False
         log.info("[로그인] finished ok=%s code=%s", ok, error_code)
         if ok:
             self._token = data.get("token")
