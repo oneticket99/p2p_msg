@@ -201,6 +201,7 @@ flowchart LR
 <tr><td><code>server/</code></td><td>aiohttp 시그널링 서버 · Router → Service → Model 단방향 · SDP/ICE 만 통과</td></tr>
 <tr><td><code>server/auth/</code></td><td>회원가입/로그인/OTP 발송/비번 재설정 (bcrypt 12 rounds + aiosmtplib + secrets.choice)</td></tr>
 <tr><td><code>docs/exec-plans/active/</code></td><td>활성 실행 계획 (<code>YYYY-MM-DD-&lt;slug&gt;.md</code>) · PLANS.md 인덱스 · 완료 시 <code>completed/</code> 이동</td></tr>
+<tr><td><code>tests/e2e/</code></td><td>Playwright 기반 E2E · HTML visual smoke + live aiohttp signaling browser WebSocket flow</td></tr>
 <tr><td><code>tools/</code></td><td>운영 스크립트 (텔레그램 브리지 · 문서 린트) · <code>data/wbs.sqlite</code> 등 추후 추가</td></tr>
 </tbody>
 </table>

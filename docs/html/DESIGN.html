@@ -447,7 +447,11 @@ sequenceDiagram
   <li>마커: <code>@pytest.mark.e2e</code> 필수 — 기본 실행 의 제외 (수동 또는 CI nightly 전용)</li>
   <li>위치: <code>tests/e2e/</code> — 단위 <code>tests/app/</code> · <code>tests/server/</code> 와 분리</li>
   <li>의존성: <code>pytest-playwright&gt;=0.5</code> + <code>playwright&gt;=1.42</code> (<code>app/requirements-dev.txt</code> + <code>server/requirements-dev.txt</code>)</li>
-  <li>픽스처: <code>tests/e2e/conftest.py</code> 의 <code>signaling_server_url</code> + <code>html_docs_base</code> (file:// base)</li>
+  <li>픽스처: <code>tests/e2e/conftest.py</code> 의 <code>signaling_server_url</code> + <code>live_signaling_server_url</code> + <code>html_docs_base</code> (file:// base)</li>
+  <li>원격 기본값: <code>signaling_server_url</code> = <code>ws://114.207.112.73:8765/ws</code> (원격 테스트 서버). <code>E2E_SIGNALING_URL</code> 로 staging / local URL override 가능.</li>
+  <li>브라우저 WebSocket E2E 는 기본적으로 원격 테스트 서버를 대상으로 Playwright page 안의 native <code>WebSocket</code> 으로 검증한다. 로컬 격리 검증이 필요할 때만 <code>live_signaling_server_url</code> 로 실제 <code>aiohttp</code> <code>TCPSite</code> 를 loop thread 에 띄운다.</li>
+  <li>최소 happy path = Alice/Bob 2 socket JOIN → PEERS / PEER_JOINED → OFFER → ANSWER → ICE → LEAVE / PEER_LEFT.</li>
+  <li>최소 error path = unknown type → <code>ERROR UNKNOWN_TYPE</code>, JOIN 전 OFFER → <code>ERROR NOT_JOINED</code>.</li>
 </ul>
 
 <p><strong>실행</strong>:</p>

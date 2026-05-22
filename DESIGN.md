@@ -312,7 +312,11 @@ PyQt6 데스크탑 위젯 직접 자동화는 Playwright 영역 외 (`pytest-qt`
 - 마커: `@pytest.mark.e2e` 필수 — 기본 실행 의 제외 (수동 또는 CI nightly 전용)
 - 위치: `tests/e2e/` — 단위 `tests/app/` · `tests/server/` 와 분리
 - 의존성: `pytest-playwright>=0.5` + `playwright>=1.42` (`app/requirements-dev.txt` + `server/requirements-dev.txt`)
-- 픽스처: `tests/e2e/conftest.py` 의 `signaling_server_url` + `html_docs_base` (file:// base)
+- 픽스처: `tests/e2e/conftest.py` 의 `signaling_server_url` + `live_signaling_server_url` + `html_docs_base` (file:// base)
+- 원격 기본값: `signaling_server_url` = `ws://114.207.112.73:8765/ws` (원격 테스트 서버). `E2E_SIGNALING_URL` 로 staging / local URL override 가능.
+- 브라우저 WebSocket E2E 는 기본적으로 원격 테스트 서버를 대상으로 Playwright page 안의 native `WebSocket` 으로 검증한다. 로컬 격리 검증이 필요할 때만 `live_signaling_server_url` 로 실제 `aiohttp` `TCPSite` 를 loop thread 에 띄운다.
+- 최소 happy path = Alice/Bob 2 socket JOIN → PEERS / PEER_JOINED → OFFER → ANSWER → ICE → LEAVE / PEER_LEFT.
+- 최소 error path = unknown type → `ERROR UNKNOWN_TYPE`, JOIN 전 OFFER → `ERROR NOT_JOINED`.
 
 **실행**:
 

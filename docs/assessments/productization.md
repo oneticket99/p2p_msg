@@ -1,37 +1,37 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T06:10:00+09:00
+last_verified: 2026-05-23T06:55:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-23 06:10 KST — cycle 169.525~530 fingerprint sync (6 commit drift 회수). 누계: ChatHeaderMixin 1890→1703 **57.7%** (525) + UpdateLifecycle/AuthChain/ChatNavigation LOW batch 1703→1321 (526) + FriendProfile/ChatSend MED batch 1321→1027 (527) + DialogCenter/MenuActions batch 1027→786 (528) + Invite/LifecycleEvents/FriendStatus batch 786→643 (529) + `__init__` 302 line CRITICAL blocker 회수 9 helper split 643→600 **85.1%** (530). **본격 main_window 책임 분리 phase 본격 종료** — 21 mixin 누계 + 9 init helper + main_window.py 4026 → 600 (-3426).<br>**이전 갱신**: 2026-05-23 04:05 KST — cycle 169.518~523 sync.
+> **최신 갱신 시점**: 2026-05-23 06:55 KST — cycle 169.535 realism calibration. 이전 평가 문장 안 낙관 편향을 보수 기준으로 재조정했다. main_window 책임 분리 성과(4026 → 600 lines, 85.1%)와 PyQt6 offscreen smoke PASS는 유지하되, 외부 dogfooding / CI GREEN / pytest PASS / telegram align / drift 0건 같은 항목은 최신 전체 검증 증거가 있는 범위로만 표기한다.<br>**이전 갱신**: 2026-05-23 06:30 KST — cycle 169.533 codex 2.7 재 평가.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-23. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.533 누계 (commit `3ecb298`).
+> 평가 기준일 = 2026-05-23. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.535 누계.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계** (cycle 169.533 재 평가, codex 2.7 reco): cycle 169.526~532 main_window 책임 분리 phase 본격 종료 — **main_window.py 4026 → 600 lines (-3426, 85.1%)** + 21 mixin + 9 init helper split + `__init__` 302 line CRITICAL blocker 회수 + PyQt6 actual instantiation smoke PASS (offscreen platform + 21 mixin + 9 helper + 4 stacked widget + 2 chat entry). codex 2.5 HIGH ✅ + codex 2.6 MED ✅ + 2.7 reco의 critical 회수. **본격 제품화 readiness = 내부 dogfooding 직전 → 의 외부 dogfooding 단계 진입 가능**. 잔존 — 사용자 manual visual ack 16 cycle 누계 + `dist/TooTalk.app` build trigger. 6.5 → **6.8 / 10** (main_window 책임 분리 본격 종료 의 0.3 보정 + `__init__` CRITICAL 회수 의 의무 정합).
+**현재 단계** (cycle 169.535 보수 재평가): cycle 169.526~532 main_window 책임 분리 phase는 의미 있는 구조 개선으로 확인된다 — **main_window.py 4026 → 600 lines (-3426, 85.1%)** + 21 mixin + 9 init helper split + `__init__` 302 line CRITICAL blocker 회수 + PyQt6 offscreen instantiation smoke PASS. 다만 이 결과만으로 외부 dogfooding 가능을 확정하기에는 부족하다. **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 사용자 manual visual ack, 최신 전체 테스트/CI 결과 확인, `dist/TooTalk.app` 빌드 산출, Windows smoke 재검증이다. 종합은 **6.8 / 10**으로 유지하되, 의미는 "상당한 구조 개선을 끝낸 고위험 내부 검증 후보"로 제한한다.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 9.4 / 10 | 9.2 → 9.4 ▲ | cycle 169.526~530 main_window 책임 분리 본격 종료 — 4026 → 600 lines (-3426, **85.1%**) + 21 mixin 신설 (TrayMixin + FriendSearchMixin + BotChatMixin + DrawerMixin + ChatHelperMixin + MenuBarMixin + SignalingMixin + RoomGroupChatMixin + RestPostMixin + FolderMixin + ChatHeaderMixin + UpdateLifecycleMixin + AuthChainMixin + ChatNavigationMixin + FriendProfileMixin + ChatSendMixin + DialogCenterMixin + MenuActionsMixin + InviteMixin + LifecycleEventsMixin + FriendStatusMixin) + `__init__` 302 line CRITICAL blocker 회수 (9 helper split — _init_state + _init_window_properties + _init_splitter + _init_sidebar_rail + _init_chat_list_panel + _init_right_panel + _init_input_bar + _finalize_splitter + _init_status_and_startup_chain) + PyQt6 actual instantiation smoke PASS (cycle 169.533 — offscreen platform + central QSplitter + 4 stacked widget + 2 chat entry). Phase 1~5 actual binding 본격 완성 (cycle 169.413~427) + i18n 5 locale + emoji pack 5 endpoint + 원격 제어 4 backend native + 자동 업데이트 binary swap + bot framework BotFather 등가 + streaming chat 4 platform actual subscribe + 음성통화 aiortc 1.14.0 검증 |
-| 시장 적합성 | 5.0 / 10 | 6.2 → 5.0 ▼ | Toonation BI 통합 redesign + telegram align 96% 도달 + 1차 dogfooding readiness (default 투네이션 고객센터 봇 진입 + chat_list filter 통합 + sidebar 2 entry 단순화 + 편집 tab folder dialog redirect 완성) + SMTP 자체 설치 + DB audit 28 ActivityAction + bot LLM Q&A 실 응답 chain + last_seen 시각화 (Phase 5 binding) + DM room resolver friend_id ↔ direct room_id mapping + i18n qm 5 locale 활성 |
-| 차별화 요소 | 8.0 / 10 | 9.9 → 8.0 ▼ | 친구간 원격 데스크탑 Phase 5 base + telegram align 단순화 UX + 시그니처 사운드 + push 4 platform + E2EE Signal + Phase 3 bot framework production-ready + Toonation BI 통합 hamburger drawer 단색 + 채팅 통합 filter "채팅" 단일 tab + 편집 tab FolderManageDialog telegram align + bot LLM 우선 provider OpenAI swap chain + PORTABLE_HARNESS.md 공용 한벌 + last_seen 실시간 갱신 chain + i18n qm 5 locale frozen bundle |
+| 기술 완성도 | 8.6 / 10 | 9.4 → 8.6 ▼ | main_window 책임 분리 자체는 강한 개선이다. 4026 → 600 lines (-3426, **85.1%**) + 21 mixin + 9 init helper + PyQt6 offscreen instantiation smoke PASS. 단, smoke는 구조 생존 확인에 가깝고 장시간 사용, 실제 네트워크, 패키징 산출, Windows GUI, visual QA까지 보장하지 않는다. Phase 1~5 actual binding 문구는 구현 흔적 기준이며, 제품 완성 기준으로는 별도 E2E 검증이 필요하다. |
+| 시장 적합성 | 5.0 / 10 | 유지 | Toonation BI 통합, default 고객센터 봇, chat_list filter, sidebar 단순화, DM resolver 등은 방향성은 좋다. 다만 실제 사용자 유지율, 반복 사용, 온보딩 성공률, 장애율 같은 외부 지표가 없다. "telegram align 96%" 같은 비율 표현은 주관 스냅샷이므로 제품 지표로 쓰지 않는다. |
+| 차별화 요소 | 7.6 / 10 | 8.0 → 7.6 ▼ | 친구간 원격 데스크탑 + 메신저 통합 + bot framework 방향은 차별화된다. 다만 "production-ready"가 아니라 구현 후보/검증 후보로 표기해야 한다. 원격 제어, E2EE, push, i18n은 사용자 시나리오별 회귀 테스트가 끝나야 차별화 요소로 확정 가능하다. |
 | 사용자 가치 | 5.5 / 10 | 7.4 → 5.5 ▼ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) + last_seen client fetch (cycle 169.221) + DM history fetch chain (cycle 169.225) + dialog main center (cycle 169.229~230) |
 | 수익화 모델 | 4.5 / 10 | 5.6 → 4.5 ▼ | GPLv3 OSS + Toonation 내부 도입 라이선스 + private 전환 옵션 + bot framework 외부 개발자 직접 등록 base + emoji pack share 공개 디렉토리 base + OpenAI 우선 provider chain (cycle 169.210) 사용자 directive → 비용 최적화 base |
-| 운영 비용 | 9.0 / 10 | 9.95 → 9.0 ▼ | self-hosted macOS arm64 + windows-latest GitHub-hosted + SMTP 자체 설치 자동 chain + fork PR API 자동 + Phase 4 docker compose 6 컴포넌트 + certbot 자동 갱신 cron + JSON structured log + ssh-deploy-agent + healthz 200 PASS + dereliction-detector 자동 spawn 강제 chain (cycle 169.189) + hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215) + PORTABLE_HARNESS.md 공용 한벌 + last_seen / DM resolver / DM history endpoint 누계 9 endpoint |
-| 가드레일 자동화 | 9.0 / 10 | 10.0 → 9.0 ▼ | 영구 가드레일 51+ 누적 (design-critique-first-priority 신설 cycle 169.229) + PostToolUse hook 5종 + Stop hook 7 layer (telegram + freshness + doc-consistency + HTML mirror + assessment + token rewrite + dereliction-detector) + parallel execution + memory release 2건 + design-change-without-directive 차단 + chat triple particle 차단 + dereliction-detector 자동 spawn 강제 (cycle 169.189) + hook stderr redirect + false positive 회수 (cycle 169.212/215) + design critique = batch 일시 중지 + 우선 처리 의무 (cycle 169.229) |
-| 세션 간 정합 | 8.5 / 10 | 9.97 → 8.5 ▼ | handoff §8.79 cycle 169.118~221 chain 누계 + telegram 양방향 fallback + 평가 4 file 매 cycle fingerprint sync + cycle 169.x UI redesign 131 sub-cycle drift 0건 185 연속 사이클 37~169.214 + Phase 5 5 Item actual binding + PORTABLE_HARNESS.md 공용 한벌 (cycle 169.207) + handoff §8.79 7 entry append (cycle 169.214) |
+| 운영 비용 | 7.6 / 10 | 9.0 → 7.6 ▼ | self-hosted runner, docker compose, SMTP, ssh-deploy-agent, healthz는 운영 기반을 낮추는 요소다. 반대로 자체 SMTP, self-hosted macOS runner, 인증서, Windows 빌드, Telegram reporting, hook chain은 운영 책임을 늘린다. 운영 비용은 "낮음"보다 "통제 가능하지만 손볼 곳 많음"으로 보는 편이 정확하다. |
+| 가드레일 자동화 | 8.2 / 10 | 9.0 → 8.2 ▼ | hook, doc-lint, meta-enforcement, dereliction-detector 설계는 강하다. 다만 일부 hook은 advisory 성격이고, false positive / local-only 환경 / settings 비활성 상태가 남아 있다. 10점형 자동 차단 체계가 아니라 "강한 로컬/CI 보조 체계"로 평가한다. |
+| 세션 간 정합 | 7.4 / 10 | 8.5 → 7.4 ▼ | handoff, assessment sync, History/README prepend는 장점이다. 하지만 이전 문서에 낙관 문구와 stale fingerprint가 반복 축적된 사실 자체가 정합 리스크다. "drift 0건 연속" 같은 표현은 자동 검증 증거가 없는 문맥에서는 사용하지 않는다. |
 | 보안 hardening | 7.5 / 10 | 9.5 → 7.5 ▼ | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 + cycle 169.228 bearer_token chain 회수 self._session_token (HTTP 401 차단) |
-| **종합** | **6.8 / 10** | 6.5 → 6.8 ▲ | **cycle 169.533 codex 2.7 재 평가 — main_window 책임 분리 phase 본격 종료 + `__init__` CRITICAL 회수 + PyQt6 actual instantiation smoke PASS 의 0.3 보정. cycle 169.526~530 5 cycle 7 commit 의 21 mixin 신설 + 9 init helper split + 4026 → 600 (-3426, 85.1%). codex 2.5 HIGH ✅ + codex 2.6 MED ✅ + 2.7 reco의 CRITICAL ✅. 잔존: 사용자 manual visual ack 16 cycle 누계 + `dist/TooTalk.app` self-hosted runner build trigger + codex 2.8 신규 risk detect. pytest 1854. sub-agent 누계 99종. 본격 readiness = 외부 dogfooding 단계 진입 가능.** |
+| **종합** | **6.8 / 10** | 유지 | **구조 개선 성과는 실제다. 그러나 제품화 판단은 보수적으로 제한한다. 현재는 외부 dogfooding 단계가 아니라 내부 dogfooding 후보이며, 최신 full pytest/CI, macOS app bundle, Windows smoke, 사용자 visual ack, 장시간 네트워크 E2E가 확인되어야 다음 단계로 올릴 수 있다.** |
 
 ---
 
@@ -66,16 +66,16 @@ status: active
 
 ### 2.5 자동화 + sub-agent 병렬
 
-- 본 저장소 누계 sub-agent 93종 spawn (cycle 169.215 시점, 직렬 대비 ~60% 시간 단축)
-- pytest + Playwright + coverage 80% 게이트
-- ci 8 job 매트릭스 GREEN
+- 본 저장소는 다수 sub-agent / hook / CI 정책을 전제로 운영된다.
+- pytest + Playwright + coverage 80% 게이트는 목표 구조로 존재한다. 최신 전체 실행 완료 여부는 task 종료마다 별도 확인해야 한다.
+- CI job 구성은 존재하지만, "GREEN"은 최신 workflow run URL / commit SHA 와 함께만 표기한다.
 - dereliction-detector 자동 spawn 강제 chain 신설 (cycle 169.189) — 5+ cycle 누적 자동 detect + 회수
 
 ### 2.6 가드레일 자동화
 
 - doc-lint.sh 5 검사 (BPE + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭)
 - 영구 메모리 50+ (cycle 169.x assessment-full-section-sweep + no-design-change-without-user-directive + no-triple-particle-chat + parallel execution strict 누적)
-- 텔레그램 HTTP API 강제 활성 (송신 누계 200+)
+- 텔레그램 HTTP API 보고 체계가 문서화되어 있다. 실제 송수신 성공 여부는 각 task 종료 시점 로그/응답 코드로 확인해야 한다.
 - gh API 자동 적용 (fork PR approval + runner registration token + workflow run + push 영구 자동)
 - hook stderr redirect (cycle 169.212) + hook false positive 회수 (cycle 169.215 — feat grep logic) — claude Stop hook display 정합
 
@@ -84,11 +84,11 @@ status: active
 - 색상 변수 9 hex + Toonation Blue `#0066FF` + Deep `#0052FF` + Cyan `#22D3EE` + Light Cyan `#67E8F9` + Navy `#0F172A`
 - 디자인 token 체계 (spacing + elevation + motion + 타이포)
 - FRONTEND.md §15 Toonation BI 본문 + DESIGN.md §11 UI 디자인 시스템
-- cycle 169.170 hamburger drawer header Toonation BI gradient (telegram D-37 align)
+- cycle 169.227 이후 drawer header gradient는 단색 Toonation BI 방향으로 보정되었다. HTML/문서의 gradient 잔존 표현은 stale risk로 본다.
 
 ### 2.8 QA 인프라
 
-- pytest 1817 PASS + asyncio + coverage 80%
+- 테스트 스위트와 smoke 도구는 존재한다. 최신 full pytest PASS / coverage 80% 달성은 현재 문서 단독으로 확정하지 않는다.
 - Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)
 - integration test + dual chain smoke + signaling e2e + remote coord transform
 - 6 dialog setModal regex multi-line 차단 (cycle 169.101)
@@ -107,7 +107,7 @@ status: active
 | 메신저 + 원격 + 친구 권한 + Toonation 인증 통합 | Phase 5 본격 | 통합 솔루션 부재 |
 | 양방향 ProgressBar (송신 + 수신 동시 시각화) | Phase 1 v0.1.0 | 텔레그램 / 디스코드 / 슬랙 = 단방향 |
 | P2P 직결 + 데이터 주권 (서버 경유 부재) | Phase 1 v0.1.0 | Signal / Telegram = 서버 경유 |
-| Telegram align UI 단순화 + Toonation BI gradient | cycle 169.x | 카카오톡 / Slack = 복잡한 sidebar |
+| Telegram align UI 단순화 + Toonation BI 단색 방향 | cycle 169.x | 카카오톡 / Slack = 복잡한 sidebar |
 | Default 투네이션 고객센터 봇 (LLM 연동 Q&A) | Phase 3 v0.3.0 | 카카오톡 = 별개 챗봇 등록 의무 |
 | Emoji pack share 공개 디렉토리 + DMCA phash + OCR jailbreak | Phase 5 Item 3 | 텔레그램 sticker = 비공개 디렉토리 |
 
@@ -122,10 +122,10 @@ status: active
 ### 2.12 CI 자동화 + 보안 hardening
 
 - self-hosted macOS arm64 runner 등록 + online + 사용자 직접 등록 LaunchAgent
-- ci.yml 8 job GREEN 도달 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4)
+- ci.yml 8 job 구조 보유 (docs-lint + M2 + M3 + root-freeze + import-smoke + pytest + m1/m4). 최신 통과 여부는 workflow run 기준으로만 확정한다.
 - Windows 빌드 = windows-latest GitHub-hosted runner (cycle 142~143 wine 영구 폐기)
 - fork PR 승인 정책 strict (`all_external_contributors` — gh API 자동 적용)
-- workflow 3종 (ci + docs-lint + doc-gardener) 모두 GREEN
+- workflow 3종 (ci + docs-lint + doc-gardener)은 gate 구조로 관리한다. 최신 GREEN 여부는 GitHub Actions 결과와 함께 기록한다.
 
 ### 2.13 라이선스 + visibility 정책
 
@@ -308,7 +308,7 @@ status: active
 - **cycle 169.427**: Phase 3+/5 actual binding 본격 완성 — bot framework BotFather 등가 base + 원격 제어 cross-platform 4 backend + streaming chat 4 platform subscribe + 자동 업데이트 binary swap + i18n 5 locale full sweep + emoji pack 5 endpoint
 - **cycle 169.407**: MyProfileDialog info row layout 변경 — QVBoxLayout 수직 stack → QHBoxLayout 수평 inline (label left fixed width 90 + value right stretch wordWrap) 사용자 directive image #178 잘림 회수
 
-전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
+테스트 스위트, doc-lint, meta-enforcement, CI gate 구조가 있다. 최신 full pytest PASS, drift 무결성, UI alignment 비율은 해당 commit 의 실행 로그와 스크린샷 증거가 있을 때만 확정한다. sub-agent / cycle 누계는 생산성 참고값이지 제품 품질 지표로 쓰지 않는다.
 
 ### 2.15 Phase 5 5 Item 모두 actual binding 부분 진입 (cycle 134~148 누계 retain)
 
@@ -326,7 +326,7 @@ status: active
 - KST logging + JSON formatter + RedactingFilter 9 pattern + X-Request-ID contextvar
 - DB audit 28 ActivityAction (SIGNUP + LOGIN + LOGOUT + MESSAGE_SEND + FILE_SEND + FILE_RECEIVE + DEVICE_REGISTER + BOT_CHAT + BOT_ESCALATE + ROOM_JOIN/LEAVE + FRIEND_REQUEST/ACCEPT/REJECT/BLOCK/REMOVE + ...)
 
-### 2.17 Phase 3 bot framework production-ready (cycle 65~99 retain)
+### 2.17 Phase 3 bot framework 검증 후보 (cycle 65~99 retain)
 
 - 10 module (llm_proxy + customer_service_bot + streaming_helper + rag_context + anthropic_client + openai_client + jailbreak_detector + usage_tracker + escalation_queue + streaming SSE parser)
 - Anthropic Messages API + OpenAI Chat Completions API + retry / backoff + retry-after honor + jitter
@@ -364,7 +364,7 @@ status: active
 | Bot framework (Anthropic + OpenAI + jailbreak + RAG) | ✅ Phase 3 v0.3.0 | cycle 65~99 |
 | Production infra (docker + nginx + certbot + KST logging) | ✅ Phase 4 v0.4.0 | cycle 100~117 |
 | DB audit endpoint coverage 28 ActivityAction | ✅ 후속 chain | cycle 119~144 |
-| SMTP 자동 설치 chain (`mail.dopa.co.kr` + Let's Encrypt + opendkim + cyrus-sasl + iptables) | ✅ Phase 1 OTP 발신 production-ready | cycle 129~131 |
+| SMTP 자동 설치 chain (`mail.dopa.co.kr` + Let's Encrypt + opendkim + cyrus-sasl + iptables) | Phase 1 OTP 발신 검증 후보 | cycle 129~131 |
 | 그룹 채팅 + 친구 + signaling rooms persist | ✅ Phase 5 Item 진입 (REST + UI + WebRTC mesh + friends + rooms persist e2e) | cycle 134~144 |
 | 다국어 i18n (5 locale) | ✅ Phase 5 Item 1 actual binding | cycle 134~145 |
 | Emoji pack share + moderation | ✅ Phase 5 Item 3 actual binding | cycle 144~151 |
@@ -373,7 +373,7 @@ status: active
 | Mobile Flutter base | ✅ Phase 5 Item 2 prerequisite | cycle 147~151 |
 | 자동 업데이트 + release.yml dual macOS arm64 + windows x64 | ✅ Phase 5 prereq | cycle 132~151 |
 | SSH deploy chain + healthz 200 PASS | ✅ ssh-deploy-agent | cycle 152 |
-| UI Toonation BI 통합 telegram align 96% | ✅ cycle 169.x 115 sub-cycle 누계 | cycle 169.117~215 |
+| UI Toonation BI 통합 | cycle 169.x 115 sub-cycle 누계, 비율 산정은 보류 | cycle 169.117~215 |
 | 편집 tab FolderManageDialog redirect + frameless modal | ✅ cycle 169.193 + 169.201 | cycle 169.193 / 201 |
 | bot LLM 응답 chain Q&A 실 응답 + ContentTypeError graceful + OpenAI 우선 provider | ✅ cycle 169.203 + 169.209 + 169.210 | cycle 169.203 / 209 / 210 |
 | PORTABLE_HARNESS.md 공용 한벌 | ✅ cycle 169.207 | cycle 169.207 |
@@ -410,11 +410,11 @@ status: active
 
 ### 3.6 ~~코드 진입 미완~~ — Phase 1~5 actual binding + cycle 169.x UI redesign 115 sub-cycle 본격
 
-- pytest 1817 PASS + integration test + Playwright fixture + Phase 5 5 Item + cycle 169.x UI telegram align Phase A~F + 6 dimension stage + 3 zone bg + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 + 편집 tab FolderManageDialog + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌
+- 테스트 스위트 + integration test + Playwright fixture + Phase 5 5 Item + cycle 169.x UI Phase A~F + 6 dimension stage + 3 zone bg + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 + 편집 tab FolderManageDialog + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌. 최신 PASS 여부는 별도 실행 로그로 확인한다.
 
 ### 3.7 차별화 잔존
 
-- 🟡 원격 데스크탑 제어 Phase 5 본격 cycle 165~180 production-ready 잔존
+- 🟡 원격 데스크탑 제어 Phase 5 본격 cycle 165~180 검증 후보 잔존
 - ✅ emoji pack share — cycle 144~148 admin menu + list_pending + DMCA chain actual binding 진입 완료
 - 🔴 Toonation REST API `base_url` + `api_key` 부재 (cycle 141 R sub-agent — Toonation REST 27 PASS skeleton + 사용자 직접 입력 의무) — Phase 5 본격 cycle 진입 차단
 - 🔴 OBS WebSocket `base_url` + `password` 부재 (cycle 148 JJ sub-agent — v5 actual handshake 16 PASS skeleton + 사용자 직접 입력 의무)
@@ -445,7 +445,7 @@ KT ISP default PTR record (`tongkni.co.kr`) 잔존 — `mail.dopa.co.kr` 의 rev
 
 ### 3.11 UI dogfooding 회수 부재 (cycle 169.x 누계 잔존)
 
-cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 단 실 사용자 dogfooding 부재. 1차 dogfooding 1주 retention + NPS 측정 + UX feedback 회수 chain 미진입. Phase 5 본격 cycle 마무리 후 진입 의무.
+cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌은 방향성 증거다. 그러나 실 사용자 dogfooding 부재, 1주 retention / NPS / UX feedback 회수 chain 미진입 상태이므로 외부 readiness는 보류한다.
 
 ---
 
@@ -461,7 +461,7 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 - 수익화: 모회사 운영 비용 절감 + Pro 플랜 (원격 제어 차별화)
 - 진입 장벽: 0 (내부 도입)
 - 성공 조건: Toonation 통합 API + 이메일 OTP + P5/P6 시나리오 검증
-- 확률 = 상 (cycle 169.x UI Toonation BI 통합 redesign 115 sub-cycle 누계 + telegram align 96% + bot LLM 응답 chain production-ready + 1차 dogfooding readiness 도달)
+- 확률 = 중 (cycle 169.x UI Toonation BI 통합 redesign 115 sub-cycle 누계 + bot LLM 응답 chain은 있으나, 1차 dogfooding 지표가 아직 없다)
 - **권장도 1순위**
 
 ### 4.3 옵션 C — P2P 파일 전송 특화
@@ -546,7 +546,7 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 
 ### 7.1 기술
 
-- 원격 데스크탑 제어 production-ready (Phase 5 마무리 + Phase 6 동영상 / 영상 통화 / 화면 공유 통합)
+- 원격 데스크탑 제어 검증 완료 (Phase 5 마무리 + Phase 6 동영상 / 영상 통화 / 화면 공유 통합)
 - WebRTC SFU (그룹 화상 8인+)
 - 분산 시그널링 (libp2p)
 - WASM 브라우저 client (PWA)
@@ -569,12 +569,12 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 
 | 리스크 | 확률 | 영향 | 회피 |
 |---|---|---|---|
-| Signal / Telegram 무료 + 우월 → 사용자 획득 실패 | 상 | 상 | 옵션 B (Toonation) pivot + UI telegram align 96% 도달 + 차별화 매트릭스 7항목 + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌 |
-| ~~1인 개발자 Phase 2~4 완주 어려움~~ | ✅ 해소 (cycle 169.215 — 115 sub-cycle drift 0건 185 연속) | — | sub-agent 누계 93종 병렬 chain |
+| Signal / Telegram 무료 + 우월 → 사용자 획득 실패 | 상 | 상 | 옵션 B (Toonation) pivot + 차별화 매트릭스 7항목 + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌. UI 정렬 비율은 정량 KPI로 쓰지 않는다. |
+| 1인 개발자 Phase 2~4 완주 어려움 | 중 | 중 | sub-agent 병렬 chain은 도움을 주지만, 최종 검증과 운영 책임은 남는다. |
 | ~~데모 서버 보안 사고~~ | ✅ 해소 (cycle 129 SMTP install 5 layer + Phase 4 nginx + DB audit) | — | Let's Encrypt + DKIM + DMARC + iptables |
 | ~~라이선스 결정 지연~~ | ✅ 해소 (사이클 6) | — | GPLv3 확정 |
 | PyQt6 GPL 의무 외부 fork distribution | 중 | 중 | GPLv3 정합 + private 전환 시 외부 fork 차단 |
-| ~~문서 91% : 코드 9% 지속~~ | ✅ 해소 (cycle 117 — pytest 1817 + 코드 우위) | — | 8 체크리스트 통과 + Phase 1~5 진입 |
+| 문서 91% : 코드 9% 지속 | 중 | 중 | 코드 비중은 개선됐으나, 최신 테스트/CI 증거와 문서 정확도 관리가 함께 필요하다. |
 | 원격 제어 보안 사고 (Phase 5 Item 5 위험) | 중 | 상 | 친구 추가 사전 + 명시 수락 + 긴급 ESC + 감사 로그 + cycle 148 coord transform DPI / Retina 정합 |
 | ~~SMTP spam reputation 부족~~ | ✅ 해소 (cycle 129 + Gmail Authentication-Results pass) | — | SendGrid relay fallback 회피 가능 |
 | ~~wine PyQt6 호환성~~ | ✅ 해소 (cycle 142~143 wine 영구 폐기 + windows-latest) | — | windows-latest GitHub-hosted runner |
@@ -619,25 +619,25 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + telegram align 96% 도달 +
 | 시그널링 재연결 시간 (95p) | ≤ 5초 | 미측정 (dogfooding 의무) |
 | 앱 cold start latency | ≤ 30초 | 미측정 (dogfooding 의무) |
 | 1주 retention (내부 pilot) | ≥ 60% | 미측정 (pilot 의무) |
-| CI 3 workflow GREEN 비율 | 100% | 100% (macOS arm64 + windows-latest, cycle 143~215) |
+| CI 3 workflow 통과율 | 100% 목표 | 최신 workflow run 기준으로 기록 |
 | doc-lint.sh 5 검사 통과율 | 100% | 본 저장소 100% |
 | 가드레일 영구 메모리 | 10종+ | 50+ active (cycle 169.215) |
-| pytest 누계 PASS | ≥ 500 | 1817 PASS (cycle 169.214) |
+| pytest 최신 PASS | ≥ 500 test 목표 | 최신 full run 기준으로 기록 |
 | pytest coverage | ≥ 80% | 미측정 |
 | Playwright E2E test | ≥ 5건 | 3건 스켈레톤 active |
-| OTP 발송 → 수신 latency | ≤ 30초 | cycle 129~130 production-ready |
+| OTP 발송 → 수신 latency | ≤ 30초 | 최신 SMTP smoke 기준으로 기록 |
 | OTP brute force 차단율 | 100% (5회 / 30분) | OK |
 | 원격 제어 세션 성공률 | ≥ 95% | 미측정 (Phase 5 Item 5 cycle 165~180 후) |
 | mail-tester score (SMTP) | ≥ 7 / 10 | cycle 129 chain — Gmail Authentication-Results pass |
 | fork PR approval rate (악성 차단) | 100% | strict 적용 OK |
 | GPLv3 호환 의존성 | 100% | 100% |
-| drift 0건 연속 cycle | ≥ 50 | 185 연속 (사이클 37~169.214) |
+| 문서/코드 drift | 0건 목표 | meta-enforcement + doc-lint + reviewer 결과 기준으로 기록 |
 | sub-agent 누계 병렬 spawn | ≥ 10 | 93종 (cycle 169.215 누계) |
 | DB audit endpoint coverage | ≥ 20 ActivityAction | 28 ActivityAction |
 | sub-agent 평균 PASS | ≥ 5 | 8~15 PASS / sub-agent |
 | Phase 5 Item 진입 | ≥ 3 / 5 | 5 / 5 (모두 actual binding 부분 진입) |
-| UI telegram align 도달률 | ≥ 80% | 96% (cycle 169.117~215 115 sub-cycle) |
-| bot LLM 응답 chain production-ready | Y/N | ✅ Y (cycle 169.203 + 209 + 210) |
+| UI alignment visual ack | ≥ 80% 목표 | 사용자 visual ack + screenshot diff 기준으로 기록 |
+| bot LLM 응답 chain 검증 | Y/N | 최신 E2E 로그 기준으로 기록 |
 | PORTABLE_HARNESS 공용 한벌 등재 | Y/N | ✅ Y (cycle 169.207) |
 | 1차 dogfooding 진입 | Y/N | 🔴 (Phase 5 마무리 직후 의무) |
 

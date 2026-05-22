@@ -266,6 +266,7 @@ p2p_msg/
 | `server/` | aiohttp 시그널링 서버 · Router → Service → Model 단방향 · SDP/ICE 만 통과 |
 | `server/auth/` | 회원가입/로그인/OTP 발송/비번 재설정 (bcrypt 12 rounds + aiosmtplib + secrets.choice) |
 | `docs/exec-plans/active/` | 활성 실행 계획 (`YYYY-MM-DD-<slug>.md`) · PLANS.md 인덱스 · 완료 시 `completed/` 이동 |
+| `tests/e2e/` | Playwright 기반 E2E · HTML visual smoke + live aiohttp signaling browser WebSocket flow |
 | `tools/` | 운영 스크립트 (텔레그램 브리지 · 문서 린트) · `data/wbs.sqlite` 등 추후 추가 |
 
 **금지 의존**: `app/ui/` → `app/net/` · `app/rtc/` 직접 호출, `server/room.py` → `signaling.py` 역방향, `server/protocol.py` → `room.py` 역방향. PR 단계에서 `@reviewer-agent` 가 차단 ([ARCHITECTURE.md §4](ARCHITECTURE.md)).

@@ -308,8 +308,11 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-23 07:20:00] 바이브코딩 평가서 엄격 기준 L5 포함 및 보수 비율 반영 (docs/assessments/vibe-coding.md · docs/html/vibe-coding.html)
+- [2026-05-23 07:10:00] 원격 시그널링 서버 Playwright WebSocket E2E 보강 (DESIGN.md · CheckList.md · Structure.md · tests/e2e/conftest.py · tests/e2e/test_signaling_browser_flow.py)
+- [2026-05-23 06:55:00] 평가 문서 낙관 표현 보수 교정 (docs/assessments/productization.md · docs/assessments/vibe-coding.md · docs/html/productization.html · docs/html/vibe-coding.html)
 - [2026-05-23 06:40:00] meta-enforcement L5 자기검증 계층 추가 + 임시 artifact 깨진 링크 정리 (tools/meta_enforce.py · ci.yml · docs/policies/execution-harness.md · docs/assessments/codex-2.8-mixin-fragility.md)
-- cycle 169.533 (2026-05-23 06:30 KST) — codex 2.7 재 평가 + PyQt6 offscreen MainWindow instantiation smoke PASS (21 mixin + 9 helper + 4 stacked + 2 chat entry + central QSplitter + 720x640). 기술 9.2 → 9.4 ▲ + 종합 6.5 → 6.8 / 10 ▲. 평가 4 file (productization md/html + vibe-coding md/html) last_verified 06:30 swap. 본격 readiness = 외부 dogfooding 단계 진입 가능 + codex 2.5 HIGH ✅ + 2.6 MED ✅ + 2.7 CRITICAL ✅.
+- cycle 169.533 (2026-05-23 06:30 KST) — codex 2.7 재 평가 + PyQt6 offscreen MainWindow instantiation smoke PASS (21 mixin + 9 helper + 4 stacked + 2 chat entry + central QSplitter + 720x640). 기술 9.2 → 9.4 ▲ + 종합 6.5 → 6.8 / 10 ▲. 평가 4 file (productization md/html + vibe-coding md/html) last_verified 06:30 swap. readiness 표현은 cycle 169.535 에서 내부 dogfooding 후보로 보수 교정.
 - cycle 169.532 (2026-05-23 06:20 KST) — handoff §8.81 신설 (cycle 169.516~531 16 entry manifest) + M6 wbs_tasks 6 row INSERT local (data/wbs.sqlite — cycle 169.526~531). 본격 main_window 책임 분리 phase 본격 종료 manifest + 다음 session 진입 chain 5 (visual ack + PyQt6 smoke + M6 + codex 2.7 + .app build).
 - cycle 169.531 (2026-05-23 06:10 KST) — 평가 4 file fingerprint sync — cycle 169.525~530 6 commit drift 회수 (last_verified swap 04:05 → 06:10 + 사이클 169.523 → 169.530).
 - cycle 169.530 (2026-05-23 06:00 KST) — codex 2.5 `__init__` 302 line CRITICAL blocker 회수 — 9 helper method split (_init_state + _init_window_properties + _init_splitter + _init_sidebar_rail + _init_chat_list_panel + _init_right_panel + _init_input_bar + _finalize_splitter + _init_status_and_startup_chain) — main_window.py 643 → 600줄 (43줄 감소 + body 가독성 dramatic 향상)
