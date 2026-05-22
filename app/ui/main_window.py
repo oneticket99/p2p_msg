@@ -107,9 +107,10 @@ from app.ui._chat_helper_mixin import ChatHelperMixin
 from app.ui._menu_bar_mixin import MenuBarMixin
 from app.ui._signaling_mixin import SignalingMixin
 from app.ui._room_group_chat_mixin import RoomGroupChatMixin
+from app.ui._rest_post_mixin import RestPostMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -838,16 +839,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("file attached chain 실패 — %r", exc)
 
-    async def _post_and_resolve(self, msg_client, room_id: int, text: str, client_uuid: str) -> None:
-        """server POST → message_id resolve → bubble.set_message_id chain (cycle 163)."""
-        try:
-            resp = await msg_client.post_message(room_id, text)
-            server_message_id = resp.get("message_id") if isinstance(resp, dict) else None
-            if server_message_id is not None:
-                self._chat_view.resolve_pending_message_id(client_uuid, int(server_message_id))
-                log.debug("post_message resolve — uuid=%s message_id=%s", client_uuid, server_message_id)
-        except Exception as exc:  # pragma: no cover - graceful
-            log.debug("post_message 실패 graceful — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.522 — _post_and_resolve → app/ui/_rest_post_mixin.py 분리
+    # ------------------------------------------------------------------
 
     @pyqtSlot(str, str)
     def _on_chat_reply_requested(self, sender: str, text: str) -> None:
@@ -997,45 +991,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # cycle 169.519 — _fetch_dm_history → app/ui/_chat_helper_mixin.py 분리
     # ------------------------------------------------------------------
 
-    async def _send_saved_message_rest(self, text: str, client_uuid: str) -> None:
-        """cycle 169.411 — saved messages self DM room REST POST chain.
-
-        1. GET /api/auth/dm/{self_id}/room → server 의 saved-{uid} room return (viewer==target)
-        2. POST /api/rooms/{room_id}/messages → server 영속화
-        mesh broadcast 부재 (self 의 self echo loop 회피).
-        """
-        import aiohttp
-        try:
-            self_id = getattr(self, "_current_user_id", None)
-            token = getattr(self, "_session_token", None) or ""
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            if not isinstance(self_id, int) or self_id <= 0 or not token:
-                return
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
-                async with session.get(
-                    f"{api_base}/api/auth/dm/{self_id}/room",
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    dm = await resp.json()
-                    room_id = dm.get("room_id")
-                if not room_id:
-                    return
-                async with session.post(
-                    f"{api_base}/api/rooms/{room_id}/messages",
-                    json={"body": text, "client_uuid": client_uuid},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status not in (200, 201):
-                        log.warning("[saved_post] status=%d", resp.status)
-                        return
-                    data = await resp.json()
-                    log.info("[saved_post] PASS room=%d msg_id=%s", room_id, data.get("message_id"))
-        except Exception as exc:
-            log.debug("[saved_post] 실패 graceful — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.522 — _send_saved_message_rest → app/ui/_rest_post_mixin.py 분리
+    # ------------------------------------------------------------------
 
     async def _fetch_user_status(self, user_id: int) -> None:
         """cycle 169.221 — friend last_seen REST fetch (cycle 169.216 endpoint).
@@ -1286,37 +1244,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         worker.start()
 
     @pyqtSlot(str, int)
-    def _mark_room_read(self, room_id_server: int, last_msg_id: int) -> None:
-        """cycle 169.447 — chat 포커스 시점 server last_read_msg_id 갱신 chain.
-
-        graceful — server fail = silent skip. caller = _on_chat_selected + dm_history fetch 후.
-        """
-        try:
-            import asyncio
-            asyncio.ensure_future(self._post_mark_read(room_id_server, last_msg_id))
-        except Exception as exc:
-            log.debug("[mark_read] dispatch 실패 — %r", exc)
-
-    async def _post_mark_read(self, room_id_server: int, last_msg_id: int) -> None:
-        """POST /api/rooms/{room_id}/read fire (async chain)."""
-        import aiohttp
-        try:
-            token = getattr(self, "_session_token", None) or ""
-            if not token or room_id_server <= 0:
-                return
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
-                async with session.post(
-                    f"{api_base}/api/rooms/{room_id_server}/read",
-                    json={"last_read_msg_id": int(last_msg_id)},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status != 200:
-                        log.warning("[mark_read] HTTP %d", resp.status)
-        except Exception as exc:
-            log.debug("[mark_read] async fail — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.522 — _mark_room_read + _post_mark_read → _rest_post_mixin 분리
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.519 — _kind_room_local → app/ui/_chat_helper_mixin.py 분리
@@ -1963,136 +1893,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         )
         return dialog
 
-    @pyqtSlot(int, int)
-    def _on_invite_requested(self, room_id: int, friend_user_id: int) -> None:
-        """InviteDialog 의 invite_requested 시그널 핸들러 — REST POST chain.
-
-        Parameters
-        ----------
-        room_id : int
-            초대 대상 room.id.
-        friend_user_id : int
-            초대 대상 users.id (dropdown 선택).
-
-        흐름
-        ----
-        1. rooms_client 주입 검증 — 부재 시 warning + status bar feedback.
-        2. asyncio running loop 가용 시 ``invite_user`` background task 등록.
-        3. 성공 시 ``_on_invite_complete`` → MemberList 갱신 (get_room 재호출).
-        """
-
-        log.info(
-            "[main_window] invite_requested room=%s friend_user_id=%s",
-            room_id,
-            friend_user_id,
-        )
-
-        if self._rooms_client is None:
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(
-                self, "TooTalk", "rooms_client 미주입 — 초대 차단"
-            )
-            return
-
-        loop: Optional[asyncio.AbstractEventLoop] = None
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-        if loop is None:
-            log.debug(
-                "[main_window] asyncio running loop 부재 — invite REST skip"
-            )
-            return
-
-        asyncio.ensure_future(
-            self._dispatch_invite_chain(
-                room_id=room_id, friend_user_id=friend_user_id
-            ),
-            loop=loop,
-        )
-
-    async def _dispatch_invite_chain(
-        self, *, room_id: int, friend_user_id: int
-    ) -> None:
-        """invite_user REST + MemberList 갱신 의 async chain.
-
-        Parameters
-        ----------
-        room_id : int
-            초대 대상 room.id.
-        friend_user_id : int
-            초대 대상 users.id.
-
-        흐름
-        ----
-        1. ``RoomsClient.invite_user`` 호출 — 성공 시 peer_id 응답.
-        2. 성공 시 ``RoomsClient.get_room`` 재호출 — 멤버 list 갱신.
-        3. MemberList 의 ``set_members`` 호출 (viewer_role 추적).
-        4. 403 (owner 만 가능) / 409 (이미 참여) / network err 의 graceful catch.
-        """
-
-        try:
-            peer_id = await self._rooms_client.invite_user(
-                room_id, friend_user_id
-            )
-            log.info(
-                "[main_window] invite_user PASS room=%s friend=%s peer_id=%s",
-                room_id,
-                friend_user_id,
-                peer_id,
-            )
-            self._status_bar.showMessage(
-                f"초대 완료 — friend_id={friend_user_id} peer_id={peer_id}",
-                3000,
-            )
-        except Exception as exc:  # noqa: BLE001
-            # 한글 주석: 403/409/network 의 통합 graceful catch + 사용자 통보.
-            msg = f"초대 실패 — {exc}"
-            log.warning(
-                "[main_window] invite_user FAIL room=%s friend=%s: %r",
-                room_id,
-                friend_user_id,
-                exc,
-            )
-            self._status_bar.showMessage(msg, 4000)
-            return
-
-        # 한글 주석: MemberList 갱신 — get_room 재호출 + set_members.
-        try:
-            _room, members = await self._rooms_client.get_room(room_id)
-            from app.ui.member_list import MemberItem  # lazy import (graceful)
-
-            member_items = [
-                MemberItem(
-                    user_id=int(m.user_id),
-                    username=f"user_{m.user_id}",
-                    role=str(getattr(m, "role", "member")),
-                    is_online=False,
-                )
-                for m in members
-            ]
-            viewer_role = "member"
-            if self._current_user_id is not None:
-                for m in members:
-                    if int(m.user_id) == int(self._current_user_id):
-                        viewer_role = str(getattr(m, "role", "member"))
-                        break
-            self._member_list.set_members(
-                member_items, viewer_role=viewer_role
-            )
-            log.debug(
-                "[main_window] MemberList refresh room=%s count=%d viewer_role=%s",
-                room_id,
-                len(member_items),
-                viewer_role,
-            )
-        except Exception as exc:  # noqa: BLE001
-            log.warning(
-                "[main_window] get_room 재호출 FAIL room=%s — MemberList skip (%r)",
-                room_id,
-                exc,
-            )
+    # ------------------------------------------------------------------
+    # cycle 169.522 — _on_invite_requested + _dispatch_invite_chain →
+    # app/ui/_rest_post_mixin.py 분리
+    # ------------------------------------------------------------------
 
     @pyqtSlot(str)
     def _on_invite_failed(self, message: str) -> None:
