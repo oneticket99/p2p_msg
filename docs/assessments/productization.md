@@ -268,6 +268,13 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.455**: contacts POST chain wiring + MessageBubble msg_id propagate — `_on_open_new_contact` + `_on_new_contact_submitted` + `_async_post_contact` async chain + `chat_view.add_message` message_id parameter 활용
+- **cycle 169.454**: bot DM resolve endpoint + bot history fetch actual binding + i18n 4 entry × 2 locale (새로운_연락처/성/이름/등록) + new_contact_dialog tr chain
+- **cycle 169.453**: PyInstaller spec hidden imports 확장 — `collect_submodules('aiortc')` + `collect_submodules('av')` + sqlite3 + app.db + app.net (통화 ImportError 회수 base)
+- **cycle 169.452**: telegram align 양방향 contact 매칭 — migration 0015_user_contacts + repository (normalize_phone + upsert + reverse lookup) + POST /api/contacts + verify.py `_propagate_signup_to_contacts` chain + system message "님이 투턱에 가입하셨습니다"
+- **cycle 169.451**: MyAccountDialog 전화번호 + 생년월일 input mask (`+82 99 9999 9999;_` / `9999-99-99;_`) — telegram align 글자수 cap
+- **cycle 169.450**: telegram align NewContactDialog 신설 — 성/이름/전화번호 마스크 + 등록 검증 + contact_submitted signal
+- **cycle 169.449**: 평가 sync (markdownlint MD037 underscore backtick wrap)
 - **cycle 169.448**: 잔존 wiring 전수 — `_fetch_dm_history` max_msg_id retain + mark_room_read 호출 + FCMNotifier actual send (firebase-admin SDK + `run_in_executor`) + `app/net/push_client.py` 신설 + MessageBubble msg_id parameter
 - **cycle 169.447**: 정식 read state tracking base — migration `0014_read_states` (user_id+room_id 복합 PK + `last_read_msg_id`) + repository (upsert GREATEST + `get_unread_counts` batch LEFT JOIN) + endpoint POST /read + GET /unread batch + client `_mark_room_read` async chain
 - **cycle 169.446**: FCM push notification base — migration `0013_device_tokens` + repository + Notifier Protocol + Stub/FCMNotifier + `send_to_user` fan-out + endpoint POST /api/push/register + DELETE + messages POST chain push fire
