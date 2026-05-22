@@ -268,6 +268,10 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.459**: server messages response ts_ms + message_id field 추가 (사용자 critique image #23) — 이전 대화 ts 갱신 회수 (datetime.now() fallback 폐기)
+- **cycle 169.458**: 채팅방 sort 중구난방 회수 — SQL `ORDER BY ts_ms DESC, id DESC` tiebreaker (모든 kind 적용)
+- **cycle 169.457**: chat_view `mark_all_bubbles_read` + telegram username 검색 친구 추가 (`AddFriendByUsernameDialog` + `POST /api/friends/by-username` + contacts_dialog 2 mode button row)
+- **cycle 169.456**: 평가 sync
 - **cycle 169.455**: contacts POST chain wiring + MessageBubble msg_id propagate — `_on_open_new_contact` + `_on_new_contact_submitted` + `_async_post_contact` async chain + `chat_view.add_message` message_id parameter 활용
 - **cycle 169.454**: bot DM resolve endpoint + bot history fetch actual binding + i18n 4 entry × 2 locale (새로운_연락처/성/이름/등록) + new_contact_dialog tr chain
 - **cycle 169.453**: PyInstaller spec hidden imports 확장 — `collect_submodules('aiortc')` + `collect_submodules('av')` + sqlite3 + app.db + app.net (통화 ImportError 회수 base)
