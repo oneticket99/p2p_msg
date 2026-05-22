@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-23T00:30:00+09:00
+last_verified: 2026-05-23T01:50:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-23 00:30 KST — cycle 169.494~502 fingerprint sync (9 commit drift 회수). 누계: main_window FriendsClient 주입 + TLS verify default 0 + chat list visual delegate + alert 폐기 + REST POST 바인딩 + bot chat 답변 사라짐 cached/server merge fix (494~497) + tray icon + close hide + LoginDialog re-spawn + PendingRequestsDialog + drawer pending entry + window resize → drawer height self.height() 동기 + sidebar pending badge + row chat list 패턴 (avatar + nickname + 요청 시각) + placeholder center overlay (498~501) + server `_ensure_bot_user(pool)` startup hook INSERT IGNORE (bot reply FK violation IntegrityError 1452 silent skip root cause 회수, ssh-deploy-agent verdict 정합) (502).<br>**이전 갱신**: 2026-05-22 23:10 KST — cycle 169.488~492 sync.
+> **최신 갱신 시점**: 2026-05-23 01:50 KST — cycle 169.503~511 fingerprint sync (9 commit drift 회수). 누계: 평가 4 file v2 (503) + token-usage regen + current-project-review codex snapshot (504) + codex review 4 risk batch root-freeze + md_agents + streaming test + coverage gate (505~508) + TrayMixin 분리 main_window 4026→3862 (509) + productization 7.1→6.5 codex 정합 (510) + FriendSearchMixin 분리 3862→3675 + M6 wbs 14 row INSERT (511).<br>**이전 갱신**: 2026-05-23 00:30 KST — cycle 169.494~502 sync.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
