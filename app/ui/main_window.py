@@ -1372,6 +1372,10 @@ class MainWindow(QMainWindow):
                     or getattr(self, "_current_user_id", None)
                     or friend_id  # saved kind 시점 friend_id == self_id
                 )
+                # cycle 169.445 — server msgs → SQLite write-back chain (사용자 directive MariaDB sync)
+                from app.db import messages_cache as _mc
+                kind_active = self._active_chat_kind or "saved"
+                room_id_local = self._kind_room_local(kind_active, friend_id)
                 for m in raw_messages:
                     sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
                     text = m.get("text", "")
@@ -1385,6 +1389,20 @@ class MainWindow(QMainWindow):
                     if self._active_chat_kind == "saved":
                         is_self = True
                     self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
+                    # cycle 169.445 — SQLite write-back (server msg_id retain — 미래 lazy load cursor base)
+                    msg_id = m.get("message_id") or m.get("id") or 0
+                    try:
+                        if isinstance(msg_id, int) and msg_id > 0:
+                            _mc.insert_message(
+                                msg_id=msg_id, room_id=room_id_local,
+                                sender_id=int(m.get("sender_id") or 0) or 1,
+                                kind=str(m.get("kind") or "text"),
+                                body=text,
+                                ts_ms=int(ts_ms) if ts_ms else int(ts.timestamp() * 1000),
+                                is_self=is_self,
+                            )
+                    except Exception as exc:
+                        log.debug("[dm_history] SQLite write-back 실패 — %r", exc)
                 self._chat_view.scroll_to_bottom()
                 log.info("[dm_history] friend=%d room=%d msgs=%d viewer=%s replay PASS",
                          friend_id, room_id, len(raw_messages), viewer_uid)
@@ -1784,17 +1802,28 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(int)
     def _on_lazy_load_requested(self, room_id_local: int) -> None:
-        """cycle 169.444 — chat_view scroll-up 시점 추가 history fetch chain.
+        """cycle 169.444~445 — chat_view scroll-up 시점 추가 history fetch chain.
 
         1차 = local SQLite 안 before_msg_id cursor 활용 추가 메시지 fetch
-        2차 = local 부재 시점 server REST fetch (별 cycle)
+        2차 = local 부재 시점 server REST fetch + SQLite write-back (cycle 169.445)
         """
         try:
             from app.db import messages_cache as _mc
-            from datetime import datetime as _dt
             min_id = _mc.get_min_msg_id(room_id_local)
             if min_id is None or min_id <= 1:
-                log.debug("[lazy_load] room=%d 추가 cache 부재 — server fetch 별 cycle", room_id_local)
+                # cycle 169.445 — local 부재 시점 server REST fetch chain trigger
+                log.info("[lazy_load] room=%d local cache exhausted — server fetch fire", room_id_local)
+                import asyncio
+                kind = self._active_chat_kind or "saved"
+                tid = self._active_chat_target_id or 0
+                if kind == "friend" and tid > 0:
+                    asyncio.ensure_future(self._fetch_dm_history(tid))
+                elif kind == "saved":
+                    self_id = getattr(self, "_current_user_id", None)
+                    if isinstance(self_id, int) and self_id > 0:
+                        asyncio.ensure_future(self._fetch_dm_history(self_id))
+                elif kind == "bot":
+                    asyncio.ensure_future(self._fetch_bot_history())
                 self._chat_view._lazy_load_active = False
                 return
             rows = _mc.list_messages_by_room(
@@ -1811,6 +1840,15 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             log.debug("[lazy_load] 실패 — %r", exc)
             self._chat_view._lazy_load_active = False
+
+    async def _fetch_bot_history(self) -> None:
+        """cycle 169.445 — bot chat history server fetch chain.
+
+        GET /api/auth/dm/{self_id}/room → bot-{uid} room_id resolve 부재.
+        실제 = /api/rooms 직접 lookup by room_code=bot-{uid}. 별 endpoint 의무 retain — 본 cycle = graceful skip.
+        """
+        # 한글 주석 — bot DM room resolve endpoint 부재 (saved 와 별 path). 별 cycle 의무.
+        log.debug("[bot_history] resolve endpoint 부재 — 별 cycle 진입 의무")
 
     def _load_local_history(self, kind: str, target_id: int) -> None:
         """cycle 169.441 — chat enter 시점 local SQLite 안 history 즉시 replay.
