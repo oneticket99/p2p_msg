@@ -22,7 +22,7 @@
 set -euo pipefail
 
 # ── 경로 상수 (하드코딩 금지 원칙 예외: 시스템 경로) ──────────────────────────
-PROJECT_DIR="/Users/oneticket_toonation/Documents/vscode_work/p2p_msg"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLAUDE_CHANNELS_DIR="$HOME/.claude/channels/telegram"
 TELEGRAM_PLUGIN_DIR="$HOME/.claude/plugins/cache/claude-plugins-official/telegram/0.0.6"
 TELEGRAM_ENV="$CLAUDE_CHANNELS_DIR/.env"

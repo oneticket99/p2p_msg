@@ -40,6 +40,7 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환. 이전 hardcode `/Users/oneticket_toonation/Documents/vscode_work/p2p_msg` 폐기 → `$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)` 동적 resolve. working dir 전환 (`/Users/1ticket/Documents/vscode_work/p2p_msg`) 정합 + self-hosted 환경 portable 진입 prereq.
 - cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load 정식 chain. ChatView.prepend_message 신설 — insertWidget(0, bubble) 활용 layout 최상단 prepend. valueChanged.connect 재 활성 + `_release_lazy_lock` 500ms cooldown timer. `_on_lazy_load_requested` 안 before_msg_id cursor + list_messages_by_room limit=30 → DESC fetch + iterate insertWidget(0) chain. clear+replay 폐기 (cycle 169.464 비활성 폐기). scroll position 자연 retain.
 - cycle 169.465 (2026-05-22 19:15 KST) — my_account_dialog _on_save payload normalize (phone mask placeholder '_' strip + digit/+ retain + birthdate '-' trim). i18n labels.py 4 entry × ZH-CN+JA (새로운_연락처/성/이름/등록 → 新建联系人/姓/名/添加 + 新規連絡先/姓/名/追加).
 - cycle 169.464 (2026-05-22 19:13 KST) — chat_view valueChanged.connect 비활성 (lazy load chain 임시 폐기). 사용자 critique scroll-up 시점 끝까지 안 올라감 + 강제 bottom snap 회수.

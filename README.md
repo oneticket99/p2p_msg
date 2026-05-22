@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- cycle 169.488 (2026-05-22 22:07 KST) — tools/claude-telegram.sh PROJECT_DIR 동적 path 변환 (BASH_SOURCE/.. resolve, working dir 전환 정합)
 - cycle 169.466 (2026-05-22 19:17 KST) — scroll-up prepend incremental lazy load (prepend_message + valueChanged + 500ms cooldown)
 - cycle 169.465 (2026-05-22 19:15 KST) — account phone/birthdate save normalize + i18n ZH/JA new_contact 4 entry
 - cycle 169.464 (2026-05-22 19:13 KST) — lazy load valueChanged 비활성 (scroll-up bottom snap 회수)
@@ -337,23 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - cycle 169.411 (2026-05-22 09:50 KST) — Phase 1 잔존 3건 (saved messages persist + folder PATCH + 야간 모드 visual indicator)
 - cycle 169.410 (2026-05-22 09:30 KST) — 아이디 찾기 endpoint + FindIdDialog + login link
 - cycle 169.409 (2026-05-22 09:15 KST) — drawer SVG 4 신설 (broadcast/bookmark/logout/contacts) + 야간 모드 click toggle
-- cycle 169.408 (2026-05-22 09:00 KST) — 평가 4 file fingerprint sync (cycle 169.402~407)
-- cycle 169.407 (2026-05-22 08:45 KST) — MyProfileDialog info row horizontal inline
-- cycle 169.404 (2026-05-22 08:30 KST) — avatar source nickname → display_name → username fallback 통일
-- cycle 169.399 (2026-05-22 08:00 KST) — migration 0011 nickname field + MyAccountDialog binding
-- cycle 169.395 (2026-05-22 07:30 KST) — migration 0010 user profile fields (display_name + phone + birthdate + bio) + actual UPDATE SQL
-- cycle 169.210 (2026-05-21 11:07 KST) — bot LLM provider 우선순위 swap — OpenAI 우선 (사용자 directive)
-- cycle 169.209 (2026-05-21 11:03 KST) — bot LLM ContentTypeError 회수 (graceful HTTP status + JSON parse 분기)
-- cycle 169.208 (2026-05-21 11:01 KST) — PORTABLE_HARNESS.md GPLv3 항목 제거 (사용자 directive)
-- cycle 169.207 (2026-05-21 10:59 KST) — DESIGN.md + html §11.10/11.11 sweep + PORTABLE_HARNESS.md 신설
-- cycle 169.206 (2026-05-21 10:52 KST) — handoff §8.79 cycle 194~205 9 entry append + parallel execution strict 가드레일
-- cycle 169.205 (2026-05-21 10:49 KST) — 평가 4 file fingerprint sync (cycle 169.196~204 9 cycle drift 회수)
-- cycle 169.202~204 (2026-05-21 10:48 KST) — default chat retain + bot LLM 응답 chain + avatar 단색 (4 critique batch)
-- cycle 169.201 (2026-05-21 10:45 KST) — FolderManageDialog + FolderEditDialog frameless modal 변환
-- cycle 169.199 (2026-05-21 10:29 KST) — FRONTEND.md + html partial sweep — UI redesign 70+ sub-cycle reflect (@doc-gardener)
-- cycle 169.197~198 (2026-05-21 10:26 KST) — Specification + ARCHITECTURE partial sweep (@doc-gardener)
-- cycle 169.196 (2026-05-21 10:18 KST) — Structure.md partial sweep — cycle 169.x UI redesign reflect (@doc-gardener)
-
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
