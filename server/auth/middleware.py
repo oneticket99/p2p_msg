@@ -25,6 +25,8 @@ _PUBLIC_PATHS = frozenset({
     "/api/auth/reset/request",
     "/api/auth/reset/consume",
     "/api/auth/find/email",
+    # cycle 169.486 — OAuth provider redirect 시점 anonymous callback (state token 의 user binding)
+    "/api/streaming/oauth/callback",
 })
 
 
