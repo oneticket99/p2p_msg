@@ -1396,6 +1396,9 @@ class MainWindow(QMainWindow):
                 # cycle 169.448 — server room_id retain (mark_read chain base)
                 self._active_room_id_server = int(room_id)
                 _max_msg_id = 0
+                # cycle 169.461 — raw_messages = server DESC fetch → ASC iteration 의무 (사용자 critique image #24)
+                # 최신 = 가장 아래, 예전 = 위 (telegram 정합)
+                raw_messages = list(reversed(raw_messages))
                 for m in raw_messages:
                     sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
                     text = m.get("text", "")
@@ -1938,6 +1941,8 @@ class MainWindow(QMainWindow):
                 self._chat_view.clear_messages()
                 from app.db import messages_cache as _mc
                 room_id_local = self._kind_room_local("bot", 1)
+                # cycle 169.461 — server DESC fetch → ASC iteration 의무 (사용자 critique image #24)
+                raw_messages = list(reversed(raw_messages))
                 for m in raw_messages:
                     sender_id = int(m.get("sender_id") or 0)
                     is_self = sender_id == self_id
