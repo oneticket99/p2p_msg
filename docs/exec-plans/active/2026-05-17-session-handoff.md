@@ -169,6 +169,56 @@ status: active
 
 ---
 
+## 8.81 사이클 169.516~169.531 — main_window 책임 분리 phase 본격 종료 + __init__ CRITICAL 회수 (2026-05-23 신설)
+
+### 8.81.1 16 cycle 산출 (cycle 169.516~531)
+
+| commit | cycle | scope |
+|---|---|---|
+| 62d78fb | 169.531 | 평가 4 file fingerprint sync — cycle 169.525~530 6 commit drift 회수 |
+| bb705cf | 169.530 | `__init__` 302 line CRITICAL blocker 회수 — 9 helper method split (main_window 643→600) |
+| 1fe0c3e | 169.529 | Invite + LifecycleEvents + FriendStatus batch (3 mixin, main_window 786→643) |
+| c8b596b | 169.528 | DialogCenter + MenuActions batch (2 mixin, main_window 1027→786, _exec_dialog_centered 193 line single big block) |
+| 144fb2b | 169.527 | FriendProfile + ChatSend MED batch (2 mixin, main_window 1321→1027) |
+| a9b6d12 | 169.526 | UpdateLifecycle + AuthChain + ChatNavigation LOW batch (3 mixin, main_window 1703→1321) |
+| 756658c | 169.525 | ChatHeaderMixin 분리 (8 method, main_window 1890→1703, 57.7%) |
+| ad4aba4 | 169.524 | 평가 4 file v5 fingerprint sync — cycle 169.518~523 6 commit drift 회수 |
+| c21bb7f | 169.523 | FolderMixin 분리 (7 method, main_window 2045→1890) |
+| 5cae9c0 | 169.522 | RestPostMixin 분리 (6 method, main_window 2241→2045) |
+| 5d4b5b3 | 169.521 | RoomGroupChatMixin 분리 (7 method, main_window 2486→2241) |
+| f2e7c4d | 169.520 | MenuBarMixin + SignalingMixin 병렬 batch (11 method, main_window 2861→2486) |
+| e91a6bb | 169.519 | ChatHelperMixin 분리 (5 method, main_window 3152→2861) |
+| 7c845e1 | 169.518 | 평가 4 file v4 fingerprint sync (cycle 169.514~517 4 commit drift) |
+| 7d8c5e0 | 169.517 | memory `feedback_ssh_deploy_classifier_reject.md` 신설 |
+| 5b9c4a1 | 169.516 | handoff §8.80 신설 (cycle 169.488~515 28 entry) |
+
+### 8.81.2 핵심 산출 누계
+
+**main_window 책임 분리 phase 본격 종료** — 4026 → 600 line (-3426, **85.1%**).
+
+- **21 mixin 신설** (TrayMixin + FriendSearchMixin + BotChatMixin + DrawerMixin + ChatHelperMixin + MenuBarMixin + SignalingMixin + RoomGroupChatMixin + RestPostMixin + FolderMixin + ChatHeaderMixin + UpdateLifecycleMixin + AuthChainMixin + ChatNavigationMixin + FriendProfileMixin + ChatSendMixin + DialogCenterMixin + MenuActionsMixin + InviteMixin + LifecycleEventsMixin + FriendStatusMixin)
+- **MainWindow MRO 21 mixin 다중 상속**
+- **`__init__` 9 helper split** (`_init_state` + `_init_window_properties` + `_init_splitter` + `_init_sidebar_rail` + `_init_chat_list_panel` + `_init_right_panel` + `_init_input_bar` + `_finalize_splitter` + `_init_status_and_startup_chain`)
+- **평가 4 file 2 회 fingerprint sync** (cycle 169.524 + 169.531)
+- **import smoke** 5 회 PASS
+
+### 8.81.3 잔존 chain (cycle 169.532+ 의무)
+
+1. **사용자 manual visual ack** — task #11 pending (14 cycle 누계). `dist/TooTalk.app` 실 실행 + 시각 visual ack 의무.
+2. **PyQt6 QApplication smoke** — `python -m app.main` 실 instantiation 의 의 graceful 실행 verify (현재 = import smoke 만 PASS, instantiation = 사용자 turn).
+3. **M6 wbs_tasks INSERT** — cycle 169.526~531 6 row 의 의무 (data/wbs.sqlite, M6 가드레일).
+4. **codex 2.7 재 평가** — main_window 85.1% 분리 + `__init__` CRITICAL 회수 후 readiness 재 점수 (codex 2.6 6.3 baseline + 본 batch 의 0.5~0.8 보정 reco).
+5. **dist/TooTalk.app build** — actions-runner self-hosted id=22 build trigger + .app bundle regen.
+
+### 8.81.4 본 session 의 의무 pattern
+
+- **병렬 진입 의무**: 사용자 directive "병렬작업 가능하면 병렬작업" 정합. investigator 병렬 spawn (cycle 169.519 reco chain) + main thread 동시 진행.
+- **5 cycle 의 의 batch chain**: 169.526 (3 mixin) → 169.527 (2 mixin) → 169.528 (2 mixin) → 169.529 (3 mixin) → 169.530 (`__init__` 9 helper split).
+- **Stop hook freshness 회수**: cycle 169.531 fingerprint sync — 평가 4 file (productization.md + .html + vibe-coding.md + .html) 의 last_verified swap.
+- **caveman mode 정합**: 본 session 의 full caveman mode (cycle 169.526~530) — drop 관사 + 의례 + 의례 의례 의례 hedging.
+
+---
+
 ## 8.80 사이클 169.488~169.515 — 1ticket working dir 진입 + friend search + tray + bot user FK fix + codex 6 risk 회수 + main_window 4 mixin 분리 (2026-05-23 신설)
 
 ### 8.80.1 28 cycle 산출 (cycle 169.488~515)
