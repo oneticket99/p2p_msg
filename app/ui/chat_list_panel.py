@@ -30,8 +30,8 @@ from PyQt6.QtWidgets import (
 )
 
 
-@dataclass(frozen=True)
-class ChatListEntry:
+@dataclass
+class ChatListEntry:  # cycle 169.437 — frozen=True 폐기 (bump_entry FrozenInstanceError 회수)
     """chat list 단일 row entry."""
 
     kind: str  # "friend" / "room" / "bot"

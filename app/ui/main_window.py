@@ -1262,6 +1262,15 @@ class MainWindow(QMainWindow):
             )
         except Exception as exc:
             log.warning("[append_dm_message] bump_entry 실패 — %r", exc)
+        # cycle 169.437 — peer 수신 시점 sound 실시간 (사용자 directive — 포커싱 무관 의무)
+        # active chat 부재 시점도 sound trigger — 메신저 기본 의무
+        if not is_self and kind != "saved":
+            try:
+                sp = getattr(self._chat_view, "_sound_player", None)
+                if sp is not None:
+                    sp.play_signature()
+            except Exception as exc:
+                log.debug("[append_dm_message] sound trigger 실패 — %r", exc)
         # active chat 이면 chat_view render
         if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
             try:
