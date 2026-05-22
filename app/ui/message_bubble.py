@@ -65,6 +65,19 @@ class MessageBubble(QFrame):
         상위 위젯.
     """
 
+    def set_read(self, is_read: bool) -> None:
+        """cycle 169.430 — 안읽음/읽음 상태 toggle (chat 포커스 시점 호출).
+
+        peer bubble 만 영향 (self bubble 의 ✓✓ chain 별도 retain).
+        """
+        self._is_read = is_read
+        if self._read_status_label is not None:
+            self._read_status_label.setText("읽음" if is_read else "안 읽음")
+            color = "#9ca3af" if is_read else "#F59E0B"
+            self._read_status_label.setStyleSheet(
+                f"color: {color}; font-size: 10px; font-weight: 600;"
+            )
+
     # 색상 클래스 상수 — Toonation BI 정합 (cycle 153.6 회수)
     # FRONTEND.md §15 + base-dark.qss QSS#messageBubbleSelf/#messageBubblePeer 정합
     _COLOR_SELF_BG = "#0066FF"      # Toonation Blue primary
@@ -89,6 +102,7 @@ class MessageBubble(QFrame):
         reactions: Optional[dict[str, int]] = None,
         grouped: bool = False,
         hide_sender: bool = False,
+        is_read: bool = True,
     ) -> None:
         super().__init__(parent)
 
@@ -102,6 +116,9 @@ class MessageBubble(QFrame):
         self._grouped = grouped
         # cycle 169.163 — 1:1 chat 시점 sender label suppress (telegram align image #6)
         self._hide_sender = hide_sender
+        # cycle 169.430 — 안읽음/읽음 라벨 (사용자 directive — ts 옆 inline)
+        self._is_read = is_read
+        self._read_status_label: Optional[QLabel] = None
 
         # 본 위젯은 가로로 가득 차도록 두고, 내부 정렬을 통해 좌/우 분기
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
@@ -209,6 +226,17 @@ class MessageBubble(QFrame):
             check_label = QLabel("✓✓", bubble)
             check_label.setStyleSheet(f"color: {ts_color}; font-size: 10px; font-weight: 700;")
             ts_row.addWidget(check_label, alignment=Qt.AlignmentFlag.AlignBottom)
+        # cycle 169.430 — 안읽음/읽음 status 라벨 (ts 옆 inline, 사용자 directive)
+        # peer 발신 = me 안 본 경우 "안 읽음" 표시, focus 시점 "읽음" 변경
+        # self 발신 = ✓✓ 우측 적용 부재 (recipient 의 read state 부재)
+        if not is_self:
+            read_text = "읽음" if self._is_read else "안 읽음"
+            read_color = "#9ca3af" if self._is_read else "#F59E0B"  # 미독 = amber
+            self._read_status_label = QLabel(read_text, bubble)
+            self._read_status_label.setStyleSheet(
+                f"color: {read_color}; font-size: 10px; font-weight: 600;"
+            )
+            ts_row.addWidget(self._read_status_label, alignment=Qt.AlignmentFlag.AlignBottom)
         bubble_layout.addLayout(ts_row)
 
         # 말풍선 스타일 — self/peer 색상 분기 (cycle 169.110 — Figma radius 16 + corner 4 tail)

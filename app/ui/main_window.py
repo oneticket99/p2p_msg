@@ -1256,10 +1256,12 @@ class MainWindow(QMainWindow):
         # active chat 이면 chat_view render
         if self._active_chat_kind == kind and self._active_chat_target_id == target_id:
             try:
-                # 1:1 chat = friend/bot kind → sender label suppress (room = retain)
-                hide_sender = kind in ("friend", "bot")
+                # 1:1 chat = friend/bot/saved kind → sender label suppress (room = retain)
+                hide_sender = kind in ("friend", "bot", "saved")
+                # cycle 169.430 — saved kind = self DM 의 모든 msg 의 is_self=True 강제 (사용자 critique 회수)
+                effective_is_self = True if kind == "saved" else is_self
                 self._chat_view.add_message(
-                    sender=sender, text=text, ts=ts, is_self=is_self,
+                    sender=sender, text=text, ts=ts, is_self=effective_is_self,
                     reply_to=reply_to, hide_sender=hide_sender,
                 )
                 # cycle 169.165 — send/receive 직후 scroll bottom 자동 (telegram align)
@@ -1314,15 +1316,29 @@ class MainWindow(QMainWindow):
             )
             if active_match:
                 self._chat_view.clear_messages()
+                # cycle 169.430 — saved kind 의 is_self detection chain 회수 (사용자 critique image #3)
+                # _state.user_id 부재 시점 → _current_user_id fallback 의무
+                viewer_uid = (
+                    getattr(self._state, "user_id", None)
+                    or getattr(self, "_current_user_id", None)
+                    or friend_id  # saved kind 시점 friend_id == self_id
+                )
                 for m in raw_messages:
                     sender = m.get("sender_name") or f"user#{m.get('sender_id', 0)}"
                     text = m.get("text", "")
+                    # cycle 169.430 — body field fallback (server schema 정합 — body field 우선)
+                    if not text:
+                        text = m.get("body", "")
                     ts_ms = m.get("ts_ms") or 0
                     ts = datetime.fromtimestamp(ts_ms / 1000.0) if ts_ms else datetime.now()
-                    is_self = m.get("sender_id") == getattr(self._state, "user_id", -1)
+                    is_self = m.get("sender_id") == viewer_uid
+                    # saved kind 시점 모든 msg = self echo 강제 (self DM)
+                    if self._active_chat_kind == "saved":
+                        is_self = True
                     self._chat_view.add_message(sender, text, ts, is_self=is_self, hide_sender=True)
                 self._chat_view.scroll_to_bottom()
-                log.info("[dm_history] friend=%d room=%d msgs=%d replay PASS", friend_id, room_id, len(raw_messages))
+                log.info("[dm_history] friend=%d room=%d msgs=%d viewer=%s replay PASS",
+                         friend_id, room_id, len(raw_messages), viewer_uid)
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("[dm_history] fetch 실패 — %r", exc)
 
