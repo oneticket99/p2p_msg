@@ -268,6 +268,7 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.428**: 평가 4 file fingerprint sync — 15 commit drift 회수 (cycle 169.413~427 누계)
 - **cycle 169.427**: Phase 3+/5 actual binding 본격 완성 — bot framework BotFather 등가 base + 원격 제어 cross-platform 4 backend + streaming chat 4 platform subscribe + 자동 업데이트 binary swap + i18n 5 locale full sweep + emoji pack 5 endpoint
 - **cycle 169.407**: MyProfileDialog info row layout 변경 — QVBoxLayout 수직 stack → QHBoxLayout 수평 inline (label left fixed width 90 + value right stretch wordWrap) 사용자 directive image #178 잘림 회수
 
