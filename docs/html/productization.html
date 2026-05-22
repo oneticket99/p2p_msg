@@ -218,6 +218,12 @@
   <li><strong>cycle 169.227</strong> — hamburger drawer header gradient 폐기 → 단색 Toonation BI <code>#0066FF</code> (사용자 directive)</li>
   <li><strong>cycle 169.228</strong> — bearer_token chain 회수 (self._session_token 정합 / HTTP 401 차단)</li>
   <li><strong>cycle 169.229~230</strong> — design critique 최우선 가드레일 + dialog main center + height clamp (사용자 비판 회수)</li>
+  <li><strong>cycle 169.448</strong> — 잔존 wiring 전수 (mark_read + FCMNotifier actual send + push_client + MessageBubble msg_id)</li>
+  <li><strong>cycle 169.447</strong> — read state tracking base (migration 0014 + repository + endpoint POST /read + GET /unread batch)</li>
+  <li><strong>cycle 169.446</strong> — FCM push notification base (migration 0013 + device_tokens + Notifier + Stub/FCM + send_to_user fan-out + push_handlers)</li>
+  <li><strong>cycle 169.445</strong> — MariaDB lazy sync chain (server fetch + SQLite write-back + server fallback chain)</li>
+  <li><strong>cycle 169.444</strong> — scroll-up lazy load (ChatView signal + set_active_room + threshold 30px + _kind_room_local)</li>
+  <li><strong>cycle 169.443</strong> — 평가 sync</li>
   <li><strong>cycle 169.442</strong> — MessageBubble 마크다운 뷰어 내장 (Qt.TextFormat.MarkdownText + heuristic regex)</li>
   <li><strong>cycle 169.441</strong> — 모든 채팅방 history 영속 chain (find_or_create_bot_room + handle_bot_chat server INSERT + _load_local_history fallback)</li>
   <li><strong>cycle 169.440</strong> — local SQLite cache base (app/db/local_db.py + messages_cache.py write-through)</li>

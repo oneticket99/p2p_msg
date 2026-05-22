@@ -268,6 +268,12 @@ status: active
 - **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
 - **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
 - **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.448**: 잔존 wiring 전수 — _fetch_dm_history max_msg_id retain + mark_room_read 호출 + FCMNotifier actual send (firebase-admin SDK + run_in_executor) + app/net/push_client.py 신설 + MessageBubble msg_id parameter
+- **cycle 169.447**: 정식 read state tracking base — migration 0014_read_states (user_id+room_id 복합 PK + last_read_msg_id) + repository (upsert GREATEST + get_unread_counts batch LEFT JOIN) + endpoint POST /read + GET /unread batch + client _mark_room_read async chain
+- **cycle 169.446**: FCM push notification base — migration 0013_device_tokens + repository + Notifier Protocol + Stub/FCMNotifier + send_to_user fan-out + endpoint POST /api/push/register + DELETE + messages POST chain push fire
+- **cycle 169.445**: MariaDB lazy sync chain — _fetch_dm_history 안 SQLite write-back + _on_lazy_load_requested local exhaust 시점 server REST fetch fallback
+- **cycle 169.444**: scroll-up lazy load chain — ChatView.lazy_load_requested signal + set_active_room + _on_scroll_value_changed (threshold 30px) + _kind_room_local helper + _on_lazy_load_requested slot
+- **cycle 169.443**: 평가 sync (pronoun gendered 회수 markdown lint pass)
 - **cycle 169.442**: MessageBubble 마크다운 뷰어 내장 — Qt.TextFormat.MarkdownText + heuristic regex 감지 + setOpenExternalLinks 활성 (bot LLM reply markdown 자동 rich text 렌더)
 - **cycle 169.441**: 모든 채팅방 history 영속 chain — find_or_create_bot_room + handle_bot_chat 안 reply server INSERT + client _load_local_history 우선 replay (in-memory miss 시점 SQLite fallback)
 - **cycle 169.440**: local SQLite cache base (app/db/local_db.py + messages_cache.py + write-through chain) — MariaDB 부하 분담 + scroll lazy-load 기반
