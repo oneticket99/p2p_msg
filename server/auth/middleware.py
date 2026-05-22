@@ -43,6 +43,10 @@ async def auth_middleware(
     # cycle 169.415 — emoji pack public GET prefix (Phase 5 Item 3 공개 디렉토리)
     if request.method == "GET" and request.path.startswith("/api/emoji/packs"):
         return await handler(request)
+    # cycle 169.419 — emoji pack moderation = admin Bearer (별 token chain, middleware bypass)
+    if request.method == "POST" and request.path.endswith("/moderation") \
+            and request.path.startswith("/api/emoji/packs"):
+        return await handler(request)
 
     auth_header = request.headers.get(_HEADER_AUTH, "")
     if not auth_header.startswith(_BEARER_PREFIX):

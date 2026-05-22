@@ -166,48 +166,25 @@ async def handle_create_pack(request: web.Request) -> web.Response:
 
 
 async def handle_add_item(request: web.Request) -> web.Response:
-    """POST /api/emoji/packs/{slug}/items — 팩 안 아이템 추가 (skeleton).
+    """POST /api/emoji/packs/{slug}/items — 팩 안 아이템 추가 (cycle 169.419 actual binding).
 
-    Phase 5 본격 cycle: multipart file upload + OCR moderation + insert_item.
-
-    요청 = multipart/form-data (file + shortcode field).
+    요청 schema JSON:
+        {"shortcode": str, "file_path": str, "mime_type": str = "image/png",
+         "file_size": int = 0, "width": int = 0, "height": int = 0}
     응답 schema:
-        {"item_id": 0, "skeleton": true}
-    """
+        {"item_id": int, "pack_id": int, "shortcode": str} (201)
 
+    Notes
+    -----
+    - file_path = client 별 CDN/volume URL retain (실 multipart upload to local volume = 별 cycle).
+    - pack owner 만 add_item 가능 (권한 검증).
+    """
     user_id = request.get("user_id")
     if user_id is None or not isinstance(user_id, int) or user_id <= 0:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
-
     slug = request.match_info.get("slug", "")
     if not slug:
         raise web.HTTPBadRequest(reason="slug 의무")
-
-    # 한글 주석: skeleton — 본격 cycle 의 file upload + OCR detect_image 의 chain
-    log.debug("POST /api/emoji/packs/%s/items skeleton user_id=%d", slug, user_id)
-    return web.json_response({"item_id": 0, "skeleton": True}, status=200)
-
-
-async def handle_moderation(request: web.Request) -> web.Response:
-    """POST /api/emoji/packs/{slug}/moderation — admin moderation 갱신 (skeleton).
-
-    Phase 5 본격 cycle: admin role 검증 + update_moderation_status + audit log +
-    DMCA takedown workflow.
-
-    요청 schema:
-        {"moderation_status": "approved" | "rejected" | "dmca_takedown"}
-    응답 schema:
-        {"updated": true, "skeleton": true}
-    """
-
-    user_id = request.get("user_id")
-    if user_id is None or not isinstance(user_id, int) or user_id <= 0:
-        raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
-
-    slug = request.match_info.get("slug", "")
-    if not slug:
-        raise web.HTTPBadRequest(reason="slug 의무")
-
     try:
         body = await request.json()
     except ValueError as exc:
@@ -215,16 +192,110 @@ async def handle_moderation(request: web.Request) -> web.Response:
     if not isinstance(body, dict):
         raise web.HTTPBadRequest(reason="body object 의무")
 
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response(
+            {"error": "DB_DISABLED", "message": "DB pool 비활성"}, status=503
+        )
+    pack = await _packs_repo.get_pack_by_slug(pool, slug)
+    if pack is None:
+        raise web.HTTPNotFound(reason=f"pack slug={slug} 부재")
+    if pack.owner_user_id != user_id:
+        raise web.HTTPForbidden(reason="pack owner 만 item 추가 가능")
+
+    shortcode = str(body.get("shortcode", "")).strip()
+    file_path = str(body.get("file_path", "")).strip()
+    mime_type = str(body.get("mime_type", "image/png"))
+    file_size = int(body.get("file_size", 0))
+    width = int(body.get("width", 0))
+    height = int(body.get("height", 0))
+    if not shortcode or len(shortcode) > 32:
+        raise web.HTTPBadRequest(reason="shortcode 1~32자 의무")
+    if not file_path or len(file_path) > 255:
+        raise web.HTTPBadRequest(reason="file_path 1~255자 의무")
+
+    try:
+        item_id = await _packs_repo.insert_item(
+            pool, pack_id=pack.id, shortcode=shortcode, file_path=file_path,
+            mime_type=mime_type, file_size=file_size, width=width, height=height,
+        )
+    except ValueError as exc:
+        raise web.HTTPBadRequest(reason=str(exc))
+    log.info(
+        "[emoji_pack] add_item user_id=%d slug=%s item_id=%d",
+        user_id, slug, item_id,
+    )
+    return web.json_response(
+        {"item_id": item_id, "pack_id": pack.id, "shortcode": shortcode},
+        status=201,
+    )
+
+
+async def handle_moderation(request: web.Request) -> web.Response:
+    """POST /api/emoji/packs/{slug}/moderation — admin moderation 갱신 (cycle 169.419 actual binding).
+
+    요청 schema:
+        {"moderation_status": "pending" | "approved" | "rejected" | "dmca_takedown"}
+    응답 schema:
+        {"updated": bool, "slug": str, "moderation_status": str}
+
+    Notes
+    -----
+    - admin Bearer = `EMOJI_MODERATION_ADMIN_TOKEN` env 정합 의무 (emoji_moderation_handlers 패턴 정합).
+    - bot_handlers 의 Bearer middleware 우회 의무 — 별 admin token 검증.
+    """
+    import os
+
+    # cycle 169.419 — admin Bearer env strict 검증
+    admin_token = os.environ.get("EMOJI_MODERATION_ADMIN_TOKEN", "").strip()
+    if not admin_token:
+        return web.json_response(
+            {"error": "admin only", "reason": "EMOJI_MODERATION_ADMIN_TOKEN unset"},
+            status=401,
+        )
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return web.json_response(
+            {"error": "admin only", "reason": "Bearer header missing"}, status=401,
+        )
+    token = auth_header[len("Bearer "):].strip()
+    if token != admin_token:
+        return web.json_response(
+            {"error": "admin only", "reason": "token mismatch"}, status=401,
+        )
+
+    slug = request.match_info.get("slug", "")
+    if not slug:
+        raise web.HTTPBadRequest(reason="slug 의무")
+    try:
+        body = await request.json()
+    except ValueError as exc:
+        raise web.HTTPBadRequest(reason="JSON body 의무") from exc
+    if not isinstance(body, dict):
+        raise web.HTTPBadRequest(reason="body object 의무")
     new_status = body.get("moderation_status")
     if new_status not in ("pending", "approved", "rejected", "dmca_takedown"):
         raise web.HTTPBadRequest(reason="moderation_status 4 ENUM 만 허용")
 
-    # 한글 주석: skeleton — 본격 cycle 의 admin role 검증 + update + DMCA workflow
-    log.debug(
-        "POST /api/emoji/packs/%s/moderation skeleton user_id=%d new=%s",
-        slug, user_id, new_status,
+    pool = request.app.get("db_pool")
+    if pool is None:
+        return web.json_response(
+            {"error": "DB_DISABLED", "message": "DB pool 비활성"}, status=503
+        )
+    pack = await _packs_repo.get_pack_by_slug(pool, slug)
+    if pack is None:
+        raise web.HTTPNotFound(reason=f"pack slug={slug} 부재")
+    rowcount = await _packs_repo.update_moderation_status(
+        pool, pack_id=pack.id,
+        moderation_status=_packs_repo.ModerationStatus(new_status),
     )
-    return web.json_response({"updated": True, "skeleton": True}, status=200)
+    log.info(
+        "[emoji_pack] moderation slug=%s pack_id=%d new=%s rowcount=%d",
+        slug, pack.id, new_status, rowcount,
+    )
+    return web.json_response({
+        "updated": rowcount > 0, "slug": slug, "moderation_status": new_status,
+    })
 
 
 def register_emoji_routes(app: web.Application) -> None:
