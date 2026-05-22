@@ -225,7 +225,9 @@ class ChatView(QScrollArea):
         self._lazy_load_threshold_px: int = 30
         self._lazy_load_active: bool = False  # 중복 fire 차단
         self._active_room_id: int = 0  # 현 chat room_id (local namespace)
-        self.verticalScrollBar().valueChanged.connect(self._on_scroll_value_changed)  # type: ignore[arg-type]
+        # cycle 169.464 — lazy load valueChanged 비활성 (사용자 critique scroll-up 시점 강제 bottom snap 회수)
+        # 실 lazy load chain 정합 = 별 cycle (prepend incremental layout 의무)
+        # self.verticalScrollBar().valueChanged.connect(self._on_scroll_value_changed)
 
     def set_active_room(self, room_id: int) -> None:
         """cycle 169.444 — chat 전환 시점 active room_id 갱신 (lazy load chain 의 cursor)."""
