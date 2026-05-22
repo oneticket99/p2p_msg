@@ -117,9 +117,12 @@ from app.ui._friend_profile_mixin import FriendProfileMixin
 from app.ui._chat_send_mixin import ChatSendMixin
 from app.ui._dialog_center_mixin import DialogCenterMixin
 from app.ui._menu_actions_mixin import MenuActionsMixin
+from app.ui._invite_mixin import InviteMixin
+from app.ui._lifecycle_events_mixin import LifecycleEventsMixin
+from app.ui._friend_status_mixin import FriendStatusMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, DialogCenterMixin, MenuActionsMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, DialogCenterMixin, MenuActionsMixin, InviteMixin, LifecycleEventsMixin, FriendStatusMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -525,43 +528,9 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # cycle 169.522 — _send_saved_message_rest → app/ui/_rest_post_mixin.py 분리
     # ------------------------------------------------------------------
 
-    async def _fetch_user_status(self, user_id: int) -> None:
-        """cycle 169.221 — friend last_seen REST fetch (cycle 169.216 endpoint).
-
-        GET /api/auth/users/{user_id}/status → chat_header status 갱신.
-        graceful exception (server 부재 시 기존 fallback retain).
-        """
-        import aiohttp
-        try:
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
-            token = getattr(self, "_session_token", None) or ""
-            if not token:
-                return
-            headers = {"Authorization": f"Bearer {token}"}
-            connector = aiohttp.TCPConnector(ssl=False)
-            async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.get(
-                    f"{api_base}/api/auth/users/{user_id}/status",
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as resp:
-                    if resp.status != 200:
-                        return
-                    data = await resp.json()
-                    online = data.get("online", False)
-                    last_active = data.get("last_active_at")
-            # active chat 의 의 retain 시점만 갱신
-            if self._active_chat_kind == "friend" and self._active_chat_target_id == user_id:
-                if online:
-                    status = "온라인"
-                elif last_active:
-                    status = f"마지막 접속: {last_active[:16]}"
-                else:
-                    status = "최근에 접속함"
-                name = self._lookup_friend_name(user_id)
-                self._chat_header.set_chat(name, status=status)
-        except Exception as exc:  # pragma: no cover - graceful
-            log.debug("[user_status] fetch 실패 — %r", exc)
+    # ------------------------------------------------------------------
+    # cycle 169.529 — _fetch_user_status → _friend_status_mixin.py 분리
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.513 — _send_bot_message → app/ui/_bot_chat_mixin.py 분리
@@ -644,82 +613,15 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # cycle 147 — InviteDialog 의 host + invite_requested signal handler
     # ------------------------------------------------------------------
 
-    def open_invite_dialog(self, room_id: Optional[int] = None) -> Optional[object]:
-        """InviteDialog 의 instantiation + friends_client populate chain.
-
-        Parameters
-        ----------
-        room_id : int | None
-            초대 대상 room. None = ``self._current_room_id`` 폴백. 부재 시 noop.
-
-        Returns
-        -------
-        InviteDialog | None
-            인스턴스 (caller 의 exec 의무 — test 가시성 확보).
-            ``self._current_room_id`` 부재 시 None.
-
-        Notes
-        -----
-        - friends_client 주입 부재 시 = dialog instantiation 만 (빈 dropdown).
-        - rooms_client 부재 시 = invite_requested 시그널 발생 후 graceful skip.
-        - 실 exec() 은 caller 책임 — test 의 modal 차단 회피.
-        """
-
-        from app.ui.invite_dialog import InviteDialog  # 한글 주석: lazy import (graceful)
-
-        target_room_id = room_id if room_id is not None else self._current_room_id
-        if target_room_id is None or target_room_id <= 0:
-            from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "초대 = 그룹 방 진입 의무")
-            return None
-
-        dialog = InviteDialog(
-            room_id=target_room_id,
-            friends_client=self._friends_client,
-            room_title=f"Room #{target_room_id}",
-            parent=self,
-        )
-        # 한글 주석: invite_requested → rooms_client.invite_user REST chain
-        dialog.invite_requested.connect(self._on_invite_requested)
-        dialog.invite_failed.connect(self._on_invite_failed)
-
-        # 한글 주석: friends_client 가용 시 async populate task 등록 (graceful skip)
-        if self._friends_client is not None:
-            loop: Optional[asyncio.AbstractEventLoop] = None
-            try:
-                loop = asyncio.get_running_loop()
-            except RuntimeError:
-                loop = None
-            if loop is not None:
-                asyncio.ensure_future(
-                    dialog.populate_friends_async(), loop=loop
-                )
-            else:
-                log.debug(
-                    "[main_window] asyncio running loop 부재 — populate skip"
-                )
-
-        log.info(
-            "[main_window] invite_dialog 인스턴스화 room_id=%s friends_client=%s",
-            target_room_id,
-            bool(self._friends_client),
-        )
-        return dialog
+    # ------------------------------------------------------------------
+    # cycle 169.529 — open_invite_dialog + _on_invite_failed →
+    # app/ui/_invite_mixin.py 분리
+    # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
     # cycle 169.522 — _on_invite_requested + _dispatch_invite_chain →
     # app/ui/_rest_post_mixin.py 분리
     # ------------------------------------------------------------------
-
-    @pyqtSlot(str)
-    def _on_invite_failed(self, message: str) -> None:
-        """InviteDialog 의 invite_failed 시그널 핸들러 — status bar feedback.
-
-        populate 단계 (friends_client.list_friends FAIL) 의 message 전달.
-        """
-
-        log.warning("[main_window] invite_failed — %s", message)
-        self._status_bar.showMessage(message, 4000)
 
     # ------------------------------------------------------------------
     # cycle 169.528 — _on_open_direct_chat + _on_open_settings_dialog +
@@ -735,52 +637,7 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     # (TrayMixin mixin 상속, codex review 2.5 책임 분리 진입)
     # ------------------------------------------------------------------
 
-    def resizeEvent(self, event) -> None:  # noqa: N802 — Qt 규약
-        """윈도우 resize 시점 훅 — drawer geometry 동기 (사용자 directive image #26).
-
-        cycle 169.500 — main window resize → active drawer height 동시 갱신 의무.
-        drawer setGeometry 가 init 1 회만 — resize 시점 stale.
-        """
-        super().resizeEvent(event)
-        try:
-            drawer = getattr(self, "_active_drawer", None)
-            if drawer is not None and hasattr(drawer, "isVisible") and drawer.isVisible():
-                sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
-                # 한글 주석 — cycle 169.501 — self.height() (full client area) 사용 — central.height() cut 회수
-                drawer.setGeometry(sidebar_w, 0, drawer.width(), self.height())
-        except Exception as exc:  # noqa: BLE001
-            log.debug("[resize] drawer 동기 실패 — %r", exc)
-
-    def closeEvent(self, event) -> None:  # noqa: N802 — Qt 규약
-        """윈도우 종료 시점 훅.
-
-        cycle 139 — auto-update background task 의 cancel + cleanup.
-        cycle 169.498 — close button = hide + tray retain (사용자 directive).
-        tray menu "TooTalk 종료" 만 본격 quit chain.
-        """
-        # 한글 주석 — tray 가용 + quit 명시 부재 시점 hide + ignore (tray retain)
-        if (
-            not self._tray_quit_requested
-            and self._tray_icon is not None
-            and self._tray_icon.isVisible()
-        ):
-            event.ignore()
-            self.hide()
-            try:
-                # 한글 주석 — 첫 hide 시점 사용자 안내 balloon (1회만)
-                if not getattr(self, "_tray_hint_shown", False):
-                    from PyQt6.QtWidgets import QSystemTrayIcon
-                    self._tray_icon.showMessage(
-                        "TooTalk",
-                        "트레이 안 retain 됐다. RMB 클릭 → 로그아웃/종료.",
-                        QSystemTrayIcon.MessageIcon.Information,
-                        3000,
-                    )
-                    self._tray_hint_shown = True
-            except Exception:
-                pass
-            return
-        log.info("MainWindow 종료 — Qt 이벤트 루프 정리 단계 진입")
-        # 한글 주석: auto-update background task 정상 cancel (cycle 139)
-        self._cancel_update_task()
-        super().closeEvent(event)
+    # ------------------------------------------------------------------
+    # cycle 169.529 — resizeEvent + closeEvent →
+    # app/ui/_lifecycle_events_mixin.py 분리
+    # ------------------------------------------------------------------
