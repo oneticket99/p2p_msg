@@ -18,6 +18,9 @@ _PUBLIC_PATHS = frozenset({
     "/health",
     "/healthz",
     "/readyz",
+    # cycle 169.539 — signaling WebSocket public (JOIN/OFFER/ANSWER/ICE/LEAVE protocol level 인증 부재)
+    # 외부 client 의 ws://host:8765/ws 직접 connect chain. 본 저장소 README §3 정합.
+    "/ws",
     "/api/auth/register",
     "/api/auth/resend",
     "/api/auth/verify",
