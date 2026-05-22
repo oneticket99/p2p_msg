@@ -47,6 +47,14 @@ async def auth_middleware(
     if request.method == "POST" and request.path.endswith("/moderation") \
             and request.path.startswith("/api/emoji/packs"):
         return await handler(request)
+    # cycle 169.420 — bot directory public GET prefix (BotFather 등가 — 공개 디렉토리 + 단일 봇 정보)
+    # /api/bots/me + /api/bots/{username}/tokens 경로 = Bearer retain (handler 안 user_id 검증)
+    if request.method == "GET" and request.path == "/api/bots":
+        return await handler(request)
+    if request.method == "GET" and request.path.startswith("/api/bots/") \
+            and not request.path.endswith("/me") \
+            and "/tokens" not in request.path:
+        return await handler(request)
 
     auth_header = request.headers.get(_HEADER_AUTH, "")
     if not auth_header.startswith(_BEARER_PREFIX):
