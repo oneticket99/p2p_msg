@@ -66,17 +66,14 @@ class MessageBubble(QFrame):
     """
 
     def set_read(self, is_read: bool) -> None:
-        """cycle 169.430 — 안읽음/읽음 상태 toggle (chat 포커스 시점 호출).
+        """cycle 169.430~431 — 읽음 처리 시점 '안 읽음' 라벨 제거 (사용자 directive 정합).
 
         peer bubble 만 영향 (self bubble 의 ✓✓ chain 별도 retain).
+        읽음 시점 = 라벨 hide (ts only retain).
         """
         self._is_read = is_read
         if self._read_status_label is not None:
-            self._read_status_label.setText("읽음" if is_read else "안 읽음")
-            color = "#9ca3af" if is_read else "#F59E0B"
-            self._read_status_label.setStyleSheet(
-                f"color: {color}; font-size: 10px; font-weight: 600;"
-            )
+            self._read_status_label.setVisible(not is_read)
 
     # 색상 클래스 상수 — Toonation BI 정합 (cycle 153.6 회수)
     # FRONTEND.md §15 + base-dark.qss QSS#messageBubbleSelf/#messageBubblePeer 정합
@@ -226,15 +223,11 @@ class MessageBubble(QFrame):
             check_label = QLabel("✓✓", bubble)
             check_label.setStyleSheet(f"color: {ts_color}; font-size: 10px; font-weight: 700;")
             ts_row.addWidget(check_label, alignment=Qt.AlignmentFlag.AlignBottom)
-        # cycle 169.430 — 안읽음/읽음 status 라벨 (ts 옆 inline, 사용자 directive)
-        # peer 발신 = me 안 본 경우 "안 읽음" 표시, focus 시점 "읽음" 변경
-        # self 발신 = ✓✓ 우측 적용 부재 (recipient 의 read state 부재)
-        if not is_self:
-            read_text = "읽음" if self._is_read else "안 읽음"
-            read_color = "#9ca3af" if self._is_read else "#F59E0B"  # 미독 = amber
-            self._read_status_label = QLabel(read_text, bubble)
+        # cycle 169.430~431 — 안 읽음 only 라벨 (사용자 directive: 안 읽음일 때만 표시, 읽음 = ts only)
+        if not is_self and not self._is_read:
+            self._read_status_label = QLabel("안 읽음", bubble)
             self._read_status_label.setStyleSheet(
-                f"color: {read_color}; font-size: 10px; font-weight: 600;"
+                "color: #F59E0B; font-size: 10px; font-weight: 600;"
             )
             ts_row.addWidget(self._read_status_label, alignment=Qt.AlignmentFlag.AlignBottom)
         bubble_layout.addLayout(ts_row)
