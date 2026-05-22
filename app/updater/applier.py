@@ -113,40 +113,107 @@ def apply_update(zip_path: Path, install_dir: Path) -> bool:
 
 
 def _apply_macos_skeleton(zip_path: Path, install_dir: Path) -> bool:
-    """macOS .app bundle 의 swap skeleton (Phase 5 의무).
+    """cycle 169.417 — macOS .app bundle swap actual binding (Phase 5 Item 2).
 
-    실 chain (Phase 5):
-    1. install_dir.parent 에 백업 .tootalk_backup_<ts>/ 생성
-    2. 현 .app bundle 을 백업 디렉토리 로 mv
+    chain:
+    1. install_dir.parent 안 백업 디렉토리 ``.tootalk_backup_<ts>/`` 생성
+    2. install_dir (현 .app) → 백업 디렉토리 이동 (shutil.move)
     3. zip extract → install_dir.parent
-    4. extract 결과 검증 (Info.plist + 실행 binary 존재)
-    5. atexit hook 등록 + subprocess.Popen([new_app, ...]) + sys.exit
-    """
+    4. extract 결과 검증 (TooTalk.app/Contents/MacOS/TooTalk 실행 binary 존재)
+    5. 실패 시점 rollback (백업 .app 복원) + False 반환
 
-    log.info(
-        "[macOS skeleton] swap chain 진입 — zip=%s install_dir=%s "
-        "(실 swap 은 Phase 5 의무)",
-        zip_path,
-        install_dir,
-    )
-    return True
+    Notes
+    -----
+    relaunch + sys.exit = caller responsibility (update_dialog `_on_apply_clicked`).
+    """
+    import shutil
+    import time as _time
+    import zipfile
+
+    ts = int(_time.time())
+    backup_dir = install_dir.parent / f".tootalk_backup_{ts}"
+    extract_dir = install_dir.parent
+    try:
+        # step 1 — 백업 디렉토리 생성
+        backup_dir.mkdir(parents=True, exist_ok=False)
+        # step 2 — 현 .app 백업 이동
+        if install_dir.exists():
+            shutil.move(str(install_dir), str(backup_dir / install_dir.name))
+            log.info("[macOS apply] 현 .app 백업 이동 — %s → %s", install_dir, backup_dir)
+        # step 3 — zip extract
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(str(extract_dir))
+        log.info("[macOS apply] zip extract PASS — dest=%s", extract_dir)
+        # step 4 — 실행 binary 검증
+        new_app = extract_dir / install_dir.name
+        executable = new_app / "Contents" / "MacOS" / "TooTalk"
+        if not executable.is_file():
+            raise RuntimeError(f"swap 검증 실패 — {executable} 부재")
+        log.info("[macOS apply] swap chain PASS — new_app=%s", new_app)
+        return True
+    except Exception as exc:
+        log.error("[macOS apply] swap 실패 — rollback 진입 — %r", exc)
+        # rollback — 백업 .app 복원 (install_dir 부재 시점)
+        backup_app = backup_dir / install_dir.name
+        if backup_app.exists() and not install_dir.exists():
+            try:
+                shutil.move(str(backup_app), str(install_dir))
+                log.info("[macOS apply] rollback PASS — backup → install_dir")
+            except Exception as rb_exc:
+                log.error("[macOS apply] rollback 실패 — %r", rb_exc)
+        return False
 
 
 def _apply_windows_skeleton(zip_path: Path, install_dir: Path) -> bool:
-    """Windows .exe 의 self-update skeleton (Phase 5 의무).
+    """cycle 169.417 — Windows .exe self-update via batch script (Phase 5 Item 2).
 
-    실 chain (Phase 5):
-    1. install_dir.parent 에 백업 .tootalk_backup_<ts>/ 생성
-    2. sidecar updater.exe 추출 → 임시 디렉토리
-    3. updater.exe 를 subprocess.Popen + DETACHED_PROCESS 로 기동
-    4. updater.exe 가 본 프로세스 종료 대기 → 본체 .exe 의 move + zip extract
-    5. updater.exe 가 새 본체 .exe 기동 + 자가 삭제
+    chain:
+    1. tempdir 생성 → zip extract (TooTalk-new/)
+    2. batch script 생성 (taskkill TooTalk.exe + xcopy /Y new → install_dir + relaunch)
+    3. subprocess.Popen([batch], creationflags=DETACHED_PROCESS) + 본 process exit
+    4. batch script = 본 process 종료 후 swap + relaunch + 자가 삭제
+
+    Notes
+    -----
+    Windows 의 의 의 running .exe 자체 overwrite 불가 → batch script detached process pattern 의무.
     """
+    import os as _os
+    import subprocess
+    import tempfile
+    import zipfile
 
-    log.info(
-        "[Windows skeleton] swap chain 진입 — zip=%s install_dir=%s "
-        "(실 swap 은 Phase 5 의무)",
-        zip_path,
-        install_dir,
-    )
-    return True
+    try:
+        tmp_root = Path(tempfile.mkdtemp(prefix="tootalk_update_"))
+        extract_dir = tmp_root / "new"
+        extract_dir.mkdir(parents=True)
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(str(extract_dir))
+        log.info("[Windows apply] zip extract PASS — tmp=%s", extract_dir)
+
+        # 한글 주석 — batch script 생성 (kill + xcopy + relaunch + 자가 삭제)
+        batch_path = tmp_root / "apply_update.bat"
+        new_exe = extract_dir / "TooTalk.exe"
+        if not new_exe.is_file():
+            raise RuntimeError(f"swap 검증 실패 — {new_exe} 부재")
+        batch_body = (
+            "@echo off\r\n"
+            "timeout /t 2 /nobreak >nul\r\n"
+            f'taskkill /F /IM TooTalk.exe >nul 2>&1\r\n'
+            "timeout /t 1 /nobreak >nul\r\n"
+            f'xcopy /Y /E /I "{extract_dir}" "{install_dir}" >nul\r\n'
+            f'start "" "{install_dir / "TooTalk.exe"}"\r\n'
+            f'rmdir /S /Q "{tmp_root}"\r\n'
+        )
+        batch_path.write_text(batch_body, encoding="utf-8")
+
+        # DETACHED_PROCESS = 0x00000008
+        DETACHED = 0x00000008
+        subprocess.Popen(
+            ["cmd.exe", "/c", str(batch_path)],
+            creationflags=DETACHED, close_fds=True,
+        )
+        log.info("[Windows apply] batch script Popen PASS — caller exit 의무")
+        return True
+    except Exception as exc:
+        log.error("[Windows apply] swap 실패 — %r", exc)
+        return False
