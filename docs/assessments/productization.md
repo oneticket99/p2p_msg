@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-22T10:25:00+09:00
+last_verified: 2026-05-22T10:40:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 222 sub-cycle 누계 (cycle 169.117~401). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 228 sub-cycle 누계 (cycle 169.117~407). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -263,6 +263,12 @@ status: active
 - **cycle 169.399**: username + display_name readonly + nickname field 신설 — migration 0011 nickname VARCHAR ALTER + server handler whitelist (nickname/phone/birthdate/bio only) + ProfileGet response 안 nickname + MyAccountDialog 사용자명/이름 readonly + 닉네임 row + avatar text = nickname chain 사용자 directive image #163/164
 - **cycle 169.400**: 이름 (display_name) editable 회수 — readonly 폐기 + server field_map whitelist 안 display_name 추가 + payload + local cache `_current_display_name` 갱신 chain 사용자 directive image #166 password reset 매칭 부재 retain
 - **cycle 169.401**: MyProfileDialog 안 닉네임 + 이름 row 추가 (info_rows 6 entry: 닉네임/이름/전화번호/사용자명/생년월일/이메일) + avatar text source = nickname 우선 + display_name/username fallback + `_on_drawer_profile` 3 entry 분리 chain 사용자 critique image #167/168
+- **cycle 169.402**: 평가 4 file fingerprint sync cycle 169.396~401 6 cycle drift 회수
+- **cycle 169.403**: MyProfileDialog refresh_profile method + HamburgerDrawer update_user_info method 신설 + main_window _on_save chain 안 active dialog/drawer 즉시 refresh (avatar + name_label + info value labels + drawer header username) 사용자 critique image #169/171
+- **cycle 169.404**: 3 avatar source 통일 — MyAccountDialog + HamburgerDrawer + MyProfileDialog 안 nickname 우선 + display_name + username fallback chain (palette_solid hash 동일 bg color retain) + drawer nickname parameter + _open_drawer 안 nickname pass 사용자 critique image #172/173/174/175
+- **cycle 169.405**: MyProfileDialog info row value label minHeight + line-height + padding 한글 descender clip 회수 + footer story placeholder 폐기 → 자기소개 (bio) 출력 chain + refresh_profile bio param 사용자 critique image #176
+- **cycle 169.406**: MyProfileDialog info row 의 wrap minHeight 58 + value setFixedHeight 28 + layout spacing 6 + contentsMargins 0/6/0/8 — 한글 descender clip + sublabel overlap 회수 사용자 critique image #177
+- **cycle 169.407**: MyProfileDialog info row layout 변경 — QVBoxLayout 수직 stack → QHBoxLayout 수평 inline (label left fixed width 90 + value right stretch wordWrap) 사용자 directive image #178 잘림 회수
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
