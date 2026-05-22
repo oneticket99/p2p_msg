@@ -24,7 +24,7 @@ import logging
 import os
 import signal
 import sys
-from typing import Final, Optional
+from typing import Any, Final, Optional
 
 from aiohttp import web
 from dotenv import load_dotenv
@@ -105,6 +105,26 @@ def _read_int_env(key: str, default: int) -> int:
             "환경변수 %s=%r 정수 파싱 실패 — 기본값 %d 사용", key, raw, default
         )
         return default
+
+
+async def _ensure_bot_user(pool: Any) -> None:
+    """bot user (id=1) idempotent INSERT — cycle 169.502 신설.
+
+    server/api/bot_handlers.py:371 의 `sender_id=1` hardcoded — users.id=1 row 부재 시점
+    FK violation IntegrityError 1452 → bot reply insert silent skip → bot chat 답변
+    사라짐 root cause. server startup chain 안 INSERT IGNORE 패턴 의 idempotent INSERT.
+    """
+    sql = (
+        "INSERT IGNORE INTO users (id, email, password_hash, username, display_name, "
+        "nickname, email_verified, status) VALUES "
+        "(1, 'bot@tootalk.local', '!bot-no-login', 'tootalk_bot', "
+        "'투네이션 고객센터', '투네이션 고객센터', 1, 'active')"
+    )
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql)
+        await conn.commit()
+    logging.getLogger(__name__).info("[startup] ensure_bot_user PASS (id=1)")
 
 
 async def build_app(config: Optional[Config] = None) -> web.Application:
@@ -309,6 +329,15 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     # DB pool — DB_ENABLED=1 시 활성. 로컬 dev 시 의
     if os.environ.get("DB_ENABLED", "0").strip() == "1":
         app["db_pool"] = await create_pool()
+        # cycle 169.502 — bot user (id=1) row ensure (사용자 directive 회수).
+        # users.id=1 row 부재 시점 bot reply insert FK violation IntegrityError 1452 silent skip
+        # → bot chat 답변 사라짐 root cause. server startup chain 안 idempotent INSERT 의무.
+        try:
+            await _ensure_bot_user(app["db_pool"])
+        except Exception as exc:  # noqa: BLE001 - graceful
+            logging.getLogger(__name__).warning(
+                "[startup] ensure_bot_user 실패 graceful — %r", exc
+            )
     else:
         app["db_pool"] = None
         logging.getLogger(__name__).warning(
