@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-21T23:55:00+09:00
+last_verified: 2026-05-22T09:55:00+09:00
 status: active
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 212 sub-cycle 누계 (cycle 169.117~391). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
+**현재 단계**: Phase 1~5 모두 actual binding 진입 + cycle 169.x UI Toonation BI 통합 redesign 본격 sweep 216 sub-cycle 누계 (cycle 169.117~395). 제품화 가능성 = **인프라 완비 + CI 검증 + telegram align UI 완성 단계 + bot LLM 응답 chain production-ready + PORTABLE_HARNESS 공용 한벌 + last_seen REST + DM room resolver + DM history fetch + i18n qm bundle + drawer 단색 + bearer_token chain 회수 + design critique 최우선 가드레일 + dialog main center + chat_list disappear fix + drawer 5 dialog 신설 (그룹 만들기 + 채널 만들기 + 연락처 + 전화 + 저장한 메시지) + dialog close 강화 (✕ + backdrop click + ESC) + 1차 dogfooding readiness 도달 / Phase 5 마무리 후 Phase 6 화상통화 진입 대기**.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -254,6 +254,9 @@ status: active
 - **cycle 169.388**: chat list set active tab → active folder 'all' reset (모든 대화방 click 시점 folder filter 잔존 회수) + FolderEditDialog is edit flag + main window folder saved edit mode replace chain (사용자 critique image #153 folder 수정 INSERT 폐기)
 - **cycle 169.389**: FolderEditDialog edit mode title '새 폴더' → '폴더 수정' + save_btn '만들기' → '수정 완료' (사용자 critique image #154 mode 분기)
 - **cycle 169.390~391**: profile local cache `_current_user_nickname` attribute retain (Config frozen=True setattr 폐기) + MyAccountDialog 생년월일 input row 추가 + open 시점 attribute lookup chain (사용자 critique image #155/156/157/158 visual reflect 부재 회수)
+- **cycle 169.392~393**: 평가 4 file fingerprint sync cycle 169.386~391 + markdownlint MD037 underscore emphasis 4 line backtick wrap or space replace
+- **cycle 169.394**: `_on_drawer_profile` `_current_user_nickname` / phone / birthdate lookup chain (config fallback) — MyProfileDialog visual reflect 부재 회수
+- **cycle 169.395**: server-side profile persist 본격 binding — migration 0010 user profile field ALTER (display_name + phone + birthdate + bio VARCHAR) + handle_profile_update actual UPDATE SQL chain (4 field whitelist) + handle_profile_get 신설 (GET /api/auth/profile response full profile) + ssh deploy chain (docker exec mariadb source migration + docker compose build/restart) — review root cause 사용자 critique image #161/162 server skeleton 폐기
 
 전체 pytest = 1817 PASS. drift 0건 185 연속 사이클 37~169.214. telegram align 96% 도달. sub-agent 누계 93종 (cycle 132 9 + 133 3 + 134~138 6 + 139~141 9 + 142 3 + 144 4 + 145~147 7 + 148 5 + 149~152 5 + 169.x 42 누계). cycle 169.213~231 19 cycle burst velocity = average 4~5 commit / hour.
 
