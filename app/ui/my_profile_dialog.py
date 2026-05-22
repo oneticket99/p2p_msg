@@ -202,20 +202,24 @@ class MyProfileDialog(QDialog):
             self._bio_label.setText(bio or "자기소개 부재")
 
     def _build_info_row(self, layout: QVBoxLayout, label_text: str, value: str) -> None:
-        """텔레그램 align info row — value bold + label subtitle (수직 stack)."""
+        """텔레그램 align info row — value bold + label subtitle (수직 stack).
+
+        cycle 169.406 — 한글 descender + sublabel overlap 회수 (사용자 critique image #177).
+        wrap_layout spacing 8 + value setFixedHeight 28 + sublabel 18 = total ~54.
+        """
         wrap = QFrame()
+        wrap.setMinimumHeight(58)
         wrap_layout = QVBoxLayout(wrap)
-        wrap_layout.setContentsMargins(0, 8, 0, 8)
-        wrap_layout.setSpacing(2)
+        wrap_layout.setContentsMargins(0, 6, 0, 8)
+        wrap_layout.setSpacing(6)
         # 한글 주석 — value (bold + 청색 시점 사용자명 entry)
         is_username = label_text == "사용자명" and value.startswith("@")
         val = QLabel(value)
         val_color = "#0066FF" if is_username else "#e5e7eb"
-        # cycle 169.405 — line-height + padding-bottom (한글 descender clip 회수 사용자 critique image #176)
         val.setStyleSheet(
             f"color: {val_color}; font-size: 16px; font-weight: 600;"
-            " padding: 2px 0 4px 0; line-height: 1.4;"
         )
+        val.setFixedHeight(28)
         val.setMinimumHeight(26)
         wrap_layout.addWidget(val)
         # cycle 169.403 — value label ref retain (refresh_profile chain)
