@@ -41,6 +41,7 @@ class MyProfileDialog(QDialog):
         birthdate: str = "",
         display_name: str = "",
         nickname: str = "",
+        bio: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
         # 한글 주석 — cycle 169.279 email retain (사용자 critique image #51 — login email)
@@ -152,15 +153,18 @@ class MyProfileDialog(QDialog):
 
         b_layout.addStretch(1)
 
-        # 한글 주석 — footer (story placeholder — 텔레그램 align)
+        # cycle 169.405 — footer = 자기소개 (bio) 출력 (사용자 critique image #176 story placeholder 폐기)
         footer = QFrame()
         footer.setStyleSheet("background-color: #131C30; border-top: 1px solid #1f2937;")
         f_layout = QVBoxLayout(footer)
         f_layout.setContentsMargins(24, 16, 24, 16)
-        story_label = QLabel("회원님의 스토리가 여기에 표시됩니다.")
-        story_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        story_label.setStyleSheet("color: #6b7280; font-size: 12px;")
-        f_layout.addWidget(story_label)
+        bio_title = QLabel("자기소개")
+        bio_title.setStyleSheet("color: #9ca3af; font-size: 12px;")
+        f_layout.addWidget(bio_title)
+        self._bio_label = QLabel(bio or "자기소개 부재")
+        self._bio_label.setStyleSheet("color: #e5e7eb; font-size: 14px; padding-top: 4px;")
+        self._bio_label.setWordWrap(True)
+        f_layout.addWidget(self._bio_label)
         b_layout.addWidget(footer)
 
         outer.addWidget(body, stretch=1)
@@ -173,6 +177,7 @@ class MyProfileDialog(QDialog):
         birthdate: str = "",
         username: str = "",
         email: str = "",
+        bio: str = "",
     ) -> None:
         """cycle 169.403 — profile field 동적 갱신 (사용자 critique image #169 즉시 reflect)."""
         avatar_text = nickname or display_name or username or "사용자"
@@ -192,6 +197,9 @@ class MyProfileDialog(QDialog):
             lbl = self._info_value_labels.get(label_text)
             if lbl is not None:
                 lbl.setText(value)
+        # cycle 169.405 — bio footer refresh
+        if hasattr(self, "_bio_label") and self._bio_label is not None:
+            self._bio_label.setText(bio or "자기소개 부재")
 
     def _build_info_row(self, layout: QVBoxLayout, label_text: str, value: str) -> None:
         """텔레그램 align info row — value bold + label subtitle (수직 stack)."""
@@ -203,7 +211,12 @@ class MyProfileDialog(QDialog):
         is_username = label_text == "사용자명" and value.startswith("@")
         val = QLabel(value)
         val_color = "#0066FF" if is_username else "#e5e7eb"
-        val.setStyleSheet(f"color: {val_color}; font-size: 16px; font-weight: 600;")
+        # cycle 169.405 — line-height + padding-bottom (한글 descender clip 회수 사용자 critique image #176)
+        val.setStyleSheet(
+            f"color: {val_color}; font-size: 16px; font-weight: 600;"
+            " padding: 2px 0 4px 0; line-height: 1.4;"
+        )
+        val.setMinimumHeight(26)
         wrap_layout.addWidget(val)
         # cycle 169.403 — value label ref retain (refresh_profile chain)
         if hasattr(self, "_info_value_labels"):

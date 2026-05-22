@@ -1961,9 +1961,10 @@ class MainWindow(QMainWindow):
         email = getattr(self, "_current_email", "") or ""
         phone = getattr(self, "_current_user_phone", "") or ""
         birthdate = getattr(self, "_current_user_birthdate", "") or ""
+        bio = getattr(self, "_current_user_bio", "") or ""
         dialog = MyProfileDialog(
             username=username, nickname=nickname, display_name=display_name,
-            email=email, phone=phone, birthdate=birthdate, parent=self,
+            email=email, phone=phone, birthdate=birthdate, bio=bio, parent=self,
         )
         # cycle 169.403 — active profile dialog reference retain (save 後 즉시 refresh chain)
         self._active_profile_dialog = dialog
@@ -2015,6 +2016,7 @@ class MainWindow(QMainWindow):
                         birthdate=payload.get("birthdate", "") or self._current_user_birthdate or "",
                         username=getattr(self, "_current_username", "") or "",
                         email=getattr(self, "_current_email", "") or "",
+                        bio=payload.get("bio", "") or getattr(self, "_current_user_bio", "") or "",
                     )
                 except Exception as exc:
                     log.debug("active profile refresh fail — %r", exc)
