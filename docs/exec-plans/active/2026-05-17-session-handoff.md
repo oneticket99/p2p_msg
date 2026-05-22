@@ -278,7 +278,9 @@ status: active
 | `1724024` | 169.490 | self-hosted runner id=22 `tootalk-macos-1ticket` 신설 — 1ticket 머신 + python@3.13 + .venv + 86 package install + actions-runner v2.334.0 + svc launchd |
 | `01c863f` | 169.491 | 친구 검색 한글 확장 — server SQL `WHERE username/display_name/nickname LIKE` 3 column OR + UserSearchResult/SearchResult display_name+nickname field + UI label nickname 우선 |
 | `d3875b1` | 169.492 | .gitignore — build/tootalk + .claude/settings.local.json |
-| (본 commit) | 169.493 | 평가 4 file fingerprint sync — cycle 169.488~492 5 commit drift |
+| `c3e9d43` | 169.493 | 평가 4 file fingerprint sync — cycle 169.488~492 5 commit drift |
+| `be7f8df` | 169.494~497 | 친구 추가 + bot chat batch — main_window FriendsClient 주입 + TLS verify default 0 + chat list visual delegate + alert 폐기 + REST POST 바인딩 + bot chat 답변 사라짐 fix (cached/server merge + room_id 공식 통일) + memory `feedback_auto_commit_push_deploy` 박제 |
+| (본 commit) | 169.498~501 | tray icon + 친구 요청 chain batch — QSystemTrayIcon + closeEvent hide + LoginDialog re-spawn + PendingRequestsDialog (chat list 패턴 + avatar + 요청 시각 + 수락/거절) + drawer pending entry + window resize → drawer height (self.height()) 동기 + sidebar pending badge + placeholder "받은 요청이 없습니다." center overlay |
 
 ### 8.79.2 사용자 critique 회수 chain
 

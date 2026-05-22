@@ -42,6 +42,8 @@ class HamburgerDrawer(QFrame):
     night_mode_toggled = pyqtSignal(bool)
     logout_clicked = pyqtSignal()
     closed = pyqtSignal()
+    # cycle 169.500 — 받은 친구 요청 entry (사용자 directive image #25)
+    pending_requests_clicked = pyqtSignal()
 
     def __init__(self, username: str = "사용자", nickname: str = "", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -100,6 +102,8 @@ class HamburgerDrawer(QFrame):
             ("friends", _tr("그룹_만들기"), self.new_group_clicked),
             ("broadcast", _tr("채널_만들기"), self.new_channel_clicked),
             ("contacts", _tr("연락처"), self.contacts_clicked),
+            # cycle 169.500 — 받은 친구 요청 entry (사용자 directive)
+            ("contacts", "받은 친구 요청", self.pending_requests_clicked),
             ("phone", _tr("전화"), self.calls_clicked),
             ("bookmark", _tr("저장한_메시지"), self.saved_clicked),
             ("settings", _tr("설정"), self.settings_clicked),

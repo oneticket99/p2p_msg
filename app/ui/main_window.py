@@ -416,6 +416,11 @@ class MainWindow(QMainWindow):
         # cycle 148 — emoji moderation admin dialog 참조 보관 (gc 회피 + 테스트 가시성)
         self._current_moderation_dialog: Optional[object] = None
         self._start_update_check_task()
+        # cycle 169.498 — system tray icon + context menu (사용자 directive 영구).
+        # close event override → hide + tray retain. tray RMB → 로그아웃 + TooTalk 종료.
+        self._tray_icon = None
+        self._tray_quit_requested = False
+        self._setup_tray_icon()
 
     # ------------------------------------------------------------------
     # auto-update 백그라운드 task — cycle 139 startup integration
@@ -587,6 +592,11 @@ class MainWindow(QMainWindow):
         act_friend_add = QAction("친구 추가…", self)
         act_friend_add.triggered.connect(self._on_open_add_friend)
         menu_account.addAction(act_friend_add)
+
+        # cycle 169.499 — 받은 친구 요청 (pending) 수락/거절 dialog 진입점
+        act_pending = QAction("받은 친구 요청…", self)
+        act_pending.triggered.connect(self._on_open_pending_requests)
+        menu_account.addAction(act_pending)
 
         menu_account.addSeparator()
 
@@ -1001,6 +1011,8 @@ class MainWindow(QMainWindow):
                 self._refresh_chat_list_panel()
                 # cycle 169.469 — startup 시점 unread batch fetch fire
                 asyncio.ensure_future(self._fetch_unread_counts())
+                # cycle 169.500 — startup 시점 pending request count badge 갱신
+                asyncio.ensure_future(self._refresh_pending_badge())
 
         try:
             asyncio.ensure_future(_fetch_chain())
@@ -1019,15 +1031,14 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _on_logout(self) -> None:
-        """세션 토큰 폐기."""
+        """세션 토큰 폐기 + LoginDialog re-spawn (cycle 169.498)."""
 
         from app.ui.confirm_dialog import ConfirmDialog
         if self._session_token is None:
             ConfirmDialog.show_info(self, "TooTalk", "로그인 상태 아님")
             return
-        self._session_token = None
-        self._current_user_id = None
-        ConfirmDialog.show_info(self, "TooTalk", "로그아웃 완료")
+        # 한글 주석 — tray menu logout chain 동일 활용
+        self._perform_logout_and_relogin()
 
     # ------------------------------------------------------------------
     # cycle 144 — 친구 관리 슬롯
@@ -1131,6 +1142,71 @@ class MainWindow(QMainWindow):
             from PyQt6.QtCore import QTimer
             QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
 
+    def _on_open_pending_requests(self) -> None:
+        """"받은 친구 요청" 메뉴 슬롯 — PendingRequestsDialog 모달 + list_pending async.
+
+        cycle 169.499 — 친구 요청 수락 chain 본격 binding (사용자 directive).
+        """
+        if self._session_token is None:
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(
+                self, "TooTalk", "받은 요청 보기 = 로그인 의무"
+            )
+            return
+        from app.ui.pending_requests_dialog import PendingRequestsDialog
+        dlg = PendingRequestsDialog(friends_client=self._friends_client, parent=self)
+        dlg.request_resolved.connect(self._on_pending_resolved)  # type: ignore[arg-type]
+        # 한글 주석 — async fetch + populate (dialog show 직후 fire)
+        import asyncio
+        fc = self._friends_client
+        if fc is not None:
+            async def _populate():
+                try:
+                    items = await fc.list_pending()
+                    dlg.populate(items)
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("[pending] list_pending fail — %r", exc)
+                    dlg.populate([])
+            try:
+                asyncio.ensure_future(_populate())
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[pending] spawn fail — %r", exc)
+        else:
+            dlg.populate([])
+        dlg.exec()
+
+    def _on_pending_resolved(self, user_id: int, accepted: bool) -> None:
+        """PendingRequestsDialog 의 accept/reject 결과 처리 — friend list refresh + badge."""
+        log.info("[pending] resolved user_id=%d accepted=%s", user_id, accepted)
+        if accepted:
+            try:
+                self._post_login_refresh()
+            except Exception as exc:
+                log.debug("[pending] post-resolve refresh 실패 — %r", exc)
+        # 한글 주석 — accept/reject 모두 badge 갱신 의무
+        import asyncio
+        try:
+            asyncio.ensure_future(self._refresh_pending_badge())
+        except Exception:
+            pass
+
+    async def _refresh_pending_badge(self) -> None:
+        """sidebar 햄버거 menu pending count badge 갱신 (cycle 169.500).
+
+        friends_client.list_pending() 호출 + sidebar_rail.set_pending_count(n).
+        """
+        fc = getattr(self, "_friends_client", None)
+        if fc is None or self._session_token is None:
+            return
+        try:
+            items = await fc.list_pending()
+            count = len(items) if items else 0
+            if hasattr(self, "_sidebar_rail") and hasattr(self._sidebar_rail, "set_pending_count"):
+                self._sidebar_rail.set_pending_count(count)
+            log.info("[pending_badge] count=%d", count)
+        except Exception as exc:  # noqa: BLE001
+            log.debug("[pending_badge] fetch fail — %r", exc)
+
     def _on_open_add_friend(self) -> None:
         """"친구 추가" 메뉴 슬롯 — AddFriendDialog 의 모달 실행."""
 
@@ -1215,15 +1291,44 @@ class MainWindow(QMainWindow):
 
         async def _do_request() -> None:
             dlg = getattr(self, "_add_friend_dlg_ref", None)
+            from app.ui.confirm_dialog import ConfirmDialog
+            from app.net.friends_client import (
+                FriendsConflictError,
+                FriendsBadRequestError,
+                FriendsNotFoundError,
+                FriendsAuthError,
+            )
             try:
                 friend_id = await fc.request_friend(user_id, nickname or None)
                 log.info("[friend_request] PASS friend_row_id=%d", friend_id)
                 self._status_bar.showMessage(f"친구 요청 발신 — user_id={user_id}", 3000)
                 if dlg is not None:
                     dlg.accept()
+                ConfirmDialog.show_info(self, "친구 추가", "친구 요청 발신 PASS")
+            except FriendsConflictError:
+                log.info("[friend_request] 이미 친구 또는 pending 상태")
+                if dlg is not None:
+                    dlg.accept()
+                # 한글 주석 — 사용자 directive 2026-05-22 — 이미 요청된 상대 안내 메시지
+                ConfirmDialog.show_info(
+                    self,
+                    "친구 추가",
+                    "이미 요청된 상대입니다.\n상대방이 수락하면 채팅리스트에 자동 추가됩니다.",
+                )
+            except FriendsBadRequestError as exc:
+                log.warning("[friend_request] bad request — %r", exc)
+                ConfirmDialog.show_warning(
+                    self, "친구 추가", f"요청 형식 오류: {exc}"
+                )
+            except FriendsNotFoundError:
+                ConfirmDialog.show_warning(self, "친구 추가", "사용자 미존재")
+            except FriendsAuthError:
+                ConfirmDialog.show_warning(self, "친구 추가", "인증 만료 — 다시 로그인")
             except Exception as exc:  # noqa: BLE001
                 log.warning("[friend_request] fail — %r", exc)
-                self._status_bar.showMessage(f"친구 요청 실패 — {exc.__class__.__name__}", 4000)
+                ConfirmDialog.show_warning(
+                    self, "친구 추가", f"요청 실패: {exc.__class__.__name__}"
+                )
 
         try:
             asyncio.ensure_future(_do_request())
@@ -2389,14 +2494,16 @@ class MainWindow(QMainWindow):
         drawer.calls_clicked.connect(self._on_drawer_calls)  # type: ignore[arg-type]
         drawer.saved_clicked.connect(self._on_drawer_saved)  # type: ignore[arg-type]
         drawer.logout_clicked.connect(self._on_drawer_logout)  # type: ignore[arg-type]
+        # cycle 169.500 — 받은 친구 요청 entry (사용자 directive image #25)
+        drawer.pending_requests_clicked.connect(self._on_drawer_pending_requests)  # type: ignore[arg-type]
         # cycle 169.411 — night mode toggle signal binding (Phase 1 잔존 회수)
         drawer.night_mode_toggled.connect(self._on_night_mode_toggled)  # type: ignore[arg-type]
         # cycle 169.116 회수 — sidebar_rail (96px) 의 의 reserve — 햄버거 button click 가능
         # drawer x anchor = sidebar width — sidebar_rail visible retain
-        central = self.centralWidget() if self.centralWidget() else self
         sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
         # cycle 169.303 — drawer width 320 → 256 (사용자 directive 20% 감소)
-        drawer.setGeometry(sidebar_w, 0, 256, central.height())
+        # cycle 169.501 — drawer height = main_window full client area (사용자 critique image #29 — central height 의 menu/status bar 제외 cut 회수)
+        drawer.setGeometry(sidebar_w, 0, 256, self.height())
         drawer.exec()  # show + raise + setFocus
         # 한글 주석 — close 시점 ref clear
         def _on_drawer_closed():
@@ -2825,6 +2932,18 @@ class MainWindow(QMainWindow):
         """
         log.info("[main_window] night_mode_toggled — on=%s", on)
         # 한글 주석 — 추후 light theme swap chain 진입 위치. 본 cycle = drawer visual 만.
+
+    @pyqtSlot()
+    def _on_drawer_pending_requests(self) -> None:
+        """drawer "받은 친구 요청" click → drawer close + PendingRequestsDialog open."""
+        log.info("[drawer] pending_requests")
+        try:
+            if self._active_drawer is not None:
+                self._active_drawer.close_drawer()
+        except Exception:
+            pass
+        self._active_drawer = None
+        self._on_open_pending_requests()
 
     @pyqtSlot()
     def _on_drawer_logout(self) -> None:
@@ -3684,12 +3803,223 @@ class MainWindow(QMainWindow):
     # 윈도우 종료 훅
     # ------------------------------------------------------------------
 
+    # ------------------------------------------------------------------
+    # cycle 169.498 — system tray icon + context menu chain
+    # ------------------------------------------------------------------
+
+    def _setup_tray_icon(self) -> None:
+        """QSystemTrayIcon + QMenu (로그아웃 + TooTalk 종료) 신설.
+
+        사용자 directive 2026-05-22 — close button = hide + tray retain.
+        tray RMB → context menu drop-down. logout → LoginDialog re-spawn.
+        """
+        try:
+            from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
+            from PyQt6.QtGui import QIcon, QPixmap
+            from pathlib import Path
+            if not QSystemTrayIcon.isSystemTrayAvailable():
+                log.warning("[tray] system tray 미가용 — skip")
+                return
+            # 한글 주석 — TooTalk symbol PNG icon (이미 bundle 안 retain)
+            ROOT = Path(__file__).resolve().parent.parent
+            icon_path = ROOT / "assets" / "branding" / "tootalk_symbol.png"
+            if icon_path.exists():
+                pix = QPixmap(str(icon_path))
+                if not pix.isNull():
+                    icon = QIcon(pix)
+                else:
+                    icon = self.windowIcon() or QIcon()
+            else:
+                icon = self.windowIcon() or QIcon()
+            self._tray_icon = QSystemTrayIcon(icon, self)
+            self._tray_icon.setToolTip("TooTalk")
+            menu = QMenu(self)
+            act_show = menu.addAction("TooTalk 열기")
+            act_show.triggered.connect(self._on_tray_show)  # type: ignore[arg-type]
+            menu.addSeparator()
+            act_logout = menu.addAction("로그아웃")
+            act_logout.triggered.connect(self._on_tray_logout)  # type: ignore[arg-type]
+            menu.addSeparator()
+            act_quit = menu.addAction("TooTalk 종료")
+            act_quit.triggered.connect(self._on_tray_quit)  # type: ignore[arg-type]
+            self._tray_icon.setContextMenu(menu)
+            # 한글 주석 — LMB double-click = restore window (사용자 직관 정합)
+            self._tray_icon.activated.connect(self._on_tray_activated)  # type: ignore[arg-type]
+            self._tray_icon.show()
+            # 한글 주석 — close → quit 차단 (tray retain). _on_tray_quit 만 quit trigger
+            QApplication.instance().setQuitOnLastWindowClosed(False)
+            log.info("[tray] icon ready — path=%s", icon_path)
+        except Exception as exc:  # noqa: BLE001 - graceful
+            log.warning("[tray] setup 실패 — %r", exc)
+
+    def _on_tray_activated(self, reason) -> None:
+        """tray icon LMB / double-click → window restore."""
+        from PyQt6.QtWidgets import QSystemTrayIcon
+        if reason in (QSystemTrayIcon.ActivationReason.DoubleClick,
+                      QSystemTrayIcon.ActivationReason.Trigger):
+            self._on_tray_show()
+
+    def _on_tray_show(self) -> None:
+        """tray menu "TooTalk 열기" + LMB activate → MainWindow restore."""
+        try:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+        except Exception as exc:  # noqa: BLE001 - graceful
+            log.debug("[tray] show 실패 — %r", exc)
+
+    def _on_tray_logout(self) -> None:
+        """tray menu "로그아웃" → session 폐기 + LoginDialog re-spawn."""
+        log.info("[tray] logout 진입")
+        self._perform_logout_and_relogin()
+
+    def _on_tray_quit(self) -> None:
+        """tray menu "TooTalk 종료" → app quit."""
+        log.info("[tray] quit 진입")
+        from PyQt6.QtWidgets import QApplication
+        self._tray_quit_requested = True
+        try:
+            if self._tray_icon is not None:
+                self._tray_icon.hide()
+        except Exception:  # pragma: no cover
+            pass
+        QApplication.instance().quit()
+
+    def _perform_logout_and_relogin(self) -> None:
+        """세션 폐기 + LoginDialog modal re-spawn + 신규 session token swap.
+
+        cycle 169.498 — tray logout + menu logout 공통 chain.
+        """
+        # 한글 주석 — 1) session 폐기
+        self._session_token = None
+        self._current_user_id = None
+        self._auth_token = None
+        # friends_client token retain 만 폐기 (instance 보존 + 신규 login 시 swap)
+        try:
+            fc = getattr(self, "_friends_client", None)
+            if fc is not None:
+                # 한글 주석 — 내부 client + token 의 reset (다음 _ensure_client 시점 신규 instantiate)
+                try:
+                    import asyncio as _aio
+                    _aio.ensure_future(fc.close())
+                except Exception:
+                    pass
+                fc._token = ""  # type: ignore[attr-defined]
+                fc._client = None  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        # 한글 주석 — 2) UI lock — chat_view + status bar feedback
+        try:
+            self._status_bar.set_connection_state("DISCONNECTED")
+        except Exception:
+            pass
+        # 한글 주석 — 3) LoginDialog modal re-spawn
+        try:
+            from app.ui.login_dialog import LoginDialog
+            from app.ui.signup_dialog import SignupDialog
+            auth_client = self._auth_client
+            if auth_client is None:
+                log.warning("[logout] auth_client 부재 — login dialog skip")
+                return
+            authenticated = False
+            current = "login"
+            while not authenticated:
+                if current == "login":
+                    dlg = LoginDialog(auth_client=auth_client)
+                    res = dlg.exec()
+                    if res == 2:
+                        current = "signup"
+                        continue
+                    if res != dlg.DialogCode.Accepted:
+                        log.info("[logout] login 취소 — app quit")
+                        self._on_tray_quit()
+                        return
+                    self._session_token = dlg.token
+                    self._current_user_id = dlg.user_id
+                    self._auth_token = dlg.token
+                    authenticated = True
+                else:  # signup
+                    sdlg = SignupDialog(auth_client=auth_client)
+                    sres = sdlg.exec()
+                    if sres == 3:
+                        current = "login"
+                        continue
+                    if sres != sdlg.DialogCode.Accepted:
+                        log.info("[logout] signup 취소 — app quit")
+                        self._on_tray_quit()
+                        return
+                    self._session_token = sdlg.token
+                    self._current_user_id = sdlg.user_id
+                    authenticated = True
+            # 한글 주석 — 4) friends_client token swap (cycle 169.494 정합)
+            try:
+                fc = getattr(self, "_friends_client", None)
+                if fc is not None and self._session_token:
+                    fc._token = self._session_token  # type: ignore[attr-defined]
+                    fc._client = None  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            # 한글 주석 — 5) status bar + post_login refresh
+            try:
+                self._status_bar.set_connection_state("CONNECTED")
+            except Exception:
+                pass
+            try:
+                self._post_login_refresh()
+            except Exception as exc:
+                log.debug("[logout] post_login_refresh 실패 — %r", exc)
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+            log.info("[logout] re-login PASS user_id=%s", self._current_user_id)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[logout] LoginDialog re-spawn 실패 — %r", exc)
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 — Qt 규약
+        """윈도우 resize 시점 훅 — drawer geometry 동기 (사용자 directive image #26).
+
+        cycle 169.500 — main window resize → active drawer height 동시 갱신 의무.
+        drawer setGeometry 가 init 1 회만 — resize 시점 stale.
+        """
+        super().resizeEvent(event)
+        try:
+            drawer = getattr(self, "_active_drawer", None)
+            if drawer is not None and hasattr(drawer, "isVisible") and drawer.isVisible():
+                sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
+                # 한글 주석 — cycle 169.501 — self.height() (full client area) 사용 — central.height() cut 회수
+                drawer.setGeometry(sidebar_w, 0, drawer.width(), self.height())
+        except Exception as exc:  # noqa: BLE001
+            log.debug("[resize] drawer 동기 실패 — %r", exc)
+
     def closeEvent(self, event) -> None:  # noqa: N802 — Qt 규약
         """윈도우 종료 시점 훅.
 
         cycle 139 — auto-update background task 의 cancel + cleanup.
+        cycle 169.498 — close button = hide + tray retain (사용자 directive).
+        tray menu "TooTalk 종료" 만 본격 quit chain.
         """
-
+        # 한글 주석 — tray 가용 + quit 명시 부재 시점 hide + ignore (tray retain)
+        if (
+            not self._tray_quit_requested
+            and self._tray_icon is not None
+            and self._tray_icon.isVisible()
+        ):
+            event.ignore()
+            self.hide()
+            try:
+                # 한글 주석 — 첫 hide 시점 사용자 안내 balloon (1회만)
+                if not getattr(self, "_tray_hint_shown", False):
+                    from PyQt6.QtWidgets import QSystemTrayIcon
+                    self._tray_icon.showMessage(
+                        "TooTalk",
+                        "트레이 안 retain 됐다. RMB 클릭 → 로그아웃/종료.",
+                        QSystemTrayIcon.MessageIcon.Information,
+                        3000,
+                    )
+                    self._tray_hint_shown = True
+            except Exception:
+                pass
+            return
         log.info("MainWindow 종료 — Qt 이벤트 루프 정리 단계 진입")
         # 한글 주석: auto-update background task 정상 cancel (cycle 139)
         self._cancel_update_task()

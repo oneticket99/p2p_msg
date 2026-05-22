@@ -16,6 +16,7 @@ from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QFrame,
+    QLabel,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -69,6 +70,24 @@ class SidebarRail(QFrame):
         )
         hamburger_btn.clicked.connect(self.hamburger_clicked.emit)  # type: ignore[arg-type]
         layout.addWidget(hamburger_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        # 한글 주석 — cycle 169.500 — 햄버거 menu pending request count badge overlay (사용자 directive).
+        # button 우상단 원형 badge — count > 0 시점 만 visible.
+        self._hamburger_btn = hamburger_btn
+        self._pending_badge = QLabel("0", hamburger_btn)
+        self._pending_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._pending_badge.setStyleSheet(
+            "QLabel {"
+            " color: #ffffff; background-color: #ef4444;"
+            " border: 2px solid #0F172A; border-radius: 10px;"
+            " font-size: 10px; font-weight: 700;"
+            " min-width: 18px; min-height: 18px; padding: 0 4px;"
+            "}"
+        )
+        self._pending_badge.setFixedSize(20, 20)
+        # 우상단 corner — hamburger_btn 56x60 안 우상단 offset
+        self._pending_badge.move(34, 8)
+        self._pending_badge.hide()
+        self._pending_count = 0
         # cycle 169.182 — top bar 60 align — border-bottom row separator
         layout.addSpacing(12)
 
@@ -191,3 +210,21 @@ class SidebarRail(QFrame):
             if btn.isChecked():
                 return key
         return "friends"
+
+    def set_pending_count(self, count: int) -> None:
+        """햄버거 menu pending request count badge 갱신 (cycle 169.500 신설).
+
+        사용자 directive 2026-05-22 — 친구 요청 받은 시점 햄버거 menu 안 badge 표시.
+        count > 0 시점 visible + text 갱신, 0 시점 hide.
+        """
+        try:
+            self._pending_count = max(0, int(count))
+            if self._pending_count <= 0:
+                self._pending_badge.hide()
+                return
+            label = str(self._pending_count) if self._pending_count < 100 else "99+"
+            self._pending_badge.setText(label)
+            self._pending_badge.show()
+            self._pending_badge.raise_()
+        except Exception:
+            pass
