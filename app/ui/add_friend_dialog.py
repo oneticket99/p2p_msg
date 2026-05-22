@@ -220,7 +220,8 @@ else:
 
             keyword = self.keyword()
             if len(keyword) < 2:
-                QMessageBox.warning(
+                from app.ui.confirm_dialog import ConfirmDialog
+                ConfirmDialog.show_warning(
                     self, "TooTalk", "검색 keyword 2자 이상 의무"
                 )
                 return
@@ -241,7 +242,8 @@ else:
 
             target_id = self.selected_user_id()
             if target_id is None:
-                QMessageBox.warning(
+                from app.ui.confirm_dialog import ConfirmDialog
+                ConfirmDialog.show_warning(
                     self, "TooTalk", "검색 결과 1행 선택 의무"
                 )
                 return

@@ -182,23 +182,24 @@ class SignupDialog(QDialog):
         password = self._password_edit.text()
         confirm = self._password_confirm_edit.text()
 
+        from app.ui.confirm_dialog import ConfirmDialog
         if not email or not username or not password:
-            QMessageBox.warning(self, "TooTalk", _tr("4 항목 모두 입력 의무"))
+            ConfirmDialog.show_warning(self, "TooTalk", _tr("4 항목 모두 입력 의무"))
             return
         if password != confirm:
-            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 확인 불일치"))
+            ConfirmDialog.show_warning(self, "TooTalk", _tr("비밀번호 확인 불일치"))
             return
         if len(password) < 8 or len(password) > 32:
-            QMessageBox.warning(self, "TooTalk", _tr("비밀번호 8~32자 의무"))
+            ConfirmDialog.show_warning(self, "TooTalk", _tr("비밀번호 8~32자 의무"))
             return
         if len(username) < 3 or len(username) > 16:
-            QMessageBox.warning(self, "TooTalk", _tr("사용자명 3~16자 의무"))
+            ConfirmDialog.show_warning(self, "TooTalk", _tr("사용자명 3~16자 의무"))
             return
 
         # cycle 169.49 회수 — QThread + sync urllib worker fire (asyncio 의존 폐기)
         base_url = getattr(self._client, "_base_url", "")
         if not base_url:
-            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
         self._signup_email = email
         self._signup_worker = HttpJsonWorker(
@@ -239,4 +240,5 @@ class SignupDialog(QDialog):
             "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
         }
         err_msg = err_map.get(error_code, error_message or "가입 실패")
-        QMessageBox.critical(self, _tr("회원가입 실패"), str(err_msg))
+        from app.ui.confirm_dialog import ConfirmDialog
+        ConfirmDialog.show_critical(self, _tr("회원가입 실패"), str(err_msg))

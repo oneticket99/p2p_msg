@@ -283,7 +283,8 @@ else:
 
             friend_id = self.selected_friend_id()
             if friend_id is None:
-                QMessageBox.warning(self, "TooTalk", "친구 선택 의무")
+                from app.ui.confirm_dialog import ConfirmDialog
+                ConfirmDialog.show_warning(self, "TooTalk", "친구 선택 의무")
                 return
 
             log.info(

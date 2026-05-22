@@ -193,12 +193,13 @@ class LoginDialog(QDialog):
         """cycle 169.49 회수 — QThread + sync urllib worker."""
         email = self._email_edit.text().strip()
         password = self._password_edit.text()
+        from app.ui.confirm_dialog import ConfirmDialog
         if not email or not password:
-            QMessageBox.warning(self, "TooTalk", f"이메일 + {_tr('비밀번호')} 입력 의무")
+            ConfirmDialog.show_warning(self, "TooTalk", f"이메일 + {_tr('비밀번호')} 입력 의무")
             return
         base_url = getattr(self._client, "_base_url", "")
         if not base_url:
-            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
         self._login_worker = HttpJsonWorker(
             base_url,
@@ -235,7 +236,8 @@ class LoginDialog(QDialog):
             "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
         }
         err_msg = err_map.get(error_code, error_message or "자격 정보 부재")
-        QMessageBox.critical(self, f"{_tr('로그인 실패')}", err_msg)
+        from app.ui.confirm_dialog import ConfirmDialog
+        ConfirmDialog.show_critical(self, f"{_tr('로그인 실패')}", err_msg)
 
     def _on_signup_link_clicked(self) -> None:
         """회원가입 link click — QDialog.done(2) signup intent code 반환."""

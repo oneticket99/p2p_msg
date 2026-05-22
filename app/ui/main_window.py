@@ -688,8 +688,9 @@ class MainWindow(QMainWindow):
         """
 
         # 한글 주석: 1차 admin role 재검증 — 메뉴 가시성 + 직접 호출 둘 다 차단
+        from app.ui.confirm_dialog import ConfirmDialog
         if not self._is_admin_role():
-            QMessageBox.warning(
+            ConfirmDialog.show_warning(
                 self, "TooTalk", "Emoji moderation = admin 권한 의무"
             )
             log.warning(
@@ -701,7 +702,7 @@ class MainWindow(QMainWindow):
         # 한글 주석: env token 의무 — 부재 시 graceful warning + return
         admin_token = os.environ.get("EMOJI_MODERATION_ADMIN_TOKEN", "").strip()
         if not admin_token:
-            QMessageBox.warning(
+            ConfirmDialog.show_warning(
                 self,
                 "TooTalk",
                 "EMOJI_MODERATION_ADMIN_TOKEN env 미설정 — 진입 차단",
@@ -848,7 +849,8 @@ class MainWindow(QMainWindow):
         """AuthClient 미주입 시 경고."""
 
         if self._auth_client is None:
-            QMessageBox.warning(self, "TooTalk", "AuthClient 미초기화 — main 진입점 의무")
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(self, "TooTalk", "AuthClient 미초기화 — main 진입점 의무")
             return None
         return self._auth_client
 
@@ -881,7 +883,8 @@ class MainWindow(QMainWindow):
             log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
             # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
             self._post_login_refresh()
-            QMessageBox.information(
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_info(
                 self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
             )
 
@@ -934,12 +937,13 @@ class MainWindow(QMainWindow):
     def _on_logout(self) -> None:
         """세션 토큰 폐기."""
 
+        from app.ui.confirm_dialog import ConfirmDialog
         if self._session_token is None:
-            QMessageBox.information(self, "TooTalk", "로그인 상태 아님")
+            ConfirmDialog.show_info(self, "TooTalk", "로그인 상태 아님")
             return
         self._session_token = None
         self._current_user_id = None
-        QMessageBox.information(self, "TooTalk", "로그아웃 완료")
+        ConfirmDialog.show_info(self, "TooTalk", "로그아웃 완료")
 
     # ------------------------------------------------------------------
     # cycle 144 — 친구 관리 슬롯
@@ -1047,7 +1051,8 @@ class MainWindow(QMainWindow):
         """"친구 추가" 메뉴 슬롯 — AddFriendDialog 의 모달 실행."""
 
         if self._session_token is None:
-            QMessageBox.warning(
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(
                 self, "TooTalk", "친구 추가 = 로그인 의무"
             )
             return
@@ -1495,14 +1500,8 @@ class MainWindow(QMainWindow):
 
     def _profile_block_clicked(self, modal, friend_id: int) -> None:
         """profile 차단 button → friends_client.block endpoint (cycle 154.2)."""
-        from PyQt6.QtWidgets import QMessageBox
-        confirm = QMessageBox.question(
-            self,
-            "TooTalk",
-            f"friend #{friend_id} 차단?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if confirm == QMessageBox.StandardButton.Yes:
+        from app.ui.confirm_dialog import ConfirmDialog
+        if ConfirmDialog.ask(self, "TooTalk", f"friend #{friend_id} 차단?"):
             client = getattr(self, "_friends_client", None)
             if client is not None:
                 import asyncio
@@ -2103,11 +2102,11 @@ class MainWindow(QMainWindow):
     @pyqtSlot(bool, str, str, dict)
     def _on_profile_update_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:
         """ProfileUpdateWorker finished slot."""
-        from PyQt6.QtWidgets import QMessageBox
+        from app.ui.confirm_dialog import ConfirmDialog
         if ok:
-            QMessageBox.information(self, "TooTalk", "프로필 갱신 완료")
+            ConfirmDialog.show_info(self, "TooTalk", "프로필 갱신 완료")
         else:
-            QMessageBox.warning(self, "TooTalk", f"프로필 갱신 실패 — {error_message or error_code}")
+            ConfirmDialog.show_warning(self, "TooTalk", f"프로필 갱신 실패 — {error_message or error_code}")
 
     @pyqtSlot()
     def _on_drawer_settings(self) -> None:
@@ -2821,7 +2820,8 @@ class MainWindow(QMainWindow):
 
         target_room_id = room_id if room_id is not None else self._current_room_id
         if target_room_id is None or target_room_id <= 0:
-            QMessageBox.warning(self, "TooTalk", "초대 = 그룹 방 진입 의무")
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(self, "TooTalk", "초대 = 그룹 방 진입 의무")
             return None
 
         dialog = InviteDialog(
@@ -2882,7 +2882,8 @@ class MainWindow(QMainWindow):
         )
 
         if self._rooms_client is None:
-            QMessageBox.warning(
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(
                 self, "TooTalk", "rooms_client 미주입 — 초대 차단"
             )
             return
@@ -3062,15 +3063,15 @@ class MainWindow(QMainWindow):
         """About 다이얼로그 — 서비스명·버전·라이선스 안내."""
 
         from app import __version__ as app_version
+        from app.ui.confirm_dialog import ConfirmDialog
 
-        QMessageBox.about(
+        ConfirmDialog.show_info(
             self,
             "TooTalk 정보",
             (
-                "<h3>TooTalk</h3>"
-                f"<p>버전: {app_version}</p>"
-                "<p>PyQt6 기반 데스크탑 P2P 메신저 (WebRTC DataChannel 직결).</p>"
-                "<p>코드명: p2p_msg · Phase 1 MVP</p>"
+                f"TooTalk\n버전: {app_version}\n\n"
+                "PyQt6 기반 데스크탑 P2P 메신저 (WebRTC DataChannel 직결).\n"
+                "코드명: p2p_msg · Phase 1 MVP"
             ),
         )
 

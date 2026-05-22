@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.confirm_dialog import ConfirmDialog as _ConfirmDialog
 from app.ui.error_messages import translate_error
 from app.ui._http_worker import HttpJsonWorker
 
@@ -253,11 +254,11 @@ class OTPDialog(QDialog):
         """cycle 169.49 회수 — QThread + sync urllib worker."""
         otp = self._get_otp()
         if len(otp) != OTP_LENGTH or not otp.isdigit():
-            QMessageBox.warning(self, "TooTalk", _tr("6 digit OTP 입력 의무"))
+            _ConfirmDialog.show_warning(self, "TooTalk", _tr("6 digit OTP 입력 의무"))
             return
         base_url = getattr(self._client, "_base_url", "")
         if not base_url:
-            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            _ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
         self._verify_worker = HttpJsonWorker(base_url, "/api/auth/verify", {"email": self._email, "code": otp}, parent=self)
         self._verify_worker.finished_with_result.connect(self._on_verify_finished)
@@ -284,7 +285,7 @@ class OTPDialog(QDialog):
             "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
         }
         err_msg = err_map.get(error_code, error_message or _tr("검증 실패"))
-        QMessageBox.critical(self, "TooTalk", f"{_tr('OTP 인증 실패')} — {err_msg}")
+        _ConfirmDialog.show_critical(self, "TooTalk", f"{_tr('OTP 인증 실패')} — {err_msg}")
         for box in self._boxes:
             box.clear()
         self._boxes[0].setFocus()
@@ -297,7 +298,7 @@ class OTPDialog(QDialog):
         """
         log.info("[OTP resend] button clicked — remaining=%d", self._resend_remaining)
         if self._resend_remaining <= 0:
-            QMessageBox.warning(self, "TooTalk", _tr("재 송신 횟수 초과 (24시간)"))
+            _ConfirmDialog.show_warning(self, "TooTalk", _tr("재 송신 횟수 초과 (24시간)"))
             return
 
         # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
@@ -317,7 +318,7 @@ class OTPDialog(QDialog):
         if not base_url:
             log.warning("[OTP resend] base_url 부재")
             self._rollback_resend()
-            QMessageBox.critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
+            _ConfirmDialog.show_critical(self, "TooTalk", _tr("API endpoint 부재 — 설정 오류"))
             return
         self._resend_worker = HttpJsonWorker(base_url, "/api/auth/resend", {"email": self._email}, parent=self)
         self._resend_worker.finished_with_result.connect(self._on_resend_finished)
@@ -327,7 +328,7 @@ class OTPDialog(QDialog):
         """HttpJsonWorker finished slot — main thread dispatch."""
         log.info("[OTP resend] finished ok=%s code=%s", ok, error_code)
         if ok:
-            QMessageBox.information(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
+            _ConfirmDialog.show_info(self, "TooTalk", _tr("OTP 메일 재 송신 완료"))
             return
         err_map = {
             "RATE_LIMIT": "재 송신 cooldown — 60초 대기 의무",
@@ -339,7 +340,7 @@ class OTPDialog(QDialog):
         }
         msg = err_map.get(error_code, error_message or _tr("재 송신 실패"))
         self._rollback_resend()
-        QMessageBox.warning(self, "TooTalk", msg)
+        _ConfirmDialog.show_warning(self, "TooTalk", msg)
 
     def _rollback_resend(self) -> None:
         """send fail 시 cap rollback + button 재 활성."""

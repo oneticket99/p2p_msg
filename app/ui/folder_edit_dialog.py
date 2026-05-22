@@ -227,8 +227,8 @@ class FolderEditDialog(QDialog):
         """
         name = self._name_edit.text().strip()
         if not name:
-            from PyQt6.QtWidgets import QMessageBox
-            QMessageBox.warning(self, "TooTalk", "폴더명 입력 의무")
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(self, "TooTalk", "폴더명 입력 의무")
             return
         existing_id = self._existing.get("folder_id")
         folder_data = {

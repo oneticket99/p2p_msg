@@ -140,7 +140,8 @@ class FindIdDialog(QDialog):
         username = self._username_edit.text().strip()
         phone = self._phone_edit.text().strip()
         if not username or not phone:
-            QMessageBox.warning(
+            from app.ui.confirm_dialog import ConfirmDialog
+            ConfirmDialog.show_warning(
                 self, "TooTalk", _tr("사용자명_전화번호_입력_의무")
             )
             return
@@ -172,4 +173,5 @@ class FindIdDialog(QDialog):
             "NETWORK": "네트워크 오류 — 서버 부재 또는 연결 차단",
         }
         err_msg = err_map.get(error_code, error_message or "조회 실패")
-        QMessageBox.critical(self, _tr("아이디_찾기"), err_msg)
+        from app.ui.confirm_dialog import ConfirmDialog
+        ConfirmDialog.show_critical(self, _tr("아이디_찾기"), err_msg)

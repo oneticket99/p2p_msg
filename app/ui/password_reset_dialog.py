@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.net.auth_client import AuthClient
+from app.ui.confirm_dialog import ConfirmDialog as _ConfirmDialog
 
 log = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class PasswordResetDialog(QDialog):
     def _on_request_clicked(self) -> None:
         email = self._email_edit.text().strip()
         if not email:
-            QMessageBox.warning(self, "TooTalk", "이메일을 입력하세요.")
+            _ConfirmDialog.show_warning(self, "TooTalk", "이메일을 입력하세요.")
             return
         self._email = email
         asyncio.ensure_future(self._do_request(email))
@@ -91,10 +92,10 @@ class PasswordResetDialog(QDialog):
     async def _do_request(self, email: str) -> None:
         # silent success 정합 — 응답 무관 동일 메시지 (enumeration 방어)
         await self._client.request_reset(email)
-        QMessageBox.information(
+        _ConfirmDialog.show_info(
             self,
             "TooTalk",
-            "이메일 등록 의 경우 OTP 가 발송됩니다. 이메일을 확인하세요.",
+            "이메일 등록 시 OTP 가 발송됩니다. 이메일을 확인하세요.",
         )
         self._stack.setCurrentIndex(1)
 
@@ -102,20 +103,20 @@ class PasswordResetDialog(QDialog):
         code = self._otp_edit.text().strip()
         new_pw = self._new_pw_edit.text()
         if len(code) != 6 or not code.isdigit():
-            QMessageBox.warning(self, "TooTalk", "6자리 숫자 OTP 의무")
+            _ConfirmDialog.show_warning(self, "TooTalk", "6자리 숫자 OTP 의무")
             return
         if not new_pw:
-            QMessageBox.warning(self, "TooTalk", "새 비밀번호 입력 의무")
+            _ConfirmDialog.show_warning(self, "TooTalk", "새 비밀번호 입력 의무")
             return
         asyncio.ensure_future(self._do_consume(self._email, code, new_pw))
 
     async def _do_consume(self, email: str, code: str, new_password: str) -> None:
         result = await self._client.consume_reset(email, code, new_password)
         if result.ok:
-            QMessageBox.information(self, "TooTalk", "비밀번호 갱신 완료. 로그인하세요.")
+            _ConfirmDialog.show_info(self, "TooTalk", "비밀번호 갱신 완료. 로그인하세요.")
             self.accept()
         else:
-            QMessageBox.critical(
+            _ConfirmDialog.show_critical(
                 self,
                 "재설정 실패",
                 f"{result.error_code}: {result.error_message}",
