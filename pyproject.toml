@@ -96,6 +96,8 @@ omit = [
     "*/app/ui/chat_list_panel.py",
     "*/app/ui/_http_worker.py",
     "*/app/ui/_video_renderer.py",
+    # 한글 주석 — cycle 169.650: account_client unit test 4 PASS 신설 (URL composition only).
+    # run() 의 urllib mock 추가 별 cycle (cov 65% → 80%+ reach 의무) — 본 file 의 omit retain.
     "*/app/net/account_client.py",
     "*/app/net/auth_client.py",
     "*/app/net/call_client.py",
