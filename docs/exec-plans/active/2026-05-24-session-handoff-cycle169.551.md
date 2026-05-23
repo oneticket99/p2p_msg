@@ -74,4 +74,4 @@ status: active
 | docs/exec-plans/active stale plan archive | cycle 169.550 의무 PASS retain |
 | ssh-deploy classifier reject memory append | cycle 169.541~545 expect heredoc PASS pattern memory update PASS |
 | 평가 staleness 1h~6h cap fire | Stop hook 자동 (직무유기 차단 layer) |
-| build artifact codesign Phase 2 chain | gh workflow build
+| build artifact codesign Phase 2 chain | gh workflow build |
