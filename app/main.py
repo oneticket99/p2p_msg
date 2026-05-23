@@ -302,9 +302,17 @@ def main() -> int:
                 log.debug("folder list fetch chain fail — %r", exc)
         window.show()
 
-        # 한글 주석 — cycle 169.597 — NFR-03 cold start probe marker (env TOOTALK_COLD_START_PROBE=1 시점 stdout flush)
+        # 한글 주석 — cycle 169.612 — NFR-03 cold start probe marker (cycle 169.597 swap).
+        # PyInstaller windowed mode 안 stdout 차단 → log file fallback.
         if os.environ.get("TOOTALK_COLD_START_PROBE") == "1":
             print("READY: main_window shown", flush=True)
+            try:
+                _probe_path = os.path.expanduser("~/.tootalk/cold_start.log")
+                os.makedirs(os.path.dirname(_probe_path), exist_ok=True)
+                with open(_probe_path, "w", encoding="utf-8") as _fh:
+                    _fh.write("READY: main_window shown\n")
+            except OSError:
+                pass
 
         # 한글 주석 — cycle 169.58 회수 — RoomsClient instantiate + list_rooms background fire
         if authenticated and session_token:

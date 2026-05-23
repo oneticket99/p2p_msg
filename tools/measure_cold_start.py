@@ -48,10 +48,17 @@ def _resolve_binary(path: str) -> str:
 
 
 def _one_run(binary: str, timeout: float) -> float | None:
-    # 한글 주석 — Popen spawn → 'window shown' / 'ready' marker 검출 + elapsed 측정
+    # 한글 주석 — Popen spawn → stdout 또는 log file 안 ready marker 검출 + elapsed 측정
     env = os.environ.copy()
-    env.setdefault("QT_QPA_PLATFORM", "offscreen")  # 한글 주석 — headless 측정 (GUI display 없음)
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
     env.setdefault("TOOTALK_COLD_START_PROBE", "1")
+    # 한글 주석 — cycle 169.612: PyInstaller windowed mode stdout 차단 회피 log file probe pre-clean
+    probe_path = os.path.expanduser("~/.tootalk/cold_start.log")
+    try:
+        if os.path.exists(probe_path):
+            os.remove(probe_path)
+    except OSError:
+        pass
     t0 = time.perf_counter()
     try:
         proc = subprocess.Popen(
@@ -68,15 +75,19 @@ def _one_run(binary: str, timeout: float) -> float | None:
     deadline = t0 + timeout
     try:
         while time.perf_counter() < deadline:
-            line = proc.stdout.readline() if proc.stdout else ""
-            if not line:
-                if proc.poll() is not None:
-                    break
-                continue
-            low = line.lower()
-            if any(k in low for k in ("ready", "main window", "qmainwindow", "started", "window shown")):
+            # 한글 주석 — log file probe 검출 (PyInstaller GUI 안 stdout 차단 시점 path)
+            if os.path.exists(probe_path):
                 ready_t = time.perf_counter() - t0
                 break
+            line = proc.stdout.readline() if proc.stdout else ""
+            if line:
+                low = line.lower()
+                if any(k in low for k in ("ready", "main window", "qmainwindow", "started", "window shown")):
+                    ready_t = time.perf_counter() - t0
+                    break
+            elif proc.poll() is not None:
+                break
+            time.sleep(0.05)
     finally:
         try:
             proc.terminate()
