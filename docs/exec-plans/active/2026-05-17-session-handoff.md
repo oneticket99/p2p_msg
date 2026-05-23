@@ -169,12 +169,15 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.612 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 6 bench + tests/app/ui ignore 해제 + 5 file hang skip + main_integration OpenAI refactor + log file probe (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.617 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + tests/app/ui ignore 해제 + 5 file hang skip + main_integration OpenAI refactor + log file probe + .app crash 식별 (2026-05-23~24 신설)
 
-### 8.82.1 80 cycle 산출 (cycle 169.532~612)
+### 8.82.1 85 cycle 산출 (cycle 169.532~617)
 
 | commit | cycle | scope |
 |---|---|---|
+| 05aebc4 | 169.617 | NFR-02 bench_datachannel.py 신설 — aiortc 양 peer DataChannel 직결 135.28 Mbps PASS (gate 30Mbps 4.5배 초과) |
+| ee9c1f0 | 169.616 | NFR-03 PyInstaller .app crash 식별 — macOS 26.4 + PyQt6 Qt initializer SIGSEGV (codesign/spec rpath 별 cycle) |
+| be19d73 | 169.615 | NFR-03 main() TOOTALK_COLD_START_PROBE=1 시점 auth/welcome dialog skip |
 | d238733 | 169.612 | NFR-03 log file fallback probe — ~/.tootalk/cold_start.log write + measure_cold_start.py log detection |
 | 72ea024 | 169.611 | test_main_integration OpenAI strict refactor — 2 class skip 해제, 6 PASS (5 PASS 추가) |
 | 9a5fa84 | 169.609 | NFR-03 CheckList update + 평가 4 file sync (PyInstaller windowed mode stdout 차단 식별) |
