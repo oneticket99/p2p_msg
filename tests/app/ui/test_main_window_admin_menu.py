@@ -224,7 +224,7 @@ class TestEmojiModerationDialogLaunch:
 
         window.close()
 
-    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (6th test+) 별 cycle")
+    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
     def test_non_admin_blocks_dialog(self, qapp, fake_config) -> None:
         """role=member 의 직접 _on_open_emoji_moderation 호출 차단 검증."""
 
@@ -255,7 +255,7 @@ class TestEmojiModerationDialogLaunch:
 class TestDecisionFeedback:
     """decision_made signal 핸들러 의 status bar feedback 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (7th test) 별 cycle")
+    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
     def test_decision_handler_updates_status_bar(
         self, qapp, fake_config
     ) -> None:
@@ -283,7 +283,7 @@ class TestDecisionFeedback:
 class TestAdminTokenEnvFallback:
     """EMOJI_MODERATION_ADMIN_TOKEN env 부재 시 graceful warning + skip 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (8th test) 별 cycle")
+    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
     def test_missing_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 부재 → QMessageBox.warning + open_emoji_moderation 미호출."""
 
@@ -307,7 +307,7 @@ class TestAdminTokenEnvFallback:
 
         window.close()
 
-    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (9th test) 별 cycle")
+    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
     def test_empty_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 가 빈 string 일 때 도 graceful skip — strip 정합."""
 
