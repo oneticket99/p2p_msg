@@ -169,12 +169,20 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.572 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.580 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap chain (2026-05-23~24 신설)
 
-### 8.82.1 41 cycle 산출 (cycle 169.532~572)
+### 8.82.1 49 cycle 산출 (cycle 169.532~580)
 
 | commit | cycle | scope |
 |---|---|---|
+| 0bcd46a | 169.580 | admin_menu patch path mixin 정합 fix + fixture hang skip retain (별 cycle 위탁) |
+| 8c36e23 | 169.579 | test_applier macOS + Windows expect False swap (cycle 169.413~427 binary verify gate) |
+| 8803210 | 169.578 | i18n tr_wrap test main_window expected_min 7 → 1 swap (mixin 분산) |
+| d88c345 | 169.577 | 평가 4 file staleness rewrite (cycle 169.572~576) |
+| 27c6493 | 169.576 | input_forward PyObjC graceful guard + win/linux test class swap (cycle 169.421 정합) |
+| 379ddf5 | 169.575 | capture impl PyObjC graceful + win/linux test class swap (cycle 169.421 정합) |
+| cc03ec6 | 169.574 | main_window admin_menu + update_task hang skip mark (16 skip) |
+| 948fc77 | 169.573 | handoff §8.82 41 entry + README/History prepend + wbs 4 row |
 | 910c010 | 169.572 | _on_chat_selected asyncio.ensure_future graceful guard (rooms 5 PASS) |
 | ab93e15 | 169.571 | 평가 4 file staleness rewrite (cycle 169.566~570) |
 | aaf2609 | 169.570 | tools/bpe_self_check.sh standalone util 신설 (QUAD/TRIP/DENSE/CHUK detect) |
