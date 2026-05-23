@@ -133,6 +133,10 @@ services:
       DB_USER: ${MARIADB_USER:-tootalk}
       DB_PASSWORD: ${MARIADB_PASSWORD:?DB_PASSWORD 의무}
       DB_NAME: ${MARIADB_DATABASE:-tootalk}
+      # 한글 주석 — cycle 169.545: bot provider env (readyz `bot_provider: absent` 회수 — web service 와 정합)
+      BOT_ENABLED: ${BOT_ENABLED:-1}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     networks:
       - tootalk-internal
       - tootalk-edge
