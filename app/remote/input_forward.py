@@ -138,7 +138,13 @@ class MacOSCGEventBackend:
 
     def __init__(self) -> None:
         """cycle 169.416 — CGEventSourceCreate 1회 process-wide retain (memory release 의무)."""
-        import Quartz  # type: ignore[import]
+        # 한글 주석 — cycle 169.576: PyObjC + Quartz framework 부재 graceful guard
+        try:
+            import Quartz  # type: ignore[import]
+        except ModuleNotFoundError as _exc:
+            raise NotImplementedError(
+                "PyObjC + Quartz binding 부재 — pip install pyobjc-framework-Quartz 의무"
+            ) from _exc
         # kCGEventSourceStateHIDSystemState = 0 (combined session)
         self._source = Quartz.CGEventSourceCreate(0)
         if self._source is None:

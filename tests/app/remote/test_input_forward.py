@@ -10,8 +10,10 @@ from __future__ import annotations
 import pytest
 
 from app.remote.input_forward import (
+    LinuxXTestBackend,
     MacOSCGEventBackend,
     MockInputForwardBackend,
+    WindowsSendInputBackend,
     apply_events,
     filter_events_by_type,
     select_input_backend,
@@ -71,9 +73,9 @@ class TestMacOSCGEventBackend:
     """``MacOSCGEventBackend`` placeholder 의 graceful degrade 검증."""
 
     def test_apply_raises_not_implemented(self) -> None:
-        backend = MacOSCGEventBackend()
-        with pytest.raises(NotImplementedError, match="CGEvent binding"):
-            backend.apply(_mouse_move())
+        # cycle 169.576: PyObjC + Quartz framework 부재 시점 __init__ 안 NotImplementedError raise
+        with pytest.raises(NotImplementedError, match="PyObjC \\+ Quartz binding"):
+            MacOSCGEventBackend()
 
 
 class TestSelectInputBackend:
@@ -87,13 +89,15 @@ class TestSelectInputBackend:
         cls = select_input_backend("darwin")
         assert cls is MacOSCGEventBackend
 
-    def test_win32_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="win32 input backend"):
-            select_input_backend("win32")
+    def test_win32_returns_sendinput_backend(self) -> None:
+        # cycle 169.421 actual binding — WindowsSendInputBackend class return
+        cls = select_input_backend("win32")
+        assert cls is WindowsSendInputBackend
 
-    def test_linux_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="linux input backend"):
-            select_input_backend("linux")
+    def test_linux_returns_xtest_backend(self) -> None:
+        # cycle 169.421 actual binding — LinuxXTestBackend class return
+        cls = select_input_backend("linux")
+        assert cls is LinuxXTestBackend
 
     def test_unknown_platform_rejected(self) -> None:
         with pytest.raises(ValueError, match="unknown platform_name"):
