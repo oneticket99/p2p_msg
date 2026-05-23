@@ -169,12 +169,16 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.621 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + .app crash 식별 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.625 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign ad-hoc (2026-05-23~24 신설)
 
-### 8.82.1 89 cycle 산출 (cycle 169.532~621)
+### 8.82.1 93 cycle 산출 (cycle 169.532~625)
 
 | commit | cycle | scope |
 |---|---|---|
+| 315a148 | 169.625 | PyInstaller spec codesign_identity="-" ad-hoc inject — macOS .app SIGSEGV 회수 시도 (build retry watch) |
+| 97be07d | 169.624 | Phase 1 M3 + M4 milestone [x] swap — DataChannel + file/image E2E PASS 정합 (M1~M5 5/5 done) |
+| 216533d | 169.623 | admin_menu skip mark 복구 — batch 5 test 진행 후 hang 식별 (scope=function refactor 별 cycle) |
+| a5c6f18 | 169.622 | handoff §8.82 89 entry + README/History + 평가 sync (169.619~621 drift) |
 | a657a64 | 169.621 | FR-03 image DataChannel browser E2E PASS — header JSON + 8KB thumb + 256KB full envelope (1 PASS 0.33s) |
 | 6e25653 | 169.620 | FR-04 file DataChannel browser E2E PASS — 1MB chunk + fingerprint verify (1 PASS 0.37s) |
 | d121199 | 169.619 | FR-02 DataChannel browser E2E PASS — Alice/Bob "hello"→"world" 왕복 (1 PASS 0.56s) |
