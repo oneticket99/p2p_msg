@@ -258,6 +258,8 @@ jobs:
   # ---------------------------------------------------------------------------
   pytest:
     name: pytest (${{ matrix.label }})
+    # cycle 169.564: timeout-minutes 20 추가 — PyQt6/qasync stale hang 회피 (cycle 169.541 ci 5h stuck pattern)
+    timeout-minutes: 20
     # Windows-x64 entry 영구 비활성 — wine cross-compile 대체 (사용자 directive 2026-05-17)
     # Windows 빌드 의무 = build.yml (Phase 1 후반 신설) 의 GitHub-hosted Ubuntu +
     # cdrx/pyinstaller-windows docker image. 본 ci.yml 의 import-smoke/pytest = macOS arm64 단독.
