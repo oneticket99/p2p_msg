@@ -68,7 +68,7 @@ jobs:
         run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> $GITHUB_PATH
 
       - name: meta-enforcement 실행
-        run: python tools/meta_enforce.py
+        run: python3 tools/meta_enforce.py
 
   # ---------------------------------------------------------------------------
   # root-18-freeze — 루트 마크다운 정확히 18개 동결 (정본 §K)
@@ -151,7 +151,7 @@ jobs:
       - name: History.md cycle entry 순서 검증
         run: |
           # 한글 주석 — CI와 로컬 하네스가 같은 M3 판정을 쓰도록 단일 검증기로 고정한다.
-          python tools/md_agents.py --history-only
+          python3 tools/md_agents.py --history-only
 
   # ---------------------------------------------------------------------------
   # m4-korean-comments — 신규/수정 코드 파일 한글 주석 1줄 이상

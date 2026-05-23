@@ -84,7 +84,7 @@ def check_ci_meta_job() -> Tuple[bool, str]:
     text = _read(CI)
     required_tokens = [
         "meta-enforcement",
-        "python tools/meta_enforce.py",
+        "python3 tools/meta_enforce.py",
     ]
     missing = [token for token in required_tokens if token not in text]
     if missing:
@@ -95,9 +95,12 @@ def check_ci_meta_job() -> Tuple[bool, str]:
 def check_ci_m3_uses_md_agents() -> Tuple[bool, str]:
     """CI M3 job 이 로컬 하네스와 같은 검증기를 쓰는지 확인."""
     text = _read(CI)
-    required = "python tools/md_agents.py --history-only"
+    required = "python3 tools/md_agents.py --history-only"
     if required not in text:
         return False, f"ci.yml M3 job 이 md_agents history 검증기를 호출하지 않음: {required}"
+    stale_python = "python tools/md_agents.py --history-only"
+    if stale_python in text:
+        return False, "ci.yml M3 job 안 python 명령 의존 잔존"
     forbidden = "grep -E '^## Phase'"
     if forbidden in text:
         return False, "ci.yml M3 job 안 stale Phase 헤더 grep 검증 잔존"
