@@ -12,8 +12,10 @@ import pytest
 from app.remote.capture import (
     CaptureFormat,
     CapturedFrame,
+    LinuxX11Backend,
     MacOSQuartzBackend,
     MockCaptureBackend,
+    WindowsGDIBackend,
     captured_to_remote_frame,
     detect_default_backend,
     select_capture_backend,
@@ -144,13 +146,15 @@ class TestSelectBackend:
         cls = select_capture_backend("darwin")
         assert cls is MacOSQuartzBackend
 
-    def test_win32_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="win32 capture backend"):
-            select_capture_backend("win32")
+    def test_win32_returns_gdi_backend(self) -> None:
+        # cycle 169.421 actual binding swap — WindowsGDIBackend class return
+        cls = select_capture_backend("win32")
+        assert cls is WindowsGDIBackend
 
-    def test_linux_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="linux capture backend"):
-            select_capture_backend("linux")
+    def test_linux_returns_x11_backend(self) -> None:
+        # cycle 169.421 actual binding swap — LinuxX11Backend class return
+        cls = select_capture_backend("linux")
+        assert cls is LinuxX11Backend
 
     def test_unknown_platform_rejected(self) -> None:
         with pytest.raises(ValueError, match="unknown platform_name"):

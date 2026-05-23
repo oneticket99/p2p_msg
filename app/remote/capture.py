@@ -221,8 +221,15 @@ class MacOSQuartzBackend:
         RuntimeError
             CGDisplayCreateImage 실패 (display 부재 또는 권한 부재).
         """
-        import Quartz  # type: ignore[import]
-        import CoreFoundation  # type: ignore[import]
+        # 한글 주석 — cycle 169.575: PyObjC + Quartz framework 부재 graceful guard.
+        # framework 의 의 의 의 부재 시점 NotImplementedError raise (test expect 정합).
+        try:
+            import Quartz  # type: ignore[import]
+            import CoreFoundation  # type: ignore[import]
+        except ModuleNotFoundError as _exc:
+            raise NotImplementedError(
+                "PyObjC + Quartz binding 부재 — pip install pyobjc-framework-Quartz 의무"
+            ) from _exc
 
         did = self._display_id if self._display_id is not None else Quartz.CGMainDisplayID()
         image_ref = Quartz.CGDisplayCreateImage(did)
