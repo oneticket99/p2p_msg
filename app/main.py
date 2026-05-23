@@ -140,6 +140,11 @@ def main() -> int:
     # `with loop:` block 안 dialog.exec() = qasync 의 nested Qt + asyncio loop 동시 활성
     auth_required = os.environ.get("AUTH_REQUIRED", "1") == "1"
     skip_welcome = os.environ.get("SKIP_WELCOME", "0") == "1"
+    # 한글 주석 — cycle 169.615: NFR-03 cold start probe 활성 시 auth/welcome dialog skip
+    # (offscreen 안 modal exec stuck 회피). probe 의 목표 = window.show() 도달 시점 측정.
+    if os.environ.get("TOOTALK_COLD_START_PROBE") == "1":
+        auth_required = False
+        skip_welcome = True
 
     with loop:
         if auth_required:
