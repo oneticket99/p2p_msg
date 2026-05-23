@@ -169,12 +169,21 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.558 — codex e2e browser WS + 원격 server 회수 + build artifact + token-usage 복원 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.567 — codex e2e browser WS + 원격 server 회수 + build artifact + token-usage 복원 + WBS web view + CI fail-fast (2026-05-23~24 신설)
 
-### 8.82.1 27 cycle 산출 (cycle 169.532~558)
+### 8.82.1 36 cycle 산출 (cycle 169.532~567)
 
 | commit | cycle | scope |
 |---|---|---|
+| d0c753e | 169.567 | test_folder_client TLS default swap (cycle 169.275 정합, 7 PASS) |
+| b50ece9 | 169.566 | ci.yml pytest fail-fast + e2e/integration ignore — hang scope 축소 |
+| ea563b5 | 169.565 | 평가 4 file staleness rewrite (cycle 169.562~564) |
+| c47e2f5 | 169.564 | ci.yml pytest timeout 20 min + stale hang 회수 (stuck pid kill) |
+| 03e6c76 | 169.563 | CheckList.md FR/NFR/M1~M5 status realistic (5 FR done + 4 partial + 3 M done) |
+| 62eb939 | 169.562 | 평가 4 file staleness rewrite (cycle 169.557~561) |
+| 3dc0a1b | 169.561 | tools/gen_wbs_view.py + docs/operations/wbs.html web view (vanilla CSS/JS + Toonation BI) |
+| 58c8b39 | 169.560 | tools/wbs_view.py CLI viewer (argparse 4 mode) |
+| 912c5d9 | 169.559 | handoff §8.82 27 entry + README/History prepend + wbs 10 row |
 | 5b3e447 | 169.558 | token-usage HTML bak retain — uncommit staleness 회수 |
 | 96f9f56 | 169.557 | 평가 4 file staleness rewrite — cycle 169.555~556 token-usage 회수 |
 | c455942 | 169.556 | token-usage HTML local var reassign — bak merge 후 일별 비용 회수 |
