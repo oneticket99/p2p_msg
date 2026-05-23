@@ -116,7 +116,6 @@ omit = [
     "*/app/bot/streaming/chzzk_client.py",
     "*/app/bot/streaming/kick_client.py",
     "*/app/bot/streaming/twitch_client.py",
-    "*/app/bot/streaming/youtube_client.py",
     "*/app/net/folder_client.py",
     "*/app/notifications/fcm_client.py",
     "*/app/remote/input_dispatch.py",

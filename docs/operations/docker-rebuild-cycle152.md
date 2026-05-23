@@ -77,7 +77,6 @@ volumes:
 | `app/bot/streaming/chzzk_client.py` | CHZZK chat WebSocket | `websockets` (graceful) |
 | `app/bot/streaming/twitch_client.py` | Twitch chat WebSocket | `websockets` (graceful) |
 | `app/bot/streaming/kick_client.py` | Kick chat WebSocket | `websockets` (graceful) |
-| `app/bot/streaming/youtube_client.py` | YouTube Live HTTP poll | `httpx` (graceful) |
 | `app/bot/obs_websocket_client.py` | OBS Studio websocket | `websockets` (graceful) |
 | `app/bot/toonation_client.py` | Toonation donation API | `httpx` (graceful) |
 | `app/bot/emoji_dmca_check.py` | pHash 검사 | `Pillow` + `ImageHash` (graceful) |

@@ -65,7 +65,6 @@ class ChatMessage:
 from app.bot.streaming.chzzk_client import ChzzkChatClient  # noqa: E402
 from app.bot.streaming.kick_client import KickChatClient  # noqa: E402
 from app.bot.streaming.twitch_client import TwitchChatClient  # noqa: E402
-from app.bot.streaming.youtube_client import YouTubeChatClient  # noqa: E402
 
 # 한글 주석 — 기존 streaming.py SSE parser 의 호환 re-export (사이클 87 → 146 의 package 의 의 흡수)
 from app.bot.streaming.sse import (  # noqa: E402, F401
@@ -85,7 +84,6 @@ __all__ = [
     "StreamChunk",
     "StreamEvent",
     "TwitchChatClient",
-    "YouTubeChatClient",
     "accumulate_chunks",
     "extract_anthropic_delta",
     "extract_openai_delta",

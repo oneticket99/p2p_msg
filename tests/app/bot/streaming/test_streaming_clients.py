@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""``app.bot.streaming`` 4 platform chat client 단위 테스트 — 사이클 146.
+"""``app.bot.streaming`` 3 platform chat client 단위 테스트 — 사이클 146.
 
-3 × 4 platform = 12 test
+3 × 3 platform = 9 test (cycle 169.715 — youtube_client 삭제 정합)
 -----------------------
 - init (config + client 인스턴스화 검증)
 - graceful (connect skeleton False + receive_loop disconnected []) 검증
@@ -21,61 +21,10 @@ from app.bot.streaming import (
     ChzzkChatClient,
     KickChatClient,
     TwitchChatClient,
-    YouTubeChatClient,
 )
 from app.bot.streaming.chzzk_client import ChzzkChatConfig
 from app.bot.streaming.kick_client import KickChatConfig
 from app.bot.streaming.twitch_client import TwitchChatConfig
-from app.bot.streaming.youtube_client import YouTubeChatConfig
-
-
-# ─── YouTube ──────────────────────────────────────────────────────────────
-
-
-class TestYouTubeChatClient:
-    """YouTube Live Chat API v3 client skeleton 검증."""
-
-    def _config(self) -> YouTubeChatConfig:
-        return YouTubeChatConfig(
-            access_token="ya29.fake_token",
-            live_chat_id="Cg0KC2xpdmVfY2hhdF9pZA",
-        )
-
-    def test_init_default(self) -> None:
-        client = YouTubeChatClient(self._config())
-        assert client.is_connected is False
-        assert client.PLATFORM == "youtube"
-        assert client.config.live_chat_id.startswith("Cg")
-
-    def test_connect_disconnect(self) -> None:
-        """cycle 169.507 — cycle 169.422 actual httpx.AsyncClient 정합.
-
-        codex verdict 2.3 회수 — graceful skeleton 폐기, actual connect/disconnect 검증.
-        receive_loop 의 actual API call 검증 = 별 cycle integration test (httpx mock).
-        """
-        client = YouTubeChatClient(self._config())
-        ok = asyncio.run(client.connect())
-        # httpx 가용 시 True, 부재 시 False (graceful path 양쪽 retain)
-        from app.bot.streaming.youtube_client import _HTTPX_AVAILABLE
-        assert ok is _HTTPX_AVAILABLE
-        assert client.is_connected is _HTTPX_AVAILABLE
-        asyncio.run(client.disconnect())
-        assert client.is_connected is False
-
-    def test_dataclass_validation(self) -> None:
-        # empty token 차단
-        with pytest.raises(ValueError, match="access_token 빈 문자열 불가"):
-            YouTubeChatConfig(access_token="", live_chat_id="x")
-        # empty chat_id 차단
-        with pytest.raises(ValueError, match="live_chat_id 빈 문자열 불가"):
-            YouTubeChatConfig(access_token="t", live_chat_id="")
-        # poll_interval 0 차단
-        with pytest.raises(ValueError, match="poll_interval_seconds"):
-            YouTubeChatConfig(
-                access_token="t",
-                live_chat_id="x",
-                poll_interval_seconds=0,
-            )
 
 
 # ─── Twitch ───────────────────────────────────────────────────────────────
