@@ -11,7 +11,7 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
-from app.bot.llm_proxy import AnthropicProvider, MockLLMProvider, OpenAIProvider
+from app.bot.llm_proxy import OpenAIProvider
 from server.api.bot_handlers import APP_KEY_PROVIDER, APP_KEY_RATE_GATE
 from server.main import build_app
 
@@ -37,25 +37,35 @@ class TestBuildAppBotDisabled:
         assert APP_KEY_RATE_GATE not in app
 
 
-@pytest.mark.skip(reason="cycle 169.587 — cycle 169.345 OpenAI strict policy swap (BOT_ENABLED=1 + OPENAI_API_KEY 의무 RuntimeError), Mock fallback 폐기. 별 cycle 재작성 위탁.")
 class TestBuildAppBotEnabled:
-    """``BOT_ENABLED=1`` + ANTHROPIC_API_KEY 부재 시 MockLLMProvider 폴백 + 라우트 등록."""
+    """``BOT_ENABLED=1`` + OpenAI strict policy 정합 (cycle 169.345 swap, cycle 169.611 fixture refactor)."""
 
     @pytest.mark.asyncio
-    async def test_mock_provider_fallback(
+    async def test_openai_key_absent_raises(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        # 한글 주석 — cycle 169.611: OpenAI strict — OPENAI_API_KEY 부재 시점 RuntimeError raise 정합.
         monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         monkeypatch.setenv("DB_ENABLED", "0")
+        with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
+            await build_app()
+
+    @pytest.mark.asyncio
+    async def test_openai_provider_with_key(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # 한글 주석 — cycle 169.611: OPENAI_API_KEY 활성 시 OpenAIProvider 등록 + route 활성.
+        monkeypatch.setenv("BOT_ENABLED", "1")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
+        monkeypatch.setenv("DB_ENABLED", "0")
+        if not OpenAIProvider.is_available():
+            pytest.skip("httpx 미설치 — OpenAIProvider 비활성")
         app = await build_app()
-        # provider + gate 등록 확인
         assert APP_KEY_PROVIDER in app
         assert APP_KEY_RATE_GATE in app
-        # MockLLMProvider 폴백
         provider = app[APP_KEY_PROVIDER]
-        assert isinstance(provider, MockLLMProvider)
-        # route 등록 확인
+        assert isinstance(provider, OpenAIProvider)
         paths = {
             getattr(route.resource, "canonical", "")
             for route in app.router.routes()
@@ -63,71 +73,21 @@ class TestBuildAppBotEnabled:
         assert "/api/bot/chat" in paths
 
     @pytest.mark.asyncio
-    async def test_openai_fallback_when_only_openai_key_present(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """cycle 96 QA P3 — ANTHROPIC 부재 + OPENAI 가용 시 OpenAIProvider 폴백.
-
-        httpx 미설치 환경 에서 `OpenAIProvider.is_available()` 가 False 반환 →
-        본 케이스 skip. httpx 설치 + OPENAI_API_KEY 활성 시 OpenAIProvider 선택.
-        """
-
-        monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
-        monkeypatch.setenv("DB_ENABLED", "0")
-        # OpenAIProvider.is_available() = httpx 미설치 시 False 반환 (graceful)
-        if not OpenAIProvider.is_available():
-            pytest.skip("httpx 미설치 — OpenAIProvider 비활성")
-        app = await build_app()
-        provider = app[APP_KEY_PROVIDER]
-        assert isinstance(provider, OpenAIProvider)
-
-    @pytest.mark.asyncio
-    async def test_anthropic_preferred_over_openai(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """cycle 96 QA P3 — Anthropic + OpenAI 모두 가용 시 Anthropic 우선."""
-
-        monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
-        monkeypatch.setenv("DB_ENABLED", "0")
-        if not AnthropicProvider.is_available():
-            pytest.skip("httpx 미설치 — AnthropicProvider 비활성")
-        app = await build_app()
-        provider = app[APP_KEY_PROVIDER]
-        assert isinstance(provider, AnthropicProvider)
-
-    @pytest.mark.asyncio
-    async def test_mock_when_both_keys_absent(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """cycle 96 QA P3 — 두 key 모두 부재 시 MockLLMProvider 폴백 + warning log."""
-
-        monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        monkeypatch.setenv("DB_ENABLED", "0")
-        app = await build_app()
-        provider = app[APP_KEY_PROVIDER]
-        assert isinstance(provider, MockLLMProvider)
-
-    @pytest.mark.asyncio
     async def test_custom_rate_cap_honored(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        # 한글 주석 — cycle 169.611: BOT_RATE_PER_MINUTE env 의 gate cap propagate.
         monkeypatch.setenv("BOT_ENABLED", "1")
         monkeypatch.setenv("BOT_RATE_PER_MINUTE", "5")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
         monkeypatch.setenv("DB_ENABLED", "0")
+        if not OpenAIProvider.is_available():
+            pytest.skip("httpx 미설치 — OpenAIProvider 비활성")
         app = await build_app()
         gate = app[APP_KEY_RATE_GATE]
-        # gate 의 rate_per_minute = 5
         assert gate.remaining(user_id=1) == 5
 
 
-@pytest.mark.skip(reason="cycle 169.587 — OpenAI strict policy 정합 fixture refactor 별 cycle 위탁")
 class TestEndpointWithTestClient:
     """aiohttp TestClient 의 POST /api/bot/chat 실 호출 의 end-to-end 검증."""
 
@@ -143,9 +103,12 @@ class TestEndpointWithTestClient:
     async def test_unauthorized_without_bearer(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        # 한글 주석 — cycle 169.611: OpenAI strict env inject + auth_middleware Bearer 부재 401.
         monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
         monkeypatch.setenv("DB_ENABLED", "0")
+        if not OpenAIProvider.is_available():
+            pytest.skip("httpx 미설치 — OpenAIProvider 비활성")
         app = await build_app()
         client = await self._make_client(app)
         try:
@@ -157,37 +120,7 @@ class TestEndpointWithTestClient:
                     ]
                 },
             )
-            # auth_middleware 의 Bearer 부재 → 401
             assert resp.status == 401
-        finally:
-            await client.close()
-
-    @pytest.mark.asyncio
-    async def test_happy_path_with_bearer(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.setenv("BOT_ENABLED", "1")
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-        monkeypatch.setenv("DB_ENABLED", "0")
-        app = await build_app()
-        # session_store 의 token → user_id mapping 의 의 inject
-        app["session_store"]["test-token-xyz"] = 42
-        client = await self._make_client(app)
-        try:
-            resp = await client.post(
-                "/api/bot/chat",
-                headers={"Authorization": "Bearer test-token-xyz"},
-                json={
-                    "messages": [
-                        {"role": "user", "content": "안녕", "timestamp_ms": 0}
-                    ]
-                },
-            )
-            assert resp.status == 200
-            payload = await resp.json()
-            assert payload["reply"]["role"] == "assistant"
-            # MockLLMProvider 의 echo — "안녕" 의 echo 포함
-            assert "안녕" in payload["reply"]["content"]
         finally:
             await client.close()
 
@@ -195,6 +128,7 @@ class TestEndpointWithTestClient:
     async def test_bot_disabled_returns_404(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        # 한글 주석 — cycle 169.611: BOT_ENABLED 비활성 — 라우트 미등록 / 404 검증.
         monkeypatch.delenv("BOT_ENABLED", raising=False)
         monkeypatch.setenv("DB_ENABLED", "0")
         app = await build_app()
@@ -210,7 +144,6 @@ class TestEndpointWithTestClient:
                     ]
                 },
             )
-            # 라우트 미등록 = 404
             assert resp.status == 404
         finally:
             await client.close()
