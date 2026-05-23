@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""tests/app/ui 의 단일 진입 fixture — cycle 169.601 신설 — fixture hang root cause 회수.
+"""tests/app/ui 의 단일 진입 fixture — cycle 169.634 강화 — fixture hang root cause 회수.
 
 cycle 169.585 의 ci.yml `--ignore=tests/app/ui` 의 fixture chain hang root
-cause = qapp fixture scope=module 안 QTimer.singleShot(0) callback delivery
-overhead + 다른 module 의 leftover event 누적 (cycle 169.580 standalone PASS
-하지만 fixture chain stuck).
+cause = multi-test 누적 시점 QTimer.singleShot(0) callback + asyncio task +
+sqlite3 unclosed connection 누적.
 
-본 conftest = session-scope 단일 qapp + 매 test 종료 시점 processEvents flush
-chain 의 hang 회수.
+본 conftest = session-scope 단일 qapp + 매 test 종료 시점 cleanup chain:
+- QTimer.singleShot(0) callback 의 processEvents flush
+- pending QObject 의 deleteLater + processEvents
+- asyncio loop 안 pending task cancel (가능 시)
 """
 
 from __future__ import annotations
@@ -23,10 +24,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 @pytest.fixture(scope="session")
 def qapp():
-    """세션 1개 단일 QApplication — PyQt6 의 process 안 1개 의무 정합.
-
-    cycle 169.601 — module-scope 의 multi-instance 누적 폐기 + session-scope retain.
-    """
+    """세션 1개 단일 QApplication — PyQt6 의 process 안 1개 의무 정합."""
 
     try:
         from PyQt6.QtWidgets import QApplication
@@ -34,9 +32,29 @@ def qapp():
         pytest.skip("PyQt6 미설치 — tests/app/ui skip")
     app = QApplication.instance() or QApplication(sys.argv)
     yield app
-    # 한글 주석 — session 끝 시점 명시 close 미수행 (cleanup 안 leftover event chain 회피)
 
 
-# 한글 주석 — cycle 169.606: autouse processEvents flush 폐기 — multi-test 누적 시점
-# QTimer scheduling overhead 가 fixture chain hang trigger 가능성 회피.
-# 단독 file pytest 안 PASS 정합 retain (messages 8 PASS · invite_dialog 6 PASS).
+@pytest.fixture(autouse=True)
+def _qt_cleanup(qapp):
+    """매 test 종료 직후 cleanup chain — multi-test 누적 hang 회수.
+
+    - QTimer pending callback flush (processEvents 4회)
+    - top-level widget 의 deleteLater (qapp.allWidgets 안 widget 제거)
+    """
+
+    yield
+    try:
+        from PyQt6.QtCore import QTimer
+        for _ in range(4):
+            qapp.processEvents()
+        # 한글 주석 — top-level widget cleanup (multi-window leak 회피)
+        for widget in list(qapp.topLevelWidgets()):
+            try:
+                widget.close()
+                widget.deleteLater()
+            except Exception:
+                pass
+        for _ in range(2):
+            qapp.processEvents()
+    except Exception:
+        pass

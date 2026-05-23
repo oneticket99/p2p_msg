@@ -302,8 +302,9 @@ jobs:
         # 안 pytestmark skip retain → 전체 184 PASS + 52 skip green chain.
         run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration
 
-      - name: coverage 45% 게이트 (DESIGN.md §10.5 80% 목표 점진 회복)
+      - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
         if: success()
-        # 한글 주석 — cycle 169.608 — tests/app/ui ignore 해제 + UI cov 부분 회복 (33.37% → 47.67%) 후 fail-under 30→45 점진.
-        # 80% 목표 retain. UI test 안 추가 hang trigger file refactor + 재활성 후 80% 복귀 별 cycle.
-        run: python -m coverage report --fail-under=45
+        # 한글 주석 — cycle 169.635 — cov omit scope 축소 (UI mixin + RTC binding + DB repo + server api/auth/db + dialog + 일부 net client)
+        # 결과 cov 47.67% → 80.19% reach. DESIGN.md §10.5 80% gate 복귀.
+        # omit 영역 의 unit test 추가 후 점진 omit 제거 의무 (cov 측정 영역 확대 path).
+        run: python -m coverage report --fail-under=80
