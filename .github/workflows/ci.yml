@@ -297,7 +297,10 @@ jobs:
           python -m pip install -r server/requirements-dev.txt
 
       - name: pytest 실행 (unit only — integration + e2e 제외)
-        run: pytest --cov --cov-report=term-missing
+        # cycle 169.566: pytest hang root cause = PyQt6/qasync event loop stuck pattern.
+        # fix chain: -x (fail-fast) + --ignore=tests/e2e (Playwright 별 nightly) + --ignore=tests/integration (네트워크 의존).
+        # 잔존 hang 시점 = timeout-minutes 20 (cycle 169.564) abort.
+        run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration
 
       - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
         if: success()
