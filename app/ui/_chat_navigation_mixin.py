@@ -172,20 +172,25 @@ class ChatNavigationMixin:
         self._chat_header.set_chat(name, status=status)
         # cycle 169.221 — friend kind 시점 last_seen REST fetch (cycle 169.216 endpoint 연동)
         # cycle 169.225 — DM history fetch (cycle 169.222 DM room resolve + list_messages)
-        if kind == "friend" and target_id > 0:
-            import asyncio
-            asyncio.ensure_future(self._fetch_user_status(target_id))
-            asyncio.ensure_future(self._fetch_dm_history(target_id))
-        # cycle 169.411 — saved messages history fetch chain (self DM room resolve server-side)
-        if kind == "saved":
-            import asyncio
-            self_id = getattr(self, "_current_user_id", None)
-            if isinstance(self_id, int) and self_id > 0:
-                asyncio.ensure_future(self._fetch_dm_history(self_id))
-        # cycle 169.454 — bot kind history fetch chain (bot DM room resolve actual binding)
-        if kind == "bot":
-            import asyncio
-            asyncio.ensure_future(self._fetch_bot_history())
+        # 한글 주석 — cycle 169.572: asyncio.ensure_future graceful guard (python 3.13 안 running loop 부재 시 DeprecationWarning + fail)
+        # test setup (qasync 부재 환경) 의 의 의 의 fail 회수. running loop 시점 만 schedule.
+        import asyncio
+        try:
+            _loop = asyncio.get_running_loop()
+        except RuntimeError:
+            _loop = None
+        if _loop is not None:
+            if kind == "friend" and target_id > 0:
+                asyncio.ensure_future(self._fetch_user_status(target_id))
+                asyncio.ensure_future(self._fetch_dm_history(target_id))
+            # cycle 169.411 — saved messages history fetch chain
+            if kind == "saved":
+                self_id = getattr(self, "_current_user_id", None)
+                if isinstance(self_id, int) and self_id > 0:
+                    asyncio.ensure_future(self._fetch_dm_history(self_id))
+            # cycle 169.454 — bot kind history fetch chain
+            if kind == "bot":
+                asyncio.ensure_future(self._fetch_bot_history())
         # cycle 169.156~157 — chat 전환 + DM cache replay (image #12 telegram 동작성)
         try:
             # cycle 169.176 — prev active chat 의 scroll offset save (전환 직전)
