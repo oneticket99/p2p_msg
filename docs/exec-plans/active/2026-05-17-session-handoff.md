@@ -169,12 +169,14 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.604 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 완화 + Phase 1 NFR 6 bench + tests/app/ui conftest + 3 test 회수 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.606 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 완화 + Phase 1 NFR 6 bench + tests/app/ui conftest + 4 test 회수 + autouse 폐기 (2026-05-23~24 신설)
 
-### 8.82.1 73 cycle 산출 (cycle 169.532~604)
+### 8.82.1 75 cycle 산출 (cycle 169.532~606)
 
 | commit | cycle | scope |
 |---|---|---|
+| f894699 | 169.606 | conftest autouse 폐기 + dialog_functional skip — fixture hang 부분 회수 (단독 file PASS retain) |
+| 29cf5c1 | 169.605 | handoff §8.82 73 entry + README/History + 평가 4 file sync (169.600~604 drift) |
 | 4f509e5 | 169.604 | test_dialog_smoke_extra SettingsDialog _tabs outdated → smoke only (5 PASS) |
 | ff98705 | 169.603 | test_friend_list 2 fail 회수 — placeholder 폐기 + ChatListEntry delegate paint (5 PASS) |
 | cda2342 | 169.601 | tests/app/ui/conftest.py 신설 — session-scope qapp + autouse processEvents flush (base infra) |
