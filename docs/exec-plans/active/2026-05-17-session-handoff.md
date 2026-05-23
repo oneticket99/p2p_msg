@@ -169,12 +169,16 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.638 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign chain + integration 44 활성 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.642 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 6 attempt all fail + integration 44 + e2e 7/8 활성 (2026-05-23~24 신설)
 
-### 8.82.1 106 cycle 산출 (cycle 169.532~638)
+### 8.82.1 110 cycle 산출 (cycle 169.532~642)
 
 | commit | cycle | scope |
 |---|---|---|
+| 4394de3 | 169.642 | .app codesign chain 마감 — 6 attempt all fail, Apple Developer ID / nuitka / macOS downgrade 별 cycle |
+| 88b77b8 | 169.641 | build.yml macos-15 GitHub-hosted runner swap — Team ID mismatch UUID 변경 만 (효과 부재) |
+| 7e8f715 | 169.640 | e2e 7/8 PASS 활성 + html_visual outdated assertion swap (swatch + mermaid) |
+| 7d4ef38 | 169.639 | handoff §8.82 106 entry + README/History + 평가 4 file sync (169.633~638 drift) |
 | 4030d64 | 169.638 | integration 44 PASS 활성 + ci.yml -m "not e2e or integration" — cov 80.21% retain |
 | 7ff3660 | 169.637 | update_task skip retain + pytest-forked attempt (PyQt6 fork 비호환 식별) |
 | b47b751 | 169.636 | admin_menu 5 PASS + 4 method-level skip — cumulative window leak 6th trigger isolate |
