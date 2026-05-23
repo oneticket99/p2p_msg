@@ -169,12 +169,16 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.580 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap chain (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.585 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart (2026-05-23~24 신설)
 
-### 8.82.1 49 cycle 산출 (cycle 169.532~580)
+### 8.82.1 54 cycle 산출 (cycle 169.532~585)
 
 | commit | cycle | scope |
 |---|---|---|
+| 9f5c859 | 169.585 | ci.yml pytest --ignore=tests/app/ui (fixture hang root cause 회수) |
+| 7711912 | 169.583 | dispatch retry — 169.582 cancel + fresh trigger |
+| 6fe54c4 | 169.582 | self-hosted runner launchctl restart (actions/checkout auth refresh, new Listener pid 77699) |
+| 59b99b3 | 169.581 | handoff §8.82 49 entry + 평가 staleness + README/History batch |
 | 0bcd46a | 169.580 | admin_menu patch path mixin 정합 fix + fixture hang skip retain (별 cycle 위탁) |
 | 8c36e23 | 169.579 | test_applier macOS + Windows expect False swap (cycle 169.413~427 binary verify gate) |
 | 8803210 | 169.578 | i18n tr_wrap test main_window expected_min 7 → 1 swap (mixin 분산) |
