@@ -15,10 +15,7 @@ from __future__ import annotations
 import pytest
 
 
-pytestmark = [
-    pytest.mark.e2e,
-    pytest.mark.skip(reason="cycle 169.658 — voice call JOIN race timing flake (PEERS/PEER_JOINED dispatch race), audio track verify path 별 cycle"),
-]
+pytestmark = pytest.mark.e2e
 
 
 def test_browser_voice_call_offer_answer_hangup(
@@ -32,23 +29,34 @@ def test_browser_voice_call_offer_answer_hangup(
     result = page.evaluate(
         """
         async ({ url }) => {
+          // 한글 주석 — cycle 169.659: buffered message + sticky listener (JOIN race 회수).
+          // open 직후 모든 message 를 buffer 안 push → waitForMessage = buffer 우선 후 listener.
           const connect = (name) => new Promise((resolve, reject) => {
             const ws = new WebSocket(url);
+            ws._buffer = [];
+            ws._handlers = [];
+            ws.addEventListener("message", (event) => {
+              const msg = JSON.parse(event.data);
+              ws._buffer.push(msg);
+              ws._handlers.forEach((h) => h(msg));
+            });
             const timer = setTimeout(() => reject(new Error(`${name} open timeout`)), 3000);
             ws.onopen = () => { clearTimeout(timer); resolve(ws); };
             ws.onerror = () => { clearTimeout(timer); reject(new Error(`${name} socket error`)); };
           });
           const waitForMessage = (ws, predicate, label) => new Promise((resolve, reject) => {
+            // 한글 주석 — buffer 안 기존 message 즉시 match
+            const existing = ws._buffer.find(predicate);
+            if (existing) return resolve(existing);
             const timer = setTimeout(() => reject(new Error(`${label} timeout`)), 5000);
-            const handler = (event) => {
-              const msg = JSON.parse(event.data);
+            const handler = (msg) => {
               if (predicate(msg)) {
                 clearTimeout(timer);
-                ws.removeEventListener("message", handler);
+                ws._handlers = ws._handlers.filter((h) => h !== handler);
                 resolve(msg);
               }
             };
-            ws.addEventListener("message", handler);
+            ws._handlers.push(handler);
           });
 
           const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
