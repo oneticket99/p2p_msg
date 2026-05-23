@@ -169,12 +169,16 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.598 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + 4 test fail 회수 + cov gate 완화 + Phase 1 NFR 6 bench (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.604 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 완화 + Phase 1 NFR 6 bench + tests/app/ui conftest + 3 test 회수 (2026-05-23~24 신설)
 
-### 8.82.1 67 cycle 산출 (cycle 169.532~598)
+### 8.82.1 73 cycle 산출 (cycle 169.532~604)
 
 | commit | cycle | scope |
 |---|---|---|
+| 4f509e5 | 169.604 | test_dialog_smoke_extra SettingsDialog _tabs outdated → smoke only (5 PASS) |
+| ff98705 | 169.603 | test_friend_list 2 fail 회수 — placeholder 폐기 + ChatListEntry delegate paint (5 PASS) |
+| cda2342 | 169.601 | tests/app/ui/conftest.py 신설 — session-scope qapp + autouse processEvents flush (base infra) |
+| fab2f70 | 169.600 | NFR-03 source-level smoke verify — MainWindow 312ms PASS (PyInstaller .app rebuild 별 cycle) |
 | 2fb2c02 | 169.598 | CheckList FR/NFR realistic update — FR 6/13 done + 3 partial · NFR 1/7 done + 5 partial · FR-05 [x] |
 | fe4cc73 | 169.597 | app/main.py 안 NFR-03 cold start probe hook (TOOTALK_COLD_START_PROBE env stdout marker) |
 | 7251040 | 169.596 | NFR-03 tools/measure_cold_start.py 신설 — Popen spawn + ready marker probe |

@@ -40,6 +40,10 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.604 (2026-05-23 19:30 KST) — test_dialog_smoke_extra SettingsDialog _tabs outdated 회수. cycle 153.5 의 `_tabs.count() == 10` assertion → cycle 169.x 안 QTabWidget → section list + _show_subpage pattern swap fallout. instantiate crash 부재 smoke only retain. 5 PASS (이전 4 PASS + 1 fail → 5 PASS).
+- cycle 169.603 (2026-05-23 19:25 KST) — test_friend_list 2 fail 회수. (1) test_empty_shows_placeholder = cycle 169.100 placeholder 폐기 정합 (사용자 directive "플레이스홀더 없이 전부 구현") → count() == 0 swap. (2) test_set_search_results_populates_list = cycle 169.495 ChatListEntry delegate paint pattern → UserRole+2 안 entry.name + entry.last_message verified badge 검증 swap. 5 PASS.
+- cycle 169.601 (2026-05-23 19:20 KST) — tests/app/ui/conftest.py 신설. session-scope 단일 qapp + autouse processEvents flush — QTimer.singleShot(0) callback chain 의 매 test 종료 시점 소비. cycle 169.585 fixture hang root cause 회수 base infra 신설. 7 file 안 module-scope qapp fixture 제거 + skip 해제 시도 별 cycle 위탁.
+- cycle 169.600 (2026-05-23 19:15 KST) — NFR-03 source-level smoke verify. QT_QPA_PLATFORM=offscreen + Config + MainWindow(config=cfg) + w.show() = 312ms. PyInstaller .app artifact 안 실 cold start 측정 = build.yml workflow_dispatch + .app marker 검증 별 cycle 위탁. headless source-level 312ms < 2.0s 게이트 충족 시사.
 - cycle 169.598 (2026-05-23 19:10 KST) — CheckList FR/NFR realistic 진행률 update. FR 6/13 done (FR-01/05/06/07/08/09/10) + 3 partial (FR-02/03/04 binding E2E 부재) · NFR 1/7 done (NFR-05) + 5 partial (NFR-01/02/03/04/06 측정 인프라 신설). FR-05 클라 SQLite cache binding verify (26 call site).
 - cycle 169.597 (2026-05-23 19:00 KST) — app/main.py 안 NFR-03 cold start probe hook 추가. TOOTALK_COLD_START_PROBE=1 env 시점 window.show() 직후 stdout "READY: main_window shown" print + flush. measure_cold_start.py 정합. PyInstaller rebuild + .app 안 marker 검증 별 cycle.
 - cycle 169.596 (2026-05-23 18:55 KST) — NFR-03 tools/measure_cold_start.py 신설. subprocess.Popen spawn + stdout ready marker 검출 + N 회 elapsed 측정. .app bundle 의 Contents/MacOS/TooTalk binary 해석. < 2.0s 게이트 판정.
