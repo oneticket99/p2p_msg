@@ -202,6 +202,74 @@ def main() -> None:
         "pricing": PRICING,
     }
 
+    # 한글 주석 — cycle 169.555: 이전 머신 (oneticket_toonation) 의 aggregate backup json merge
+    # raw jsonl 부재 → bak json 의 per_day + sessions_summary + totals union 합산.
+    # session_id 또는 date 중복 시점 = bak 우선 retain (전 머신 history 보존), 신 entry 추가 only.
+    _BAK_JSON = ROOT / "docs/operations/token-usage-30d.json.bak.json"
+    if _BAK_JSON.exists():
+        try:
+            bak = json.loads(_BAK_JSON.read_text(encoding="utf-8"))
+            # per_day union (date key 중복 = current 우선 retain)
+            _cur_dates = {e["date"] for e in out["per_day"]}
+            _merged_pd = list(out["per_day"])
+            for _e in bak.get("per_day", []):
+                if _e.get("date") not in _cur_dates:
+                    _merged_pd.append(_e)
+            _merged_pd.sort(key=lambda r: r["date"])
+            out["per_day"] = _merged_pd
+            # per_model union (model key 중복 = 합산)
+            _cur_models = {e["model"]: e for e in out["per_model"]}
+            for _e in bak.get("per_model", []):
+                _m = _e.get("model")
+                if _m in _cur_models:
+                    for _k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
+                               "cache_read_input_tokens", "messages", "total_tokens"):
+                        _cur_models[_m][_k] = _cur_models[_m].get(_k, 0) + _e.get(_k, 0)
+                    _cur_models[_m]["cost_usd"] = round(
+                        _cur_models[_m].get("cost_usd", 0.0) + _e.get("cost_usd", 0.0), 4,
+                    )
+                else:
+                    _cur_models[_m] = _e
+            out["per_model"] = list(_cur_models.values())
+            # per_day_model union (date+model 복합 키 중복 = current 우선)
+            _cur_dm = {(e["date"], e["model"]) for e in out["per_day_model"]}
+            _merged_dm = list(out["per_day_model"])
+            for _e in bak.get("per_day_model", []):
+                if (_e.get("date"), _e.get("model")) not in _cur_dm:
+                    _merged_dm.append(_e)
+            _merged_dm.sort(key=lambda r: (r["date"], r["model"]))
+            out["per_day_model"] = _merged_dm
+            # sessions_summary union (session_id 중복 = current 우선)
+            _cur_sids = {s["session_id"] for s in out["sessions_summary"]}
+            _merged_ss = list(out["sessions_summary"])
+            for _s in bak.get("sessions_summary", []):
+                if _s.get("session_id") not in _cur_sids:
+                    _merged_ss.append(_s)
+            _merged_ss.sort(key=lambda r: r.get("first_kst", ""))
+            out["sessions_summary"] = _merged_ss
+            out["sessions"] = len(_merged_ss)
+            # totals 합산
+            for _k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
+                       "cache_read_input_tokens", "messages", "total_tokens"):
+                out["totals"][_k] = out["totals"].get(_k, 0) + bak.get("totals", {}).get(_k, 0)
+            out["totals"]["cost_usd"] = round(
+                out["totals"].get("cost_usd", 0.0) + bak.get("totals", {}).get("cost_usd", 0.0), 4,
+            )
+            out["parsed_messages"] = out.get("parsed_messages", 0) + bak.get("parsed_messages", 0)
+            out["files_scanned"] = out.get("files_scanned", 0) + bak.get("files_scanned", 0)
+            # cache_hit_rate_percent 재계산
+            _ct = out["totals"].get("cache_creation_input_tokens", 0) + out["totals"].get("cache_read_input_tokens", 0)
+            out["cache_hit_rate_percent"] = round(
+                100.0 * out["totals"].get("cache_read_input_tokens", 0) / _ct if _ct else 0.0, 2,
+            )
+            # window_start = bak 더 오래된 시점 retain
+            _bak_ws = bak.get("window_start_kst")
+            if _bak_ws and _bak_ws < out["window_start_kst"]:
+                out["window_start_kst"] = _bak_ws
+            print(f"[token-usage] bak merge — bak sessions={bak.get('sessions',0)} msgs={bak.get('parsed_messages',0)} cost=${bak.get('totals',{}).get('cost_usd',0):.2f}")
+        except Exception as _exc:
+            print(f"[token-usage] bak merge 실패 graceful — {_exc!r}")
+
     JSON_OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"[token-usage] {JSON_OUT} 갱신 — sessions={len(sessions_list)} msgs={parsed_messages} cost=${out['totals']['cost_usd']:.2f}")
 
