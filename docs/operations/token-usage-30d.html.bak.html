@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>TooTalk 토큰 사용량 30일 보고서</title>
+<!-- Chart.js CDN — interactive line + doughnut 렌더링 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  /* Toonation 브랜드 컬러 — navy / cyan / soft-gray */
+  :root {
+    --navy: #0b2545;
+    --navy-soft: #1e3a5f;
+    --cyan: #00b8d9;
+    --cyan-soft: #66d9e8;
+    --accent: #f6ad55;
+    --bg: #f4f7fa;
+    --card: #ffffff;
+    --border: #d8dee9;
+    --text: #1a202c;
+    --text-soft: #4a5568;
+    --ok: #2f855a;
+    --warn: #c05621;
+    --opus: #6b46c1;
+    --sonnet: #2b6cb0;
+    --haiku: #319795;
+    --synthetic: #a0aec0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+                 "Pretendard", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(11, 37, 69, 0.15);
+  }
+  header h1 {
+    margin: 0 0 8px 0;
+    font-size: 26px;
+    letter-spacing: -0.5px;
+  }
+  header p {
+    margin: 4px 0;
+    opacity: 0.85;
+    font-size: 14px;
+  }
+  header .gen {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--cyan-soft);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  .grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .kpi .label {
+    font-size: 12px;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .kpi .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi .sub {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-top: 4px;
+  }
+  .kpi.accent .value { color: var(--cyan); }
+  .kpi.warn  .value { color: var(--warn); }
+  .kpi.ok    .value { color: var(--ok); }
+
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  section h2 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: var(--navy);
+    border-left: 4px solid var(--cyan);
+    padding-left: 10px;
+  }
+  section .caption {
+    font-size: 13px;
+    color: var(--text-soft);
+    margin: 0 0 18px 14px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 360px;
+    margin-top: 8px;
+  }
+  .row-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 900px) {
+    .row-2 { grid-template-columns: 1fr; }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  th, td {
+    padding: 9px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg);
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:nth-child(even) { background: #fafbfd; }
+  tbody tr:hover { background: #eef5fb; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  td.cost { color: var(--warn); font-weight: 600; }
+  td.strong { font-weight: 700; color: var(--navy); }
+  code {
+    background: #eef2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--text-soft);
+  }
+  .chip-claude-opus-4-7    { background: var(--opus); }
+  .chip-claude-sonnet-4-6  { background: var(--sonnet); }
+  .chip-claude-haiku-4-5   { background: var(--haiku); }
+  .chip-synthetic, .chip-unknown { background: var(--synthetic); }
+
+  .table-wrap {
+    max-height: 480px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .notes {
+    font-size: 12px;
+    color: var(--text-soft);
+    background: #f0f4f8;
+    border-left: 3px solid var(--cyan);
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-top: 14px;
+  }
+  .notes b { color: var(--navy); }
+  footer {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 12px;
+    margin-top: 32px;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TooTalk · Claude Code 토큰 사용량 보고서 (최근 30일)</h1>
+  <p>모델별 / 일별 / 캐시 적중률 / 비용 추정 — 데이터 출처는 로컬 session jsonl 누계 집계</p>
+  <p class="gen">생성 시각: 2026-05-22 16:01:00 KST· 집계 윈도우: 2026-04-22 16:01:00 ~ 2026-05-22 16:01:00</p>
+</header>
+
+<div class="grid">
+  <div class="kpi accent">
+    <div class="label">총 토큰</div>
+    <div class="value">9,055,419,623</div>
+    <div class="sub">input + output + cache 합산</div>
+  </div>
+  <div class="kpi">
+    <div class="label">총 assistant 메시지</div>
+    <div class="value">17,954</div>
+    <div class="sub">jsonl entry 의 usage 보유 행</div>
+  </div>
+  <div class="kpi">
+    <div class="label">분석 session</div>
+    <div class="value">4</div>
+    <div class="sub">main + subagent jsonl 151건 스캔</div>
+  </div>
+  <div class="kpi">
+    <div class="label">활성 일수</div>
+    <div class="value">6</div>
+    <div class="sub">일평균 1,509,236,603 token</div>
+  </div>
+  <div class="kpi warn">
+    <div class="label">추정 비용</div>
+    <div class="value">$20,342.07</div>
+    <div class="sub">일평균 $3,390.35</div>
+  </div>
+  <div class="kpi ok">
+    <div class="label">캐시 적중률</div>
+    <div class="value">96.7%</div>
+    <div class="sub">cache_read / (cache_read + create + input)</div>
+  </div>
+</div>
+
+<section>
+  <h2>1. 일별 토큰 사용량 추이</h2>
+  <p class="caption">input · output · cache_create · cache_read 4 layer 누적 line — KST 일자 기준</p>
+  <div class="chart-wrap"><canvas id="chartDaily"></canvas></div>
+</section>
+
+<div class="row-2">
+  <section>
+    <h2>2. 일별 비용 추정</h2>
+    <p class="caption">단가 표 기반 일별 USD 환산 — bar chart</p>
+    <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+  </section>
+  <section>
+    <h2>3. 모델별 토큰 분포</h2>
+    <p class="caption">전체 토큰 합산 — 모델 비율 (doughnut)</p>
+    <div class="chart-wrap"><canvas id="chartModel"></canvas></div>
+  </section>
+</div>
+
+<section>
+  <h2>4. 일별 집계 표</h2>
+  <p class="caption">날짜 단위 누계 — 모든 모델 합산</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>날짜 (KST)</th><th>메시지</th><th>input</th><th>output</th>
+        <th>cache create</th><th>cache read</th><th>총 토큰</th><th>비용 (USD)</th>
+      </tr></thead>
+      <tbody><tr><td>2026-05-17</td><td class='num'>3,887</td><td class='num'>17,019</td><td class='num'>6,321,289</td><td class='num'>22,126,743</td><td class='num'>1,679,367,902</td><td class='num strong'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td class='num'>4,427</td><td class='num'>7,244</td><td class='num'>3,103,770</td><td class='num'>50,088,706</td><td class='num'>2,107,369,810</td><td class='num strong'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td class='num'>3,004</td><td class='num'>14,117</td><td class='num'>4,548,852</td><td class='num'>54,532,495</td><td class='num'>1,647,136,008</td><td class='num strong'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td class='num'>2,357</td><td class='num'>5,070</td><td class='num'>2,929,386</td><td class='num'>50,204,806</td><td class='num'>1,228,934,025</td><td class='num strong'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td class='num'>3,627</td><td class='num'>12,023</td><td class='num'>4,860,698</td><td class='num'>102,303,157</td><td class='num'>1,785,293,517</td><td class='num strong'>1,892,469,395</td><td class='num cost'>$4,960.86</td></tr><tr><td>2026-05-22</td><td class='num'>652</td><td class='num'>1,509</td><td class='num'>1,144,988</td><td class='num'>14,909,961</td><td class='num'>290,186,528</td><td class='num strong'>306,242,986</td><td class='num cost'>$800.74</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>5. 모델별 누계</h2>
+  <p class="caption">모델 단위 30일 누계 + 점유율 + 비용 — chip 색상 = 모델 식별</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>모델</th><th>메시지</th><th>input</th><th>output</th>
+        <th>cache create</th><th>cache read</th><th>총 토큰</th><th>점유율</th><th>비용 (USD)</th>
+      </tr></thead>
+      <tbody><tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>17,935</td><td class='num'>56,982</td><td class='num'>22,908,983</td><td class='num'>294,165,868</td><td class='num'>8,738,287,790</td><td class='num strong'>9,055,419,623</td><td class='num'>100.00%</td><td class='num cost'>$20,342.07</td></tr><tr><td><span class='chip chip-<synthetic>'><synthetic></span></td><td class='num'>19</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num strong'>0</td><td class='num'>0.00%</td><td class='num cost'>$0.00</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>6. 일자 × 모델 cross-tab</h2>
+  <p class="caption">일자 와 모델 의 교차 집계 — synthetic / 0-token 행 제외</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>날짜 (KST)</th><th>모델</th><th>메시지</th><th>총 토큰</th><th>비용 (USD)</th>
+      </tr></thead>
+      <tbody><tr><td>2026-05-17</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,886</td><td class='num'>1,707,832,953</td><td class='num cost'>$3,408.28</td></tr><tr><td>2026-05-18</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>4,426</td><td class='num'>2,160,569,530</td><td class='num cost'>$4,333.11</td></tr><tr><td>2026-05-19</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,002</td><td class='num'>1,706,231,472</td><td class='num cost'>$3,834.56</td></tr><tr><td>2026-05-20</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>2,353</td><td class='num'>1,282,073,287</td><td class='num cost'>$3,004.52</td></tr><tr><td>2026-05-21</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>3,619</td><td class='num'>1,892,469,395</td><td class='num cost'>$4,960.86</td></tr><tr><td>2026-05-22</td><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>649</td><td class='num'>306,242,986</td><td class='num cost'>$800.74</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>7. session 단위 누계</h2>
+  <p class="caption">main session 단위 — subagent 토큰은 parent session 에 합산</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>session</th><th>첫 활동 (KST)</th><th>마지막 활동 (KST)</th>
+        <th>모델</th><th>메시지</th><th>총 토큰</th>
+      </tr></thead>
+      <tbody><tr><td><code>558cd683</code></td><td>2026-05-17 09:04</td><td>2026-05-17 11:42</td><td>claude-opus-4-7</td><td class='num'>618</td><td class='num'>190,750,068</td></tr><tr><td><code>7b82be3a</code></td><td>2026-05-17 11:42</td><td>2026-05-17 14:51</td><td>claude-opus-4-7</td><td class='num'>1,070</td><td class='num'>467,082,608</td></tr><tr><td><code>3b1201b7</code></td><td>2026-05-17 14:52</td><td>2026-05-18 13:40</td><td><synthetic>, claude-opus-4-7</td><td class='num'>3,249</td><td class='num'>1,532,231,784</td></tr><tr><td><code>553f4dc7</code></td><td>2026-05-18 13:40</td><td>2026-05-22 16:00</td><td><synthetic>, claude-opus-4-7</td><td class='num'>13,017</td><td class='num'>6,865,355,163</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>8. 비용 단가표 (USD per 1M token)</h2>
+  <p class="caption">2026-05-19 KST 기준 directive 명시 단가 — Anthropic 공식 pricing</p>
+  <table>
+    <thead><tr>
+      <th>모델</th><th>input</th><th>output</th><th>cache write</th><th>cache read</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><span class='chip chip-claude-opus-4-7'>claude-opus-4-7</span></td><td class='num'>$15.00</td><td class='num'>$75.00</td><td class='num'>$18.75</td><td class='num'>$1.50</td></tr><tr><td><span class='chip chip-claude-sonnet-4-6'>claude-sonnet-4-6</span></td><td class='num'>$3.00</td><td class='num'>$15.00</td><td class='num'>$3.75</td><td class='num'>$0.30</td></tr><tr><td><span class='chip chip-claude-haiku-4-5'>claude-haiku-4-5</span></td><td class='num'>$1.00</td><td class='num'>$5.00</td><td class='num'>$1.25</td><td class='num'>$0.10</td></tr>
+    </tbody>
+  </table>
+  <div class="notes">
+    <b>주의</b> — 단가 표는 directive 가 제공한 추정치. 실제 청구 금액은 Anthropic Console 의 invoice 가 정본.
+    cache_read 단가 가 input 단가 의 1/10 → 캐시 적중률 향상 시 비용 절감 효과 큼.
+  </div>
+</section>
+
+<section>
+  <h2>9. 메타데이터 + privacy</h2>
+  <table>
+    <tbody>
+      <tr><th>스캔 file</th><td>151 (jsonl 만)</td></tr>
+      <tr><th>usage 보유 file</th><td>151</td></tr>
+      <tr><th>파싱 assistant message</th><td>14,618</td></tr>
+      <tr><th>스킵 라인</th><td>0</td></tr>
+      <tr><th>집계 윈도우 (KST)</th><td>2026-04-22 16:01:00 ~ 2026-05-22 16:01:00</td></tr>
+      <tr><th>privacy 보장</th><td>prompt 본문 / message text 노출 없음. token count + timestamp + model 만 추출.</td></tr>
+      <tr><th>raw json 출처</th><td><code>docs/operations/token-usage-30d.json</code> 동시 재 산출 (machine-readable mirror)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  TooTalk (p2p_msg) · Claude Code 토큰 사용량 보고서 · 정본 §K 정합 (루트 마크다운 신규 금지 — 본 산출물은 docs/operations/ 하위)
+</footer>
+
+<script>
+// 집계 데이터 inline — directive 외부 API 호출 금지 정합
+const D = {"dates": ["2026-05-17", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22"], "total": [1707832953, 2160569530, 1706231472, 1282073287, 1892469395, 306242986], "input": [17019, 7244, 14117, 5070, 12023, 1509], "output": [6321289, 3103770, 4548852, 2929386, 4860698, 1144988], "cache_create": [22126743, 50088706, 54532495, 50204806, 102303157, 14909961], "cache_read": [1679367902, 2107369810, 1647136008, 1228934025, 1785293517, 290186528], "cost": [3408.2802, 4333.1094, 3834.5639, 3004.5212, 4960.8572, 800.7383], "model_labels": ["claude-opus-4-7", "<synthetic>"], "model_totals": [9055419623, 0], "model_costs": [20342.0702, 0.0]};
+
+// 색상 팔레트 — Toonation 브랜드 + 모델 식별
+const COLORS = {
+  input:        'rgba(0, 184, 217, 0.85)',
+  output:       'rgba(246, 173, 85, 0.85)',
+  cache_create: 'rgba(107, 70, 193, 0.85)',
+  cache_read:   'rgba(43, 108, 176, 0.85)',
+  total:        'rgba(11, 37, 69, 0.9)',
+  cost:         'rgba(192, 86, 33, 0.85)',
+};
+const MODEL_COLORS = {
+  'claude-opus-4-7':   '#6b46c1',
+  'claude-sonnet-4-6': '#2b6cb0',
+  'claude-haiku-4-5':  '#319795',
+  '<synthetic>':       '#a0aec0',
+  'unknown':           '#a0aec0',
+};
+
+// 1. 일별 4-stack line (누적 area)
+new Chart(document.getElementById('chartDaily'), {
+  type: 'line',
+  data: {
+    labels: D.dates,
+    datasets: [
+      { label: 'cache_read',   data: D.cache_read,   borderColor: COLORS.cache_read,   backgroundColor: COLORS.cache_read,   fill: true, tension: 0.25 },
+      { label: 'cache_create', data: D.cache_create, borderColor: COLORS.cache_create, backgroundColor: COLORS.cache_create, fill: true, tension: 0.25 },
+      { label: 'output',       data: D.output,       borderColor: COLORS.output,       backgroundColor: COLORS.output,       fill: true, tension: 0.25 },
+      { label: 'input',        data: D.input,        borderColor: COLORS.input,        backgroundColor: COLORS.input,        fill: true, tension: 0.25 },
+    ],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      y: { stacked: true, ticks: { callback: v => v.toLocaleString() } },
+      x: { stacked: true },
+    },
+  },
+});
+
+// 2. 일별 비용 bar
+new Chart(document.getElementById('chartCost'), {
+  type: 'bar',
+  data: {
+    labels: D.dates,
+    datasets: [{ label: '비용 (USD)', data: D.cost, backgroundColor: COLORS.cost, borderColor: COLORS.cost }],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } },
+  },
+});
+
+// 3. 모델별 doughnut
+new Chart(document.getElementById('chartModel'), {
+  type: 'doughnut',
+  data: {
+    labels: D.model_labels,
+    datasets: [{
+      data: D.model_totals,
+      backgroundColor: D.model_labels.map(m => MODEL_COLORS[m] || '#a0aec0'),
+    }],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
+  },
+});
+</script>
+
+</body>
+</html>
