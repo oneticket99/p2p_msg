@@ -101,9 +101,11 @@ class TestTrCallSites:
                 {"회원가입", "비밀번호", "확인"},
             ),
             (
+                # cycle 169.578: main_window 책임 분리 후 (cycle 169.526~530) tr() callsite mixin file 분산.
+                # main_window.py 잔존 = "보내기" (input_bar tooltip) 만. 의무 subset 의 mixin 안 retain.
                 UI_DIR / "main_window.py",
-                7,
-                {"메시지", "보내기", "설정", "회원가입", "로그인", "비밀번호"},
+                1,
+                {"보내기"},
             ),
             (
                 UI_DIR / "settings_dialog.py",
