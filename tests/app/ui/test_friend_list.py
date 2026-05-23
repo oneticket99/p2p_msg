@@ -40,16 +40,15 @@ class TestFriendList:
     """FriendListWidget 의 empty + pending incoming + accepted 행 표기."""
 
     def test_empty_shows_placeholder(self, qapp) -> None:
-        """친구 목록 비어있을 때 placeholder 행 1개 표시."""
+        """친구 목록 비어있을 때 row count 0 (cycle 169.100 회수 — placeholder 폐기)."""
 
         from app.ui.friend_list import FriendListWidget
 
         widget = FriendListWidget()
         widget.set_friends([], viewer_id=42)
 
-        assert widget.count() == 1
-        item = widget.item(0)
-        assert "친구 부재" in item.text()
+        # 한글 주석 — cycle 169.603: cycle 169.100 안 placeholder 폐기 정합 (사용자 directive — 플레이스홀더 없이 전부 구현).
+        assert widget.count() == 0
         assert widget.friend_count() == 0
 
     def test_pending_incoming_shows_accept_reject(self, qapp) -> None:
@@ -112,9 +111,10 @@ class TestAddFriendDialog:
     """AddFriendDialog 의 검색 결과 + 친구 요청 시그널 emit."""
 
     def test_set_search_results_populates_list(self, qapp) -> None:
-        """set_search_results 의 list 갱신 + verified badge 표시."""
+        """set_search_results 의 list 갱신 + ChatListEntry delegate paint payload."""
 
         from app.ui.add_friend_dialog import AddFriendDialog, SearchResult
+        from PyQt6.QtCore import Qt
 
         dlg = AddFriendDialog()
         dlg.set_search_results(
@@ -124,10 +124,15 @@ class TestAddFriendDialog:
             ]
         )
 
+        # 한글 주석 — cycle 169.603: cycle 169.495 ChatListEntry delegate paint pattern 정합.
+        # item.text() 자체는 빈 string — UserRole+2 안 ChatListEntry stash.
         assert dlg._result_list.count() == 2
-        assert "alice" in dlg._result_list.item(0).text()
-        assert "✓" in dlg._result_list.item(0).text()
-        assert "bob" in dlg._result_list.item(1).text()
+        entry_alice = dlg._result_list.item(0).data(Qt.ItemDataRole.UserRole + 2)
+        entry_bob = dlg._result_list.item(1).data(Qt.ItemDataRole.UserRole + 2)
+        assert entry_alice.name == "alice"
+        assert "✓" in entry_alice.last_message
+        assert entry_bob.name == "bob"
+        assert "✓" not in entry_bob.last_message
 
     def test_friend_requested_signal_emit(self, qapp) -> None:
         """결과 선택 + 친구 추가 버튼 — friend_requested 시그널 emit."""
