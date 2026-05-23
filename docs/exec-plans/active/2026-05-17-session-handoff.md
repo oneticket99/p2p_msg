@@ -169,6 +169,49 @@ status: active
 
 ---
 
+## 8.82 사이클 169.532~169.545 — codex e2e browser WS + 원격 server 회수 chain (2026-05-23~24 신설)
+
+### 8.82.1 14 cycle 산출 (cycle 169.532~545)
+
+| commit | cycle | scope |
+|---|---|---|
+| 328b0fe | 169.545 | ws service bot provider env inject — readyz bot_provider absent 회수 (status ok 도달) |
+| 7c80b11 | 169.544 | handoff §8.80 table blank line (markdownlint MD058 회수) |
+| ff6d462 | 169.543 | markdownlint MD037/MD050 disable — README cycle entry underscore method false positive |
+| d14b7f3 | 169.542 | 평가 4 file staleness rewrite (6h cap) — cycle 169.535~541 drift |
+| 121c8b0 | 169.541 | token-usage 1ticket dir 동적 resolve + cost_usd local shadow fix (sessions=3 msgs=1825) |
+| c42a0b0 | 169.540 | ws healthcheck port 8765 + DB_ENABLED — Dockerfile 8080 hardcoded → ws mismatch |
+| 7330667 | 169.539 | `/ws` auth_middleware public path 추가 — codex e2e 401 회수 |
+| aa9e513 | 169.538 | deploy/docker-compose.yml ws ports 8765 bind — host port mapping |
+| 6c2f43f | 169.537 | codex e2e browser WS flow 신설 + 평가 보수 재교정 |
+| 06d2554 | 169.536 | meta-enforcement L5 + linter 의무 7 file modification |
+| e97c97b | 169.535 | streaming test URL return swap (cycle 169.418 fallout) |
+| af3bdc6 | 169.534 | codex 2.8 reviewer 20 finding + MRO regression test 4 PASS |
+| 6f1cd0f | 169.533 | PyQt6 offscreen instantiation smoke PASS + codex 2.7 재 평가 (종합 6.5 → 6.8) |
+| 3ecb298 | 169.532 | handoff §8.81 신설 + M6 wbs 6 row INSERT |
+
+### 8.82.2 원격 server 회수 chain (cycle 169.537~545)
+
+codex e2e 신설 → 원격 8765 fail detect → 3중 root cause + chain 회수:
+
+1. **deploy/docker-compose.yml** ws service = `expose: ["8765"]` only → host port mapping 부재. fix (538) → `ports: ["8765:8765"]` 추가.
+2. **server/auth/middleware.py** `_PUBLIC_PATHS` 안 `/ws` 부재 → WebSocket handshake `401 Unauthorized` reject. fix (539) → `/ws` public path 추가.
+3. **Dockerfile HEALTHCHECK** port 8080 hardcoded → ws (8765 listen) mismatch unhealthy. fix (540) → service override + DB_ENABLED 추가.
+4. **ws service env block** bot provider 의무 부재 → readyz `bot_provider: absent`. fix (545) → BOT_ENABLED + ANTHROPIC + OPENAI 추가 + 원격 .env inject.
+
+verify chain:
+- WebSocket OPEN PASS + JOIN → PEERS + UNKNOWN → ERROR ✅
+- pytest e2e 2 PASS ✅
+- readyz `{"status": "ok", "checks": {"db_pool": "ok", "bot_provider": "ok", ...}}` ✅
+
+### 8.82.3 잔존 chain
+
+- `dist/TooTalk.app` build trigger (cycle 169.545 `gh workflow run build.yml` runId 26320924166)
+- 사용자 manual visual ack (task #11 pending)
+- 원격 `tootalk-postfix Exited (1)` = expected (cycle 152 host postfix 분리 정합)
+
+---
+
 ## 8.81 사이클 169.516~169.531 — main_window 책임 분리 phase 본격 종료 + __init__ CRITICAL 회수 (2026-05-23 신설)
 
 ### 8.81.1 16 cycle 산출 (cycle 169.516~531)
