@@ -49,7 +49,7 @@ CheckList.md · 항목 추적·매핑·진행률" — 그대로 본 문서의 �
 | Phase 3 — bot framework (BotFather + Bot API + webhook + inline + payment) | **DONE** | cycle 119~131 + Anthropic + OpenAI + RAG + jailbreak 17 + 3 layer fallback |
 | Phase 4 — production infra (docker compose 6 + nginx TLS + SMTP postfix + certbot + JSON log) | **DONE** | cycle 100~129 + v0.4.0-phase4-infra release |
 | Phase 5 — Item 5 (i18n + emoji pack share + bot 마무리 + 원격 제어 + mobile) | **ACTIVE** | cycle 119~169.82 — i18n actual binding + bot 고객센터 봇 + 방송 도우미 봇 진입 |
-| CI 3종 GREEN (ci + docs-lint + doc-gardener) | **GREEN** | cycle 169.81 docs-lint PASS 67 file + ci d55fa10 in_progress |
+| CI 게이트 self-consistency 회수 | **DONE** | cycle 169.650 — markdownlint MD049 + meta-enforcement soft-fail 충돌 회수 + local CI-equivalent PASS |
 | reviewer + qa audit chain — HIGH 2 + MEDIUM 4 + LOW 3 finding 전수 회수 | **PASS** | cycle 169.78~80 chain |
 | folder test coverage (repository 8 + handlers 7 + client 6 + signaling 12 + call_env 6 = 70 PASS) | **PASS** | cycle 169.80~82 |
 | WebRTC TURN env override + coturn install script (deploy/scripts/coturn_install.sh) | **READY** | cycle 169.81 — local script + 사용자 manual SSH install path |
