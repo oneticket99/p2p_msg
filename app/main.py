@@ -302,6 +302,10 @@ def main() -> int:
                 log.debug("folder list fetch chain fail — %r", exc)
         window.show()
 
+        # 한글 주석 — cycle 169.597 — NFR-03 cold start probe marker (env TOOTALK_COLD_START_PROBE=1 시점 stdout flush)
+        if os.environ.get("TOOTALK_COLD_START_PROBE") == "1":
+            print("READY: main_window shown", flush=True)
+
         # 한글 주석 — cycle 169.58 회수 — RoomsClient instantiate + list_rooms background fire
         if authenticated and session_token:
             try:
