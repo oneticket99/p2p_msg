@@ -30,7 +30,7 @@ status: active
 ```mermaid
 flowchart LR
     ROOT["저장소 루트<br/>p2p_msg/"]
-    DOTCLAUDE[".claude/agents/<br/>7 에이전트"]
+    DOTCLAUDE[".claude/agents/<br/>process agent"]
     APP["app/<br/>PyQt6 클라"]
     SERVER["server/<br/>aiohttp 시그널링"]
     DOCS["docs/<br/>exec-plans"]
@@ -75,7 +75,9 @@ p2p_msg/
 │       ├── planning-agent.md
 │       ├── qa-agent.md
 │       ├── release-agent.md
-│       └── reviewer-agent.md
+│       ├── reviewer-agent.md
+│       ├── ssh-deploy-agent.md
+│       └── dereliction-detector-agent.md
 ├── .env.example
 ├── .env.local
 ├── .env.telegram
@@ -197,6 +199,7 @@ p2p_msg/
 │       ├── update_dialog.py
 │       └── welcome_dialog.py
 ├── docs/
+│   ├── PORTABLE_HARNESS.md       # cycle 169.559 — 거버넌스·hook·guardrail 이식 한벌
 │   └── exec-plans/
 │       └── active/
 │           └── 2026-05-17-tootalk-phase1-mvp.md
@@ -244,7 +247,10 @@ p2p_msg/
 │       └── smtp_client.py
 └── tools/
     ├── claude-telegram.sh
-    └── doc-lint.sh
+    ├── doc-lint.sh
+    ├── meta_enforce.py           # L5 enforcement 자기검증
+    ├── md_agents.py              # M2/M3/M4/root freeze 검증
+    └── hook_*.sh                 # Claude Code hook chain
 ```
 
 > 본 트리에 없으나 정본·AGENTS.md 가 예고한 파일 (예: `Specification.md`·`CheckList.md`·`History.md`·`README.md`·`CLAUDE.md`·`EXTENSION_GUIDE.md`·`MIGRATION_MARIADB.md`·`docs/policies/`·`tests/`·`.github/workflows/`·`data/wbs.sqlite`) 은 §13 에 별도 추적한다.
@@ -255,7 +261,7 @@ p2p_msg/
 
 | 디렉토리 | 책임 + 의존 방향 |
 |---|---|
-| `.claude/agents/` | 7 프로세스 에이전트 개별 사양 (한 파일 1 에이전트) · 정본 §C ↔ AGENTS.md §6 |
+| `.claude/agents/` | process agent 개별 사양 (한 파일 1 에이전트) · 정본 §C ↔ AGENTS.md §6 |
 | `app/` | PyQt6 데스크탑 클라 패키지 · UI → Core → {Net, RTC} 단방향 · qasync 단일 이벤트 루프 |
 | `app/ui/` | QWidget 계층 (메인 윈도우·채팅뷰·버블·상태바·진행률 위젯) · `app/core/` 만 import |
 | `app/core/` | 상태 머신 + 환경변수 로딩 (Qt 의존성 없음) · 외부 의존 없음 · 단위 테스트 가능 |
@@ -267,7 +273,7 @@ p2p_msg/
 | `server/auth/` | 회원가입/로그인/OTP 발송/비번 재설정 (bcrypt 12 rounds + aiosmtplib + secrets.choice) |
 | `docs/exec-plans/active/` | 활성 실행 계획 (`YYYY-MM-DD-<slug>.md`) · PLANS.md 인덱스 · 완료 시 `completed/` 이동 |
 | `tests/e2e/` | Playwright 기반 E2E · HTML visual smoke + live aiohttp signaling browser WebSocket flow |
-| `tools/` | 운영 스크립트 (텔레그램 브리지 · 문서 린트) · `data/wbs.sqlite` 등 추후 추가 |
+| `tools/` | 운영 스크립트 (텔레그램 브리지 · 문서 린트 · hook chain · L5 meta enforcement) |
 
 **금지 의존**: `app/ui/` → `app/net/` · `app/rtc/` 직접 호출, `server/room.py` → `signaling.py` 역방향, `server/protocol.py` → `room.py` 역방향. PR 단계에서 `@reviewer-agent` 가 차단 ([ARCHITECTURE.md §4](ARCHITECTURE.md)).
 
@@ -345,7 +351,7 @@ p2p_msg/
 
 ---
 
-## 8. `.claude/agents/` — 7 프로세스 에이전트
+## 8. `.claude/agents/` — 프로세스 에이전트
 
 | 파일 | 역할 1행 |
 |---|---|
@@ -356,6 +362,8 @@ p2p_msg/
 | `release-agent.md` | PR 템플릿·머지 게이트·릴리즈 노트·`README.md` 변경 이력 prepend |
 | `doc-gardener-agent.md` | 주간 drift 감지·자동 보정 PR |
 | `history-agent.md` | `History.md` 역순 prepend 관리 |
+| `ssh-deploy-agent.md` | 데모 서버 git pull + docker compose build/restart + healthz 검증 |
+| `dereliction-detector-agent.md` | 작업 마무리 시 M1~M7·manual test·BPE·평가 sweep 직무유기 detect |
 
 > 문서 담당 4 에이전트 (`@spec-agent` · `@structure-agent` · `@checklist-agent` · `@history-agent`) 매핑은 [정본 §D](CLAUDE_HARNESS_IMPORTANT.md) 참조. 본 시점 디스크에는 `history-agent.md` 만 존재하고 나머지 3개는 `doc-gardener-agent.md` 가 통합 운영한다.
 
@@ -367,6 +375,7 @@ p2p_msg/
 
 ```text
 docs/
+├── PORTABLE_HARNESS.md
 └── exec-plans/
     └── active/
         └── 2026-05-17-tootalk-phase1-mvp.md
@@ -377,6 +386,7 @@ docs/
 | `docs/exec-plans/active/` | 활성 실행 계획 (`YYYY-MM-DD-<slug>.md`) — 큰 작업 1건당 1 파일 |
 | `docs/exec-plans/completed/` | 완료된 실행 계획 보관소 (예정 — 본 시점 미생성) |
 | `docs/policies/` | doc-gardening · adoption · harness 정책 문서 보관소 (예정) |
+| `docs/PORTABLE_HARNESS.md` | 다른 프로젝트 재사용용 거버넌스·hook·guardrail·trigger 한벌 |
 
 ### 9.2 `tools/` 스크립트
 
@@ -384,10 +394,14 @@ docs/
 |---|---|---|
 | `tools/claude-telegram.sh` | 실행 | Claude ↔ Telegram 양방향 채널 브리지 (M7 송수신 인프라) |
 | `tools/doc-lint.sh` | 실행 | 문서 린트 5 검사 — BPE U+CE21 단독 + 깨진 링크 + frontmatter + 빈 줄 + 1인칭/3인칭 + `(예정)` marker skip rule |
-| `tools/hook_check_bpe_token_input.sh` | 실행 | PreToolUse Edit/Write hook (sketch — `.claude/settings.json.disabled`). 다음 BPE 위반 발견 시 활성 — [[feedback-bpe-script-trigger-warning]] |
-| `tools/hook_telegram_report_stop.sh` | 실행 | Stop hook (sketch). 응답 종료 시점 transcript 의 자동 텔레그램 송신 — [[feedback-telegram-report-script-trigger-warning]] |
+| `tools/hook_check_bpe_token_input.sh` | 실행 | PreToolUse Edit/Write hook — BPE/pronoun 입력 차단 |
+| `tools/hook_telegram_report_stop.sh` | 실행 | Stop hook — 응답 종료 시점 transcript 자동 텔레그램 송신 |
+| `tools/hook_post_write_inspect.sh` | 실행 | PostToolUse — syntax/AST/BPE/markdownlint 검수 |
+| `tools/hook_dereliction_check.sh` | 실행 | Stop hook — 직무유기 7 영역 detect + TTL/sentinel 차단 |
+| `tools/meta_enforce.py` | 실행 | L5 enforcement 자기검증 — root freeze + CI soft-fail + tracked noise 차단 |
+| `tools/md_agents.py` | 실행 | M2/M3/M4/root markdown freeze 검증 |
 
-> 추가 예정: `tools/md_agents.py` (M1~M3 검증 본체) · `tools/db_init.py` (MariaDB 스키마 초기화) · `tools/build.py` (PyInstaller + wine 래퍼). 본 시점에는 부재.
+> 추가 예정: `tools/db_init.py` (MariaDB 스키마 초기화) · `tools/build.py` (PyInstaller + wine 래퍼).
 
 ---
 

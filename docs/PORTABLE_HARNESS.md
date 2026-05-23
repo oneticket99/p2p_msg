@@ -1,5 +1,5 @@
 ---
-title: "Portable Harness — Claude Code 거버넌스 + Hook + Skill + Sub-agent 병렬화 공용 한벌"
+title: "Portable Harness — Claude Code 거버넌스 + Hook + Guardrail + Trigger + 문서/코드 분리 공용 한벌"
 owner: oneticket99
 last_verified: 2026-05-23
 last_updated: 2026-05-23
@@ -8,8 +8,8 @@ status: active
 
 # Portable Harness — 공용 한벌
 
-> TooTalk (p2p_msg) 프로젝트 누계 사용자 directive 의 거버넌스 + 가드레일 + Hook + Skill + Sub-agent 병렬화 의 다른 프로젝트 재사용 의무 한벌.
-> cycle 1~169.207 누계 운영 검증 — drift 0건 158 연속.
+> TooTalk (p2p_msg) 프로젝트 누계 사용자 directive 의 거버넌스 + 하네스 + Hook + Guardrail + Trigger + 문서화 + 코드 분리 구조를 다른 프로젝트로 이식하기 위한 공용 한벌.
+> cycle 1~169.5xx 누계 운영 검증 — M1~M7, Whitebox, Stop hook, L5 meta-enforcement, dereliction detector, HTML mirror, token usage trigger 반영.
 
 ---
 
@@ -19,7 +19,7 @@ status: active
 
 `CLAUDE_HARNESS_IMPORTANT.md` — 세션 내 Watcher 정본. M1~M7 + Whitebox §P + 가드레일 우선순위 §Q-4 + 분류기 hard block §S 정합.
 
-### 1.2 7 process agent
+### 1.2 9 process agent
 
 | 호출명 | 단계 | 도구 |
 |---|---|---|
@@ -30,6 +30,7 @@ status: active
 | `@release-agent` | ⑤ 머지 + 릴리즈 | Read · Write · Edit · Bash (git · gh) |
 | `@doc-gardener-agent` | ④ + 주 1회 | Read · Grep · Glob · Bash · Edit |
 | `@history-agent` | ④ | Read · Edit · Bash (read-only) |
+| `@ssh-deploy-agent` | ⑤ 후속 배포 | Read · Bash · Grep · Glob |
 | `@dereliction-detector-agent` | 매 N cycle | Read · Bash · Grep · Glob (read-only) |
 
 ### 1.3 5단계 워크플로우
@@ -56,28 +57,59 @@ status: active
 
 ---
 
-## 3. Hook chain (PostToolUse + Stop)
+## 3. Hook chain (PreToolUse + PostToolUse + Stop)
 
-### 3.1 PostToolUse Hook
+### 3.0 활성 설정 파일
+
+| file | role |
+|---|---|
+| `.claude/settings.json` | 공유 hook + permission baseline. PreToolUse/PostToolUse/Stop 등록. |
+| `.claude/settings.local.json` | 로컬 머신 권한 cache. git 추적 금지. |
+| `.claude/dereliction_disabled.flag` | dereliction Stop hook 임시 retain sentinel. 존재 시 hook 즉시 exit 0. |
+| `.claude/dereliction_last_fire.txt` | 동일 HEAD 반복 차단 TTL marker. |
+
+이식 시 `.claude/settings.json` 은 복사하되 local 파일과 sentinel 파일은 프로젝트 정책에 맞게 별도 생성한다.
+
+### 3.1 PreToolUse Hook
+
+| hook | trigger | scope |
+|---|---|---|
+| `hook_check_bpe_token_input.sh` | Edit/Write/NotebookEdit 입력 전 | BPE 손상 토큰 + 금지 대명사 입력 차단 |
+
+### 3.2 PostToolUse Hook
 
 | hook | trigger | scope |
 |---|---|---|
 | `hook_post_write_inspect.sh` | Write/Edit 직후 | syntax + AST + BPE + pronoun + markdownlint 5종 차단 |
 | `hook_html_mirror_consistency.sh` | Edit 직후 | `.md` ↔ `.html` 6 pair 동시 갱신 + fingerprint 2 layer |
 
-### 3.2 Stop Hook
+### 3.3 Stop Hook
 
 | hook | scope |
 |---|---|
 | `hook_telegram_report_stop.sh` | 매 작업 보고 텔레그램 자동 송신 |
 | `hook_assessment_freshness.sh` | 평가 4 file 5+ commit drift 차단 |
+| `hook_doc_consistency.sh` | ARCHITECTURE/Structure 실 path drift 차단 |
+| `hook_html_mirror_consistency.sh` | Stop 시점 HTML mirror 재검증 |
+| `hook_chat_bpe_check.sh` | 마지막 assistant message BPE/조사 chain 검수 |
 | `hook_self_hosted_ci_trigger.sh` | self-hosted runner CI auto-trigger |
 | `hook_assessment_token_rewrite_trigger.sh` | 평가 6h staleness + token-usage 재 산출 |
 | `hook_dereliction_check.sh` | 7 영역 자동 detect + WARN BLOCK exit 2 |
 
-### 3.3 Hook 활성 의무
+### 3.4 Git Hook / CI Hook 계층
 
-`.claude/settings.json` `hooks.PreToolUse` + `hooks.PostToolUse` + `hooks.Stop` 의 type=command + bash 경로 명시.
+| layer | trigger | script / file | role |
+|---|---|---|---|
+| L1 post-commit | commit 직후 | `hook_postcommit_wbs_auto_register.sh` 계열 | WBS row 자동 등록 패턴 |
+| L1 post-commit | commit 직후 | `hook_postcommit_auto_telegram.sh` 계열 | commit summary telegram 송신 패턴 |
+| L1 pre-push | push 직전 | `.git/hooks/pre-push` | `PRE_PUSH=1` 로 ahead-check self-reference 회피 |
+| L5 meta | CI + local | `tools/meta_enforce.py` | enforcement 파일 실재성, root markdown freeze, soft-fail 금지, meta job 등록, local noise 추적 금지 |
+
+TooTalk 현 저장소에는 L5가 실제 파일로 존재한다. post-commit 계열은 정본 §S 에서 portable pattern 으로 관리하며, 대상 프로젝트에서 `.git/hooks/` 또는 installer script 로 생성한다.
+
+### 3.5 Hook 활성 의무
+
+`.claude/settings.json` `hooks.PreToolUse` + `hooks.PostToolUse` + `hooks.Stop` 의 `type=command` + `bash ${CLAUDE_PROJECT_DIR}/tools/...` 경로 명시. Stop hook 은 차단 목적 hook 과 보고 목적 hook 을 함께 두되, 텔레그램 송신 hook 은 응답 차단을 피하기 위해 항상 exit 0 패턴을 유지한다.
 
 ---
 
@@ -125,6 +157,11 @@ status: active
 - `feedback_no_design_change_without_user_directive.md` — 사용자 명시 부재 시 design 변경 금지
 - `feedback_no_korean_chuck_token.md` — BPE 손상 토큰 단독 사용 금지
 - `feedback_no_triple_particle_chat.md` — chat 안 소유격 조사 3회 chain 금지 (BPE 손상 회피)
+- `feedback_no_self_other_pronoun.md` — 금지 대명사 사용 차단
+- `feedback_telegram_report_mandatory_m7.md` — 매 결과 보고 텔레그램 송신
+- `feedback_assessment_full_rewrite.md` — 평가 snapshot 전면 rewrite
+- `feedback_auto_commit_push_deploy.md` — commit + push + 서버 변경 시 deploy chain
+- `feedback_code_qa_review_gate_mandatory.md` — code 작업 후 review/qa gate 의무
 
 ---
 
@@ -176,6 +213,8 @@ SKIP_PREPUSH=1 git push origin main
 
 - classifier hard block 회피 (사용자 directive 영구 GO)
 - pre-push hook 안 `PRE_PUSH=1` 환경변수 ahead-check skip
+- main 직접 push 금지 정책이 있는 프로젝트는 feature branch 대상으로 같은 prefix 를 적용한다.
+- local noise (`.claude/settings.local.json`, build 산출물, IDE cache) 는 `.gitignore` 에 넣고 L5 `tracked-noise-files` 로 이중 차단한다.
 
 ---
 
@@ -196,30 +235,88 @@ SKIP_PREPUSH=1 git push origin main
 
 ---
 
-## 11. 다른 프로젝트 재사용 chain
+## 11. 문서화 · 코드 분리 규칙
 
-### 11.1 file copy 의무
+### 11.1 Root 문서 freeze
+
+| rule | value |
+|---|---|
+| root markdown cap | TooTalk 기준 18개 |
+| 신규 정책 문서 | `docs/` 하위에만 생성 |
+| portable doc 위치 | `docs/PORTABLE_HARNESS.md` |
+| 검증 | `tools/meta_enforce.py` + CI `meta-enforcement` |
+
+루트는 진입점과 정본만 둔다. 장문 정책, 평가, handoff, portable guide 는 `docs/` 하위로 이동한다.
+
+### 11.2 Markdown ↔ HTML mirror
+
+6 pair 동시 유지:
+
+| md | html |
+|---|---|
+| `Structure.md` | `docs/html/Structure.html` |
+| `ARCHITECTURE.md` | `docs/html/ARCHITECTURE.html` |
+| `FRONTEND.md` | `docs/html/FRONTEND.html` |
+| `DESIGN.md` | `docs/html/DESIGN.html` |
+| `docs/assessments/productization.md` | `docs/html/productization.html` |
+| `docs/assessments/vibe-coding.md` | `docs/html/vibe-coding.html` |
+
+평가 문서 pair 는 `last_verified` + cycle marker fingerprint 를 같이 맞춘다.
+
+### 11.3 Code split 기준
+
+| area | 기준 |
+|---|---|
+| UI 대형 class | mixin 또는 helper method 로 기능 단위 분리 |
+| server route | Router → Service → Repository/Model 계층 유지 |
+| config | `.env`, DB 상수 테이블, settings loader 경유 |
+| test | 실제 binding 테스트로 skeleton-only test 교체 |
+| docs | 작업 전 Specification/CheckList/Structure/Exec Plan 갱신 |
+
+대형 UI 파일은 트레이, 친구 검색, drawer, bot chat, lifecycle, invite, status 같은 사용성 단위로 나눈다. 단순 줄 수 감축이 아니라 테스트 가능한 책임 경계를 만드는 것이 기준이다.
+
+### 11.4 Local / shared 파일 분리
+
+| shared | local |
+|---|---|
+| `.claude/settings.json` | `.claude/settings.local.json` |
+| `.claude/agents/*.md` | `.claude/dereliction_last_fire.txt` |
+| `tools/hook_*.sh` | `.claude/dereliction_disabled.flag` |
+| `docs/**` | `dist/`, `build/`, `.venv/` |
+
+portable package 는 shared 파일만 복사한다. local 파일은 machine bootstrap 단계에서 생성한다.
+
+---
+
+## 12. 다른 프로젝트 재사용 chain
+
+### 12.1 file copy 의무
 
 ```
 CLAUDE_HARNESS_IMPORTANT.md       # Watcher 정본
 CLAUDE.md                          # 세션 호출 규약
 AGENTS.md                          # 저장소 맵 + 7 process agent 표
-PORTABLE_HARNESS.md                # 본 문서
+docs/PORTABLE_HARNESS.md           # 본 문서
 .claude/settings.json              # Hook 활성
 .claude/agents/*.md                # 7+ agent 사양
 tools/hook_*.sh                    # Hook script chain
 tools/gen_token_usage_30d.py       # 평가 자동 trigger
+tools/meta_enforce.py              # L5 자기검증
+tools/md_agents.py                 # M2/M3/M4/root freeze 검증
+.github/workflows/ci.yml           # meta-enforcement job 포함
 ```
 
-### 11.2 환경 setup
+### 12.2 환경 setup
 
 1. `~/.claude/projects/<project_slug>/memory/MEMORY.md` 생성
-2. 핵심 영구 가드레일 9건 copy (§5.4)
+2. 핵심 영구 가드레일 copy (§5.4)
 3. `.claude/settings.json` Hook 활성
-4. 7 agent + dereliction-detector skeleton 신설
+4. process agent + ssh-deploy + dereliction-detector skeleton 신설
 5. M1~M7 cache 명문 (CLAUDE.md §8 정합)
+6. `.gitignore` 에 local noise + build 산출물 추가
+7. CI 안 `python tools/meta_enforce.py` job 등록
 
-### 11.3 첫 cycle 의무
+### 12.3 첫 cycle 의무
 
 - `@planning-agent` Exec Plan 작성 (M1)
 - `@release-agent` 또는 main thread README "변경 이력" prepend (M2)
@@ -228,21 +325,42 @@ tools/gen_token_usage_30d.py       # 평가 자동 trigger
 - WBS sqlite `wbs_tasks` 1행 INSERT (M6)
 - 평가 snapshot 2 file 초기 작성 (productization + vibe-coding)
 - HTML mirror 6 pair 초기 생성
+- `tools/meta_enforce.py` PASS
+- `hook_dereliction_check.sh` sentinel/TTL 동작 검증
 
 ---
 
-## 12. 운영 검증 결과 (TooTalk 누계)
+## 13. Trigger catalog
 
-- cycle 1 ~ 169.207 누계 운영
-- drift 0건 158 연속 cycle 37~169.187
-- sub-agent 누계 88+ spawn 병렬 batch
+| trigger | action |
+|---|---|
+| directive 수령 | WBS row INSERT + CheckList 매핑 |
+| 큰 작업 | Exec Plan `active/` 신설 |
+| Edit/Write 전 | BPE/pronoun PreToolUse 검사 |
+| Edit/Write 후 | syntax/AST/markdownlint/HTML mirror 검사 |
+| commit 후 | WBS/telegram hook pattern |
+| Stop | telegram + assessment + doc consistency + BPE chat + CI + token usage + dereliction |
+| 5 commit drift | assessment rewrite block |
+| 6h staleness | assessment/token rewrite trigger |
+| CI | md_agents + doc-lint + meta_enforce |
+| server/deploy 변경 | ssh-deploy-agent chain |
+
+---
+
+## 14. 운영 검증 결과 (TooTalk 누계)
+
+- cycle 1 ~ 169.5xx 누계 운영
+- drift 0건 연속 구간 다수 유지
+- sub-agent 누계 100+ spawn 병렬 batch
 - 영구 가드레일 50+ 누적
-- pytest 1817 PASS + Playwright + coverage 80%
-- Hook 6 layer 강제 차단
+- pytest 1800+ PASS + Playwright + coverage gate
+- Hook 8 Stop entry + L5 meta-enforcement
+- root markdown 18 freeze 유지
+- PORTABLE_HARNESS 루트 이동 회수 완료 (`docs/` 하위)
 
 ---
 
-## 13. 참조
+## 15. 참조
 
 - [CLAUDE_HARNESS_IMPORTANT.md](../CLAUDE_HARNESS_IMPORTANT.md) — Watcher 정본
 - [CLAUDE.md](../CLAUDE.md) — 세션 호출 규약
@@ -250,3 +368,5 @@ tools/gen_token_usage_30d.py       # 평가 자동 trigger
 - `~/.claude/projects/<project_slug>/memory/MEMORY.md` — 가드레일 인덱스
 - `.claude/agents/` — agent 사양
 - `tools/` — Hook script + 자동화
+- `tools/meta_enforce.py` — L5 enforcement 자기검증
+- `.claude/settings.json` — hook activation baseline
