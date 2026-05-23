@@ -61,8 +61,10 @@ class TestSettingsDialogSmoke:
         from app.ui.settings_dialog import SettingsDialog
         dialog = SettingsDialog(sound_player=None)
         qtbot.addWidget(dialog)
-        # cycle 153.5 — 10 section tabbed dialog
-        assert dialog._tabs.count() == 10
+        # 한글 주석 — cycle 169.604: cycle 153.5 의 _tabs.count() == 10 outdated.
+        # cycle 169.x 안 _tabs QTabWidget → section list pattern + _show_subpage swap.
+        # instantiate crash 부재 smoke only retain.
+        assert dialog is not None
         dialog.close()
 
 
