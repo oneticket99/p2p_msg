@@ -28,6 +28,15 @@ jobs:
           .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
       - name: PyInstaller build
         run: .venv/bin/python tools/build.py --target macos
+      - name: ad-hoc codesign (.app)
+        # 한글 주석 — cycle 169.628: macOS 26.4 + PyQt6 6.11 Qt initializer SIGSEGV 회수.
+        # PyInstaller 자체 codesign_identity=None 정합 (Team ID mismatch 회피) + post-build 전체 ad-hoc sign chain.
+        # `--deep --force --options runtime` = framework/dylib 전수 sign + runtime hardened option.
+        # google_crc32c/.dylibs invalid bundle 회피 = pre-clean dotfile 디렉토리.
+        run: |
+          find dist/TooTalk.app -name ".dylibs" -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          codesign --deep --force --options runtime --sign - dist/TooTalk.app
+          codesign -dv --verbose=2 dist/TooTalk.app 2>&1 | head -10 || true
       - name: Zip artifact
         run: |
           cd dist && zip -r "TooTalk-macos-arm64.zip" "TooTalk.app"
