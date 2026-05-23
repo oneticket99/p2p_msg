@@ -169,12 +169,15 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.545 — codex e2e browser WS + 원격 server 회수 chain (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.548 — codex e2e browser WS + 원격 server 회수 + build artifact PASS (2026-05-23~24 신설)
 
-### 8.82.1 14 cycle 산출 (cycle 169.532~545)
+### 8.82.1 17 cycle 산출 (cycle 169.532~548)
 
 | commit | cycle | scope |
 |---|---|---|
+| bc962b6 | 169.548 | 평가 4 file staleness rewrite (cycle 169.543~547 5 commit drift 회수) |
+| c98ddad | 169.547 | build artifact 2 platform PASS (macOS 343.8MB + Windows 101.5MB) + README/History prepend 14 entry |
+| bfcf60f | 169.546 | handoff §8.82 신설 (14 cycle batch manifest) + M6 wbs 11 row + build.yml dispatch |
 | 328b0fe | 169.545 | ws service bot provider env inject — readyz bot_provider absent 회수 (status ok 도달) |
 | 7c80b11 | 169.544 | handoff §8.80 table blank line (markdownlint MD058 회수) |
 | ff6d462 | 169.543 | markdownlint MD037/MD050 disable — README cycle entry underscore method false positive |
@@ -204,11 +207,22 @@ verify chain:
 - pytest e2e 2 PASS ✅
 - readyz `{"status": "ok", "checks": {"db_pool": "ok", "bot_provider": "ok", ...}}` ✅
 
-### 8.82.3 잔존 chain
+### 8.82.3 잔존 chain (cycle 169.549+ 의무)
 
-- `dist/TooTalk.app` build trigger (cycle 169.545 `gh workflow run build.yml` runId 26320924166)
-- 사용자 manual visual ack (task #11 pending)
+- 사용자 manual visual ack (task #11 pending, 보류 directive)
+- `.app` codesign + notarize (Phase 2 hardening, TD-3)
+- 다음 session handoff doc (cycle 169.548+ 인계 manifest)
+- Phase 5 Item 5 actual binding (친구간 원격 데스크탑)
+- token-usage 1h cap monitoring (Stop hook auto-fire chain)
 - 원격 `tootalk-postfix Exited (1)` = expected (cycle 152 host postfix 분리 정합)
+
+### 8.82.4 build artifact PASS (cycle 169.547)
+
+- workflow_dispatch fire — runId `26320924166`
+- macOS arm64 (.app) — `success`, artifact `tootalk-macos-arm64` 343.8MB → `TooTalk-macos-arm64.zip` 331MB unzip
+- Windows x64 native (.exe) — `success`, artifact `tootalk-windows-x64` 101.5MB → zip 97MB
+- 2 platform self-hosted runner (id=22 tootalk-macos-1ticket) + windows-latest GitHub-hosted 동시 build
+- artifact retain → `dist/runs/26320924166/`
 
 ---
 

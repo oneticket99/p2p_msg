@@ -312,6 +312,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - [2026-05-23 07:10:00] 원격 시그널링 서버 Playwright WebSocket E2E 보강 (DESIGN.md · CheckList.md · Structure.md · tests/e2e/conftest.py · tests/e2e/test_signaling_browser_flow.py)
 - [2026-05-23 06:55:00] 평가 문서 낙관 표현 보수 교정 (docs/assessments/productization.md · docs/assessments/vibe-coding.md · docs/html/productization.html · docs/html/vibe-coding.html)
 - [2026-05-23 06:40:00] meta-enforcement L5 자기검증 계층 추가 + 임시 artifact 깨진 링크 정리 (tools/meta_enforce.py · ci.yml · docs/policies/execution-harness.md · docs/assessments/codex-2.8-mixin-fragility.md)
+- cycle 169.548~549 (2026-05-24 14:00 KST) — 평가 4 file staleness rewrite (cycle 169.543~547 5 commit drift 회수, last_verified 14:00 swap) + handoff §8.82 17 entry update (cycle 169.546~548 추가) + M6 wbs 3 row INSERT local (total=188).
 - cycle 169.546~547 (2026-05-24 13:50 KST) — handoff §8.82 신설 (cycle 169.532~545 14 entry batch) + M6 wbs 11 row INSERT + build.yml workflow_dispatch dispatch (runId 26320924166) — macOS arm64 (.app 343.8MB) + Windows x64 (.exe 101.5MB) 양 job success ✅ + artifact download chain.
 - cycle 169.545 (2026-05-24 13:45 KST) — ws service bot provider env inject (BOT_ENABLED + ANTHROPIC_API_KEY + OPENAI_API_KEY 추가). 원격 .env inject + ws restart → readyz `bot_provider: ok` 도달 (degraded → ok 전환). server full ready state 활성.
 - cycle 169.543~544 (2026-05-24 13:35 KST) — markdownlint MD037/MD050 disable (README cycle entry underscore method false positive) + handoff §8.80 table blank line (MD058). docs-lint CI fail 회수.
