@@ -169,12 +169,15 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.608 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 6 bench + tests/app/ui ignore 해제 + 5 file hang skip (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.612 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 6 bench + tests/app/ui ignore 해제 + 5 file hang skip + main_integration OpenAI refactor + log file probe (2026-05-23~24 신설)
 
-### 8.82.1 77 cycle 산출 (cycle 169.532~608)
+### 8.82.1 80 cycle 산출 (cycle 169.532~612)
 
 | commit | cycle | scope |
 |---|---|---|
+| d238733 | 169.612 | NFR-03 log file fallback probe — ~/.tootalk/cold_start.log write + measure_cold_start.py log detection |
+| 72ea024 | 169.611 | test_main_integration OpenAI strict refactor — 2 class skip 해제, 6 PASS (5 PASS 추가) |
+| 9a5fa84 | 169.609 | NFR-03 CheckList update + 평가 4 file sync (PyInstaller windowed mode stdout 차단 식별) |
 | a3e28bf | 169.608 | tests/app/ui ignore 해제 + cov gate 30→45 + 3 file hang skip (e2e_button + e2e_flow + http_worker) — UI 184 PASS + 52 skip green chain |
 | be0d7e5 | 169.607 | handoff §8.82 75 entry + README/History + 평가 4 file sync (169.605~606 drift) |
 | f894699 | 169.606 | conftest autouse 폐기 + dialog_functional skip — fixture hang 부분 회수 (단독 file PASS retain) |
