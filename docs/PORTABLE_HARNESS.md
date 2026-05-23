@@ -290,6 +290,25 @@ portable package 는 shared 파일만 복사한다. local 파일은 machine boot
 
 ## 12. 다른 프로젝트 재사용 chain
 
+### 12.0 Codex skill invoke
+
+본 문서는 타 프로젝트 시작 시 개인 skill 로도 호출한다.
+
+| item | value |
+|---|---|
+| skill name | `$portable-harness` |
+| local path | `~/.codex/skills/portable-harness/` |
+| core file | `SKILL.md` |
+| checklist | `references/bootstrap.md` |
+
+사용 예:
+
+```text
+Use $portable-harness to bootstrap governance, hooks, guardrails, and project-start documentation.
+```
+
+skill 은 타 프로젝트에서 현재 저장소의 긴 정본 전체를 즉시 로드하지 않고, 먼저 대상 저장소를 조사한 뒤 필요한 경우 `references/bootstrap.md` 와 본 문서를 읽도록 설계한다.
+
 ### 12.1 file copy 의무
 
 ```

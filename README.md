@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-23 12:14:37] PORTABLE_HARNESS 타 프로젝트 시작용 `$portable-harness` 개인 skill 분리 반영 (docs/PORTABLE_HARNESS.md · CheckList.md · ~/.codex/skills/portable-harness)
 - [2026-05-23 12:06:22] PORTABLE_HARNESS 거버넌스·hook·guardrail·trigger·코드 분리 이식 한벌 최신화 (docs/PORTABLE_HARNESS.md · Structure.md · CheckList.md)
 - [2026-05-23 07:20:00] 바이브코딩 평가서 엄격 기준 L5 포함 및 보수 비율 반영 (docs/assessments/vibe-coding.md · docs/html/vibe-coding.html)
 - [2026-05-23 07:10:00] 원격 시그널링 서버 Playwright WebSocket E2E 보강 (DESIGN.md · CheckList.md · Structure.md · tests/e2e/conftest.py · tests/e2e/test_signaling_browser_flow.py)
