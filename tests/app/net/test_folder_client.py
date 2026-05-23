@@ -53,12 +53,22 @@ class TestFolderClientWorkers:
 class TestSslContextEnv:
     """cycle 169.79 HIGH-1 회수 — TOOTALK_TLS_VERIFY env override."""
 
-    def test_default_verify_enabled(self, monkeypatch) -> None:
+    def test_default_verify_disabled(self, monkeypatch) -> None:
+        # cycle 169.275 회수 — default "0" swap (demo self-signed cert 의 401 회수, 사용자 directive)
+        # production 진입 시 TOOTALK_TLS_VERIFY=1 명시 의무
         monkeypatch.delenv("TOOTALK_TLS_VERIFY", raising=False)
         from app.net._ssl_util import build_ssl_context
         import ssl
         ctx = build_ssl_context()
-        # default = production safe (CERT_REQUIRED)
+        assert ctx.verify_mode == ssl.CERT_NONE
+        assert ctx.check_hostname is False
+
+    def test_env_one_enables_verify(self, monkeypatch) -> None:
+        # production override — TOOTALK_TLS_VERIFY=1 시 CERT_REQUIRED
+        monkeypatch.setenv("TOOTALK_TLS_VERIFY", "1")
+        from app.net._ssl_util import build_ssl_context
+        import ssl
+        ctx = build_ssl_context()
         assert ctx.verify_mode == ssl.CERT_REQUIRED
 
     def test_env_zero_disables_verify(self, monkeypatch) -> None:
