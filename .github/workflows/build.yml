@@ -21,9 +21,12 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v4
-      - name: Python 3.13 venv + dev deps
+      - name: Python 3.13 venv + dev deps (brew python)
+        # 한글 주석 — cycle 169.630: Apple sealed Python framework 안 PyInstaller bootloader Team ID mismatch 회수.
+        # /opt/homebrew/bin/python3.13 (brew Python, Apple-distributed Team ID 부재) 사용 → PyInstaller bundle Python 도 brew origin.
+        # self-hosted runner 안 brew python3.13 가용 의무 (local verify OK).
         run: |
-          python3.13 -m venv .venv
+          /opt/homebrew/bin/python3.13 -m venv .venv
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
       - name: PyInstaller build
