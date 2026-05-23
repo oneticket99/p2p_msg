@@ -119,25 +119,66 @@ class TestRemoteInputChain:
 class TestRemoteSessionChain:
     """RemoteSession binding + revoke chain."""
 
-    @pytest.mark.skip(reason="cycle 169.660 — PermissionGrant fields shape 별 cycle 정합")
     def test_session_binding_with_permission(self) -> None:
-        from app.remote.permission import PermissionGrant, PermissionMode
-        from app.remote.protocol import RemoteSession
+        # 한글 주석 — cycle 169.673 정합: PermissionGrant fields = request +
+        # granted_at_ms + expires_at_ms + revoke_token(32B) + scope
         import secrets
 
-        grant = PermissionGrant(
-            session_id=secrets.token_bytes(16),
+        from app.remote.permission import (
+            PermissionGrant, PermissionMode, PermissionRequest,
+        )
+        from app.remote.protocol import RemoteSession
+
+        req = PermissionRequest(
+            requester_user_id=10,
+            target_user_id=20,
             mode=PermissionMode.CONTROL,
-            granted_at_ms=int(time.time() * 1000),
-            expires_at_ms=int(time.time() * 1000) + 3600_000,
-            revoke_token=secrets.token_bytes(16),
+            duration_seconds=3600,
+            reason="screen share help",
+        )
+        now_ms = int(time.time() * 1000)
+        grant = PermissionGrant(
+            request=req,
+            granted_at_ms=now_ms,
+            expires_at_ms=now_ms + 3600_000,
+            revoke_token=secrets.token_bytes(32),
+            scope="screen+input",
         )
         session = RemoteSession(
-            session_id=grant.session_id,
+            session_id=secrets.token_bytes(16),
             grant=grant,
-            started_at_ms=int(time.time() * 1000),
+            started_at_ms=now_ms,
             bandwidth_bps=10_000_000,
         )
-        assert session.session_id == grant.session_id
-        assert session.grant.mode == PermissionMode.CONTROL
+        assert len(session.session_id) == 16
+        assert session.grant.request.mode == PermissionMode.CONTROL
+        assert session.grant.scope == "screen+input"
         assert session.bandwidth_bps == 10_000_000
+
+    def test_permission_request_self_target_raises(self) -> None:
+        # 한글 주석 — requester == target → ValueError 차단
+        from app.remote.permission import PermissionMode, PermissionRequest
+
+        with pytest.raises(ValueError, match="동일 user_id"):
+            PermissionRequest(
+                requester_user_id=10, target_user_id=10,
+                mode=PermissionMode.HELP, duration_seconds=60, reason="x",
+            )
+
+    def test_permission_grant_expires_before_granted_raises(self) -> None:
+        # 한글 주석 — expires_at <= granted_at → ValueError
+        import secrets
+
+        from app.remote.permission import (
+            PermissionGrant, PermissionMode, PermissionRequest,
+        )
+
+        req = PermissionRequest(
+            requester_user_id=10, target_user_id=20,
+            mode=PermissionMode.HELP, duration_seconds=60, reason="x",
+        )
+        with pytest.raises(ValueError, match="expires_at_ms"):
+            PermissionGrant(
+                request=req, granted_at_ms=1000, expires_at_ms=500,
+                revoke_token=secrets.token_bytes(32), scope="screen+input",
+            )
