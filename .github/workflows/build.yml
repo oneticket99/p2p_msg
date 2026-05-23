@@ -18,15 +18,18 @@ on:
 jobs:
   build-macos:
     name: macOS arm64 (.app)
-    runs-on: [self-hosted, macOS, ARM64]
+    # 한글 주석 — cycle 169.641: self-hosted runner Apple sealed Python framework Team ID mismatch 회수.
+    # GitHub-hosted macos-15 (Apple Silicon) swap — brew Python or system Python 의 ad-hoc resign 호환.
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Python 3.13 venv + dev deps (brew python)
-        # 한글 주석 — cycle 169.630: Apple sealed Python framework 안 PyInstaller bootloader Team ID mismatch 회수.
-        # /opt/homebrew/bin/python3.13 (brew Python, Apple-distributed Team ID 부재) 사용 → PyInstaller bundle Python 도 brew origin.
-        # self-hosted runner 안 brew python3.13 가용 의무 (local verify OK).
+      - name: Python 3.13 setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: venv + dev deps
         run: |
-          /opt/homebrew/bin/python3.13 -m venv .venv
+          python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
       - name: PyInstaller build
