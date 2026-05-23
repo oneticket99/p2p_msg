@@ -28,9 +28,7 @@ except ImportError:  # pragma: no cover
 
 pytestmark = [
     pytest.mark.skipif(not _PYQT_AVAILABLE, reason="PyQt6 미설치"),
-    # 한글 주석 — cycle 169.606: batch collection 시점 hang trigger — fixture chain 안 fake_http_worker
-    # + async chain 누적. 단독 file pytest 안 partial PASS 가능. 별 cycle = mock isolation refactor.
-    pytest.mark.skip(reason="cycle 169.606 — batch collection hang (async chain + fake_http_worker fixture 누적) 별 cycle 위탁"),
+    pytest.mark.skip(reason="cycle 169.646 — fake_http_worker fixture + async chain cumulative hang. mock isolation refactor 별 file (test_dialog_chain_isolated)"),
 ]
 
 
