@@ -224,7 +224,8 @@ class TestEmojiModerationDialogLaunch:
 
         window.close()
 
-    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
+    # 한글 주석 — cycle 169.693 회수 시도 — qtbot.addWidget lifecycle 추가 + cumulative leak 차단 시도. 단 PyQt6 fork-safe 부재 + 21 mixin __init__ retain 누적 (cycle 169.637 pytest-forked attempt 실패 기록 정합) → skip retain. 별 cycle = pytest 별 invocation chain (각 method fresh process) 또는 MainWindow 의 21 mixin chain dependency injection refactor 의무.
+    @pytest.mark.skip(reason="cycle 169.693 — qtbot.addWidget 추가 후 도 PyQt6 21 mixin __init__ cumulative retain 회수 실패 (xdist loadscope/forked/single all 부재 정합)")
     def test_non_admin_blocks_dialog(self, qapp, fake_config) -> None:
         """role=member 의 직접 _on_open_emoji_moderation 호출 차단 검증."""
 
@@ -255,7 +256,8 @@ class TestEmojiModerationDialogLaunch:
 class TestDecisionFeedback:
     """decision_made signal 핸들러 의 status bar feedback 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
+    # 한글 주석 — cycle 169.693 회수 시도 — qtbot.addWidget lifecycle 추가 + cumulative leak 차단 시도. 단 PyQt6 fork-safe 부재 + 21 mixin __init__ retain 누적 (cycle 169.637 pytest-forked attempt 실패 기록 정합) → skip retain. 별 cycle = pytest 별 invocation chain (각 method fresh process) 또는 MainWindow 의 21 mixin chain dependency injection refactor 의무.
+    @pytest.mark.skip(reason="cycle 169.693 — qtbot.addWidget 추가 후 도 PyQt6 21 mixin __init__ cumulative retain 회수 실패 (xdist loadscope/forked/single all 부재 정합)")
     def test_decision_handler_updates_status_bar(
         self, qapp, fake_config
     ) -> None:
@@ -283,7 +285,8 @@ class TestDecisionFeedback:
 class TestAdminTokenEnvFallback:
     """EMOJI_MODERATION_ADMIN_TOKEN env 부재 시 graceful warning + skip 검증."""
 
-    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
+    # 한글 주석 — cycle 169.693 회수 시도 — qtbot.addWidget lifecycle 추가 + cumulative leak 차단 시도. 단 PyQt6 fork-safe 부재 + 21 mixin __init__ retain 누적 (cycle 169.637 pytest-forked attempt 실패 기록 정합) → skip retain. 별 cycle = pytest 별 invocation chain (각 method fresh process) 또는 MainWindow 의 21 mixin chain dependency injection refactor 의무.
+    @pytest.mark.skip(reason="cycle 169.693 — qtbot.addWidget 추가 후 도 PyQt6 21 mixin __init__ cumulative retain 회수 실패 (xdist loadscope/forked/single all 부재 정합)")
     def test_missing_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 부재 → QMessageBox.warning + open_emoji_moderation 미호출."""
 
@@ -307,7 +310,8 @@ class TestAdminTokenEnvFallback:
 
         window.close()
 
-    @pytest.mark.skip(reason="cycle 169.638 — xdist loadscope/forked 모두 cumulative leak hang 회수 실패, mock isolation refactor 별 cycle")
+    # 한글 주석 — cycle 169.693 회수 시도 — qtbot.addWidget lifecycle 추가 + cumulative leak 차단 시도. 단 PyQt6 fork-safe 부재 + 21 mixin __init__ retain 누적 (cycle 169.637 pytest-forked attempt 실패 기록 정합) → skip retain. 별 cycle = pytest 별 invocation chain (각 method fresh process) 또는 MainWindow 의 21 mixin chain dependency injection refactor 의무.
+    @pytest.mark.skip(reason="cycle 169.693 — qtbot.addWidget 추가 후 도 PyQt6 21 mixin __init__ cumulative retain 회수 실패 (xdist loadscope/forked/single all 부재 정합)")
     def test_empty_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 가 빈 string 일 때 도 graceful skip — strip 정합."""
 
