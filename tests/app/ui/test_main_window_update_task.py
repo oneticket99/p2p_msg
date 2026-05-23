@@ -34,7 +34,7 @@ pytest.importorskip("PyQt6")
 
 # 한글 주석 — cycle 169.574: 본 module 전체 hang 회피 skip (test_main_window_admin_menu.py 동일 root cause).
 # MainWindow instantiation + auto-update periodic_check task scheduling stuck pattern.
-pytestmark = pytest.mark.skip(reason="cycle 169.574 — MainWindow instantiation hang root cause unresolved, separate cycle 위탁")
+pytestmark = pytest.mark.skip(reason="cycle 169.637 — MainWindow instantiation hang retain (cycle 169.574 reason 동일), pytest-forked 별 cycle")
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402 — importorskip 직후 의무
 
