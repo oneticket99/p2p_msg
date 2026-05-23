@@ -169,12 +169,18 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.648 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 6 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.654 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 7 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 + omit 제거 path 3 file (2026-05-23~24 신설)
 
-### 8.82.1 117 cycle 산출 (cycle 169.532~648)
+### 8.82.1 123 cycle 산출 (cycle 169.532~654)
 
 | commit | cycle | scope |
 |---|---|---|
+| e26ac17 | 169.654 | reactions_client 7 PASS 신설 + omit retain (remove/error path 별 cycle) |
+| ba9f276 | 169.653 | push_client 11 PASS + omit 제거 → cov 80.21% → 80.26% reach |
+| 85be999 | 169.652 | cycle 169.651 onefile revert — self-extract Python.framework 동일 Team ID mismatch |
+| 0133482 | 169.651 | PyInstaller --onefile spec 신설 + build.yml swap (NFR-03 회수 path 1st) |
+| 5d15d76 | 169.650 | account_client URL composition 4 PASS — omit 제거 path 1st |
+| 50ee050 | 169.649 | 평가 4 file staleness 회수 + handoff §8.82 117 entry |
 | 968b5db | 169.648 | NFR-03 phase 2단계 + 기능적 동작 의무 — memory [[project-demo-phase-functional-distribution]] |
 | 3ee476a | 169.647 | auth_chain isolated 5 PASS — e2e_button + e2e_flow + http_worker 통합 mock isolation |
 | a51bd5e | 169.646 | dialog_chain isolated 4 PASS — LoginDialog 2 + OTPDialog 2 + SignupDialog 1 skip |

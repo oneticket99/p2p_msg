@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-24T23:50:00+09:00
+last_verified: 2026-05-25T00:30:00+09:00
 status: active
 ---
 
