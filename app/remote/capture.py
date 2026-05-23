@@ -222,7 +222,7 @@ class MacOSQuartzBackend:
             CGDisplayCreateImage 실패 (display 부재 또는 권한 부재).
         """
         # 한글 주석 — cycle 169.575: PyObjC + Quartz framework 부재 graceful guard.
-        # framework 의 의 의 의 부재 시점 NotImplementedError raise (test expect 정합).
+        # framework 부재 시점 NotImplementedError raise (test expect 정합).
         try:
             import Quartz  # type: ignore[import]
             import CoreFoundation  # type: ignore[import]

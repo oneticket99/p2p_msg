@@ -76,7 +76,7 @@ HANDOFF="${CLAUDE_PROJECT_DIR}/docs/exec-plans/active/2026-05-17-session-handoff
 if [ -f "$HANDOFF" ]; then
   TEST_TRIGGER_LINE=$(grep -n "사용자 manual test\|test 진입 시점" "$HANDOFF" 2>/dev/null | head -1 | cut -d: -f1 || echo 0)
   if [ "${TEST_TRIGGER_LINE:-0}" -gt 0 ]; then
-    # cycle 169.215 — hook detect logic fix — `--grep` 의 의 의 5건 match retain 회피
+    # cycle 169.215 — hook detect logic fix — `--grep` 안 5건 match retain 회피
     # 최근 N commit 의 subject 만 grep + count
     RECENT_FEAT_COMMITS=$(git log -n "$N_RECENT" --pretty=%s 2>/dev/null | grep -c "feat(cycle1" || true)
     if [ "$RECENT_FEAT_COMMITS" -ge 3 ]; then

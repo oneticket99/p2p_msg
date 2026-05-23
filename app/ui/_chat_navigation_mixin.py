@@ -173,7 +173,7 @@ class ChatNavigationMixin:
         # cycle 169.221 — friend kind 시점 last_seen REST fetch (cycle 169.216 endpoint 연동)
         # cycle 169.225 — DM history fetch (cycle 169.222 DM room resolve + list_messages)
         # 한글 주석 — cycle 169.572: asyncio.ensure_future graceful guard (python 3.13 안 running loop 부재 시 DeprecationWarning + fail)
-        # test setup (qasync 부재 환경) 의 의 의 의 fail 회수. running loop 시점 만 schedule.
+        # test setup (qasync 부재 환경) 안 fail 회수. running loop 시점 만 schedule.
         import asyncio
         try:
             _loop = asyncio.get_running_loop()

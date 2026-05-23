@@ -2,7 +2,7 @@
 """HttpJsonWorker integration test — cycle 169.61 mock pattern 회수.
 
 fake_http_worker fixture (conftest.py) → HttpJsonWorker monkeypatch.
-register / login / verify success path 의 의 의 fire chain 검증.
+register / login / verify success path 안 fire chain 검증.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ pytestmark = pytest.mark.skipif(not _PYQT_AVAILABLE, reason="PyQt6 미설치")
 
 
 class TestHttpWorkerIntegration:
-    """fake_http_worker fixture 의 의 의 register/login/verify worker fire chain 검증."""
+    """fake_http_worker fixture 안 register/login/verify worker fire chain 검증."""
 
     def test_signup_register_fires_worker(self, qtbot, fake_http_worker, monkeypatch) -> None:
         # 한글 주석 — SignupDialog 안 register click → HttpJsonWorker fire chain

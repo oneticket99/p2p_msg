@@ -65,7 +65,7 @@ def main() -> None:
     print(f"  total={total}  done={status_count.get('done', 0)}  pending={status_count.get('pending', 0)}  in_progress={status_count.get('in_progress', 0)}\n")
 
     if args.summary:
-        # cycle prefix 별 count (cycle 의 의 의 dot split 의 의 의 의 의 의 major group)
+        # cycle prefix 별 count (cycle 안 dot split 후 major group 추출)
         cur.execute("SELECT cycle FROM wbs_tasks")
         prefixes = Counter()
         for r in cur.fetchall():

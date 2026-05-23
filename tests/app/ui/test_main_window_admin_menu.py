@@ -32,8 +32,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 pytest.importorskip("PyQt6")
 
 # 한글 주석 — cycle 169.580: patch path fix retain (mixin 분리 정합) + skip mark retain.
-# patch path swap 의 의 의 의 의 standalone instantiation PASS 의 의 의 의 의 의 verify chain.
-# 그러나 pytest fixture chain 안 추가 hang 의 의 의 의 retain — root cause = qapp fixture scope=module 의 의 의 의 의 별 cycle 의무 위탁.
+# patch path swap 후 standalone instantiation PASS, verify chain 정합 도달.
+# 그러나 pytest fixture chain 안 추가 hang 잔존 — root cause = qapp fixture scope=module 의 별 cycle 의무 위탁.
 pytestmark = pytest.mark.skip(reason="cycle 169.580 — patch path fix PASS, fixture chain hang root cause 별 cycle 위탁")
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402 — importorskip 직후 의무
