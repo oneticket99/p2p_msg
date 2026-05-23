@@ -169,12 +169,18 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.654 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 7 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 + omit 제거 path 3 file (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.661 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 7 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 + omit 제거 path 3 file + friends/chat/voice call/remote desktop/emoji pack E2E chain (2026-05-23~25 신설)
 
-### 8.82.1 123 cycle 산출 (cycle 169.532~654)
+### 8.82.1 130 cycle 산출 (cycle 169.532~661)
 
 | commit | cycle | scope |
 |---|---|---|
+| 44409d8 | 169.661 | emoji pack + bot framework E2E 10 PASS — list/create/conflict/auth + bot import |
+| 5fa6b4d | 169.660 | 원격 데스크탑 chain E2E 8 PASS — capture + input forward + session binding |
+| 53c5913 | 169.659 | voice call browser E2E PASS — JOIN race fix (buffered + sticky listener) |
+| 24d4eac | 169.658 | voice call browser E2E skip (JOIN race timing — 169.659 회수) |
+| 4dffdcc | 169.657 | friends chat (DM 송수신) chain E2E 4 PASS |
+| b442b6f | 169.656 | friends 친구추가 + 수락 chain E2E 5 PASS |
 | e26ac17 | 169.654 | reactions_client 7 PASS 신설 + omit retain (remove/error path 별 cycle) |
 | ba9f276 | 169.653 | push_client 11 PASS + omit 제거 → cov 80.21% → 80.26% reach |
 | 85be999 | 169.652 | cycle 169.651 onefile revert — self-extract Python.framework 동일 Team ID mismatch |
