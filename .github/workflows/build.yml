@@ -33,8 +33,11 @@ jobs:
           /opt/homebrew/bin/python3.13 -m venv .venv
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r app/requirements.txt pyinstaller>=6.0
-      - name: PyInstaller build
-        run: .venv/bin/python tools/build.py --target macos
+      - name: PyInstaller build (onefile)
+        # 한글 주석 — cycle 169.651: NFR-03 Team ID mismatch 회수 path 1st — onefile mode swap.
+        # build/tootalk_onefile.spec = a.binaries + a.zipfiles + a.datas 통합 EXE + BUNDLE direct wrap.
+        # Apple-signed Python framework 의 standalone load 부재 → mismatch 회피 가능성.
+        run: .venv/bin/pyinstaller build/tootalk_onefile.spec --clean --noconfirm
       - name: ad-hoc codesign (.app) — remove-signature first chain
         # 한글 주석 — cycle 169.631: brew Python 도 sealed signature retain. Team ID mismatch 잔존.
         # 회수: 1) dotfile clean → 2) per-file `codesign --remove-signature` (기존 Apple-signed strip) → 3) `--deep --force --options runtime --sign -` (ad-hoc resign 단일 Team ID).
