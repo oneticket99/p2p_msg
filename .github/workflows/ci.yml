@@ -296,15 +296,14 @@ jobs:
           python -m pip install -r app/requirements-dev.txt
           python -m pip install -r server/requirements-dev.txt
 
-      - name: pytest 실행 (unit only — integration + e2e 제외)
-        # cycle 169.585: pytest UI hang root cause = qapp fixture scope=module + PyQt6 widget cleanup stuck.
-        # fix chain: tests/app/ui 전체 ignore (별 cycle 의무) + -x + e2e/integration ignore retain.
-        # 의무 = unit + server + remote + bot test full PASS green chain. UI test = qt-bot + scope=function refactor 후 별 cycle 재진입.
-        run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration --ignore=tests/app/ui
+      - name: pytest 실행 (unit + ui safe — integration + e2e 제외)
+        # cycle 169.608: tests/app/ui ignore 해제 — hang trigger 3 file (test_dialog_functional + test_e2e_button_click +
+        # test_e2e_flow + test_http_worker_integration + test_main_window_admin_menu + test_main_window_update_task)
+        # 안 pytestmark skip retain → 전체 184 PASS + 52 skip green chain.
+        run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration
 
-      - name: coverage 30% 임시 게이트 (DESIGN.md §10.5 80% 목표 — UI ignore 별 cycle 복귀 의무)
+      - name: coverage 45% 게이트 (DESIGN.md §10.5 80% 목표 점진 회복)
         if: success()
-        # 한글 주석 — cycle 169.588 — tests/app/ui ignore (169.585) 정합 의 fail-under 임시 완화 80→30.
-        # 사유: app/ui/* 21 mixin 의 cov 0% → 전체 33.37% 추락. UI test scope=function refactor + 재진입 후 80% 복귀 의무.
-        # DESIGN.md §10.5 80% 목표 유지 + CI gate 만 임시 30%.
-        run: python -m coverage report --fail-under=30
+        # 한글 주석 — cycle 169.608 — tests/app/ui ignore 해제 + UI cov 부분 회복 (33.37% → 47.67%) 후 fail-under 30→45 점진.
+        # 80% 목표 retain. UI test 안 추가 hang trigger file refactor + 재활성 후 80% 복귀 별 cycle.
+        run: python -m coverage report --fail-under=45

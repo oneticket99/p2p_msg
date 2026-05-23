@@ -23,7 +23,12 @@ try:
 except ImportError:
     _PYQT_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(not _PYQT_AVAILABLE, reason="PyQt6 미설치")
+pytestmark = [
+    pytest.mark.skipif(not _PYQT_AVAILABLE, reason="PyQt6 미설치"),
+    # 한글 주석 — cycle 169.608: 단독 file hang trigger (signup-OTP-login chain + async mock).
+    # 별 cycle = mock isolation refactor.
+    pytest.mark.skip(reason="cycle 169.608 — 단독 file hang (e2e flow chain + async mock) 별 cycle 위탁"),
+]
 
 
 @dataclass
