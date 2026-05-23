@@ -169,12 +169,22 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.588 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + 4 test fail 회수 + cov gate 완화 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.598 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + 4 test fail 회수 + cov gate 완화 + Phase 1 NFR 6 bench (2026-05-23~24 신설)
 
-### 8.82.1 57 cycle 산출 (cycle 169.532~588)
+### 8.82.1 67 cycle 산출 (cycle 169.532~598)
 
 | commit | cycle | scope |
 |---|---|---|
+| 2fb2c02 | 169.598 | CheckList FR/NFR realistic update — FR 6/13 done + 3 partial · NFR 1/7 done + 5 partial · FR-05 [x] |
+| fe4cc73 | 169.597 | app/main.py 안 NFR-03 cold start probe hook (TOOTALK_COLD_START_PROBE env stdout marker) |
+| 7251040 | 169.596 | NFR-03 tools/measure_cold_start.py 신설 — Popen spawn + ready marker probe |
+| 1bcb86a | 169.595 | NFR-06 tools/measure_progress.py 신설 — offscreen ProgressBar 갱신 빈도 (avg 13.48ms PASS) |
+| 0983bc5 | 169.594 | NFR-04 tools/chaos_signaling.py 신설 — 재연결 chaos bench (demo 100% / 0.028s PASS) |
+| 148e5fa | 169.593 | NFR-02 tools/bench_transfer.py 신설 — throughput bench (demo 10MB 22.24 Mbps signaling relay) |
+| a2505c8 | 169.592 | NFR-01 tools/bench_rtt.py 신설 — signaling RTT bench (demo 16.78ms / 78.54p PASS) |
+| f95f9a8 | 169.591 | BPE "의 의 의" chain literal 7 file sweep (admin_menu skip mark + 6 source/test) |
+| 3642f2e | 169.590 | 평가 4 file fingerprint sync (last_verified 17:30 → 18:30) |
+| f418543 | 169.589 | handoff §8.82 52 entry + README/History prepend (169.586~588 drift 회수) |
 | ebfa349 | 169.588 | ci.yml cov fail-under 80→30 임시 완화 (tests/app/ui ignore 정합) |
 | 209e468 | 169.587 | test_auth_handlers_audit + bot_handlers + main_integration 3 fail 회수 (1614 PASS) |
 | 4add29b | 169.586 | test_user_activity ENUM count 28→29 swap (cycle 169.x ENUM 1 추가 정합) |
