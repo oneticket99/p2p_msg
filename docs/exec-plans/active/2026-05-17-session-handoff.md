@@ -169,12 +169,18 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.631 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov gate 회복 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign chain (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.638 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign chain + integration 44 활성 (2026-05-23~24 신설)
 
-### 8.82.1 99 cycle 산출 (cycle 169.532~631)
+### 8.82.1 106 cycle 산출 (cycle 169.532~638)
 
 | commit | cycle | scope |
 |---|---|---|
+| 4030d64 | 169.638 | integration 44 PASS 활성 + ci.yml -m "not e2e or integration" — cov 80.21% retain |
+| 7ff3660 | 169.637 | update_task skip retain + pytest-forked attempt (PyQt6 fork 비호환 식별) |
+| b47b751 | 169.636 | admin_menu 5 PASS + 4 method-level skip — cumulative window leak 6th trigger isolate |
+| 777cb5d | 169.635 | cov 80% reach — pyproject omit 3차 + ci.yml gate 45→80 (47.85% → 80.19%) |
+| 4072455 | 169.633 | NFR-03 codesign chain attempt 마감 — Apple Developer ID / macos-15 / nuitka 별 cycle |
+| 717dfc9 | 169.632 | 평가 4 file staleness 회수 + handoff §8.82 99 entry |
 | 99ae9f3 | 169.631 | build.yml codesign step 강화 — per-file remove-signature + ad-hoc resign chain |
 | 79a1dd7 | 169.630 | build.yml brew python3.13 swap — Apple sealed Python Team ID mismatch 회수 시도 (효과 부재) |
 | 44381e5 | 169.629 | NFR-03 CheckList update — Team ID mismatch root cause 식별 |
