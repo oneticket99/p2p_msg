@@ -1,7 +1,7 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-24T01:28:32+09:00
+last_verified: 2026-05-24T07:50:00+09:00
 status: active
 ---
 
