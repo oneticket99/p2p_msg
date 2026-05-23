@@ -135,16 +135,17 @@ rm -f "$TMP"
 
 if [ $FAIL -eq 1 ]; then
     cat >&2 <<EOF
-🟡 chat output BPE 검수 WARN — 사용자 비판 회수 의무
+🔴 chat output BPE 검수 BLOCK — strict enforcement 활성 (cycle 169.569+)
 $MSG
 
-회피 의무 ([[feedback-no-triple-particle-chat]]):
-1. 명사 chain 직전 동사 활용 또는 → arrow notation 활용
-2. 표 cell 의 동사 보존 (의 단일 cap)
-3. 자가 mental scan — 응답 송신 직전 "의 의" substring 검증
+회수 의무 ([[feedback-no-triple-particle-chat]] + [[feedback-bpe-script-trigger-warning]]):
+1. 응답 송신 직전 bash grep `"의 의"` substring → count=0 만 송신 (self-claim 금지, 외부 verify)
+2. 명사 chain 직전 동사 활용 또는 → arrow notation swap
+3. 표 cell `의` 단일 cap (chain 누적 0)
 4. caveman 정합 — fragment OK + 명사 누적 부재 + 짧은 verb + 단일 조사
+5. quote 시점 ellipsis 처리 (원본 chain literal retain 차단)
 
-다음 발견 시 = PreToolUse response filter hook 의 강제 활성 의무.
+본 hook = strict block (exit 2). 다음 turn 진입 시점 자기 검증 의무 강화.
 EOF
     exit 2
 fi
