@@ -258,6 +258,7 @@ status: active
 - 2.6 MED productization 종합 7.1 → 6.5 (codex 6.3 정합)
 
 **main_window 4 mixin 분리**:
+
 | mixin | cycle | method | lines |
 |---|---|---|---|
 | TrayMixin | 509 | 6 | 164 |
