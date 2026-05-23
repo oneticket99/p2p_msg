@@ -169,12 +169,22 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.548 — codex e2e browser WS + 원격 server 회수 + build artifact PASS (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.558 — codex e2e browser WS + 원격 server 회수 + build artifact + token-usage 복원 (2026-05-23~24 신설)
 
-### 8.82.1 17 cycle 산출 (cycle 169.532~548)
+### 8.82.1 27 cycle 산출 (cycle 169.532~558)
 
 | commit | cycle | scope |
 |---|---|---|
+| 5b3e447 | 169.558 | token-usage HTML bak retain — uncommit staleness 회수 |
+| 96f9f56 | 169.557 | 평가 4 file staleness rewrite — cycle 169.555~556 token-usage 회수 |
+| c455942 | 169.556 | token-usage HTML local var reassign — bak merge 후 일별 비용 회수 |
+| 6ec6127 | 169.555 | token-usage bak merge — 5월 14~22일 이전 머신 history 복원 (7 session + $22137.68) |
+| cb6706a | 169.554 | 평가 4 file staleness rewrite — cycle 169.549~553 5 commit drift 회수 |
+| 847ce7c | 169.553 | handoff doc 169.551 MD047 + MD055 회수 |
+| b6eed3a | 169.552 | 다음 session handoff doc 신설 — cycle 169.488~551 64 cycle 인계 manifest |
+| 178a770 | 169.551 | doc-lint local 2 violation 회수 (BPE "의" 4 chain + cycle152 link path) |
+| 6ca1691 | 169.550 | docs/exec-plans/active stale handoff 2 archive (cycle133 + cycle152 → completed/) |
+| 18de5a6 | 169.549 | handoff §8.82 14 → 17 entry update + wbs 3 row + README/History |
 | bc962b6 | 169.548 | 평가 4 file staleness rewrite (cycle 169.543~547 5 commit drift 회수) |
 | c98ddad | 169.547 | build artifact 2 platform PASS (macOS 343.8MB + Windows 101.5MB) + README/History prepend 14 entry |
 | bfcf60f | 169.546 | handoff §8.82 신설 (14 cycle batch manifest) + M6 wbs 11 row + build.yml dispatch |
