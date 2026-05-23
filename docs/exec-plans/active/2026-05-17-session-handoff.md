@@ -169,12 +169,15 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.585 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.588 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + 4 test fail 회수 + cov gate 완화 (2026-05-23~24 신설)
 
-### 8.82.1 54 cycle 산출 (cycle 169.532~585)
+### 8.82.1 57 cycle 산출 (cycle 169.532~588)
 
 | commit | cycle | scope |
 |---|---|---|
+| ebfa349 | 169.588 | ci.yml cov fail-under 80→30 임시 완화 (tests/app/ui ignore 정합) |
+| 209e468 | 169.587 | test_auth_handlers_audit + bot_handlers + main_integration 3 fail 회수 (1614 PASS) |
+| 4add29b | 169.586 | test_user_activity ENUM count 28→29 swap (cycle 169.x ENUM 1 추가 정합) |
 | 9f5c859 | 169.585 | ci.yml pytest --ignore=tests/app/ui (fixture hang root cause 회수) |
 | 7711912 | 169.583 | dispatch retry — 169.582 cancel + fresh trigger |
 | 6fe54c4 | 169.582 | self-hosted runner launchctl restart (actions/checkout auth refresh, new Listener pid 77699) |
