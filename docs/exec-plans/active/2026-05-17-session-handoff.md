@@ -169,12 +169,18 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.642 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 6 attempt all fail + integration 44 + e2e 7/8 활성 (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.648 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 6 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 (2026-05-23~24 신설)
 
-### 8.82.1 110 cycle 산출 (cycle 169.532~642)
+### 8.82.1 117 cycle 산출 (cycle 169.532~648)
 
 | commit | cycle | scope |
 |---|---|---|
+| 968b5db | 169.648 | NFR-03 phase 2단계 + 기능적 동작 의무 — memory [[project-demo-phase-functional-distribution]] |
+| 3ee476a | 169.647 | auth_chain isolated 5 PASS — e2e_button + e2e_flow + http_worker 통합 mock isolation |
+| a51bd5e | 169.646 | dialog_chain isolated 4 PASS — LoginDialog 2 + OTPDialog 2 + SignupDialog 1 skip |
+| c9fe092 | 169.645 | UpdateLifecycleMixin isolated 7 PASS — start/on_new_version/cancel chain |
+| 3ed4eca | 169.644 | MenuBarMixin isolated test 4 PASS — admin chain mock isolation 1st refactor |
+| ea62a1b | 169.643 | handoff §8.82 110 entry + README/History + 평가 sync (169.640~642 drift) |
 | 4394de3 | 169.642 | .app codesign chain 마감 — 6 attempt all fail, Apple Developer ID / nuitka / macOS downgrade 별 cycle |
 | 88b77b8 | 169.641 | build.yml macos-15 GitHub-hosted runner swap — Team ID mismatch UUID 변경 만 (효과 부재) |
 | 7e8f715 | 169.640 | e2e 7/8 PASS 활성 + html_visual outdated assertion swap (swatch + mermaid) |

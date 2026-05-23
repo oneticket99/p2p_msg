@@ -40,6 +40,12 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.648 (2026-05-23 23:50 KST) — NFR-03 phase 2단계 + 기능적 동작 의무. 사용자 directive 3 chain — (1) codesign production 의무 부재, (2) 데모 phase + 본 배포 phase 2단계 구조, (3) 데모 phase 도 기능적 .app 실행 의무 retain. 영구 memory [[project-demo-phase-functional-distribution]] 신설 + MEMORY.md 인덱스. CheckList NFR-03 [x] → [~] (source-level smoke 312ms PASS retain, .app 기능적 실행 = Team ID mismatch 회수 path 4 별 cycle: self-extract / LC_RPATH refactor / nuitka / --onefile).
+- cycle 169.647 (2026-05-23 23:45 KST) — auth_chain isolated 5 PASS. e2e_button + e2e_flow + http_worker 3 file 통합 mock isolation. _FakeWorker class + fake_http_worker_cls fixture + TestLoginChain 3 PASS + TestOTPVerifyChain 2 PASS.
+- cycle 169.646 (2026-05-23 23:40 KST) — dialog_chain isolated 4 PASS + 1 skip. test_dialog_functional file-level skip 회수 path. LoginDialog 2 + OTPDialog 2 PASS, SignupDialog asyncSlot 별 cycle.
+- cycle 169.645 (2026-05-23 23:35 KST) — UpdateLifecycleMixin isolated 7 PASS. _start_update_check_task / _on_new_version / _cancel_update_task chain mock isolation.
+- cycle 169.644 (2026-05-23 23:30 KST) — MenuBarMixin isolated test 4 PASS. admin chain mock isolation 1st refactor — non_admin / missing_token / empty_token / decision_handler 4 method.
+- cycle 169.643 (2026-05-23 23:25 KST) — handoff §8.82 110 entry + README/History + 평가 sync.
 - cycle 169.642 (2026-05-23 23:20 KST) — .app codesign chain 마감. cycle 169.641 macos-15 GitHub-hosted runner + actions/setup-python swap 후 verify = 동일 Team ID mismatch error (UUID 5FEA64A8 변경 만, error pattern 동일). 6 attempt all fail — local ad-hoc / spec ad-hoc / post-build deep / brew python / per-file remove-signature / macos-15 runner. revert self-hosted retain. 별 cycle 의무 = Apple Developer ID ($99/year) / nuitka 대안 / macOS 다운그레이드.
 - cycle 169.641 (2026-05-23 23:10 KST) — build.yml macos-15 GitHub-hosted runner swap. self-hosted [self-hosted, macOS, ARM64] → `macos-15` + actions/setup-python@v5. verify = Team ID mismatch 잔존 (다른 UUID + 동일 error). brew python framework 도 Apple-signed retain.
 - cycle 169.640 (2026-05-23 23:00 KST) — tests/e2e 7/8 PASS 활성. html_visual_smoke 2 outdated assertion swap (FRONTEND.html swatch 18 → ≥18, mermaid SVG 6+ → ≥1). ci.yml 안 e2e step 분리 (continue-on-error: true, datachannel browser batch timing flake 회피).
