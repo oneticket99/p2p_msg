@@ -31,10 +31,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 # 한글 주석: PyQt6 부재 시 본 module 전체 skip — graceful collection
 pytest.importorskip("PyQt6")
 
-# 한글 주석 — cycle 169.574: 본 module 전체 hang 회피 skip (root cause unresolved).
-# MainWindow instantiation + emoji moderation dialog modal cleanup 안 stuck pattern.
-# 별 cycle 의 root cause investigate + 의 의 의 의 의 fix chain 의무.
-pytestmark = pytest.mark.skip(reason="cycle 169.574 — MainWindow instantiation hang root cause unresolved, separate cycle 위탁")
+# 한글 주석 — cycle 169.580: patch path fix retain (mixin 분리 정합) + skip mark retain.
+# patch path swap 의 의 의 의 의 standalone instantiation PASS 의 의 의 의 의 의 verify chain.
+# 그러나 pytest fixture chain 안 추가 hang 의 의 의 의 retain — root cause = qapp fixture scope=module 의 의 의 의 의 별 cycle 의무 위탁.
+pytestmark = pytest.mark.skip(reason="cycle 169.580 — patch path fix PASS, fixture chain hang root cause 별 cycle 위탁")
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402 — importorskip 직후 의무
 
@@ -87,11 +87,12 @@ def _make_main_window(fake_config):
     """get_running_loop None 폴백 + MainWindow 신설 helper.
 
     test 격리 — auto-update task 등록 차단 + RuntimeError 회피.
+    cycle 169.580: cycle 169.526 mixin 분리 정합 — patch path swap to _update_lifecycle_mixin.
     """
 
-    # 한글 주석: get_running_loop None 폴백 → auto-update task 등록 skip
+    # 한글 주석: get_running_loop None 폴백 → auto-update task 등록 skip (cycle 169.526 분리 후 UpdateLifecycleMixin 안 retain)
     with patch(
-        "app.ui.main_window.asyncio.get_running_loop",
+        "app.ui._update_lifecycle_mixin.asyncio.get_running_loop",
         side_effect=RuntimeError("no running loop"),
     ):
         from app.ui.main_window import MainWindow
