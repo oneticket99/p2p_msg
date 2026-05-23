@@ -16,10 +16,12 @@
   },
   "MD034": false,
   "MD036": false,
+  "MD037": false,
   "MD040": false,
   "MD041": true,
   "MD046": { "style": "fenced" },
   "MD048": { "style": "backtick" },
+  "MD050": false,
   "MD060": false,
 
   "no-inline-html": false,
