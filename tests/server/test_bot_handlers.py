@@ -566,7 +566,10 @@ class TestHandleBotChat:
         await handle_bot_chat(req)
         assert len(provider.calls) == 1
         chain = provider.calls[0]
-        assert len(chain) == 3
-        assert chain[0].content == "u1"
-        assert chain[1].role == BotRole.ASSISTANT
-        assert chain[2].content == "u2"
+        # 한글 주석 — cycle 169.587: cycle 169.x system prompt prepend chain (PERSONA LOCK) 추가 정합.
+        # chain[0] = SYSTEM (persona lock), chain[1:] = user/assistant turn 3건.
+        assert len(chain) == 4
+        assert chain[0].role == BotRole.SYSTEM
+        assert chain[1].content == "u1"
+        assert chain[2].role == BotRole.ASSISTANT
+        assert chain[3].content == "u2"

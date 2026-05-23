@@ -283,11 +283,17 @@ class TestLogoutEndpoint:
 
         req.json = _json  # type: ignore[attr-defined]
         response = await handle_profile_update(req)  # type: ignore[arg-type]
+        # 한글 주석 — cycle 169.587: cycle 169.395 actual UPDATE SQL chain swap fallout.
+        # call_args_list[0] = UPDATE users, [1+] = INSERT user_activity_log (audit). 위치 search swap.
         sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
-        # action 검증
-        params = cursor.execute.call_args_list[0].args[1]
-        assert params[1] == "profile_update"
+        # action 검증 — audit call site 의 params 검색
+        for call in cursor.execute.call_args_list:
+            if "INSERT INTO user_activity_log" in call.args[0]:
+                assert call.args[1][1] == "profile_update"
+                break
+        else:
+            raise AssertionError("user_activity_log INSERT call 부재")
 
     @pytest.mark.asyncio
     async def test_email_change_request_audit(self) -> None:
