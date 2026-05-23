@@ -34,7 +34,8 @@ pytest.importorskip("PyQt6")
 # 한글 주석 — cycle 169.580: patch path fix retain (mixin 분리 정합) + skip mark retain.
 # patch path swap 후 standalone instantiation PASS, verify chain 정합 도달.
 # 그러나 pytest fixture chain 안 추가 hang 잔존 — root cause = qapp fixture scope=module 의 별 cycle 의무 위탁.
-pytestmark = pytest.mark.skip(reason="cycle 169.580 — patch path fix PASS, fixture chain hang root cause 별 cycle 위탁")
+# 한글 주석 — cycle 169.623: single test (TestAdminMenuExists) PASS but batch 5 test 진행 후 hang. 별 cycle (test 6+ 의 fixture chain 안 추가 trigger 식별).
+pytestmark = pytest.mark.skip(reason="cycle 169.623 — single test PASS, batch 5 test 후 hang (test 6+ fixture chain trigger) 별 cycle 위탁")
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402 — importorskip 직후 의무
 
