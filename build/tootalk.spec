@@ -100,9 +100,11 @@ exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=True,  # macOS .app dock drop file arg 전달 정합
     target_arch=None,
-    # 한글 주석 — cycle 169.625: macOS 26.4 + PyQt6 6.11 의 Qt initializer SIGSEGV 회수
-    # ad-hoc codesign (codesign --sign -) inject. PAC signature check 의 dyld init invalid 0x8 access 회피.
-    codesign_identity="-" if sys.platform == "darwin" else None,
+    # 한글 주석 — cycle 169.627: cycle 169.625 ad-hoc codesign_identity="-" revert.
+    # 후속 error = "mapping process and mapped file (non-platform) have different Team IDs"
+    # — PyInstaller bootloader + Python framework 의 codesign team ID mismatch. 별 cycle = post-build
+    # find + xargs codesign --deep --force --signature-size 9400 --options runtime chain.
+    codesign_identity=None,
     entitlements_file=None,
 )
 
