@@ -103,7 +103,8 @@ omit = [
     "*/app/net/call_client.py",
     "*/app/net/friends_client.py",
     "*/app/net/messages_client.py",
-    "*/app/net/push_client.py",
+    # 한글 주석 — cycle 169.653: push_client unit test 11 PASS 신설 → omit 제거
+    # "*/app/net/push_client.py",
     "*/app/net/reactions_client.py",
     "*/app/net/rooms_client.py",
     "*/app/net/signaling_client.py",
