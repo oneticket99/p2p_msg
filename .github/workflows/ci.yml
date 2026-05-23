@@ -140,7 +140,7 @@ jobs:
           echo "M2 게이트 통과"
 
   # ---------------------------------------------------------------------------
-  # m3-history-prepend — History.md Phase 헤더 역순 (최신 상단) 검증
+  # m3-history-prepend — History.md cycle entry 역순 (최신 상단) 검증
   # ---------------------------------------------------------------------------
   m3-history-prepend:
     name: m3-history-prepend (M3)
@@ -148,23 +148,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: History.md Phase 헤더 순서 검증
+      - name: History.md cycle entry 순서 검증
         run: |
-          # Phase 헤더 형식 = `## Phase N <title> (YYYY-MM-DD ...)` — date 추출 후 내림차순 비교
-          # bash -e + grep 매치 0 line → exit 1 회피 = `|| true` 추가
-          DATES=$(grep -E '^## Phase' History.md | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
-          if [ -z "$DATES" ]; then
-            echo "::warning::History.md Phase 헤더 미발견 — 검증 skip"
-            exit 0
-          fi
-          SORTED=$(echo "$DATES" | sort -r)
-          if [ "$DATES" != "$SORTED" ]; then
-            echo "::error::M3 위반 — History.md Phase 헤더 역순 정렬 어긋남"
-            echo "현재 순서:"; echo "$DATES"
-            echo "기대 순서:"; echo "$SORTED"
-            exit 1
-          fi
-          echo "M3 게이트 통과"
+          # 한글 주석 — CI와 로컬 하네스가 같은 M3 판정을 쓰도록 단일 검증기로 고정한다.
+          python tools/md_agents.py --history-only
 
   # ---------------------------------------------------------------------------
   # m4-korean-comments — 신규/수정 코드 파일 한글 주석 1줄 이상

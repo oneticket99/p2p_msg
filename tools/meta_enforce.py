@@ -92,6 +92,18 @@ def check_ci_meta_job() -> Tuple[bool, str]:
     return True, "ci.yml meta-enforcement job 확인"
 
 
+def check_ci_m3_uses_md_agents() -> Tuple[bool, str]:
+    """CI M3 job 이 로컬 하네스와 같은 검증기를 쓰는지 확인."""
+    text = _read(CI)
+    required = "python tools/md_agents.py --history-only"
+    if required not in text:
+        return False, f"ci.yml M3 job 이 md_agents history 검증기를 호출하지 않음: {required}"
+    forbidden = "grep -E '^## Phase'"
+    if forbidden in text:
+        return False, "ci.yml M3 job 안 stale Phase 헤더 grep 검증 잔존"
+    return True, "ci.yml M3 job md_agents history 검증기 사용"
+
+
 def check_tracked_noise_files() -> Tuple[bool, str]:
     """macOS/IDE 잡음 파일이 git 추적 대상인지 검증."""
     tracked = _run_git_ls_files()
@@ -112,6 +124,7 @@ def main() -> int:
         ("root-markdown-freeze", check_root_markdown_freeze),
         ("ci-soft-fail", check_ci_soft_fail),
         ("ci-meta-job", check_ci_meta_job),
+        ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
         ("tracked-noise-files", check_tracked_noise_files),
     ]
     failures: List[str] = []

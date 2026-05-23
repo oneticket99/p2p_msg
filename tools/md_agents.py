@@ -45,8 +45,8 @@ README = ROOT / "README.md"
 def agent_history() -> Tuple[bool, str]:
     """``History.md`` Phase 헤더 + cycle entry 의 역순 prepend 정합 검증.
 
-    Phase 헤더 형식: ``## Phase N {제목} ({YYYY-MM-DD} ...)``. 본 함수 = 가장 상단 entry
-    의 cycle 번호 + 타임스탬프 추출 + 다음 entry 와 비교 안 역순 정합.
+    본 함수 = 모든 cycle entry 의 cycle 번호 + 타임스탬프를 추출해 전체 역순 정합을 검증한다.
+    이전 구현처럼 상위 2건만 비교하면 중간 append 패턴을 놓치므로 전체 pair 를 순회한다.
 
     Returns
     -------
@@ -56,23 +56,41 @@ def agent_history() -> Tuple[bool, str]:
     if not HISTORY.exists():
         return False, f"History.md 부재 — {HISTORY}"
     lines = HISTORY.read_text(encoding="utf-8").splitlines()
-    cycle_entries: List[Tuple[int, str]] = []
-    pat = re.compile(r"^- cycle (\d+)\.(\d+)")
+    cycle_entries: List[Tuple[int, int, int, str, str]] = []
+    pat = re.compile(
+        r"^- cycle (\d+)\.(\d+).*?\((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) KST\)"
+    )
     for idx, line in enumerate(lines):
         m = pat.match(line)
         if m:
             major, minor = int(m.group(1)), int(m.group(2))
-            cycle_entries.append((idx, f"{major}.{minor}"))
+            stamp = f"{m.group(3)} {m.group(4)}"
+            cycle_entries.append((idx + 1, major, minor, stamp, line))
     if len(cycle_entries) < 2:
         return True, "cycle entry 1건 이하 — 검증 skip"
-    # 한글 주석 — 상위 2 entry 의 cycle 번호 비교 (역순 = 큰 cycle 이 위)
-    top_cycle = cycle_entries[0][1]
-    second_cycle = cycle_entries[1][1]
-    top_major, top_minor = map(int, top_cycle.split("."))
-    sec_major, sec_minor = map(int, second_cycle.split("."))
-    if (top_major, top_minor) >= (sec_major, sec_minor):
-        return True, f"M3 PASS — top={top_cycle} ≥ second={second_cycle}"
-    return False, f"M3 위반 — top={top_cycle} < second={second_cycle} (append 패턴)"
+    # 한글 주석 — cycle 내림차순 + 같은 cycle 안 timestamp 내림차순을 전체 entry 에 강제한다.
+    for prev, current in zip(cycle_entries, cycle_entries[1:]):
+        prev_line, prev_major, prev_minor, prev_stamp, _ = prev
+        cur_line, cur_major, cur_minor, cur_stamp, _ = current
+        prev_key = (prev_major, prev_minor, prev_stamp)
+        cur_key = (cur_major, cur_minor, cur_stamp)
+        if prev_key < cur_key:
+            prev_cycle = f"{prev_major}.{prev_minor}"
+            cur_cycle = f"{cur_major}.{cur_minor}"
+            return (
+                False,
+                "M3 위반 — "
+                f"line {prev_line} {prev_cycle} {prev_stamp} < "
+                f"line {cur_line} {cur_cycle} {cur_stamp} (append 패턴)",
+            )
+    top = cycle_entries[0]
+    bottom = cycle_entries[-1]
+    return (
+        True,
+        "M3 PASS — "
+        f"{len(cycle_entries)} entries, top={top[1]}.{top[2]} {top[3]}, "
+        f"bottom={bottom[1]}.{bottom[2]} {bottom[3]}",
+    )
 
 
 # ─── M2 — README.md 변경 이력 헤더 검증 ──────────────────────────────────────
