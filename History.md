@@ -1,7 +1,7 @@
 ---
 title: "TooTalk 개발 히스토리"
 owner: oneticket99
-last_verified: 2026-05-17
+last_verified: 2026-05-24
 status: active
 ---
 
@@ -40,6 +40,8 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.715 (2026-05-24 02:21 KST) — CI runner python 명령 자기모순 회수. self-hosted macOS runner 에 `python` binary 가 없어 M3 remote FAIL 이 발생한 로그를 근거로, `.github/workflows/ci.yml` 의 bare runner 단계(meta-enforcement + M3)를 `python3` 호출로 교체하고 `tools/meta_enforce.py` 가 `python3 tools/md_agents.py --history-only` 를 요구하도록 강화.
+- cycle 169.713 (2026-05-24 02:14 KST) — markdown/guardrail 자기모순 추가 회수. `tools/md_agents.py` 가 `cycle 169.461~463` 같은 range 표기와 `19:05~08 KST` 시간 range 를 같은 key 로 파싱하도록 보강하고, `History.md` cycle entry 336건을 검증기 기준 내림차순으로 재정렬. 목표 = CI M3 단일 검증기와 로컬 M3 실제 문서 상태의 동시 PASS.
 - cycle 169.709 (2026-05-24 08:05 KST) — History/CI 자기모순 방지 가드레일 회수. `History.md` cycle entry 순서 정렬 + `ci.yml` M3 job 을 `python tools/md_agents.py --history-only` 단일 검증기로 교체 + `tools/md_agents.py` 전체 cycle/timestamp 역순 검사 강화 + `tools/meta_enforce.py` 안 CI M3 검증기 사용 여부 check 추가. 목표 = 로컬 M3 FAIL / CI M3 PASS 분기 차단.
 - cycle 169.706 (2026-05-24 07:50 KST) — server repo dataclass + validation unit test 12 PASS. UserRow 2 (construct + frozen) + DeviceTokenRow 1 + upsert_token validation 4 (zero user_id/empty/oversize token/invalid platform) + Platform 3 (4 ENUM + str + invalid raises) + AppVersionRow 1 + _row_to_dataclass 1.
 - cycle 169.705 (2026-05-24 07:45 KST) — mixin isolated batch unit 6 PASS. TestChatSendMixinInputSlots 3 (_on_input_message_sent chain + file_attached graceful + chat_reply set_reply_to) + TestChatSendMixinSendClicked 2 (group mode block + empty text return) + TestFriendStatusMixin 1 (no token early return). MagicMock self pattern.
