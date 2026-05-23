@@ -190,7 +190,7 @@ status: active
 | 0983bc5 | 169.594 | NFR-04 tools/chaos_signaling.py 신설 — 재연결 chaos bench (demo 100% / 0.028s PASS) |
 | 148e5fa | 169.593 | NFR-02 tools/bench_transfer.py 신설 — throughput bench (demo 10MB 22.24 Mbps signaling relay) |
 | a2505c8 | 169.592 | NFR-01 tools/bench_rtt.py 신설 — signaling RTT bench (demo 16.78ms / 78.54p PASS) |
-| f95f9a8 | 169.591 | BPE "의 의 의" chain literal 7 file sweep (admin_menu skip mark + 6 source/test) |
+| f95f9a8 | 169.591 | BPE 의 chain (3연속) literal 7 file sweep (admin_menu skip mark + 6 source/test) |
 | 3642f2e | 169.590 | 평가 4 file fingerprint sync (last_verified 17:30 → 18:30) |
 | f418543 | 169.589 | handoff §8.82 52 entry + README/History prepend (169.586~588 drift 회수) |
 | ebfa349 | 169.588 | ci.yml cov fail-under 80→30 임시 완화 (tests/app/ui ignore 정합) |
