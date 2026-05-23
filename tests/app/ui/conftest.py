@@ -37,12 +37,6 @@ def qapp():
     # 한글 주석 — session 끝 시점 명시 close 미수행 (cleanup 안 leftover event chain 회피)
 
 
-@pytest.fixture(autouse=True)
-def _flush_events(qapp):
-    """매 test 종료 시점 processEvents flush — QTimer.singleShot(0) callback chain 소비."""
-
-    yield
-    try:
-        qapp.processEvents()
-    except Exception:
-        pass
+# 한글 주석 — cycle 169.606: autouse processEvents flush 폐기 — multi-test 누적 시점
+# QTimer scheduling overhead 가 fixture chain hang trigger 가능성 회피.
+# 단독 file pytest 안 PASS 정합 retain (messages 8 PASS · invite_dialog 6 PASS).
