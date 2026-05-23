@@ -36,25 +36,17 @@ def qapp():
 
 @pytest.fixture(autouse=True)
 def _qt_cleanup(qapp):
-    """매 test 종료 직후 cleanup chain — multi-test 누적 hang 회수.
-
-    - QTimer pending callback flush (processEvents 4회)
-    - top-level widget 의 deleteLater (qapp.allWidgets 안 widget 제거)
-    """
+    """매 test 종료 직후 cleanup chain — top-level widget close + processEvents flush."""
 
     yield
     try:
-        from PyQt6.QtCore import QTimer
-        for _ in range(4):
-            qapp.processEvents()
-        # 한글 주석 — top-level widget cleanup (multi-window leak 회피)
         for widget in list(qapp.topLevelWidgets()):
             try:
                 widget.close()
                 widget.deleteLater()
             except Exception:
                 pass
-        for _ in range(2):
+        for _ in range(4):
             qapp.processEvents()
     except Exception:
         pass

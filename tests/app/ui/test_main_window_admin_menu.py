@@ -34,9 +34,8 @@ pytest.importorskip("PyQt6")
 # 한글 주석 — cycle 169.580: patch path fix retain (mixin 분리 정합) + skip mark retain.
 # patch path swap 후 standalone instantiation PASS, verify chain 정합 도달.
 # 그러나 pytest fixture chain 안 추가 hang 잔존 — root cause = qapp fixture scope=module 의 별 cycle 의무 위탁.
-# 한글 주석 — cycle 169.634: conftest 안 _qt_cleanup autouse + topLevelWidgets cleanup 추가했지만 cumulative hang 잔존.
-# isolated test 5 PASS + 5+6 pair PASS but 1~5 누적 후 6번째 hang trigger. window leak 누적 가능성. 별 cycle.
-pytestmark = pytest.mark.skip(reason="cycle 169.634 — autouse cleanup + window leak 대응 후도 cumulative hang 잔존, mock window deeper isolation 별 cycle")
+# 한글 주석 — cycle 169.636: 5 test (test 1~5 = TestAdminMenuExists 2 + TestAdminMenuHidden 2 + TestEmojiModerationDialogLaunch::test_menu_click_creates_dialog) 활성.
+# test 6+ (test_non_admin_blocks_dialog + TestDecisionFeedback + TestAdminTokenEnvFallback 2) 의 cumulative window leak hang trigger — skip retain.
 
 from PyQt6.QtWidgets import QApplication  # noqa: E402 — importorskip 직후 의무
 
@@ -225,6 +224,7 @@ class TestEmojiModerationDialogLaunch:
 
         window.close()
 
+    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (6th test+) 별 cycle")
     def test_non_admin_blocks_dialog(self, qapp, fake_config) -> None:
         """role=member 의 직접 _on_open_emoji_moderation 호출 차단 검증."""
 
@@ -255,6 +255,7 @@ class TestEmojiModerationDialogLaunch:
 class TestDecisionFeedback:
     """decision_made signal 핸들러 의 status bar feedback 검증."""
 
+    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (7th test) 별 cycle")
     def test_decision_handler_updates_status_bar(
         self, qapp, fake_config
     ) -> None:
@@ -282,6 +283,7 @@ class TestDecisionFeedback:
 class TestAdminTokenEnvFallback:
     """EMOJI_MODERATION_ADMIN_TOKEN env 부재 시 graceful warning + skip 검증."""
 
+    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (8th test) 별 cycle")
     def test_missing_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 부재 → QMessageBox.warning + open_emoji_moderation 미호출."""
 
@@ -305,6 +307,7 @@ class TestAdminTokenEnvFallback:
 
         window.close()
 
+    @pytest.mark.skip(reason="cycle 169.636 — cumulative window leak hang trigger (9th test) 별 cycle")
     def test_empty_token_blocks_dialog(self, qapp, fake_config) -> None:
         """env 가 빈 string 일 때 도 graceful skip — strip 정합."""
 
