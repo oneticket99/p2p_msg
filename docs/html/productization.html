@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.580)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.580 미러.
-     cycle 169.577~580 4 commit 추가 — 평가 staleness rewrite (577) + i18n tr_wrap main_window expected swap (578) + test_applier expect False swap (579) + admin_menu patch path mixin fix + fixture hang skip retain (580). tests/app no-ui 전수 = 1153 PASS + 1 skip.
-     last_verified = 2026-05-25T05:30:00+09:00. -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.694)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.694 미러.
+     cycle 169.694 — 검증 게이트 self-consistency 회수. docs-lint / meta-enforcement 실패를 반영해 CI GREEN 표현을 최신 workflow success 기준으로 제한.
+     last_verified = 2026-05-24T01:28:32+09:00. -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -54,8 +54,8 @@
   <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
     문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
-    최신 갱신 = 2026-05-23 06:55 KST — cycle 169.535 realism calibration.
-    main_window 4026→600 line 책임 분리는 의미 있는 구조 개선으로 유지한다. 단, 외부 dogfooding readiness, 최신 CI GREEN, 최신 pytest PASS, drift 무결성, UI alignment 비율은 해당 실행 로그와 시각 증거가 있을 때만 확정한다.
+    최신 갱신 = 2026-05-24 01:28 KST — cycle 169.694 gate repair.
+    기능 테스트 축은 강하지만, CI GREEN 은 최신 workflow success 와 함께만 확정한다.
   </div>
 </header>
 
@@ -76,7 +76,7 @@
 </nav>
 
 <h2 id="sec1">1. 총평 (TL;DR)</h2>
-<p><strong>현재 단계</strong> (cycle 169.535 보수 재평가): main_window 책임 분리 — <strong>4026 → 600 lines (-3426, 85.1%)</strong> + 21 mixin + 9 init helper + <code>__init__</code> CRITICAL blocker 회수 + PyQt6 offscreen instantiation smoke PASS. 제품화 가능성 = <span class="pill">내부 dogfooding 후보, 외부 dogfooding 보류</span>. 선행 조건은 최신 full pytest/CI, macOS app bundle, Windows smoke, 사용자 visual ack, 장시간 네트워크 E2E다.</p>
+<p><strong>현재 단계</strong> (cycle 169.694 게이트 재평가): 로컬 unit/integration 2157 PASS + e2e 10 PASS + coverage 80.80% 는 확인됐다. 다만 최신 main CI 는 docs-lint / meta-enforcement 실패 상태였고, 본 branch 에서 그 모순을 회수 중이다. 제품화 가능성 = <span class="pill">내부 dogfooding 후보, 외부 dogfooding 보류</span>.</p>
 <table>
   <thead><tr><th>항목</th><th>점수 (10점)</th><th>직전 → 현재</th><th>근거</th></tr></thead>
   <tbody>

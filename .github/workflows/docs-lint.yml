@@ -55,7 +55,7 @@ jobs:
 
       - name: markdownlint-cli2 실행
         run: |
-          npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.venv" "#dist" "#build"
+          npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.venv" "#dist" "#build" "#.pytest_cache"
 
       - name: tools/doc-lint.sh 실행
         run: bash tools/doc-lint.sh
@@ -68,5 +68,6 @@ jobs:
             ! -path "*/.venv/*" \
             ! -path "*/dist/*" \
             ! -path "*/build/*" \
+            ! -path "*/.pytest_cache/*" \
             ! -path "*/.git/*" | wc -l | tr -d ' ')
           echo "::notice::검증 통과 누계 .md = $TOTAL 파일"

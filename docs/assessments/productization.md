@@ -1,24 +1,24 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T05:30:00+09:00
+last_verified: 2026-05-24T01:28:32+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-23 06:55 KST — cycle 169.535 realism calibration. 이전 평가 문장 안 낙관 편향을 보수 기준으로 재조정했다. main_window 책임 분리 성과(4026 → 600 lines, 85.1%)와 PyQt6 offscreen smoke PASS는 유지하되, 외부 dogfooding / CI GREEN / pytest PASS / telegram align / drift 0건 같은 항목은 최신 전체 검증 증거가 있는 범위로만 표기한다.<br>**이전 갱신**: 2026-05-23 06:30 KST — cycle 169.533 codex 2.7 재 평가.
+> **최신 갱신 시점**: 2026-05-24 01:28 KST — cycle 169.694 gate repair. main 기준 docs-lint / meta-enforcement 실패를 반영해 CI GREEN 표현을 보류하고, 최신 검증 증거가 있는 항목만 PASS로 표기한다.<br>**이전 갱신**: 2026-05-23 06:55 KST — cycle 169.535 realism calibration.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-24. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.541 누계 (commit `121c8b0`). cycle 169.535~541 7 commit 추가 — ws healthcheck/DB_ENABLED 회수 (540) + token-usage 1ticket dir 동적 resolve (541, sessions=3 msgs=1825 cost=$1535.25). 본 cycle = staleness rewrite (6h cap).
+> 평가 기준일 = 2026-05-24. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.694 누계 (commit `d632e31` 기준 repair branch). 본 cycle = 검증 게이트 self-consistency 회수.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계** (cycle 169.535 보수 재평가): cycle 169.526~532 main_window 책임 분리 phase는 의미 있는 구조 개선으로 확인된다 — **main_window.py 4026 → 600 lines (-3426, 85.1%)** + 21 mixin + 9 init helper split + `__init__` 302 line CRITICAL blocker 회수 + PyQt6 offscreen instantiation smoke PASS. 다만 이 결과만으로 외부 dogfooding 가능을 확정하기에는 부족하다. **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 사용자 manual visual ack, 최신 전체 테스트/CI 결과 확인, `dist/TooTalk.app` 빌드 산출, Windows smoke 재검증이다. 종합은 **6.8 / 10**으로 유지하되, 의미는 "상당한 구조 개선을 끝낸 고위험 내부 검증 후보"로 제한한다.
+**현재 단계** (cycle 169.694 게이트 재평가): 기능 테스트 축은 강하다. main 기준 로컬 unit/integration 2157 PASS + e2e 10 PASS + coverage 80.80% 는 확인됐다. 최신 main CI 는 docs-lint / meta-enforcement 실패 상태였고, 본 branch 에서 로컬 게이트 모순을 회수했다. **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 최신 원격 CI success, 사용자 manual visual ack, 패키징 산출 재검증, Windows smoke 재확인이다. 종합은 **6.6 / 10**으로 조정한다.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -31,7 +31,7 @@ status: active
 | 가드레일 자동화 | 8.2 / 10 | 9.0 → 8.2 ▼ | hook, doc-lint, meta-enforcement, dereliction-detector 설계는 강하다. 다만 일부 hook은 advisory 성격이고, false positive / local-only 환경 / settings 비활성 상태가 남아 있다. 10점형 자동 차단 체계가 아니라 "강한 로컬/CI 보조 체계"로 평가한다. |
 | 세션 간 정합 | 7.4 / 10 | 8.5 → 7.4 ▼ | handoff, assessment sync, History/README prepend는 장점이다. 하지만 이전 문서에 낙관 문구와 stale fingerprint가 반복 축적된 사실 자체가 정합 리스크다. "drift 0건 연속" 같은 표현은 자동 검증 증거가 없는 문맥에서는 사용하지 않는다. |
 | 보안 hardening | 7.5 / 10 | 9.5 → 7.5 ▼ | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 + cycle 169.228 bearer_token chain 회수 self._session_token (HTTP 401 차단) |
-| **종합** | **6.8 / 10** | 유지 | **구조 개선 성과는 실제다. 그러나 제품화 판단은 보수적으로 제한한다. 현재는 외부 dogfooding 단계가 아니라 내부 dogfooding 후보이며, 최신 full pytest/CI, macOS app bundle, Windows smoke, 사용자 visual ack, 장시간 네트워크 E2E가 확인되어야 다음 단계로 올릴 수 있다.** |
+| **종합** | **6.6 / 10** | 6.8 → 6.6 ▼ | **기능 테스트 누계는 강하지만, 최신 main 게이트가 다시 빨간불이었던 점을 반영한다. 현재는 외부 dogfooding 단계가 아니라 내부 dogfooding 후보이며, 원격 CI success와 manual visual ack가 확인되어야 다음 단계로 올릴 수 있다.** |
 
 ---
 

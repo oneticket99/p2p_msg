@@ -48,7 +48,7 @@ jobs:
       - name: markdownlint-cli2 실행
         run: |
           # 노드 사전 설치 가정. 미설치 시 brew install node 안내
-          npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.venv" "#dist" "#build"
+          npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.venv" "#dist" "#build" "#.pytest_cache"
 
       - name: tools/doc-lint.sh 실행
         run: bash tools/doc-lint.sh
@@ -306,7 +306,6 @@ jobs:
         # 한글 주석 — cycle 169.640: tests/e2e 활성 — 7/8 PASS (datachannel browser flow 1 fail = batch timing).
         # demo server ws://114.207.112.73:8765/ws + playwright chromium 의존성. continue-on-error 부재 (실 fail 차단).
         run: pytest tests/e2e/ -m e2e --tb=short -q
-        continue-on-error: true
 
       - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
         if: success()
