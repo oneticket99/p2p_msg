@@ -270,6 +270,14 @@ def main() -> None:
         except Exception as _exc:
             print(f"[token-usage] bak merge 실패 graceful — {_exc!r}")
 
+    # 한글 주석 — cycle 169.556: bak merge 후 HTML render 안 local var reassign (stale list → merged retain)
+    per_day_list = out["per_day"]
+    per_model_list = out["per_model"]
+    per_day_model_list = out["per_day_model"]
+    sessions_list = out["sessions_summary"]
+    totals = out["totals"]
+    parsed_messages = out["parsed_messages"]
+
     JSON_OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"[token-usage] {JSON_OUT} 갱신 — sessions={len(sessions_list)} msgs={parsed_messages} cost=${out['totals']['cost_usd']:.2f}")
 
