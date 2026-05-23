@@ -169,12 +169,17 @@ status: active
 
 ---
 
-## 8.82 사이클 169.532~169.567 — codex e2e browser WS + 원격 server 회수 + build artifact + token-usage 복원 + WBS web view + CI fail-fast (2026-05-23~24 신설)
+## 8.82 사이클 169.532~169.572 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard (2026-05-23~24 신설)
 
-### 8.82.1 36 cycle 산출 (cycle 169.532~567)
+### 8.82.1 41 cycle 산출 (cycle 169.532~572)
 
 | commit | cycle | scope |
 |---|---|---|
+| 910c010 | 169.572 | _on_chat_selected asyncio.ensure_future graceful guard (rooms 5 PASS) |
+| ab93e15 | 169.571 | 평가 4 file staleness rewrite (cycle 169.566~570) |
+| aaf2609 | 169.570 | tools/bpe_self_check.sh standalone util 신설 (QUAD/TRIP/DENSE/CHUK detect) |
+| 50413bc | 169.569 | hook_chat_bpe_check.sh severity WARN → BLOCK + memory feedback_bpe_strict_self_grep |
+| 0f4a021 | 169.568 | handoff §8.82 36 entry + README/History prepend + wbs 9 row (total=210) |
 | d0c753e | 169.567 | test_folder_client TLS default swap (cycle 169.275 정합, 7 PASS) |
 | b50ece9 | 169.566 | ci.yml pytest fail-fast + e2e/integration ignore — hang scope 축소 |
 | ea563b5 | 169.565 | 평가 4 file staleness rewrite (cycle 169.562~564) |
