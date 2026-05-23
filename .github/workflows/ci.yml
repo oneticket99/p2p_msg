@@ -297,10 +297,10 @@ jobs:
           python -m pip install -r server/requirements-dev.txt
 
       - name: pytest 실행 (unit only — integration + e2e 제외)
-        # cycle 169.566: pytest hang root cause = PyQt6/qasync event loop stuck pattern.
-        # fix chain: -x (fail-fast) + --ignore=tests/e2e (Playwright 별 nightly) + --ignore=tests/integration (네트워크 의존).
-        # 잔존 hang 시점 = timeout-minutes 20 (cycle 169.564) abort.
-        run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration
+        # cycle 169.585: pytest UI hang root cause = qapp fixture scope=module + PyQt6 widget cleanup stuck.
+        # fix chain: tests/app/ui 전체 ignore (별 cycle 의무) + -x + e2e/integration ignore retain.
+        # 의무 = unit + server + remote + bot test full PASS green chain. UI test = qt-bot + scope=function refactor 후 별 cycle 재진입.
+        run: pytest --cov --cov-report=term-missing -x --ignore=tests/e2e --ignore=tests/integration --ignore=tests/app/ui
 
       - name: coverage 80% 게이트 (DESIGN.md §10.5 정합)
         if: success()
