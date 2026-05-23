@@ -174,7 +174,7 @@ passwordless 검증 = 다음 session 첫 액션 step 1 자동 GO.
 - 저장소 맵: [AGENTS.md](../../../AGENTS.md) §6 (8 에이전트 표)
 - 평가 snapshot: [docs/assessments/productization.md](../../assessments/productization.md) + [vibe-coding.md](../../assessments/vibe-coding.md)
 - HTML mirror: [docs/html/productization.html](../../html/productization.html) + [vibe-coding.html](../../html/vibe-coding.html)
-- 본 cycle handoff detail: [2026-05-17-session-handoff.md §8.66](2026-05-17-session-handoff.md)
+- 본 cycle handoff detail: [2026-05-17-session-handoff.md §8.66](../active/2026-05-17-session-handoff.md)
 - ssh-deploy-agent 사양: [.claude/agents/ssh-deploy-agent.md](../../../.claude/agents/ssh-deploy-agent.md)
 - permission rule: [.claude/settings.json](../../../.claude/settings.json) `permissions.allow` 5건
 - 메모리 인덱스: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md`
