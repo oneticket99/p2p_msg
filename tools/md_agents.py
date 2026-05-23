@@ -42,6 +42,13 @@ README = ROOT / "README.md"
 # ─── M3 — History.md 역순 prepend 검증 ──────────────────────────────────────
 
 
+def _history_cycle_label(major: int, start_minor: int, end_minor: int) -> str:
+    """History cycle label 생성 — range entry 도 진단 메시지에 보존."""
+    if start_minor == end_minor:
+        return f"{major}.{start_minor}"
+    return f"{major}.{start_minor}~{end_minor}"
+
+
 def agent_history() -> Tuple[bool, str]:
     """``History.md`` Phase 헤더 + cycle entry 의 역순 prepend 정합 검증.
 
@@ -56,27 +63,30 @@ def agent_history() -> Tuple[bool, str]:
     if not HISTORY.exists():
         return False, f"History.md 부재 — {HISTORY}"
     lines = HISTORY.read_text(encoding="utf-8").splitlines()
-    cycle_entries: List[Tuple[int, int, int, str, str]] = []
+    cycle_entries: List[Tuple[int, int, int, int, str, str]] = []
     pat = re.compile(
-        r"^- cycle (\d+)\.(\d+).*?\((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) KST\)"
+        r"^- cycle (\d+)\.(\d+)(?:~(\d+))?.*?"
+        r"\((\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})(?:~\d{2})? KST\)"
     )
     for idx, line in enumerate(lines):
         m = pat.match(line)
         if m:
-            major, minor = int(m.group(1)), int(m.group(2))
-            stamp = f"{m.group(3)} {m.group(4)}"
-            cycle_entries.append((idx + 1, major, minor, stamp, line))
+            major = int(m.group(1))
+            start_minor = int(m.group(2))
+            end_minor = int(m.group(3) or start_minor)
+            stamp = f"{m.group(4)} {m.group(5)}"
+            cycle_entries.append((idx + 1, major, start_minor, end_minor, stamp, line))
     if len(cycle_entries) < 2:
         return True, "cycle entry 1건 이하 — 검증 skip"
     # 한글 주석 — cycle 내림차순 + 같은 cycle 안 timestamp 내림차순을 전체 entry 에 강제한다.
     for prev, current in zip(cycle_entries, cycle_entries[1:]):
-        prev_line, prev_major, prev_minor, prev_stamp, _ = prev
-        cur_line, cur_major, cur_minor, cur_stamp, _ = current
-        prev_key = (prev_major, prev_minor, prev_stamp)
-        cur_key = (cur_major, cur_minor, cur_stamp)
+        prev_line, prev_major, prev_start, prev_end, prev_stamp, _ = prev
+        cur_line, cur_major, cur_start, cur_end, cur_stamp, _ = current
+        prev_key = (prev_major, prev_end, prev_start, prev_stamp)
+        cur_key = (cur_major, cur_end, cur_start, cur_stamp)
         if prev_key < cur_key:
-            prev_cycle = f"{prev_major}.{prev_minor}"
-            cur_cycle = f"{cur_major}.{cur_minor}"
+            prev_cycle = _history_cycle_label(prev_major, prev_start, prev_end)
+            cur_cycle = _history_cycle_label(cur_major, cur_start, cur_end)
             return (
                 False,
                 "M3 위반 — "
@@ -88,8 +98,9 @@ def agent_history() -> Tuple[bool, str]:
     return (
         True,
         "M3 PASS — "
-        f"{len(cycle_entries)} entries, top={top[1]}.{top[2]} {top[3]}, "
-        f"bottom={bottom[1]}.{bottom[2]} {bottom[3]}",
+        f"{len(cycle_entries)} entries, "
+        f"top={_history_cycle_label(top[1], top[2], top[3])} {top[4]}, "
+        f"bottom={_history_cycle_label(bottom[1], bottom[2], bottom[3])} {bottom[4]}",
     )
 
 
