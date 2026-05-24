@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 00:55:00] cycle 169.751 — server/db/repositories 0% cov 회수 batch 1. `tests/server/test_file_meta_password_reset_repo.py` 신설 11 PASS — file_meta(insert/mark_completed/mark_failed/get_by_file_id) + password_reset(insert/find_active/consume) mock async pool 검증. file_meta.py + password_reset.py 0% → cover (tests/server)
 - [2026-05-25 00:40:00] cycle 169.750 — ci.yml actionlint SC2086/SC2012/SC2035 전수 정리. `>> $GITHUB_PATH`/`$GITHUB_ENV` 3+2건 인용(`"$GITHUB_PATH"`) + 루트 .md count `ls -1 *.md` → `find . -maxdepth 1` 2건 교체. 전체 `.github/workflows/*.yml` actionlint exit 0 (0 issue) 도달 (.github/workflows/ci.yml)
 - [2026-05-25 00:25:00] cycle 169.749 — 로컬 actionlint 검증 (codex 미실행 지적 회수). `actionlint 1.7.12` + `shellcheck 0.11.0` brew 설치 후 전체 workflow 정적 검사 — error/문법 위반 0, runner label·expression·action ref 전부 valid. 내가 추가한 MIGRATION/Issue step 0 issue. doc-gardener.yml `루트 18 동결` step `ls -1 *.md` → `find -maxdepth 1` 교체 (SC2012/SC2035 info 회피) → doc-gardener actionlint-clean (.github/workflows)
 - [2026-05-25 00:10:00] cycle 169.748 — 직무유기 훅 근본 결함 회수 (사용자 "직무유기 훅 안돌아" 지적). `tools/hook_dereliction_check.sh` — HEAD-TTL skip 가 미커밋 작업(HEAD 불변)을 못 잡던 역설 수정: clean-tree 일 때만 skip 적용 + 작업트리 dirty(code/doc 미커밋) 검사 #5 신설 (exit 2 block). dirty→fire / clean+동일HEAD→skip 검증 (tools/hook_dereliction_check.sh)
