@@ -231,6 +231,26 @@ def check_portable_harness_pr_policy() -> Tuple[bool, str]:
     return True, "PORTABLE_HARNESS feature branch + PR policy 확인"
 
 
+def check_portable_meta_enforce_guide() -> Tuple[bool, str]:
+    """PORTABLE_HARNESS 안 meta_enforce 작성 가이드 핵심 토큰 검증."""
+    text = _read(PORTABLE_HARNESS)
+    required_tokens = [
+        "tools/meta_enforce.py` 작성 가이드",
+        "하네스 자기검증기",
+        "required-files",
+        "ci-soft-fail",
+        "hook-wired",
+        "push-policy",
+        "tracked-noise-files",
+        "python3 tools/meta_enforce.py",
+        "continue-on-error: true",
+    ]
+    missing = [token for token in required_tokens if token not in text]
+    if missing:
+        return False, "PORTABLE_HARNESS meta_enforce 작성 가이드 토큰 누락: " + ", ".join(missing)
+    return True, "PORTABLE_HARNESS meta_enforce 작성 가이드 확인"
+
+
 def check_tracked_noise_files() -> Tuple[bool, str]:
     """macOS/IDE 잡음 파일이 git 추적 대상인지 검증."""
     tracked = _run_git_ls_files()
@@ -257,6 +277,7 @@ def main() -> int:
         ("auto-commit-hook-wired", check_auto_commit_hook_wired),
         ("no-main-push-guidance-in-hooks", check_no_main_push_guidance_in_hooks),
         ("portable-harness-pr-policy", check_portable_harness_pr_policy),
+        ("portable-meta-enforce-guide", check_portable_meta_enforce_guide),
         ("tracked-noise-files", check_tracked_noise_files),
     ]
     failures: List[str] = []
