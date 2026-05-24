@@ -12,10 +12,13 @@
 #   5) 루트 18 동결 확인
 #
 # Phase 2 활성:
-#   - 자동 보정 PR 생성 (feature branch + gh pr create)
+#   - 자동 보정 PR 생성 (feature branch + gh pr create) — 본 파일 "자동 보정 commit + push + PR" step
 #   - 90일 스테일 frontmatter last_verified 자동 보정
 #   - 90일 스테일 owner 알림 (workflow summary)
-#   - MIGRATION_MARIADB.md ↔ 코드 __tablename__ 정합
+#
+# Phase 3 예정 (미구현 — 본 파일 step 부재):
+#   - MIGRATION_MARIADB.md ↔ 코드 __tablename__ 정합 검사
+#   - 검증 실패 시 Issue 자동 생성 (현재 = PR 생성만, Issue 생성 step 부재)
 #
 # 트리거:
 #   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
@@ -72,12 +75,12 @@ jobs:
           STALE_LIST=""
 
           while IFS= read -r f; do
-            # frontmatter 측 last_verified 필드 추출 (YYYY-MM-DD)
+            # frontmatter 안 last_verified 필드 추출 (YYYY-MM-DD)
             LV=$(grep -E '^last_verified:' "$f" 2>/dev/null \
               | head -1 \
               | sed -E 's/^last_verified:[[:space:]]*//;s/["'\'']//g;s/[[:space:]]*$//')
             if [ -z "$LV" ]; then continue; fi
-            # ISO-8601 형식 가정 — macOS date BSD 측 -j -f 사용
+            # ISO-8601 형식 가정 — macOS date (BSD) -j -f 사용
             LV_TS=$(date -j -f "%Y-%m-%d" "$LV" "+%s" 2>/dev/null || true)
             if [ -z "$LV_TS" ]; then continue; fi
             DIFF_DAYS=$(( (TODAY - LV_TS) / 86400 ))
