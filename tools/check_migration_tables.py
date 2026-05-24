@@ -8,17 +8,19 @@ doc-gardener.yml Phase 3 항목 구현. 정본 §L "MIGRATION tables ↔ 모델 
 ----------
 MIGRATION_MARIADB.md 안 `CREATE TABLE <name>` 으로 문서화한 테이블은
 server/db/migrations/*.sql 안 실제 `CREATE TABLE` 정의에 반드시 존재해야 한다.
-(doc 는 의도적 부분 문서 — SQL 전체 테이블 문서화 의무 부재. 역방향 검사 안 함.)
+(doc 는 의도적 부분 reference 문서 — SQL 전체 테이블 문서화 의무 부재. forward 만 default error.)
 
 drift 판정
 ---------
-doc 가 참조하나 SQL 부재 테이블 = drift (rename/삭제 후 doc 미갱신 detect).
+- forward(default) : doc 가 참조하나 SQL 부재 테이블 = drift (rename/삭제 후 doc 미갱신 detect).
+- reverse(--strict): SQL 정의 단 doc 미문서화 테이블 도 drift 승격 (DB 문서 완전 차단 기준).
 1건 이상 drift → exit 1 + 보고. clean → exit 0.
 
 사용
 ----
-    python3 tools/check_migration_tables.py
-    python3 tools/check_migration_tables.py --json   # CI Issue 본문용 JSON
+    python3 tools/check_migration_tables.py            # forward only (default)
+    python3 tools/check_migration_tables.py --strict   # reverse(SQL→doc 미문서화) 도 error
+    python3 tools/check_migration_tables.py --json      # CI Issue 본문용 JSON (--strict 병용 가능)
 """
 
 from __future__ import annotations
