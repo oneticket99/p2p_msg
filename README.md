@@ -308,6 +308,9 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-24 23:55:00] cycle 169.747 — doc-gardener MIGRATION 테이블 정합 검사 구현 (Phase 3 활성화). `tools/check_migration_tables.py` 신설 — MIGRATION_MARIADB.md 문서 테이블(7) ⊆ migrations SQL 테이블(25) 불변식 검증, drift 시 exit 1. doc-gardener.yml MIGRATION 검사 step + `gh issue create` 자동 생성 배선 + 정본 정합 (tools · .github/workflows · CLAUDE_HARNESS_IMPORTANT.md)
+- [2026-05-24 23:45:00] cycle 169.746 — doc-gardener.yml codex 평가 3건 회수. YAML 주석 U+CE21 단독 글자 2건 제거(line 75/80) + Phase 2/3 주석 정합 + 정본 line 222 정직화(현재 활성 vs 예정 분리) (.github/workflows · CLAUDE_HARNESS_IMPORTANT.md)
+- [2026-05-24 23:30:00] cycle 169.745 — 평가 6 file staleness 회수. productization.md + vibe-coding.md snapshot 전체 rewrite (cycle 169.738~744 batch 41 신규 PASS + cov 81.34% + messages_cache id→msg_id source bug fix) + HTML mirror 2종 동시 sync + handoff §8.82.1 manifest (docs/assessments · docs/html · docs/exec-plans)
 - [2026-05-24 15:07:02] cycle 169.744 — doc-gardener CI annotation 회수. 수동 doc-gardener run PASS 확인 후 Node.js 20 deprecation 경고 원인인 `actions/checkout@v4` 를 전체 workflow 에서 `actions/checkout@v5` 로 갱신 (.github/workflows)
 - [2026-05-24 15:05:00] cycle 169.743 — PORTABLE_HARNESS meta_enforce 작성 가이드 추가. 기본 골격, 필수 검사 세트, 작성 원칙, CI 연결 예시와 portable guide meta token 검증 추가 (docs/PORTABLE_HARNESS.md · tools/meta_enforce.py · ~/.codex/skills/portable-harness/references/bootstrap.md)
 - [2026-05-24 14:45:00] cycle 169.742 — PORTABLE_HARNESS push policy 재정합 + cycle 169.740~741 freshness 회수. main 직접 push 이식 지시를 feature branch + PR 흐름으로 교체하고 portable harness meta gate 추가, 직전 core/config + messages_cache SQLite test 24 PASS marker 문서화 (docs/PORTABLE_HARNESS.md · tools/meta_enforce.py · tests/app/test_core_config.py · tests/app/test_messages_cache_sqlite.py)

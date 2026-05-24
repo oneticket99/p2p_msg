@@ -15,10 +15,8 @@
 #   - 자동 보정 PR 생성 (feature branch + gh pr create) — 본 파일 "자동 보정 commit + push + PR" step
 #   - 90일 스테일 frontmatter last_verified 자동 보정
 #   - 90일 스테일 owner 알림 (workflow summary)
-#
-# Phase 3 예정 (미구현 — 본 파일 step 부재):
-#   - MIGRATION_MARIADB.md ↔ 코드 __tablename__ 정합 검사
-#   - 검증 실패 시 Issue 자동 생성 (현재 = PR 생성만, Issue 생성 step 부재)
+#   - MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사 (tools/check_migration_tables.py)
+#   - MIGRATION drift 감지 시 Issue 자동 생성 (gh issue create, 중복 차단)
 #
 # 트리거:
 #   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
@@ -48,6 +46,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
 
@@ -138,6 +137,26 @@ jobs:
           fi
           echo "루트 18 동결 정합"
 
+      - name: MIGRATION 테이블 정합 검사 (Phase 3)
+        run: |
+          # 한글 주석 — 검사 실패해도 job 은 통과시키고 drift flag 만 후속 step 에 전달
+          set +e
+          OUT=$(python3 tools/check_migration_tables.py 2>&1)
+          CODE=$?
+          echo "$OUT"
+          {
+            echo "## MIGRATION 테이블 정합 (Phase 3)"
+            echo ""
+            echo '```'
+            echo "$OUT"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" != "0" ]; then
+            echo "MIGRATION_DRIFT=1" >> "$GITHUB_ENV"
+          else
+            echo "MIGRATION_DRIFT=0" >> "$GITHUB_ENV"
+          fi
+
       - name: drift 리포트 요약 (Phase 1)
         if: always()
         run: |
@@ -175,3 +194,28 @@ jobs:
             --head "$BRANCH" \
             --title "docs: doc-gardener stale frontmatter refresh" \
             --body "Automated doc-gardener refresh for stale docs/** frontmatter. Main direct push is intentionally avoided."
+
+      - name: MIGRATION drift Issue 자동 생성 (Phase 3)
+        if: env.MIGRATION_DRIFT == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TITLE="doc-gardener: MIGRATION 테이블 drift 감지"
+          # 한글 주석 — 동일 제목 open Issue 존재 시 중복 생성 차단
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq 'length')
+          if [ "$EXISTING" != "0" ]; then
+            echo "동일 제목 open Issue 존재 — 중복 생성 skip"
+            exit 0
+          fi
+          BODY_FILE=$(mktemp)
+          {
+            echo "doc-gardener 주간 검사가 MIGRATION_MARIADB.md 와 migrations SQL 사이 테이블 drift 를 감지했습니다."
+            echo ""
+            echo '```'
+            python3 tools/check_migration_tables.py 2>&1 || true
+            echo '```'
+            echo ""
+            echo "MIGRATION_MARIADB.md 갱신 또는 server/db/migrations SQL 추가로 정합을 회수하세요."
+          } > "$BODY_FILE"
+          gh issue create --title "$TITLE" --body-file "$BODY_FILE"

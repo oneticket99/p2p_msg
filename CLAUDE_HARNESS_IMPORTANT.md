@@ -219,7 +219,7 @@
 |---|---|---|
 | `.github/workflows/ci.yml` | push / PR | 앱 import 스모크, `tools/md_agents.py`, Spec 오름차순, **History 역순(M3)**, **README 변경 이력(M2)**, **한글 주석(M4)**, 루트 17개 동결 |
 | `.github/workflows/docs-lint.yml` | `*.md` 변경 | 깨진 상대 링크, `docs/**` 프론트매터(title·owner·last_verified·status), 연속 빈 줄 |
-| `.github/workflows/doc-gardener.yml` | 주 1회 cron + 수동 | **현재 활성**: doc-lint(링크·frontmatter·BPE), 90일 스테일 감지+자동 보정, 루트 18 동결, 자동 보정 PR 생성. **Phase 3 예정(미구현)**: MIGRATION tables ↔ 모델 `__tablename__` 검사, 실패 시 Issue 자동 생성 |
+| `.github/workflows/doc-gardener.yml` | 주 1회 cron + 수동 | doc-lint(링크·frontmatter·BPE), 90일 스테일 감지+자동 보정, 루트 18 동결, 자동 보정 PR 생성, MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사(`tools/check_migration_tables.py`), drift 감지 시 Issue 자동 생성 |
 
 ## M) docs/policies/ 의무 문서
 
