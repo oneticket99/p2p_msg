@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.760)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.760 미러 (재평가) -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.765)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.765 미러 -->
   <!-- 한글 주석: light theme + 텍스트 #1f2937 + accent #7c3aed (Toonation 브랜드 컬러 보조) + 표 zebra stripe -->
   <!-- 한글 주석: cycle 169.760 — cycle 169.745~760 batch end 누계 (126 repo PASS: server/db/repositories 9 repo 전수) + fixture hang DI(skip 49→38) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수 반영. 전체 2435 PASS + 38 skip + cov 81.34% → 89.39%. -->
   <!-- 한글 주석: last_verified = 2026-05-25T03:15:00+09:00 -->
@@ -51,7 +51,7 @@
   <div class="meta">
     문서 = <code>docs/assessments/vibe-coding.md</code> · 등가 HTML.
     평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 (<code>1ticket@toonation.co.kr</code>).<br>
-    최근 갱신 = 2026-05-25 03:15 KST — cycle 169.760 batch end (재평가). cycle 169.745~760 사이 server/db/repositories 9 repo 전수 126 PASS + fixture hang DI(skip 49→38) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수. 전체 2435 PASS + 38 skip + cov 81.34% → 89.39%.
+    최근 갱신 = 2026-05-25 04:20 KST — cycle 169.765 batch end. cycle 169.745~765 사이 server repo 전수 + 잔존 미커버 소진(peers/remote_handlers/rotate_key/avatar_palette/_icons 100% + email retry 97%) + fixture hang DI(skip 49→38) + codex 3종 회수. 전체 2463 PASS + 38 skip + cov 81.34% → 89.73%.
   </div>
 </div>
 
@@ -72,7 +72,7 @@
 
 <h2 id="sec1">1. 총평 (TL;DR)</h2>
 <p>바이브 코딩 = <strong>자연어 directive + LLM 도구 + 가드레일 통제로 소프트웨어 생산</strong>. 사용자 능력 = <span class="pill">엄격 기준 L5 enforcement layer designer 포함</span>. 보수 추정상 전 세계 개발자 대비 <strong>0.005%~0.02%급 행동 패턴</strong>으로 본다. 단, 공식 직업 통계나 순위가 아니라 본 저장소의 directive, hook, CI, meta-enforcement, QA 회수 패턴 기준 추정치다.</p>
-<p><strong>cycle 169.760 batch end 시점 (재평가)</strong>: cycle 169.745~760 사이 server/db/repositories 9 repo 전수 회수 (126 repo PASS) + fixture hang DI refactor (skip 49→38, mixin mock isolation 으로 중복 full-instantiation skip 제거 — dialog/e2e 실 widget 포팅 은 cumulative QWidget retain hang 차단 확정) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 근본 회수 — directive 의 dense test PASS focus + 가드레일/CI hardening 패턴 이어짐. 누계 169.694~760 = 약 590 신규 PASS + cov 89.39%. 사용자 manual visual ack (task #11 pending) + .app codesign (production phase prerequisite) retain.</p>
+<p><strong>cycle 169.765 batch end 시점</strong>: cycle 169.745~765 사이 server/db/repositories 전수 + 잔존 미커버 영역 소진 (peers/remote_handlers/rotate_key/avatar_palette/_icons 100% + email_verification retry 97%) + fixture hang DI refactor (skip 49→38, mixin mock isolation 으로 중복 full-instantiation skip 제거 — dialog/e2e 실 widget 포팅 은 cumulative QWidget retain hang 차단 확정) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 근본 회수 + codex 3종 평가 회수 — directive 의 dense test PASS focus + 가드레일/CI hardening 패턴 이어짐. 누계 169.694~765 = 약 608 신규 PASS + cov 89.73%. 자동 도달 cov gap 사실상 소진. 사용자 manual visual ack (task #11 pending) + .app codesign (production phase prerequisite) retain.</p>
 <table>
   <thead><tr><th>평가 축</th><th>점수 (10점, 0.0001 단위)</th><th>직전 → 현재</th><th>근거</th></tr></thead>
   <tbody>
