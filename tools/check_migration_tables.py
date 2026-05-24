@@ -78,23 +78,35 @@ def run_check() -> dict:
 
 
 def main() -> int:
+    # 한글 주석 — --strict = reverse(SQL → doc 미문서화) 도 drift error 승격 (cycle 169.761 codex 회수)
+    # default = forward(doc → SQL 부재) 만 error. MIGRATION_MARIADB.md 가 의도적 부분 reference 문서이므로.
+    strict = "--strict" in sys.argv
     result = run_check()
+    # 한글 주석 — strict 시 undocumented 도 ok 판정에 포함
+    ok = result["ok"] and (not strict or not result["undocumented"])
+
     if "--json" in sys.argv:
-        print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0 if result["ok"] else 1
+        out = dict(result)
+        out["strict"] = strict
+        out["ok"] = ok
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0 if ok else 1
 
     print(f"[check_migration_tables] SQL 정의 테이블 {result['sql_table_count']}개 "
-          f"/ doc 문서화 {result['doc_table_count']}개")
+          f"/ doc 문서화 {result['doc_table_count']}개 (strict={strict})")
     if result["undocumented"]:
-        print(f"  참고 (drift 아님) — doc 미문서화 SQL 테이블 {len(result['undocumented'])}개: "
+        label = "ERR (strict)" if strict else "참고 (drift 아님)"
+        print(f"  [{label}] doc 미문서화 SQL 테이블 {len(result['undocumented'])}개: "
               f"{', '.join(result['undocumented'])}")
-    if result["ok"]:
-        print("[OK] MIGRATION 테이블 정합 — doc 참조 테이블 전부 SQL 실재")
+    if result["drift"]:
+        print("[ERR] MIGRATION drift — doc 참조 단 SQL 부재 테이블:")
+        for t in result["drift"]:
+            print(f"        - {t}")
+        print("      MIGRATION_MARIADB.md 갱신 또는 migrations SQL 추가 의무")
+    if ok:
+        print("[OK] MIGRATION 테이블 정합 — doc 참조 테이블 전부 SQL 실재"
+              + (" + SQL 전수 문서화 (strict)" if strict else ""))
         return 0
-    print("[ERR] MIGRATION drift — doc 참조 단 SQL 부재 테이블:")
-    for t in result["drift"]:
-        print(f"        - {t}")
-    print("      MIGRATION_MARIADB.md 갱신 또는 migrations SQL 추가 의무")
     return 1
 
 

@@ -11,12 +11,15 @@
 #   4) BPE 위생 (doc-lint.sh 검사 1)
 #   5) 루트 18 동결 확인
 #
-# Phase 2 활성:
+# Phase 2 활성 (자동 보정 PR step):
 #   - 자동 보정 PR 생성 (feature branch + gh pr create) — 본 파일 "자동 보정 commit + push + PR" step
 #   - 90일 스테일 frontmatter last_verified 자동 보정
 #   - 90일 스테일 owner 알림 (workflow summary)
-#   - MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사 (tools/check_migration_tables.py)
-#   - MIGRATION drift 감지 시 Issue 자동 생성 (gh issue create, 중복 차단)
+#
+# Phase 3 활성 (MIGRATION 검사 + Issue step):
+#   - MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사 (tools/check_migration_tables.py, 본 파일 "MIGRATION 테이블 정합 검사 (Phase 3)" step)
+#   - MIGRATION drift 감지 시 Issue 자동 생성 (gh issue create, 중복 차단, 본 파일 "MIGRATION drift Issue 자동 생성 (Phase 3)" step)
+#   - 검사 방향 = doc(MIGRATION_MARIADB.md) 참조 테이블 ⊆ SQL 실재 (forward). 역방향(SQL → doc)은 MIGRATION_MARIADB.md 가 의도적 부분 reference 문서(핵심 7/25 테이블 DDL 예시)이므로 informational 만 — `--strict` opt-in 시 error 승격 (tools/check_migration_tables.py)
 #
 # 트리거:
 #   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
