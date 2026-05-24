@@ -90,6 +90,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_dereliction_check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_auto_commit_enforce.sh"
           }
         ]
       }

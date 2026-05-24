@@ -20,12 +20,15 @@ CI = ROOT / ".github" / "workflows" / "ci.yml"
 DOC_GARDENER = ROOT / ".github" / "workflows" / "doc-gardener.yml"
 HISTORY = ROOT / "History.md"
 README = ROOT / "README.md"
+CLAUDE_SETTINGS = ROOT / ".claude" / "settings.json"
+AUTO_COMMIT_HOOK = ROOT / "tools" / "hook_auto_commit_enforce.sh"
 
 REQUIRED_FILES = [
     "tools/doc-lint.sh",
     "tools/md_agents.py",
     "tools/hook_check_bpe_token_input.sh",
     "tools/hook_telegram_report_stop.sh",
+    "tools/hook_auto_commit_enforce.sh",
     ".github/workflows/ci.yml",
     ".github/workflows/docs-lint.yml",
     ".github/workflows/doc-gardener.yml",
@@ -168,6 +171,44 @@ def check_doc_gardener_auto_push() -> Tuple[bool, str]:
     return True, "doc-gardener 자동 보정 branch push + PR 경로 확인"
 
 
+def check_auto_commit_hook_wired() -> Tuple[bool, str]:
+    """직무유기 방지 auto-commit hook 의 추적/Stop 연결/PR 경로 정합 검증."""
+    tracked = set(_run_git_ls_files())
+    rel = "tools/hook_auto_commit_enforce.sh"
+    if rel not in tracked:
+        return False, f"auto-commit hook 이 git 추적 대상이 아님: {rel}"
+    settings_text = _read(CLAUDE_SETTINGS)
+    hook_cmd = "bash ${CLAUDE_PROJECT_DIR}/tools/hook_auto_commit_enforce.sh"
+    if hook_cmd not in settings_text:
+        return False, "settings.json Stop hook 안 auto-commit hook 연결 누락"
+    hook_text = _read(AUTO_COMMIT_HOOK)
+    required_tokens = [
+        "git status --porcelain",
+        "tests/|app/|server/",
+        "git push origin HEAD:<feature-branch>",
+        "gh pr create --base main --head <feature-branch> --fill",
+    ]
+    missing = [token for token in required_tokens if token not in hook_text]
+    if missing:
+        return False, "auto-commit hook 핵심 차단/안내 토큰 누락: " + ", ".join(missing)
+    forbidden = "git push origin main"
+    if forbidden in hook_text:
+        return False, "auto-commit hook 안 main 직접 push 안내 발견"
+    return True, "auto-commit hook 추적 + Stop 연결 + PR 경로 안내 확인"
+
+
+def check_no_main_push_guidance_in_hooks() -> Tuple[bool, str]:
+    """Stop hook 안내 문구가 main 직접 push 를 권장하지 않는지 검증."""
+    offenders = []
+    for path in sorted((ROOT / "tools").glob("hook_*.sh")):
+        text = _read(path)
+        if "git push origin main" in text:
+            offenders.append(str(path.relative_to(ROOT)))
+    if offenders:
+        return False, "hook 안 main 직접 push 안내 발견: " + ", ".join(offenders)
+    return True, "hook main 직접 push 안내 없음"
+
+
 def check_tracked_noise_files() -> Tuple[bool, str]:
     """macOS/IDE 잡음 파일이 git 추적 대상인지 검증."""
     tracked = _run_git_ls_files()
@@ -191,6 +232,8 @@ def main() -> int:
         ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
         ("latest-cycle-documented", check_latest_cycle_documented),
         ("doc-gardener-auto-push", check_doc_gardener_auto_push),
+        ("auto-commit-hook-wired", check_auto_commit_hook_wired),
+        ("no-main-push-guidance-in-hooks", check_no_main_push_guidance_in_hooks),
         ("tracked-noise-files", check_tracked_noise_files),
     ]
     failures: List[str] = []

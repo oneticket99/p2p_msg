@@ -308,6 +308,11 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-24 14:30:00] cycle 169.739 — 직무유기 반복 회수. cycle 169.735~738 README/History freshness 누락 보정, auto-commit Stop hook 정식 연결, meta-enforcement 에 hook 추적/연결/main 직접 push 안내 금지 검사 추가 (History.md · README.md · CheckList.md · .claude/settings.json · tools/hook_auto_commit_enforce.sh · tools/meta_enforce.py)
+- [2026-05-24 14:18:00] cycle 169.738 — core/security unit 17 PASS. token hash/verify, session token, OTP, reset token, email validator, password strength 경계값 검증 (tests/app/test_core_security.py)
+- [2026-05-24 13:33:00] cycle 169.737 — 평가 4 file staleness 회수 + token-usage 재산출 + handoff row 갱신 (docs/assessments · docs/html · docs/operations/token-usage-30d.*)
+- [2026-05-24 13:25:00] cycle 169.736 — UI helper avatar + close_button unit 9 PASS (tests/app/ui/test_ui_helper_avatar.py)
+- [2026-05-24 13:14:00] cycle 169.735 — UI dialog batch 7 unit 8 PASS. ThemePicker, FolderEditDialog, MyAccountDialog isolated 검증 (tests/app/ui/test_dialog_batch7.py)
 - [2026-05-24 12:52:00] cycle 169.734 — 우선순위 회수 batch. cycle 169.731~733 freshness 누락 반영, e2e signaling fixture live server 전환, contacts/app_versions repo test 19 PASS 정식 반영, latest-cycle/doc-gardener auto push meta gate 추가 (tests/e2e · tests/server/test_contacts_app_versions_repo.py · .github/workflows/doc-gardener.yml · tools/meta_enforce.py)
 - [2026-05-24 02:21:00] cycle 169.715 — CI runner python 명령 자기모순 회수. bare runner 단계의 `python` 호출을 `python3` 로 교체하고 meta-enforcement 도 같은 기준으로 강화 (.github/workflows/ci.yml · tools/meta_enforce.py · History.md · README.md · CheckList.md)
 - [2026-05-24 02:14:00] cycle 169.713 — markdown/guardrail 자기모순 추가 회수. `md_agents.py` range cycle/time 파싱 보강, `History.md` 336개 cycle entry 검증기 기준 재정렬, CheckList 상태표 갱신 (tools/md_agents.py · History.md · CheckList.md)

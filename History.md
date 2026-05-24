@@ -40,6 +40,11 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.739 (2026-05-24 14:30 KST) — 직무유기 반복 회수 batch. cycle 169.735~738 의 README/History freshness 누락을 보정하고, `tools/hook_auto_commit_enforce.sh` 를 Stop hook 실제 연결 대상으로 승격. `tools/meta_enforce.py` 는 auto-commit hook 의 추적 여부, `.claude/settings.json` Stop 연결, main 직접 push 안내 금지를 검사하도록 강화. hook 안내는 feature branch push + PR 경로로 정정해 main 직접 push 정책 충돌 차단.
+- cycle 169.738 (2026-05-24 14:18 KST) — core/security unit test 17 PASS. `tests/app/test_core_security.py` 신설로 token hash/verify, session token, OTP, password reset token, email validator, password strength 경계값을 검증.
+- cycle 169.737 (2026-05-24 13:33 KST) — 평가 4 file staleness 회수 + token-usage 재산출 + handoff §8 row. productization/vibe-coding markdown + HTML mirror + token usage json/html 갱신.
+- cycle 169.736 (2026-05-24 13:25 KST) — UI helper avatar + close_button unit test 9 PASS. `tests/app/ui/test_ui_helper_avatar.py` 로 avatar palette/fallback 과 close button factory 동작 검증.
+- cycle 169.735 (2026-05-24 13:14 KST) — UI dialog batch 7 unit test 8 PASS. ThemePicker, FolderEditDialog, MyAccountDialog isolated dialog 동작 검증.
 - cycle 169.734 (2026-05-24 12:52 KST) — 우선순위 회수 batch. 최신 main cycle 169.731~733 문서 freshness 누락을 반영하고, DataChannel/voice/video/signaling browser E2E 8건을 원격 demo signaling fixture 에서 `live_signaling_server_url` 로 전환해 `bob JOIN timeout` flake 차단. `tests/server/test_contacts_app_versions_repo.py` 19 PASS 정식 반영. `tools/meta_enforce.py` 에 latest cycle marker README/History 반영 검사 + doc-gardener 자동 commit/push/PR 경로 검사 추가. `.github/workflows/doc-gardener.yml` 은 90일 stale frontmatter 자동 보정 후 `auto/doc-gardener-*` branch commit + push + PR 생성 경로 복구.
 - cycle 169.715 (2026-05-24 02:21 KST) — CI runner python 명령 자기모순 회수. self-hosted macOS runner 에 `python` binary 가 없어 M3 remote FAIL 이 발생한 로그를 근거로, `.github/workflows/ci.yml` 의 bare runner 단계(meta-enforcement + M3)를 `python3` 호출로 교체하고 `tools/meta_enforce.py` 가 `python3 tools/md_agents.py --history-only` 를 요구하도록 강화.
 - cycle 169.713 (2026-05-24 02:14 KST) — markdown/guardrail 자기모순 추가 회수. `tools/md_agents.py` 가 `cycle 169.461~463` 같은 range 표기와 `19:05~08 KST` 시간 range 를 같은 key 로 파싱하도록 보강하고, `History.md` cycle entry 336건을 검증기 기준 내림차순으로 재정렬. 목표 = CI M3 단일 검증기와 로컬 M3 실제 문서 상태의 동시 PASS.

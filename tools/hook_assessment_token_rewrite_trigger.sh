@@ -66,7 +66,7 @@ $(printf "%b" "$DRIFT")
 1. productization.md + vibe-coding.md 전면 rewrite (§1+§2+§3+§5+§6+§8 6 영역 sweep)
 2. HTML mirror 2종 동시 rewrite (CLAUDE.md §10-6)
 3. token-usage-30d.html + .json 재 산출 (sub-agent general-purpose spawn 권장)
-4. commit + push (SKIP_PREPUSH=1 git push origin main)
+4. commit + feature branch push + PR 생성
 
 env override — HOOK_ASSESS_STALE_HOURS / HOOK_TOKEN_STALE_HOURS
 EOF
