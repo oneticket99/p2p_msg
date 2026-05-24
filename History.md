@@ -40,6 +40,7 @@ status: active
 시그널링 서버·클라이언트 스켈레톤, 9 정책 문서, 운영 문서(Specification·Structure), 가드레일
 도구(doc-lint·markdownlint), 7 프로세스 에이전트 정의를 단일 일자에 집중 투입한다.
 
+- cycle 169.742 (2026-05-24 14:45 KST) — PORTABLE_HARNESS push policy 재정합 + cycle 169.740~741 freshness 회수. `docs/PORTABLE_HARNESS.md` 안 `SKIP_PREPUSH=1 git push origin main` 이식 지시를 feature branch push + PR 생성 절차로 교체하고, `tools/meta_enforce.py` 에 portable harness main 직접 push 안내 차단 검사를 추가. 개인 `$portable-harness` skill 도 PR 기반 push policy 를 명시하도록 보강. 직전 `af6f99f` 의 `cycle169.740-741` core/config + messages_cache SQLite test 24 PASS marker 도 README/History 최신성 검사 기준으로 회수.
 - cycle 169.739 (2026-05-24 14:30 KST) — 직무유기 반복 회수 batch. cycle 169.735~738 의 README/History freshness 누락을 보정하고, `tools/hook_auto_commit_enforce.sh` 를 Stop hook 실제 연결 대상으로 승격. `tools/meta_enforce.py` 는 auto-commit hook 의 추적 여부, `.claude/settings.json` Stop 연결, main 직접 push 안내 금지를 검사하도록 강화. hook 안내는 feature branch push + PR 경로로 정정해 main 직접 push 정책 충돌 차단.
 - cycle 169.738 (2026-05-24 14:18 KST) — core/security unit test 17 PASS. `tests/app/test_core_security.py` 신설로 token hash/verify, session token, OTP, password reset token, email validator, password strength 경계값을 검증.
 - cycle 169.737 (2026-05-24 13:33 KST) — 평가 4 file staleness 회수 + token-usage 재산출 + handoff §8 row. productization/vibe-coding markdown + HTML mirror + token usage json/html 갱신.

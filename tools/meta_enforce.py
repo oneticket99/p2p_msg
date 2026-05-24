@@ -22,6 +22,7 @@ HISTORY = ROOT / "History.md"
 README = ROOT / "README.md"
 CLAUDE_SETTINGS = ROOT / ".claude" / "settings.json"
 AUTO_COMMIT_HOOK = ROOT / "tools" / "hook_auto_commit_enforce.sh"
+PORTABLE_HARNESS = ROOT / "docs" / "PORTABLE_HARNESS.md"
 
 REQUIRED_FILES = [
     "tools/doc-lint.sh",
@@ -209,6 +210,27 @@ def check_no_main_push_guidance_in_hooks() -> Tuple[bool, str]:
     return True, "hook main 직접 push 안내 없음"
 
 
+def check_portable_harness_pr_policy() -> Tuple[bool, str]:
+    """PORTABLE_HARNESS 이식 절차가 feature branch + PR 을 기본값으로 안내하는지 검증."""
+    text = _read(PORTABLE_HARNESS)
+    forbidden_tokens = [
+        "git push origin main",
+        "SKIP_PREPUSH=1 git push origin main",
+    ]
+    found = [token for token in forbidden_tokens if token in text]
+    if found:
+        return False, "PORTABLE_HARNESS main 직접 push 안내 발견: " + ", ".join(found)
+    required_tokens = [
+        "git push origin HEAD:codex/<task-slug>",
+        "gh pr create --base main --head codex/<task-slug> --fill",
+        "main 직접 push 는 금지한다",
+    ]
+    missing = [token for token in required_tokens if token not in text]
+    if missing:
+        return False, "PORTABLE_HARNESS PR 기반 push policy 누락: " + ", ".join(missing)
+    return True, "PORTABLE_HARNESS feature branch + PR policy 확인"
+
+
 def check_tracked_noise_files() -> Tuple[bool, str]:
     """macOS/IDE 잡음 파일이 git 추적 대상인지 검증."""
     tracked = _run_git_ls_files()
@@ -234,6 +256,7 @@ def main() -> int:
         ("doc-gardener-auto-push", check_doc_gardener_auto_push),
         ("auto-commit-hook-wired", check_auto_commit_hook_wired),
         ("no-main-push-guidance-in-hooks", check_no_main_push_guidance_in_hooks),
+        ("portable-harness-pr-policy", check_portable_harness_pr_policy),
         ("tracked-noise-files", check_tracked_noise_files),
     ]
     failures: List[str] = []

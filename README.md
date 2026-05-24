@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-24 14:45:00] cycle 169.742 — PORTABLE_HARNESS push policy 재정합 + cycle 169.740~741 freshness 회수. main 직접 push 이식 지시를 feature branch + PR 흐름으로 교체하고 portable harness meta gate 추가, 직전 core/config + messages_cache SQLite test 24 PASS marker 문서화 (docs/PORTABLE_HARNESS.md · tools/meta_enforce.py · tests/app/test_core_config.py · tests/app/test_messages_cache_sqlite.py)
 - [2026-05-24 14:30:00] cycle 169.739 — 직무유기 반복 회수. cycle 169.735~738 README/History freshness 누락 보정, auto-commit Stop hook 정식 연결, meta-enforcement 에 hook 추적/연결/main 직접 push 안내 금지 검사 추가 (History.md · README.md · CheckList.md · .claude/settings.json · tools/hook_auto_commit_enforce.sh · tools/meta_enforce.py)
 - [2026-05-24 14:18:00] cycle 169.738 — core/security unit 17 PASS. token hash/verify, session token, OTP, reset token, email validator, password strength 경계값 검증 (tests/app/test_core_security.py)
 - [2026-05-24 13:33:00] cycle 169.737 — 평가 4 file staleness 회수 + token-usage 재산출 + handoff row 갱신 (docs/assessments · docs/html · docs/operations/token-usage-30d.*)
