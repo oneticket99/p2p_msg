@@ -171,12 +171,14 @@ status: active
 
 ## 8.82 사이클 169.532~169.661 — codex e2e + 원격 server + build + token-usage + WBS web + CI fail-fast + BPE strict + asyncio guard + ci test swap + runner restart + test fail 회수 + cov 80% 복귀 + Phase 1 NFR 7 bench + DataChannel 직결 PASS + FR-02/03/04 browser E2E + Phase 1 M3+M4 sign-off + .app codesign 7 attempt 마감 + integration 44 + e2e 7/8 활성 + fixture hang mock isolation 4 cycle + NFR-03 phase 2단계 + omit 제거 path 3 file + friends/chat/voice call/remote desktop/emoji pack E2E chain (2026-05-23~25 신설)
 
-### 8.82.1 130+ cycle 산출 (cycle 169.532~745)
+### 8.82.1 130+ cycle 산출 (cycle 169.532~758)
 
 > cycle 169.662~744 test PASS batch (약 1000+ PASS 누계 진입 — client/handler e2e + bot framework + mixin isolated + core/DB unit) 는 task list (#134~194) 에 granular 등재. 본 표는 대표 cycle + 최신 회수 manifest.
 
 | commit | cycle | scope |
 |---|---|---|
+| (본 cycle) | 169.758 | 평가 6 file staleness 회수 — cycle 169.745~757 batch 99 신규 PASS (server/db/repositories 6 batch) + cov 81.34% → 87.76% + 종합 6.7/10 유지 (기술완성도 8.7→8.8 + 가드레일 8.2→8.4) + HTML mirror 2종 sync |
+| 6241d3f | 169.745~757 | server repo 6 batch 99 PASS (file_meta/password_reset/read_states/messages/bots/email_verification/devices/friends) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수 |
 | (본 cycle) | 169.745 | 평가 6 file staleness 회수 — cycle 169.738~744 batch 41 신규 PASS (security 17 + config 18 + messages_cache 6) + cov 81.34% + messages_cache id→msg_id source bug fix + HTML mirror 2종 sync |
 | bb37031 | 169.738~744 | core/security 17 + core/config 18 + messages_cache SQLite 6 PASS + dereliction recovery hook + portable harness/meta enforce 문서 + CI checkout node24 |
 | 44409d8 | 169.661 | emoji pack + bot framework E2E 10 PASS — list/create/conflict/auth + bot import |
