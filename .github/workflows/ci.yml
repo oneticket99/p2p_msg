@@ -43,7 +43,7 @@ jobs:
     runs-on: [self-hosted, macOS, arm64]
     steps:
       - name: 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: markdownlint-cli2 실행
         run: |
@@ -61,7 +61,7 @@ jobs:
     runs-on: [self-hosted, macOS, arm64]
     steps:
       - name: 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: brew python@3.13 PATH 등록
         if: runner.os == 'macOS'
@@ -77,7 +77,7 @@ jobs:
     name: root-18-freeze (정본 §K)
     runs-on: [self-hosted, macOS, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: 루트 .md 카운트 검증
         run: |
@@ -100,7 +100,7 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -128,7 +128,7 @@ jobs:
     name: m2-readme-history (M2)
     runs-on: [self-hosted, macOS, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: README.md 변경 이력 헤더 검증
         run: |
@@ -146,7 +146,7 @@ jobs:
     name: m3-history-prepend (M3)
     runs-on: [self-hosted, macOS, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: History.md cycle entry 순서 검증
         run: |
@@ -164,7 +164,7 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -209,7 +209,7 @@ jobs:
           #   runner: [self-hosted, Windows, x64]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: brew python@3.13 PATH 등록 (macOS — `python` symlink 활성)
         if: runner.os == 'macOS'
@@ -261,7 +261,7 @@ jobs:
           #   runner: [self-hosted, Windows, x64]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: brew python@3.13 PATH 등록 (macOS — `python` symlink 활성)
         if: runner.os == 'macOS'
