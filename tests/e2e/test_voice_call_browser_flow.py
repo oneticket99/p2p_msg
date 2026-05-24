@@ -20,11 +20,11 @@ pytestmark = pytest.mark.e2e
 
 def test_browser_voice_call_offer_answer_hangup(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """Alice 의 audio offer + Bob ANSWER + ontrack + close hangup."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -155,7 +155,7 @@ def test_browser_voice_call_offer_answer_hangup(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
     assert result["ok"] is True
     assert result["has_audio_offer"] is True

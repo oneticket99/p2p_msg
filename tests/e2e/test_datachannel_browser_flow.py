@@ -18,11 +18,11 @@ pytestmark = pytest.mark.e2e
 
 def test_browser_datachannel_offer_answer_recv(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """Alice 의 createOffer + Bob 의 createAnswer + DataChannel "hello" → "world" 왕복."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -143,7 +143,7 @@ def test_browser_datachannel_offer_answer_recv(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
     assert result["ok"] is True
     assert result["reply"] == "world"

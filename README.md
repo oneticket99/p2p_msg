@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-24 12:52:00] cycle 169.734 — 우선순위 회수 batch. cycle 169.731~733 freshness 누락 반영, e2e signaling fixture live server 전환, contacts/app_versions repo test 19 PASS 정식 반영, latest-cycle/doc-gardener auto push meta gate 추가 (tests/e2e · tests/server/test_contacts_app_versions_repo.py · .github/workflows/doc-gardener.yml · tools/meta_enforce.py)
 - [2026-05-24 02:21:00] cycle 169.715 — CI runner python 명령 자기모순 회수. bare runner 단계의 `python` 호출을 `python3` 로 교체하고 meta-enforcement 도 같은 기준으로 강화 (.github/workflows/ci.yml · tools/meta_enforce.py · History.md · README.md · CheckList.md)
 - [2026-05-24 02:14:00] cycle 169.713 — markdown/guardrail 자기모순 추가 회수. `md_agents.py` range cycle/time 파싱 보강, `History.md` 336개 cycle entry 검증기 기준 재정렬, CheckList 상태표 갱신 (tools/md_agents.py · History.md · CheckList.md)
 - [2026-05-24 08:05:00] cycle 169.709 — History/CI 자기모순 방지 가드레일 회수. `History.md` cycle 순서 정렬, CI M3 job 을 `tools/md_agents.py --history-only` 로 통일, `md_agents.py` 전체 cycle/timestamp 역순 검사 강화, meta-enforcement 안 CI M3 검증기 사용 여부 추가 (.github/workflows/ci.yml · tools/md_agents.py · tools/meta_enforce.py · History.md)

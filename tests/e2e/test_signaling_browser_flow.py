@@ -15,11 +15,11 @@ pytestmark = pytest.mark.e2e
 
 def test_browser_websocket_join_offer_answer_ice_leave(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """Alice/Bob 실제 브라우저 WebSocket 2개 의 원격 happy path 검증."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -142,7 +142,7 @@ def test_browser_websocket_join_offer_answer_ice_leave(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
 
     assert result["alicePeers"] == []
@@ -156,11 +156,11 @@ def test_browser_websocket_join_offer_answer_ice_leave(
 
 def test_browser_websocket_protocol_errors(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """원격 브라우저 WebSocket 에서 protocol error 2종 의 ERROR envelope 검증."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -210,7 +210,7 @@ def test_browser_websocket_protocol_errors(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
 
     assert result["unknownCode"] == "UNKNOWN_TYPE"
