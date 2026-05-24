@@ -49,8 +49,13 @@ def _make_request(
     user_id: int | None = 7,
     query: dict | None = None,
     pool_rows: list | None = None,
+    monkeypatch=None,
 ) -> MagicMock:
-    """aiohttp.web.Request mock — user_id 주입 + db_pool + query string."""
+    """aiohttp.web.Request mock — user_id 주입 + db_pool + query string.
+
+    pool_rows 주입 시 monkeypatch 의무 — cycle 169.757 직접 대입 leak 회수.
+    monkeypatch.setattr 로 test 종료 시 자동 복원 (다른 test 오염 차단).
+    """
 
     req = MagicMock()
     req.get = MagicMock(return_value=user_id)
@@ -64,7 +69,10 @@ def _make_request(
         async def _fake_query(*args, **kwargs):
             return pool_rows
 
-        repo.list_messages_in_range = _fake_query  # type: ignore[assignment]
+        # 한글 주석 — monkeypatch 경유 setattr 로 module 전역 mutation leak 차단
+        if monkeypatch is None:
+            raise ValueError("pool_rows 주입 시 monkeypatch 의무 (leak 차단)")
+        monkeypatch.setattr(repo, "list_messages_in_range", _fake_query)
     return req
 
 
@@ -201,7 +209,7 @@ class TestHandleListMessagesInRange:
             await handle_list_messages_in_range(req)
 
     @pytest.mark.asyncio
-    async def test_valid_request_returns_messages(self) -> None:
+    async def test_valid_request_returns_messages(self, monkeypatch) -> None:
         rows = [
             _make_row(msg_id=1, body="first"),
             _make_row(msg_id=2, body="second"),
@@ -213,6 +221,7 @@ class TestHandleListMessagesInRange:
                 "end_ts_ms": "1700001000000",
             },
             pool_rows=rows,
+            monkeypatch=monkeypatch,
         )
         resp = await handle_list_messages_in_range(req)
         assert resp.status == 200
@@ -223,7 +232,7 @@ class TestHandleListMessagesInRange:
         assert body["messages"][0]["body"] == "first"
 
     @pytest.mark.asyncio
-    async def test_empty_result_returns_zero_count(self) -> None:
+    async def test_empty_result_returns_zero_count(self, monkeypatch) -> None:
         req = _make_request(
             query={
                 "room_id": "42",
@@ -231,6 +240,7 @@ class TestHandleListMessagesInRange:
                 "end_ts_ms": "200",
             },
             pool_rows=[],
+            monkeypatch=monkeypatch,
         )
         resp = await handle_list_messages_in_range(req)
         body = json.loads(resp.body.decode("utf-8"))
