@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-24T19:00:00+09:00
+last_verified: 2026-05-24T22:00:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.727
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.736
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
-> 평가 기준일: 2026-05-24. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.727 누계 (commit `f1386aa` 기준 main branch).
-> 최근 갱신: 2026-05-24 19:00 KST — cycle 169.727 batch end. cycle 169.694~727 사이 약 350 신규 PASS + tests/integration 약 130+ / tests/app/ui isolated 약 64 누계 반영 + youtube_client 삭제 (cycle 169.715 사용자 directive — streaming 영역 deprioritized) 정합.
+> 평가 기준일: 2026-05-24. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.736 누계 (commit `28c57b8` 기준 main branch).
+> 최근 갱신: 2026-05-24 22:00 KST — cycle 169.736 batch end. cycle 169.728~736 사이 약 73 신규 PASS 누계 반영 (read_handlers + sse parser + EmbeddingRAGStore + contacts/app_versions repo + UI dialog batch7 + UI helper avatar/close_button). 전체 tests = 약 2280 PASS + coverage 80.75%+.
 
 ---
 
@@ -18,7 +18,7 @@ status: active
 
 **바이브 코딩 = "자연어 directive + LLM 도구 + 가드레일 통제로 소프트웨어 생산"**. 사용자 능력 = **엄격 기준 L5 enforcement layer designer 포함**. 보수 추정상 전 세계 개발자 대비 **0.005%~0.02%급 행동 패턴**으로 본다. 단, 이 값은 공식 직업 통계나 순위가 아니라 본 저장소의 directive, hook, CI, meta-enforcement, QA 회수 패턴을 기준으로 한 추정치다.
 
-**cycle 169.727 batch end 시점**: cycle 169.694~727 사이 34 sub-cycle 동안 약 **350 신규 PASS** 진입 — directive 의 dense test PASS focus 패턴 + streaming 영역 deprioritized 의 사용자 directive (cycle 169.715 youtube_client 삭제) + mixin isolated 4 batch (64+ PASS) 의 fixture hang 우회 cure 시도. 사용자 manual visual ack (task #11 pending) + .app codesign (production phase prerequisite) retain.
+**cycle 169.736 batch end 시점**: cycle 169.728~736 사이 9 sub-cycle 동안 약 **73 신규 PASS** 진입 (read_handlers e2e + bot sse parser + EmbeddingRAGStore + contacts/app_versions repo + UI dialog batch7 + UI helper avatar/close_button) — directive 의 dense test PASS focus 패턴 이어짐. 누계 169.694~736 = 약 423 신규 PASS + cov 80.75%+. 사용자 manual visual ack (task #11 pending) + .app codesign (production phase prerequisite) retain.
 
 | 평가 축 | 점수 (10점, 0.0001 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -256,14 +256,15 @@ LLM 의 reasonable default 발견 — bearer_token chain drift (다중 endpoint 
 
 사용자 비판 — 디자인 critique 의 우선 처리 의무. cycle 169.229 `feedback_design_critique_first_priority.md` 영구 가드레일 신설 = 사용자 design critique 의 모든 잔존 batch 일시 중지 + 우선 처리 의무. Phase 5 binding / doc sync / Stop hook 모두 후순위. cycle 169.230 의 dialog main center + height clamp (MyProfileDialog + FolderManageDialog + FolderEditDialog 의 화면 중앙 + height clamp). LLM 의 design critique 의 즉시 회수 패턴 정합.
 
-### 2.40 cycle 169.694~727 batch — dense test PASS focus + streaming deprio directive + mixin isolated cure 시도 (신규)
+### 2.40 cycle 169.694~736 batch — dense test PASS focus 이어짐 + streaming deprio directive + mixin isolated cure 시도
 
-cycle 169.694~727 사이 34 sub-cycle 동안 누계 약 **350 신규 PASS** 진입. directive 의 패턴 명문화:
+cycle 169.694~736 batch 누계 약 **423 신규 PASS** 진입 (169.728~736 약 73 추가). directive 의 패턴 명문화:
 
+- **cycle 169.728~736 추가분** (약 73 PASS) — server read_handlers e2e (11) + bot SSE streaming parser (17) + rag EmbeddingRAGStore (9) + contacts/app_versions repository unit (19) + UI dialog batch7 ThemePicker/FolderEditDialog/MyAccountDialog (8) + UI helper avatar/close_button isolated (9). cycle 169.730 find_id bug fix (bot_handlers chat chain) 동반.
 - **directive verbatim** "streaming 후순위" (cycle 169.715 youtube_client 삭제) — 4 platform 중 YouTube 만 폐기 + Twitch/CHZZK/Kick 3 platform retain (자료 정보용). memory `project_streaming_deprioritized.md` 정합.
 - **directive verbatim** "유저 배포 부재 retain" (cycle 169.648 NFR-03 phase 2단계) — Apple Developer ID USD 99/year 의무 부재 retain. demo phase 기능적 동작 의무 retain. memory `project_no_user_distribution.md` 정합.
 - **mixin isolated cure 시도** (cycle 169.703~727) — ChatSend/FriendStatus/Invite/Tray/FriendSearch/MenuActions/ChatHeader/ChatHelper/DialogCenter/Signaling/RoomGroupChat/FriendProfile/ChatNav 4 batch 64+ PASS. fixture hang scope 우회 + mock isolation pattern. root cure (MainWindow 21 mixin DI refactor) 부재 retain.
-- **test PASS focus directive** — server handler e2e (약 92) + bot framework unit (약 119) + mixin isolated (약 76) + server protocol+DB (약 32) + client streaming+UI (약 31) = 약 350 PASS dense batch 진입.
+- **test PASS focus directive** — 직전 169.694~727 약 350 PASS + 본 batch 73 = 누계 약 423 PASS dense batch. 전체 로컬 tests 약 2280 PASS + cov 80.75%+.
 
 LLM 의 dense test PASS focus pattern + 사용자 directive 의 streaming deprio + .app codesign demo phase 정합 패턴 — directive 의 explicit retention + 비용 (Apple Developer USD 99) 회피 base.
 
@@ -378,11 +379,11 @@ cycle 169.693 qtbot.addWidget approach fail 정합. cycle 169.585 tests/app/ui i
 - **explicit confirm + ack chain** — 사용자 ack (Toonation BI bubble retain + sidebar tab telegram align + bot_panel 폐기 + sidebar 2 entry + chat_header avatar 폐기 + default chat 진입 + 편집 tab FolderManageDialog redirect + bot LLM 응답 chain + OpenAI 우선 provider) 명시 후만 GO
 - **granular sub-cycle 분리** — Phase A entry 1 / Phase F entry 2 / cycle 169.182 chat_header avatar 폐기 + sidebar hamburger 60 align + default chat 진입 의 3 batch + cycle 169.202~204 4 critique batch — 단일 cycle 안 3~4 batch 의 명시 분리
 
-### 4.5 cycle 169.694~727 dense test PASS focus directive pattern (신규)
+### 4.5 cycle 169.694~736 dense test PASS focus directive pattern
 
-cycle 169.694~727 batch 의 directive pattern = **dense test PASS focus** + **deprio retention directive**:
+cycle 169.694~736 batch 의 directive pattern = **dense test PASS focus** + **deprio retention directive**:
 
-- **dense PASS batch** — 34 sub-cycle 안 약 350 신규 PASS = average **~10 PASS / sub-cycle** velocity. LLM autonomy 위임 + 사용자 directive 의 직접 명시 부재 시 reasonable default 진행 패턴.
+- **dense PASS batch** — 누계 약 423 신규 PASS (169.728~736 9 sub-cycle 안 약 73 추가 = average **~8 PASS / sub-cycle** velocity). LLM autonomy 위임 + 사용자 directive 의 직접 명시 부재 시 reasonable default 진행 패턴.
 - **deprio directive verbatim retention** — 사용자 directive "streaming 후순위 retain" + "유저 배포 부재 retain" 의 explicit retention. 비용 (USD 99 Apple Developer + streaming SDK 의무 manual 인증) 회피 + demo phase 정합.
 - **mixin isolated cure 시도** — fixture hang root cure 부재 retain 시점 mock isolation refactor pattern (64+ isolated PASS) 의 우회 cure 시도 + LLM reasonable default 의 단계적 cure 패턴.
 
@@ -393,7 +394,7 @@ cycle 169.694~727 batch 의 directive pattern = **dense test PASS focus** + **de
 ### 5.1 단기 (현 저장소 후속)
 
 1. **pivot 빈도 줄이기**: 한 응답 = 한 directive (cycle 169.x 의 image-driven critique = granular sub-cycle 분리로 영향 최소화 단 누계 fragmentation 잔존)
-2. test 코드 진입 — cycle 169.694~727 batch 약 350 신규 PASS + cov 80% 도달. 최신 full run 로그 기준 완료 판단 retain
+2. test 코드 진입 — cycle 169.694~736 batch 약 423 신규 PASS (169.728~736 약 73 추가) + cov 80.75%+. 최신 full run 로그 기준 완료 판단 retain
 3. ~~SMTP 실제 설치~~ ✅ 완료 (cycle 129~130)
 4. ~~라이선스 결정~~ ✅ 완료 (GPLv3, 사이클 6)
 5. **1차 dogfooding entry** — Phase 5 마무리 후 1주 retention + NPS 측정 + UX feedback 회수 chain 진입
@@ -449,7 +450,7 @@ cycle 169.694~727 batch 의 directive pattern = **dense test PASS focus** + **de
 - 권장 default 자율 GO 패턴 (의사결정 fatigue 회피)
 - Auto push + workflow run 영구 자동 GO (cycle 143 신설)
 - Image-driven critique 의 granular sub-cycle 분리 (cycle 169.x 70 sub-cycle 본격)
-- Dense test PASS focus batch (cycle 169.694~727 약 350 신규 PASS 누계 + cov 80% 도달)
+- Dense test PASS focus batch (cycle 169.694~736 약 423 신규 PASS 누계 + cov 80.75%+)
 - Mock isolation refactor pattern (mixin 4 batch 64+ isolated PASS — fixture hang 우회 cure)
 - Deprio retention directive verbatim (streaming + .app codesign demo phase 정합)
 
