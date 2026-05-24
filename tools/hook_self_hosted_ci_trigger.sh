@@ -34,7 +34,7 @@ if [ -z "$LOCAL" ] || [ -z "$REMOTE" ] ; then
   exit 0
 fi
 if [ "$LOCAL" != "$REMOTE" ] ; then
-  echo "[ci-hook] 🟡 로컬 HEAD ≠ remote main — push 의무 (\`SKIP_PREPUSH=1 git push origin main\`)"
+  echo "[ci-hook] 🟡 로컬 HEAD ≠ remote main — feature branch push + PR merge 후 CI 검증 의무"
   exit 0
 fi
 
