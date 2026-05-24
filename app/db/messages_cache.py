@@ -121,13 +121,13 @@ def list_messages_by_room(
     if before_msg_id is not None:
         sql = (
             "SELECT * FROM messages_cache WHERE room_id = ? AND msg_id < ? "
-            "ORDER BY ts_ms DESC, id DESC LIMIT ?"
+            "ORDER BY ts_ms DESC, msg_id DESC LIMIT ?"
         )
         params = (room_id, before_msg_id, limit)
     else:
         sql = (
             "SELECT * FROM messages_cache WHERE room_id = ? "
-            "ORDER BY ts_ms DESC, id DESC LIMIT ?"
+            "ORDER BY ts_ms DESC, msg_id DESC LIMIT ?"
         )
         params = (room_id, limit)
     try:
