@@ -1,15 +1,15 @@
 ---
 title: "Portable Harness — Claude Code 거버넌스 + Hook + Guardrail + Trigger + 문서/코드 분리 공용 한벌"
 owner: oneticket99
-last_verified: 2026-05-23
-last_updated: 2026-05-23
+last_verified: 2026-05-24
+last_updated: 2026-05-24
 status: active
 ---
 
 # Portable Harness — 공용 한벌
 
 > TooTalk (p2p_msg) 프로젝트 누계 사용자 directive 의 거버넌스 + 하네스 + Hook + Guardrail + Trigger + 문서화 + 코드 분리 구조를 다른 프로젝트로 이식하기 위한 공용 한벌.
-> cycle 1~169.5xx 누계 운영 검증 — M1~M7, Whitebox, Stop hook, L5 meta-enforcement, dereliction detector, HTML mirror, token usage trigger 반영.
+> cycle 1~169.742 누계 운영 검증 — M1~M7, Whitebox, Stop hook, L5 meta-enforcement, dereliction detector, HTML mirror, token usage trigger, feature branch + PR push policy 반영.
 
 ---
 
@@ -36,7 +36,7 @@ status: active
 ### 1.3 5단계 워크플로우
 
 ```
-① 문서 선행 → ② 개발 → ③ 검증·관측 → ④ 문서 마감 → ⑤ README + push
+① 문서 선행 → ② 개발 → ③ 검증·관측 → ④ 문서 마감 → ⑤ README + branch push + PR
 ```
 
 ③ FAIL = ② 회귀. ③ PASS chain (reviewer → qa → observability) 직렬 의무.
@@ -51,7 +51,7 @@ status: active
 | **M2** | 파일 작업 직후 README "변경 이력" prepend (30행 상한) |
 | **M3** | History.md 역순 prepend (최신 Phase 상단) |
 | **M4** | 작업 파일 한글 주석 (`.py` `.js` `.html` `.css` `.sql` `.sh`) |
-| **M5** | 작업 직후 `git commit + push` (로컬 백로그 금지) |
+| **M5** | 작업 직후 `git commit + feature branch push + PR` (로컬 백로그 금지) |
 | **M6** | directive 1건 = `data/wbs.sqlite` `wbs_tasks` 1행 등록 |
 | **M7** | directive 결과 보고 텔레그램 동시 송신 |
 
@@ -205,15 +205,19 @@ TooTalk 현 저장소에는 L5가 실제 파일로 존재한다. post-commit 계
 
 ---
 
-## 8. SKIP_PREPUSH 우회 + push policy
+## 8. Branch Push + PR Policy
 
 ```bash
-SKIP_PREPUSH=1 git push origin main
+git checkout -b codex/<task-slug>
+git commit -m "<type>(cycleN): <scope>"
+git push origin HEAD:codex/<task-slug>
+gh pr create --base main --head codex/<task-slug> --fill
 ```
 
-- classifier hard block 회피 (사용자 directive 영구 GO)
-- pre-push hook 안 `PRE_PUSH=1` 환경변수 ahead-check skip
-- main 직접 push 금지 정책이 있는 프로젝트는 feature branch 대상으로 같은 prefix 를 적용한다.
+- main 직접 push 는 금지한다. 모든 이식 대상의 기본값은 feature branch + PR 이다.
+- 자동 보정 workflow 도 `auto/<name>-<run_id>` 같은 임시 branch 로 push 한 뒤 PR 을 만든다.
+- `SKIP_PREPUSH=1` 같은 classifier 우회 prefix 는 target repo 가 명시적으로 요구하는 경우에만 feature branch push 에 붙인다.
+- pre-push hook 안 ahead-check skip 은 self-reference loop 회피 목적 한정이며, review 우회 수단이 아니다.
 - local noise (`.claude/settings.local.json`, build 산출물, IDE cache) 는 `.gitignore` 에 넣고 L5 `tracked-noise-files` 로 이중 차단한다.
 
 ---
