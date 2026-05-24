@@ -9,7 +9,7 @@ status: active
 # Portable Harness — 공용 한벌
 
 > TooTalk (p2p_msg) 프로젝트 누계 사용자 directive 의 거버넌스 + 하네스 + Hook + Guardrail + Trigger + 문서화 + 코드 분리 구조를 다른 프로젝트로 이식하기 위한 공용 한벌.
-> cycle 1~169.742 누계 운영 검증 — M1~M7, Whitebox, Stop hook, L5 meta-enforcement, dereliction detector, HTML mirror, token usage trigger, feature branch + PR push policy 반영.
+> cycle 1~169.743 누계 운영 검증 — M1~M7, Whitebox, Stop hook, L5 meta-enforcement 작성 가이드, dereliction detector, HTML mirror, token usage trigger, feature branch + PR push policy 반영.
 
 ---
 
@@ -107,7 +107,96 @@ status: active
 
 TooTalk 현 저장소에는 L5가 실제 파일로 존재한다. post-commit 계열은 정본 §S 에서 portable pattern 으로 관리하며, 대상 프로젝트에서 `.git/hooks/` 또는 installer script 로 생성한다.
 
-### 3.5 Hook 활성 의무
+### 3.5 `tools/meta_enforce.py` 작성 가이드
+
+`meta_enforce.py` 는 일반 lint 의 대체재가 아니라 **하네스 자기검증기**다. 새 프로젝트에 이식할 때는 "규칙을 검사"하기보다 "규칙을 검사하는 도구와 CI가 약화되지 않았는지"를 확인한다.
+
+#### 3.5.1 기본 골격
+
+```python
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+from typing import Callable, List, Tuple
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _run_git_ls_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+    return [line for line in result.stdout.splitlines() if line]
+
+
+def main() -> int:
+    checks: List[Tuple[str, Callable[[], Tuple[bool, str]]]] = [
+        ("required-files", check_required_files),
+    ]
+    failures: list[str] = []
+    for name, fn in checks:
+        ok, message = fn()
+        print(f"[{'PASS' if ok else 'FAIL'}] {name}: {message}")
+        if not ok:
+            failures.append(name)
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+#### 3.5.2 필수 검사 세트
+
+| check | 목적 | TooTalk 예시 |
+|---|---|---|
+| `required-files` | 정본/CI가 참조하는 도구 실재성 | `tools/doc-lint.sh`, `tools/md_agents.py`, hook scripts, workflows |
+| `root-markdown-freeze` | 루트 문서 증식 차단 | root `.md` cap 검증 |
+| `ci-soft-fail` | CI gate 약화 차단 | active YAML 안 `continue-on-error: true` 금지 |
+| `ci-meta-job` | meta-enforcement 자기등록 확인 | `ci.yml` 안 `python3 tools/meta_enforce.py` |
+| `history/readme freshness` | 최신 cycle marker 문서화 확인 | commit subject → README/History label search |
+| `hook-wired` | hook 파일이 실제 settings에 연결됐는지 확인 | `.claude/settings.json` Stop hook command search |
+| `push-policy` | main 직접 push 안내 전파 차단 | main 대상 직접 push 명령 금지 + feature branch PR token 요구 |
+| `tracked-noise-files` | 로컬 파일 추적 차단 | `.DS_Store`, `.claude/settings.local.json` |
+
+#### 3.5.3 작성 원칙
+
+- 검사는 `Tuple[bool, str]` 를 반환한다. 실패 메시지는 바로 조치 가능한 파일/토큰을 포함한다.
+- YAML은 가능하면 parser 를 쓰되, 단순 self-check 는 token scan 으로 시작해도 된다. 단, 주석과 active line 을 구분해야 한다.
+- `git ls-files` 기반 검사를 넣어 untracked/ignored/local noise 와 tracked artifact 를 구분한다.
+- "문서가 말하는 것"과 "실제 CI/hook이 하는 것"을 같은 함수에서 비교한다.
+- 새 hook 또는 workflow 를 추가하면 `required-files`, `hook-wired`, `ci-meta-job` 계열 검사를 함께 추가한다.
+- portable guide 자체도 검사 대상에 넣는다. 하네스 문서가 main 직접 push 같은 낡은 지시를 다시 퍼뜨리면 `meta_enforce.py` 가 실패해야 한다.
+- `main()` 의 check list 순서는 빠른 구조 검사 → CI 약화 검사 → freshness 검사 → hook/policy 검사 → noise 검사 순으로 둔다.
+
+#### 3.5.4 CI 연결
+
+```yaml
+meta-enforcement:
+  runs-on: self-hosted
+  steps:
+    - uses: actions/checkout@v4
+    - name: meta-enforcement 실행
+      run: python3 tools/meta_enforce.py
+```
+
+CI job 에 `continue-on-error: true` 를 붙이지 않는다. meta-enforcement 실패는 PR merge 차단 대상이다.
+
+### 3.6 Hook 활성 의무
 
 `.claude/settings.json` `hooks.PreToolUse` + `hooks.PostToolUse` + `hooks.Stop` 의 `type=command` + `bash ${CLAUDE_PROJECT_DIR}/tools/...` 경로 명시. Stop hook 은 차단 목적 hook 과 보고 목적 hook 을 함께 두되, 텔레그램 송신 hook 은 응답 차단을 피하기 위해 항상 exit 0 패턴을 유지한다.
 
