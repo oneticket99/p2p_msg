@@ -65,7 +65,7 @@ jobs:
 
       - name: brew python@3.13 PATH 등록
         if: runner.os == 'macOS'
-        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> $GITHUB_PATH
+        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> "$GITHUB_PATH"
 
       - name: meta-enforcement 실행
         run: python3 tools/meta_enforce.py
@@ -81,11 +81,11 @@ jobs:
 
       - name: 루트 .md 카운트 검증
         run: |
-          COUNT=$(ls -1 *.md 2>/dev/null | wc -l | tr -d ' ')
+          COUNT=$(find . -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
           echo "루트 .md = $COUNT"
           if [ "$COUNT" != "18" ]; then
             echo "::error::루트 마크다운 동결 위반 — 정확히 18 필요, 현재 $COUNT"
-            ls -1 *.md
+            find . -maxdepth 1 -name '*.md' -type f
             exit 1
           fi
 
@@ -213,15 +213,15 @@ jobs:
 
       - name: brew python@3.13 PATH 등록 (macOS — `python` symlink 활성)
         if: runner.os == 'macOS'
-        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> $GITHUB_PATH
+        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> "$GITHUB_PATH"
 
       - name: venv 생성 + PATH 등록 (PEP 668 externally-managed 회피)
         # brew python 의 자체 protection 정책 의 venv 격리 의무
         # GitHub Actions 의 step 간 venv 의 persistence = $GITHUB_PATH + $GITHUB_ENV 등록
         run: |
           python -m venv .venv
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-          echo "VIRTUAL_ENV=$PWD/.venv" >> $GITHUB_ENV
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
 
       - name: Python 버전 확인
         run: python --version
@@ -265,14 +265,14 @@ jobs:
 
       - name: brew python@3.13 PATH 등록 (macOS — `python` symlink 활성)
         if: runner.os == 'macOS'
-        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> $GITHUB_PATH
+        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> "$GITHUB_PATH"
 
       - name: venv 생성 + PATH 등록 (PEP 668 externally-managed 회피)
         # brew python 의 자체 protection 정책 의 venv 격리 의무
         run: |
           python -m venv .venv
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-          echo "VIRTUAL_ENV=$PWD/.venv" >> $GITHUB_ENV
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
 
       - name: Python 버전 확인
         run: python --version
