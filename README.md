@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 01:25:00] cycle 169.753 — messages repo 19% cov 회수 batch 3 (최대 win, 142 line). `tests/server/test_messages_repo.py` 신설 25 PASS — insert_message(pool/room/sender/kind/text·file·system body 7 validation + lastrowid) + insert_text/file/system + get_by_id + list_by_room(limit/offset validation) + count_by_room + delete_by_id + soft_delete + list_recent + list_messages_in_range(end<=start raise) (tests/server)
 - [2026-05-25 01:10:00] cycle 169.752 — read_states repo 10% cov 회수 batch 2. `tests/server/test_read_states_repo.py` 신설 10 PASS — upsert_last_read(user/room 양수 + msg_id 음수 validation + commit) / get_last_read(row/None→0) / get_last_read_batch(empty + default-0 merge) / get_unread_counts(empty + merge) (tests/server)
 - [2026-05-25 00:55:00] cycle 169.751 — server/db/repositories 0% cov 회수 batch 1. `tests/server/test_file_meta_password_reset_repo.py` 신설 11 PASS — file_meta(insert/mark_completed/mark_failed/get_by_file_id) + password_reset(insert/find_active/consume) mock async pool 검증. file_meta.py + password_reset.py 0% → cover (tests/server)
 - [2026-05-25 00:40:00] cycle 169.750 — ci.yml actionlint SC2086/SC2012/SC2035 전수 정리. `>> $GITHUB_PATH`/`$GITHUB_ENV` 3+2건 인용(`"$GITHUB_PATH"`) + 루트 .md count `ls -1 *.md` → `find . -maxdepth 1` 2건 교체. 전체 `.github/workflows/*.yml` actionlint exit 0 (0 issue) 도달 (.github/workflows/ci.yml)
