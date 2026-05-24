@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 03:00:00] cycle 169.760 — fixture hang DI refactor (skip 49→38). MainWindow 21 mixin instantiation cumulative hang 의 full-instantiation skip 11건 제거 — admin_menu 4 skip (test_admin_menu_isolated 가 MagicMock self 주입 mock isolation 으로 동일 method 완전 커버) + test_main_window_update_task.py 7 skip 파일 전체 (test_update_lifecycle_mixin_isolated 완전 대체). DI = mixin method 에 MagicMock self 주입 = 사실상 dependency injection. 잔존 38 skip (tests/app/ui)
 - [2026-05-25 02:45:00] cycle 169.759 — server/db/repositories 잔존 3 repo cov 회수 (마지막 batch). `tests/server/test_remaining_repos.py` 신설 27 PASS — device_tokens 53→96% + folders 57→87% + emoji_packs 44→75%. mock pool 의 begin/rollback/autocommit AsyncMock 추가 (transaction repo 지원). repo 계층 전수 회수 완료 (tests/server)
 - [2026-05-25 02:30:00] cycle 169.758 — 평가 6 file staleness 회수 (cycle 169.745~757 12 commit drift). productization.md + vibe-coding.md snapshot 전체 rewrite + HTML mirror 2종 sync + handoff §8. cov 81.34% → 87.76%, 종합 6.7/10 유지 (기술완성도 8.7→8.8 + 가드레일 8.2→8.4) (docs/assessments · docs/html)
 - [2026-05-25 02:20:00] cycle 169.757 — test_messages_handlers monkeypatch leak 회수. `_make_request` 가 `repo.list_messages_in_range` 직접 대입(복원 부재)으로 full-suite 안 test_messages_repo 2건 오염(DID NOT RAISE + []) → `monkeypatch.setattr` 전환(자동 복원) + 2 caller monkeypatch 주입. tests/server/ 550 PASS 0 fail (tests/server)
