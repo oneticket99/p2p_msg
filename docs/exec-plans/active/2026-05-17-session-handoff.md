@@ -1,14 +1,36 @@
 ---
 title: "TooTalk 세션 인계 — 2026-05-17 → 다음 세션"
 owner: oneticket99
-last_verified: 2026-05-17
+last_verified: 2026-05-25
 status: active
 ---
 
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-18 00:05 (사이클 13 갱신 — 본 세션 누계 commit 53+ 반영, release-agent 머지 진입 + 머지 게이트 3 단계 완성 + snapshot 사이클 14). 최신 commit `d241c04`.
+> 본 인계 시점: 2026-05-25 04:10 KST (cycle 169.765 갱신 — server repo 계층 전수 cov 회수 + fixture hang DI refactor + codex 3종 평가 회수 + 미커버 branch 소진). 최신 commit `fa6a8d9`. **다음 세션 우선 정독 = §1.1 이번 세션 인계 요약**.
+
+## 1.1 이번 세션 인계 요약 (cycle 169.745~765, 2026-05-24~25)
+
+**핵심 성과**:
+
+- **server/db/repositories 계층 전수 cov 회수** — file_meta/password_reset/read_states/devices/friends/peers/remote_handlers 100% + bots 99% + folders 87% + messages/email_verification 85~97% + emoji_packs 75%. mock async pool(`acquire`+`cursor` 2단 async context) + `_FakeRequest`(aiohttp handler) 패턴.
+- **전체 tests 2309 → 2463 PASS** (+154), coverage 81.34% → **89.73%** (+8.39%p), 49 → 38 skip.
+- **fixture hang DI refactor** — MainWindow 21 mixin cumulative QWidget retain hang 의 중복 full-instantiation skip 11건 제거 (admin_menu 4 + update_task 7). cure = mixin method 에 MagicMock self 주입(DI 등가) mock isolation. **dialog/e2e 실 widget instantiation 포팅 = cumulative QWidget retain hang 차단 확정** (8 비-asyncio dialog 도 hang — 38 skip 잔존 root, mock isolation 외 우회 부재).
+- **직무유기 훅 근본 결함 회수** (cycle 169.748) — `tools/hook_dereliction_check.sh` HEAD-TTL skip 역설(미커밋 작업 미detect) 수정 + dirty-tree detect 추가.
+- **doc-gardener MIGRATION 검사 구현** (cycle 169.747) — `tools/check_migration_tables.py` (doc 7 ⊆ SQL 25 forward + `--strict` reverse opt-in) + doc-gardener.yml Issue 자동 생성 (Phase 3 활성).
+- **전체 5 workflow actionlint 0 issue** (cycle 169.749~750) — ci.yml SC2086/SC2012/SC2035 정리. `brew install actionlint` (1.7.12 + shellcheck 0.11.0).
+- **codex 외부 평가 3종 전수 회수** — (A) doc-gardener MIGRATION/Issue 미구현 → 구현. (B) Phase 2/3 주석 정합. (C) check_migration --strict 역방향 + docstring 예시.
+
+**잔존 (자동 도달 불가)**:
+
+- **38 skip** = dialog_functional 22 + e2e 12 + http_worker 2 + aiortc 1. 전부 PyQt6 cumulative QWidget retain hang (architecture 벽). 진짜 cure = MainWindow 21 mixin 진짜 DI 아키텍처 refactor (multi-day, 큰 risk) — 미진행.
+- **사용자 manual visual ack** (task #11, HIGH) — SMTP 메일 + dialog switch + OTP cancel + header click + splitter hover. 사용자 직접.
+- **MIGRATION strict CI gate 강제 여부** = 정책 결정 대기. default forward-only (MIGRATION_MARIADB.md 의도적 부분 reference 문서, 핵심 7/25 DDL 예시). 전수 강제 시 18 table 문서화 선행 + Phase 전환 조건 필요.
+- **streaming**(chzzk/kick/twitch) 최후순위 · **원격 CI success / Windows smoke / .app codesign** external.
+- `email_verification.py` L56 = unreachable RuntimeError defensive (도달 부재).
+
+**다음 세션 진입 시 = 의미 있는 자동 cov gap 소진 상태.** 추가 작업 = (a) MainWindow DI 아키텍처 refactor(큰 scope, 38 skip 활성화) OR (b) 사용자 manual visual ack OR (c) Phase 5 본격 기능(원격 데스크탑 실 binding) 진입 OR (d) MIGRATION strict CI gate 결정.
 
 ---
 
@@ -180,6 +202,7 @@ status: active
 | (본 cycle) | 169.758 | 평가 6 file staleness 회수 — cycle 169.745~757 batch 99 신규 PASS (server/db/repositories 6 batch) + cov 81.34% → 87.76% + 종합 6.7/10 유지 (기술완성도 8.7→8.8 + 가드레일 8.2→8.4) + HTML mirror 2종 sync |
 | 6241d3f | 169.745~757 | server repo 6 batch 99 PASS (file_meta/password_reset/read_states/messages/bots/email_verification/devices/friends) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수 |
 | (본 cycle) | 169.745 | 평가 6 file staleness 회수 — cycle 169.738~744 batch 41 신규 PASS (security 17 + config 18 + messages_cache 6) + cov 81.34% + messages_cache id→msg_id source bug fix + HTML mirror 2종 sync |
+| fa6a8d9 | 169.745~765 | server repo 계층 전수 cov(9 repo + peers/remote_handlers/rotate_key/avatar_palette/_icons 100%, email_verification 97%) + fixture hang DI(skip 49→38) + 직무유기 훅 회수 + doc-gardener MIGRATION(+--strict) + actionlint 0 issue + codex 3종 회수 + 평가 2회 재평가. cov 81.34→89.73%, 2309→2463 PASS |
 | bb37031 | 169.738~744 | core/security 17 + core/config 18 + messages_cache SQLite 6 PASS + dereliction recovery hook + portable harness/meta enforce 문서 + CI checkout node24 |
 | 44409d8 | 169.661 | emoji pack + bot framework E2E 10 PASS — list/create/conflict/auth + bot import |
 | 5fa6b4d | 169.660 | 원격 데스크탑 chain E2E 8 PASS — capture + input forward + session binding |
