@@ -76,8 +76,7 @@ class FindIdDialog(QDialog):
         title.setStyleSheet("color: #e5e7eb; font-size: 18px; font-weight: 700;")
         header_row.addWidget(title)
         header_row.addStretch(1)
-        close_btn = make_close_button(parent=wrap_frame)
-        close_btn.clicked.connect(self.reject)  # type: ignore[arg-type]
+        close_btn = make_close_button(self.reject, parent=wrap_frame)
         header_row.addWidget(close_btn)
         outer.addLayout(header_row)
 
