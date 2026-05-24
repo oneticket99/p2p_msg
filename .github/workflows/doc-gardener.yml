@@ -11,9 +11,10 @@
 #   4) BPE 위생 (doc-lint.sh 검사 1)
 #   5) 루트 18 동결 확인
 #
-# Phase 2 측 예정 (본 워크플로우 외):
+# Phase 2 활성:
 #   - 자동 보정 PR 생성 (feature branch + gh pr create)
-#   - 90일 스테일 owner 알림 (이슈 또는 텔레그램)
+#   - 90일 스테일 frontmatter last_verified 자동 보정
+#   - 90일 스테일 owner 알림 (workflow summary)
 #   - MIGRATION_MARIADB.md ↔ 코드 __tablename__ 정합
 #
 # 트리거:
@@ -23,8 +24,7 @@
 # 보안 노트:
 #   - 본 워크플로우는 github.event.* 사용자 입력 미사용 (workflow injection 위험 0)
 #   - github.workflow / github.event_name 은 GitHub 보장 enum (안전)
-#   - 향후 PR 자동 생성 단계 도입 시 permissions 측 contents:write +
-#     pull-requests:write 추가 필요
+#   - 자동 PR 생성은 main 직접 push 금지. auto/doc-gardener-* 브랜치에만 push.
 #
 # 정책 정합:
 #   - 정본 §M docs/policies/doc-gardening.md 등가 (작성 예정 위임)
@@ -43,7 +43,8 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
 
@@ -56,6 +57,8 @@ jobs:
     steps:
       - name: 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 기본 lint (doc-lint.sh 재사용)
         run: bash tools/doc-lint.sh
@@ -97,6 +100,32 @@ jobs:
             echo "## 90일 스테일 감지 — 0건" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: 90일 스테일 frontmatter 자동 보정
+        run: |
+          set -euo pipefail
+          TODAY_ISO=$(date -u +'%Y-%m-%d')
+          THRESHOLD_DAYS=90
+          TODAY=$(date +%s)
+          UPDATED=0
+
+          while IFS= read -r f; do
+            LV=$(grep -E '^last_verified:' "$f" 2>/dev/null \
+              | head -1 \
+              | sed -E 's/^last_verified:[[:space:]]*//;s/["'\'']//g;s/[[:space:]]*$//')
+            if [ -z "$LV" ]; then continue; fi
+            LV_TS=$(date -j -f "%Y-%m-%d" "$LV" "+%s" 2>/dev/null || true)
+            if [ -z "$LV_TS" ]; then continue; fi
+            DIFF_DAYS=$(( (TODAY - LV_TS) / 86400 ))
+            if [ "$DIFF_DAYS" -gt "$THRESHOLD_DAYS" ]; then
+              # 한글 주석 — 의미 본문은 건드리지 않고 frontmatter freshness marker 만 자동 보정한다.
+              sed -i '' -E "0,/^last_verified:/s//last_verified: ${TODAY_ISO}/" "$f"
+              UPDATED=$((UPDATED + 1))
+            fi
+          done < <(find docs -type f -name "*.md" 2>/dev/null)
+
+          echo "DOC_GARDENER_UPDATED=${UPDATED}" >> "$GITHUB_ENV"
+          echo "자동 보정 대상 ${UPDATED}건"
+
       - name: 루트 18 동결 확인
         run: |
           COUNT=$(ls -1 *.md 2>/dev/null | wc -l | tr -d ' ')
@@ -116,5 +145,30 @@ jobs:
             echo "- 워크플로우: $WORKFLOW_NAME"
             echo "- 트리거: $EVENT_NAME"
             echo ""
-            echo "Phase 2 측 예정 — 자동 보정 PR 생성 + owner 알림 + MIGRATION_MARIADB 정합"
+            echo "자동 보정 PR — 변경 발생 시 auto/doc-gardener-* 브랜치 생성"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 자동 보정 commit + push + PR
+        if: env.DOC_GARDENER_UPDATED != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "자동 보정 diff 없음 — skip"
+            exit 0
+          fi
+
+          BRANCH="auto/doc-gardener-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add docs
+          git commit -m "docs: doc-gardener stale frontmatter refresh"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "docs: doc-gardener stale frontmatter refresh" \
+            --body "Automated doc-gardener refresh for stale docs/** frontmatter. Main direct push is intentionally avoided."

@@ -16,11 +16,11 @@ pytestmark = pytest.mark.e2e
 
 def test_browser_datachannel_file_chunked_sha256(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """Alice → Bob 1MB random binary chunk send/recv + SHA-256 무결성."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -175,7 +175,7 @@ def test_browser_datachannel_file_chunked_sha256(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
     assert result["ok"] is True
     assert result["recv_bytes"] == result["sent_bytes"]

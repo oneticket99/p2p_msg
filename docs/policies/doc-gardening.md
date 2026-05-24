@@ -1,7 +1,7 @@
 ---
 title: "Doc Gardening Policy — 문서·코드 drift 자동 보정"
 owner: oneticket99
-last_verified: 2026-05-17
+last_verified: 2026-05-24
 status: active
 ---
 
@@ -74,27 +74,31 @@ status: active
 
 ## 6. drift 감지 → 보정 워크플로우
 
-### 6.1 자동 감지 (Phase 1)
+### 6.1 자동 감지
 
 - `doc-gardener.yml` 의 주 1회 실행
 - 5 검사 모두 실행 + `$GITHUB_STEP_SUMMARY` 의 결과 보고
 - 90일 스테일 항목 = `::warning::` 로그 + summary 등재
 - 위반 1건 이상 = workflow `failure` (사용자 수동 정정 유도)
 
-### 6.2 자동 보정 (Phase 2 예정)
+### 6.2 자동 보정
 
-- `@doc-gardener-agent` spawn → 보정 PR (feature branch `doc-gardener/YYYY-MM-DD`)
+- `@doc-gardener-agent` spawn → 보정 PR (feature branch `auto/doc-gardener-<run_id>`)
+- `.github/workflows/doc-gardener.yml` 이 의미 본문 변경 없이 90일 초과 `docs/**`
+  frontmatter `last_verified` 를 현재 UTC 날짜로 자동 갱신한다.
+- 변경 발생 시 workflow 안에서 `git commit` + `git push origin "$BRANCH"` + `gh pr create`
+  를 실행한다. main 직접 push 는 금지한다.
 - 보정 가능 항목 (의미 변경 0):
   - frontmatter 의 누락 필드 = 기본값 채우기
   - 깨진 링크 = 자동 정정 시도 (rename 추적)
-  - 스테일 항목 = `last_verified` 갱신 (사용자 검토 후만)
+  - 스테일 항목 = `last_verified` 갱신 (자동 PR 후 사용자 검토)
 - 보정 불가 항목 (사용자 직접):
   - 정본 본문 의미 변경
   - 신규 정책 도입
   - 오너십 변경
   - BPE / 1인칭/3인칭 위반 정정 (의미 정합 필요)
 
-### 6.3 머지 게이트 (Phase 2)
+### 6.3 머지 게이트
 
 - 보정 PR = `@reviewer-agent` PASS + 사용자 직접 승인 의무
 - main 직접 push 금지 (정본 §K 정합)

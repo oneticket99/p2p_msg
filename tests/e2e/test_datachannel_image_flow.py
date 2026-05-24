@@ -16,11 +16,11 @@ pytestmark = pytest.mark.e2e
 
 def test_browser_datachannel_image_header_thumb_full(
     page,
-    signaling_server_url: str,
+    live_signaling_server_url: str,
 ) -> None:
     """Alice → Bob image envelope: header JSON + 8KB thumbnail + 256KB 원본."""
 
-    page.goto("about:blank")
+    page.goto(live_signaling_server_url.replace("ws://", "http://").replace("/ws", "/health"))
 
     result = page.evaluate(
         """
@@ -152,7 +152,7 @@ def test_browser_datachannel_image_header_thumb_full(
           }
         }
         """,
-        {"url": signaling_server_url},
+        {"url": live_signaling_server_url},
     )
     assert result["ok"] is True
     assert result["header_kind"] == "image"

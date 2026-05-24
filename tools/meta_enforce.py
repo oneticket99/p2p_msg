@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +17,9 @@ from typing import Callable, List, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 CI = ROOT / ".github" / "workflows" / "ci.yml"
+DOC_GARDENER = ROOT / ".github" / "workflows" / "doc-gardener.yml"
+HISTORY = ROOT / "History.md"
+README = ROOT / "README.md"
 
 REQUIRED_FILES = [
     "tools/doc-lint.sh",
@@ -46,6 +50,21 @@ def _run_git_ls_files() -> List[str]:
     if result.returncode != 0:
         raise RuntimeError(f"git ls-files 실패: {result.stderr.strip()}")
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def _run_git_text(args: List[str]) -> str:
+    """git command stdout helper."""
+    result = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} 실패: {result.stderr.strip()}")
+    return result.stdout.strip()
 
 
 def check_required_files() -> Tuple[bool, str]:
@@ -107,6 +126,48 @@ def check_ci_m3_uses_md_agents() -> Tuple[bool, str]:
     return True, "ci.yml M3 job md_agents history 검증기 사용"
 
 
+def check_latest_cycle_documented() -> Tuple[bool, str]:
+    """최신 commit subject 의 cycle marker 가 README/History 에 반영됐는지 검증."""
+    subject = _run_git_text(["log", "-1", "--pretty=%s"])
+    matches = re.findall(r"cycle\s*(\d+)\.(\d+)(?:[-~](\d+))?", subject)
+    if not matches:
+        return True, "최신 commit subject 안 cycle marker 없음 — freshness 검사 skip"
+    major, start, end = matches[-1]
+    labels = [f"{major}.{start}"]
+    if end:
+        labels.extend([f"{major}.{end}", f"{major}.{start}~{end}", f"{major}.{start}-{end}"])
+    history_text = _read(HISTORY)
+    readme_text = _read(README)
+    missing = []
+    if not any(label in history_text for label in labels):
+        missing.append("History.md")
+    if not any(label in readme_text for label in labels):
+        missing.append("README.md")
+    if missing:
+        return False, f"최신 cycle marker 문서 반영 누락: {', '.join(missing)} / labels={labels}"
+    return True, f"최신 cycle marker 문서 반영 확인: {labels[-1]}"
+
+
+def check_doc_gardener_auto_push() -> Tuple[bool, str]:
+    """doc-gardener workflow 의 자동 commit/push/PR 경로 복구 상태 검증."""
+    text = _read(DOC_GARDENER)
+    required_tokens = [
+        "contents: write",
+        "pull-requests: write",
+        "git commit -m",
+        "git push origin \"$BRANCH\"",
+        "gh pr create",
+        "auto/doc-gardener-",
+    ]
+    missing = [token for token in required_tokens if token not in text]
+    if missing:
+        return False, "doc-gardener 자동 commit/push/PR 경로 누락: " + ", ".join(missing)
+    forbidden = "git push origin main"
+    if forbidden in text:
+        return False, "doc-gardener main 직접 push 발견"
+    return True, "doc-gardener 자동 보정 branch push + PR 경로 확인"
+
+
 def check_tracked_noise_files() -> Tuple[bool, str]:
     """macOS/IDE 잡음 파일이 git 추적 대상인지 검증."""
     tracked = _run_git_ls_files()
@@ -128,6 +189,8 @@ def main() -> int:
         ("ci-soft-fail", check_ci_soft_fail),
         ("ci-meta-job", check_ci_meta_job),
         ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
+        ("latest-cycle-documented", check_latest_cycle_documented),
+        ("doc-gardener-auto-push", check_doc_gardener_auto_push),
         ("tracked-noise-files", check_tracked_noise_files),
     ]
     failures: List[str] = []
