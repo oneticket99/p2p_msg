@@ -130,7 +130,8 @@ jobs:
 
       - name: 루트 18 동결 확인
         run: |
-          COUNT=$(ls -1 *.md 2>/dev/null | wc -l | tr -d ' ')
+          # 한글 주석 — 루트 깊이 1 의 .md 만 count (find 사용 — actionlint SC2012/SC2035 회피)
+          COUNT=$(find . -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
           if [ "$COUNT" != "18" ]; then
             echo "::error::루트 마크다운 동결 위반 — 정확히 18 필요, 현재 $COUNT"
             exit 1
