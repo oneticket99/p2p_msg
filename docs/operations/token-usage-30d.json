@@ -1,22 +1,22 @@
 {
-  "generated_at_kst": "2026-05-23 11:57:41 KST",
+  "generated_at_kst": "2026-05-24 11:58:05 KST",
   "window_start_kst": "2026-04-22 16:01:00",
-  "window_end_kst": "2026-05-23 11:57:41",
+  "window_end_kst": "2026-05-24 11:58:05",
   "files_scanned": 9,
   "files_with_usage": 3,
-  "parsed_messages": 20024,
+  "parsed_messages": 23144,
   "sessions": 7,
   "skipped_lines": 0,
   "totals": {
-    "input_tokens": 60942,
-    "output_tokens": 24565129,
-    "cache_creation_input_tokens": 311728414,
-    "cache_read_input_tokens": 9632979930,
-    "messages": 20024,
-    "total_tokens": 9969334415,
-    "cost_usd": 22137.6765
+    "input_tokens": 66010,
+    "output_tokens": 25913740,
+    "cache_creation_input_tokens": 324476289,
+    "cache_read_input_tokens": 11286660425,
+    "messages": 23144,
+    "total_tokens": 11637116464,
+    "cost_usd": 24958.4417
   },
-  "cache_hit_rate_percent": 96.87,
+  "cache_hit_rate_percent": 97.21,
   "per_day": [
     {
       "date": "2026-05-17",
@@ -80,25 +80,35 @@
     },
     {
       "date": "2026-05-23",
-      "input_tokens": 2750,
-      "output_tokens": 1345789,
-      "cache_creation_input_tokens": 16004852,
-      "cache_read_input_tokens": 756667483,
-      "messages": 1447,
-      "total_tokens": 774020874,
-      "cost_usd": 1536.0676
+      "input_tokens": 6398,
+      "output_tokens": 2292660,
+      "cache_creation_input_tokens": 25891560,
+      "cache_read_input_tokens": 1917081271,
+      "messages": 3464,
+      "total_tokens": 1945271889,
+      "cost_usd": 3533.1341
+    },
+    {
+      "date": "2026-05-24",
+      "input_tokens": 1420,
+      "output_tokens": 401740,
+      "cache_creation_input_tokens": 2861167,
+      "cache_read_input_tokens": 493266707,
+      "messages": 1103,
+      "total_tokens": 496531034,
+      "cost_usd": 823.6987
     }
   ],
   "per_model": [
     {
       "model": "claude-opus-4-7",
-      "input_tokens": 60942,
-      "output_tokens": 24565129,
-      "cache_creation_input_tokens": 311728414,
-      "cache_read_input_tokens": 9632979930,
-      "messages": 20002,
-      "total_tokens": 9969334415,
-      "cost_usd": 22137.6765
+      "input_tokens": 66010,
+      "output_tokens": 25913740,
+      "cache_creation_input_tokens": 324476289,
+      "cache_read_input_tokens": 11286660425,
+      "messages": 23111,
+      "total_tokens": 11637116464,
+      "cost_usd": 24958.4417
     },
     {
       "model": "<synthetic>",
@@ -106,7 +116,7 @@
       "output_tokens": 0,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
-      "messages": 22,
+      "messages": 33,
       "total_tokens": 0,
       "cost_usd": 0.0
     }
@@ -251,20 +261,42 @@
       "output_tokens": 0,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
-      "messages": 2,
+      "messages": 12,
       "total_tokens": 0,
       "cost_usd": 0.0
     },
     {
       "date": "2026-05-23",
       "model": "claude-opus-4-7",
-      "input_tokens": 2750,
-      "output_tokens": 1345789,
-      "cache_creation_input_tokens": 16004852,
-      "cache_read_input_tokens": 756667483,
-      "messages": 1445,
-      "total_tokens": 774020874,
-      "cost_usd": 1536.0676
+      "input_tokens": 6398,
+      "output_tokens": 2292660,
+      "cache_creation_input_tokens": 25891560,
+      "cache_read_input_tokens": 1917081271,
+      "messages": 3452,
+      "total_tokens": 1945271889,
+      "cost_usd": 3533.1341
+    },
+    {
+      "date": "2026-05-24",
+      "model": "<synthetic>",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "messages": 1,
+      "total_tokens": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "date": "2026-05-24",
+      "model": "claude-opus-4-7",
+      "input_tokens": 1420,
+      "output_tokens": 401740,
+      "cache_creation_input_tokens": 2861167,
+      "cache_read_input_tokens": 493266707,
+      "messages": 1102,
+      "total_tokens": 496531034,
+      "cost_usd": 823.6987
     }
   ],
   "sessions_summary": [
@@ -340,14 +372,14 @@
     {
       "session_id": "b5465060-3a25-42ae-b0a9-9cfae46d632c",
       "first_kst": "2026-05-22 22:05",
-      "last_kst": "2026-05-23 11:57",
+      "last_kst": "2026-05-24 11:57",
       "models": [
         "<synthetic>",
         "claude-opus-4-7"
       ],
-      "messages": 2049,
-      "total_tokens": 913062422,
-      "cost_usd": 1791.70299525
+      "messages": 5169,
+      "total_tokens": 2580844471,
+      "cost_usd": 4612.468239
     }
   ],
   "pricing": {

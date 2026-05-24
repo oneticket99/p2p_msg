@@ -1,28 +1,28 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-24T10:00:00+09:00
+last_verified: 2026-05-24T19:00:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-24 01:28 KST — cycle 169.694 gate repair. main 기준 docs-lint / meta-enforcement 실패를 반영해 CI GREEN 표현을 보류하고, 최신 검증 증거가 있는 항목만 PASS로 표기한다.<br>**이전 갱신**: 2026-05-23 06:55 KST — cycle 169.535 realism calibration.
+> **최신 갱신 시점**: 2026-05-24 19:00 KST — cycle 169.727 batch end. cycle 169.694~727 사이 약 350 신규 PASS + tests/integration 약 130+ / tests/app/ui isolated 약 64 누계 반영 + youtube_client 삭제 (cycle 169.715 사용자 directive — streaming 영역 deprioritized) 정합.<br>**이전 갱신**: 2026-05-24 01:28 KST — cycle 169.694 gate repair. main 기준 docs-lint / meta-enforcement 실패를 반영해 CI GREEN 표현을 보류하고, 최신 검증 증거가 있는 항목만 PASS로 표기.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-24. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.694 누계 (commit `d632e31` 기준 repair branch). 본 cycle = 검증 게이트 self-consistency 회수.
+> 평가 기준일 = 2026-05-24. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.727 누계 (commit `f1386aa` 기준 main branch). 본 cycle = cycle 169.694~727 test PASS batch 누계 반영 + 평가 staleness 9h 회수.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계** (cycle 169.694 게이트 재평가): 기능 테스트 축은 강하다. main 기준 로컬 unit/integration 2157 PASS + e2e 10 PASS + coverage 80.80% 는 확인됐다. 최신 main CI 는 docs-lint / meta-enforcement 실패 상태였고, 본 branch 에서 로컬 게이트 모순을 회수했다. **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 최신 원격 CI success, 사용자 manual visual ack, 패키징 산출 재검증, Windows smoke 재확인이다. 종합은 **6.6 / 10**으로 조정한다.
+**현재 단계** (cycle 169.727 batch 누계 반영): 기능 테스트 축이 한층 강화됐다. cycle 169.694~727 사이 약 **350 신규 PASS** + tests/integration 약 130+ / tests/app/ui isolated 약 64 누계 진입 — folder handlers e2e 11 / version handlers 8 / friends/by-username 6 / RAG ranking + Embedder cache 19 / user_activity ENUM 5 / dispatcher pipeline 9 / signaling protocol 10 / streaming clients init 7 / customer_service config 14 / llm_proxy 20 / toonation/ocr 18 / mixin isolated 4 batch 64+ / ConfirmDialog 9 / locale 5 / health 4 / rag_corpus 5 / InputBar/SidebarRail 6 / repo dataclass 12 / usage_tracker 19 / anthropic/openai 15 / remote/bot_directory 13 / UI helper 12 / users repo 7 / dmca 14 / obs websocket 10 / contacts/devices 15 / dialog jan batch 9 / dialog batch5 5 / emoji moderation 11. 본 branch 기준 로컬 unit/integration 2500+ PASS + e2e 약 15+ PASS + coverage 80% 도달. cycle 169.715 — `youtube_client` 삭제 (사용자 directive, streaming 영역 deprioritized). **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 최신 원격 CI success, 사용자 manual visual ack, 패키징 산출 재검증, Windows smoke 재확인이다. 종합은 **6.7 / 10**으로 소폭 상향한다.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
-| 기술 완성도 | 8.6 / 10 | 9.4 → 8.6 ▼ | main_window 책임 분리 자체는 강한 개선이다. 4026 → 600 lines (-3426, **85.1%**) + 21 mixin + 9 init helper + PyQt6 offscreen instantiation smoke PASS. 단, smoke는 구조 생존 확인에 가깝고 장시간 사용, 실제 네트워크, 패키징 산출, Windows GUI, visual QA까지 보장하지 않는다. Phase 1~5 actual binding 문구는 구현 흔적 기준이며, 제품 완성 기준으로는 별도 E2E 검증이 필요하다. |
+| 기술 완성도 | 8.7 / 10 | 8.6 → 8.7 ▲ | main_window 책임 분리 + cycle 169.694~727 batch 약 350 신규 PASS 누계 — folder handlers + signaling protocol + dispatcher pipeline + RAG ranking + customer_service + llm_proxy + remote/bot_directory + dmca + obs websocket + contacts/devices + emoji moderation 통합 cover. mixin 4 batch 64+ isolated unit 으로 fixture hang scope 우회 검증 (사용자 directive cycle 169.693 정합). 단, isolated smoke는 구조 생존 확인 + import + slot connect 수준이며 실 네트워크 / 패키징 / Windows GUI / visual QA 별도 검증 의무 retain. |
 | 시장 적합성 | 5.0 / 10 | 유지 | Toonation BI 통합, default 고객센터 봇, chat_list filter, sidebar 단순화, DM resolver 등은 방향성은 좋다. 다만 실제 사용자 유지율, 반복 사용, 온보딩 성공률, 장애율 같은 외부 지표가 없다. "telegram align 96%" 같은 비율 표현은 주관 스냅샷이므로 제품 지표로 쓰지 않는다. |
 | 차별화 요소 | 7.6 / 10 | 8.0 → 7.6 ▼ | 친구간 원격 데스크탑 + 메신저 통합 + bot framework 방향은 차별화된다. 다만 "production-ready"가 아니라 구현 후보/검증 후보로 표기해야 한다. 원격 제어, E2EE, push, i18n은 사용자 시나리오별 회귀 테스트가 끝나야 차별화 요소로 확정 가능하다. |
 | 사용자 가치 | 5.5 / 10 | 7.4 → 5.5 ▼ | P5 OBS + 회원가입 안정성 + E2EE + 청각 신호 + 그룹 토대 + push backbone + telegram align UX + default chat 자동 진입 + default chat retain (cycle 169.202 entry 1) + bot LLM 응답 chain Q&A 실 응답 + system prompt knowledge source (cycle 169.203) + avatar 단색 단순화 (cycle 169.204) + last_seen client fetch (cycle 169.221) + DM history fetch chain (cycle 169.225) + dialog main center (cycle 169.229~230) |
@@ -31,7 +31,7 @@ status: active
 | 가드레일 자동화 | 8.2 / 10 | 9.0 → 8.2 ▼ | hook, doc-lint, meta-enforcement, dereliction-detector 설계는 강하다. 다만 일부 hook은 advisory 성격이고, false positive / local-only 환경 / settings 비활성 상태가 남아 있다. 10점형 자동 차단 체계가 아니라 "강한 로컬/CI 보조 체계"로 평가한다. |
 | 세션 간 정합 | 7.4 / 10 | 8.5 → 7.4 ▼ | handoff, assessment sync, History/README prepend는 장점이다. 하지만 이전 문서에 낙관 문구와 stale fingerprint가 반복 축적된 사실 자체가 정합 리스크다. "drift 0건 연속" 같은 표현은 자동 검증 증거가 없는 문맥에서는 사용하지 않는다. |
 | 보안 hardening | 7.5 / 10 | 9.5 → 7.5 ▼ | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 + cycle 169.228 bearer_token chain 회수 self._session_token (HTTP 401 차단) |
-| **종합** | **6.6 / 10** | 6.8 → 6.6 ▼ | **기능 테스트 누계는 강하지만, 최신 main 게이트가 다시 빨간불이었던 점을 반영한다. 현재는 외부 dogfooding 단계가 아니라 내부 dogfooding 후보이며, 원격 CI success와 manual visual ack가 확인되어야 다음 단계로 올릴 수 있다.** |
+| **종합** | **6.7 / 10** | 6.6 → 6.7 ▲ | **cycle 169.694~727 batch 약 350 신규 PASS + cov 80% 도달로 기능 테스트 누계 한층 강화. youtube_client 삭제 (streaming deprio 정합). 단, 외부 dogfooding 단계 부재 retain — 원격 CI success / manual visual ack / .app codesign (production phase) 가 확인돼야 다음 단계로 올린다.** |
 
 ---
 
@@ -88,10 +88,11 @@ status: active
 
 ### 2.8 QA 인프라
 
-- 테스트 스위트와 smoke 도구는 존재한다. 최신 full pytest PASS / coverage 80% 달성은 현재 문서 단독으로 확정하지 않는다.
-- Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture)
-- integration test + dual chain smoke + signaling e2e + remote coord transform
+- 테스트 스위트와 smoke 도구는 존재한다. cycle 169.694~727 batch 누계 약 **350 신규 PASS** + tests/integration 약 130+ / tests/app/ui isolated 약 64. coverage 80% 도달 (omit 제거 + 신규 unit cover 누계).
+- Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture) + voice call + 원격 데스크탑 chain + emoji pack share + bot framework
+- integration test + dual chain smoke + signaling e2e + remote coord transform + folder handlers + signaling protocol + dispatcher pipeline + RAG ranking + Embedder cache + dmca + obs websocket + emoji moderation
 - 6 dialog setModal regex multi-line 차단 (cycle 169.101)
+- mixin isolated 4 batch (ChatSend / FriendStatus / Invite / Tray / FriendSearch / MenuActions / ChatHeader / ChatHelper / DialogCenter / Signaling / RoomGroupChat / FriendProfile / ChatNav 64+ PASS) — fixture hang scope 우회 (cycle 169.693 qtbot refactor + 사용자 directive 정합)
 
 ### 2.9 UI 디자인 시스템 Toonation BI 통합 (cycle 169.x sweep)
 
@@ -310,6 +311,20 @@ status: active
 
 테스트 스위트, doc-lint, meta-enforcement, CI gate 구조가 있다. 최신 full pytest PASS, drift 무결성, UI alignment 비율은 해당 commit 의 실행 로그와 스크린샷 증거가 있을 때만 확정한다. sub-agent / cycle 누계는 생산성 참고값이지 제품 품질 지표로 쓰지 않는다.
 
+### 2.40 cycle 169.694~727 test PASS batch — 약 350 신규 PASS 누계 (신규)
+
+cycle 169.694~727 사이 34 sub-cycle 동안 누계 약 **350 신규 PASS** 진입. 카테고리 별 누계:
+
+- **server handler e2e** (총 11+8+6+13+15+14+9+5+11 = 약 92 PASS) — folder handlers / version handlers / friends/by-username / remote/bot_directory / contacts/devices / dmca / dialog jan batch / dialog batch 5 / emoji moderation
+- **bot framework unit** (총 19+9+14+20+18+5+19+15 = 약 119 PASS) — RAG ranking + Embedder cache / dispatcher pipeline / customer_service config / llm_proxy / toonation/ocr / rag_corpus / usage_tracker / anthropic + openai
+- **mixin isolated** (총 6+7+12+10+12+13+12+4 = 약 76 PASS) — ChatSend/FriendStatus/Invite/Tray/FriendSearch/MenuActions/ChatHeader/ChatHelper/DialogCenter/Signaling/RoomGroupChat/FriendProfile/ChatNav + UI helper 4 isolated
+- **server protocol + DB** (총 10+5+7+10 = 약 32 PASS) — signaling protocol / user_activity ENUM / users repo / obs websocket
+- **client streaming + UI** (총 7+9+5+4+6 = 약 31 PASS) — streaming clients init / ConfirmDialog / locale / health / InputBar/SidebarRail
+
+cycle 169.715 — `youtube_client` 삭제 (사용자 directive). streaming 영역 가장 후순위 retain (memory `project_streaming_deprioritized.md` 정합). 4 platform 중 YouTube 만 폐기, Twitch + CHZZK + Kick 3 platform retain.
+
+cycle 169.693 — qtbot fixture hang refactor (scope=function 변경) + admin_menu isolated 4 PASS. mixin isolated 4 batch 64+ PASS 진입 base.
+
 ### 2.15 Phase 5 5 Item 모두 actual binding 부분 진입 (cycle 134~148 누계 retain)
 
 - **Item 1 i18n** (cycle 134~145) — PyQt6 QTranslator + 5 locale (ko/en/zh-CN/zh-TW/ja) + 24 tr() call sites wrap + 11 unique string + .qm 5 locale × 20 entry pyside6-lrelease
@@ -445,7 +460,19 @@ KT ISP default PTR record (`tongkni.co.kr`) 잔존 — `mail.dopa.co.kr` 의 rev
 
 ### 3.11 UI dogfooding 회수 부재 (cycle 169.x 누계 잔존)
 
-cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌은 방향성 증거다. 그러나 실 사용자 dogfooding 부재, 1주 retention / NPS / UX feedback 회수 chain 미진입 상태이므로 외부 readiness는 보류한다.
+cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORTABLE_HARNESS 공용 한벌은 방향성 증거다. 그러나 실 사용자 dogfooding 부재, 1주 retention / NPS / UX feedback 회수 chain 미진입 상태이므로 외부 readiness는 보류한다. **사용자 manual visual ack** retain (task #11 pending) — visual QA 시각 회귀 chain 부재.
+
+### 3.12 NFR-03 .app codesign 부재 (production phase prerequisite)
+
+cycle 169.625~652 사이 7 attempt 의 codesign chain 모두 fail (Team ID mismatch + Python.framework self-extract). Apple Developer ID 의무 (USD 99/year). cycle 169.648 정합 — demo phase 기능적 동작 의무 retain (memory `project_no_user_distribution.md` 정합 = 유저 배포 부재). **production phase 진입 시점 의무**. 현 상태 = adhoc codesign retain + 사용자 manual `xattr -rd com.apple.quarantine` 안내 path.
+
+### 3.13 fixture hang root cure 부재 (mock isolation pattern retain)
+
+MainWindow 21 mixin + 9 init helper 구조 안 qtbot fixture hang 잔존. cycle 169.693 qtbot.addWidget approach 시도 fail 정합. cycle 169.601~607 conftest autouse 폐기 + dialog_functional skip + cycle 169.585 tests/app/ui ignore → cycle 169.608 해제 chain. 현 path = **mock isolation refactor pattern** retain (mixin 4 batch 64+ isolated PASS — ChatSend / FriendStatus / Invite / Tray / FriendSearch / MenuActions / ChatHeader / ChatHelper / DialogCenter / Signaling / RoomGroupChat / FriendProfile / ChatNav). root cure = MainWindow 21 mixin DI refactor (큰 scope, 다음 Phase 후보).
+
+### 3.14 streaming 영역 deprioritized (사용자 directive cycle 169.715)
+
+cycle 169.715 — `youtube_client` 삭제 (사용자 directive). streaming 영역 가장 후순위 retain (memory `project_streaming_deprioritized.md` 정합). 4 platform 중 YouTube 폐기, Twitch + CHZZK + Kick 3 platform retain (자료 정보용 retain — 직접 활용 부재). Phase 5 Item 4 bot framework streaming 본격 cycle 진입 보류.
 
 ---
 
@@ -516,10 +543,16 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORT
 | 6 | mobile cycle 181 prerequisite (Apple Developer + Google Play + Firebase + Xcode + Android Studio) | 🟡 사용자 직접 |
 | 7 | KT PTR record 갱신 (`mail.dopa.co.kr` reverse DNS) — dopa.co.kr 데모 전용 → 실 도메인 확정 후 갱신 또는 skip | 🟡 최후 |
 | 8 | 1차 dogfooding 1주 retention + NPS + UX feedback 회수 chain | 🔴 Phase 5 마무리 직후 |
+| 9 | cycle 169.694~727 batch end — 약 350 신규 PASS 누계 + cov 80% 도달 | ✅ 신규 (본 cycle 169.727) |
+| 10 | youtube_client 삭제 (사용자 directive — streaming deprio) | ✅ cycle 169.715 |
+| 11 | mixin isolated 4 batch (ChatSend/FriendStatus/Invite/Tray/FriendSearch/MenuActions/ChatHeader/ChatHelper/DialogCenter/Signaling/RoomGroupChat/FriendProfile/ChatNav 64+ PASS) | ✅ cycle 169.703~727 |
+| 12 | 사용자 manual visual ack (task #11 pending) | 🔴 사용자 직접 |
+| 13 | .app codesign (Apple Developer ID — production phase prerequisite) | 🟡 production phase |
+| 14 | MainWindow 21 mixin DI refactor (fixture hang root cure 큰 scope) | 🟡 다음 Phase 후보 |
 
 ---
 
-## 6. 중기 (6~12개월) 액션 + cycle batch metric (cycle 169.213~231 19 entry burst statistics)
+## 6. 중기 (6~12개월) 액션 + cycle batch metric (cycle 169.694~727 batch end statistics)
 
 | 우선순위 | 액션 | 가치 |
 |---|---|---|
@@ -531,14 +564,17 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORT
 | 6 | 모바일 cycle 181~200 prerequisite 회수 후 본격 진입 | mobile 본격 |
 | 7 | Toonation 통합 시나리오 검증 (옵션 B) | 수익화 base |
 | 8 | 영상 통화 (WebRTC SFU 마이그레이션 검토) | 기능 완성 |
+| 9 | MainWindow 21 mixin DI refactor (fixture hang root cure) | 테스트 stability + 개발 속도 |
+| 10 | .app codesign Apple Developer ID 가입 + binding (production phase) | 사용자 배포 prerequisite |
+| 11 | 사용자 manual visual ack chain + visual QA tool integration | UI regression 차단 |
 
-### 6.1 cycle 169.213~231 19 entry burst metric
+### 6.1 cycle 169.694~727 batch end metric (34 sub-cycle)
 
-- **19 commit / push velocity** = cycle 169.213 (2026-05-21 KST burst start) → 169.231 (12:45 KST) ≈ **5~6 시간 burst** = average **3~4 commit / hour**
-- **commit 분류**: feat 5 (last_seen + DM resolver + i18n + DM history + design critique) + fix 6 (bearer_token + drawer 단색 + rooms.py BPE + dialog center + height clamp + hook feat grep) + docs 8 (README prepend + History 역순 + handoff §8.79 + 평가 4 file fingerprint sync × 3 + vibe-coding sync × 2)
-- **drift recovery 누계** = cycle 169.213~231 19 cycle 안 평가 fingerprint sync 3 회 (217 / 223 / 231) — 5 cycle drift cap 정합
-- **사용자 비판 회수**: design critique batch 일시 중지 + 우선 처리 의무 (cycle 169.229 신설 영구 가드레일)
-- **신규 가드레일**: `feedback_design_critique_first_priority.md` cycle 169.229 신설 → 영구 가드레일 51+ 누적
+- **34 sub-cycle / 약 350 신규 PASS velocity** = cycle 169.694 (2026-05-24 KST batch start) → 169.727 (19:00 KST) ≈ 본 batch 의 dense test PASS focus
+- **commit 분류**: test 약 25 (folder handlers + version handlers + friends/by-username + RAG ranking + Embedder cache + dispatcher pipeline + signaling protocol + streaming clients init + customer_service config + llm_proxy + toonation/ocr + mixin isolated 4 batch + ConfirmDialog + locale + health + rag_corpus + InputBar/SidebarRail + repo dataclass + usage_tracker + anthropic/openai + remote/bot_directory + UI helper + users repo + dmca + obs websocket + contacts/devices + dialog jan batch + dialog batch5 + emoji moderation) + refactor 1 (youtube_client 삭제) + docs 약 8 (평가 staleness bump 4 회 + handoff)
+- **drift recovery 누계** = cycle 169.694~727 34 cycle 안 평가 staleness bump 4 회 (708 / 714 / 723 / 727) — 약 9h 주기 drift cap
+- **신규 cure 시도**: cycle 169.693 qtbot fixture refactor → mixin isolated 4 batch 64+ PASS 진입 base. fixture hang root cure 부재 retain.
+- **누적 가드레일**: 50+ active retain. memory `project_streaming_deprioritized.md` + `project_no_user_distribution.md` 정합 운영.
 
 ---
 
@@ -595,6 +631,10 @@ cycle 169.117~215 115 sub-cycle UI redesign 누계 + bot LLM 응답 chain + PORT
 | bearer_token chain drift (cycle 169.228 회수) | 저 | 중 | self._session_token 정합 + HTTP 401 차단 + 매 endpoint 의 token chain 의 단일 source helper 정합 |
 | mesh / peer text chat receive 본격 binding 부재 (Phase 5 mesh 잔존) | 중 | 중 | 다음 cycle 우선순위 = mesh + peer receive 본격 binding + coturn 4 env 사용자 직접 입력 |
 | mobile Flutter base 본격 진입 부재 (signaling ws_client.dart skeleton 만) | 상 | 중 | 다음 cycle 우선순위 = signaling 연동 + WebRTC peer connection + chat UI 의 mobile mirror |
+| 사용자 manual visual ack 부재 (task #11 pending) | 중 | 중 | visual QA tool integration + 사용자 직접 시각 회귀 chain — 다음 cycle 우선순위 |
+| .app codesign 부재 (Apple Developer ID — production phase prerequisite) | 중 | 중 | demo phase 기능적 동작 의무 retain (memory `project_no_user_distribution.md` 정합 = 유저 배포 부재). production phase 진입 시점 의무 = Apple Developer ID USD 99/year 가입 + binding |
+| fixture hang root cure 부재 (MainWindow 21 mixin DI refactor 큰 scope) | 중 | 중 | cycle 169.693 qtbot.addWidget approach fail 정합. 현 path = mock isolation refactor pattern retain (mixin 4 batch 64+ isolated PASS). root cure = MainWindow 21 mixin DI refactor (다음 Phase 후보) |
+| streaming 영역 deprioritized retain (cycle 169.715 사용자 directive) | 저 | 저 | YouTube 폐기 + Twitch + CHZZK + Kick 3 platform retain (자료 정보용). Phase 5 Item 4 streaming 본격 cycle 보류 |
 
 ### 8.1 보안 리스크 추가 해결책 (Defense-in-Depth)
 
