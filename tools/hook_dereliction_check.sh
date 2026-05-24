@@ -27,15 +27,22 @@ else
     fi
 fi
 
+# cycle 169.748 — 작업트리 dirty detect 선행 (직무유기 핵심 — 미커밋 작업 = HEAD 불변 = 직무유기)
+# 추적 code/doc 경로 미커밋 변경 추출 (staged + unstaged 모두)
+DIRTY_FILES="$(git status --porcelain 2>/dev/null \
+    | grep -E '^.{2} (tests/|app/|server/|tools/|docs/|deploy/|\.github/|[A-Za-z0-9_]+\.md)' \
+    || true)"
+
 # cycle 169.368 — HEAD-based TTL skip — 동일 HEAD 안 1회 fire 후 동일 turn repeat 차단
 # Claude Code 9 consecutive block cap 회피 — 사용자 ack manifest 의무 retain (handoff 안 ack 키워드)
+# cycle 169.748 — clean-tree 일 때만 TTL skip 적용. dirty (미커밋 작업) 시점은 skip 금지 → 직무유기 강제 detect.
 TTL_MARKER="${CLAUDE_PROJECT_DIR}/.claude/dereliction_last_fire.txt"
 mkdir -p "${CLAUDE_PROJECT_DIR}/.claude" 2>/dev/null || true
 CUR_HEAD="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
-if [ -f "$TTL_MARKER" ]; then
+if [ -f "$TTL_MARKER" ] && [ -z "$DIRTY_FILES" ]; then
     LAST_HEAD="$(cat "$TTL_MARKER" 2>/dev/null || echo '')"
     if [ "$LAST_HEAD" = "$CUR_HEAD" ]; then
-        exit 0  # 한글 주석 — 동일 HEAD = 직전 fire 후 commit 부재 → repeat block 차단
+        exit 0  # 한글 주석 — clean tree + 동일 HEAD = 직전 fire 후 신규 작업 부재 → repeat block 차단
     fi
 fi
 echo "$CUR_HEAD" > "$TTL_MARKER" 2>/dev/null || true
@@ -84,6 +91,15 @@ if [ -f "$HANDOFF" ]; then
       WARN_COUNT=$((WARN_COUNT + 1))
     fi
   fi
+fi
+
+# 5. 작업트리 dirty detect (cycle 169.748 신설 — 직무유기 핵심 영역)
+# 미커밋 code/doc 변경 = "작업 했으나 commit + push 안 함" = M5 직무유기
+if [ -n "$DIRTY_FILES" ]; then
+  DIRTY_COUNT=$(echo "$DIRTY_FILES" | grep -c '' | tr -d ' ')
+  FIRST3=$(echo "$DIRTY_FILES" | sed -E 's/^.{3}//' | head -3 | tr '\n' ' ')
+  VIOLATIONS+=("[M5 uncommit] 작업트리 미커밋 code/doc 변경 ${DIRTY_COUNT}건 ($FIRST3...) — commit + push 의무 (직무유기 핵심)")
+  WARN_COUNT=$((WARN_COUNT + 1))
 fi
 
 # report 출력 — cycle 169.212 — stderr redirect (claude session Stop hook stderr capture 정합)

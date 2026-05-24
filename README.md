@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 00:10:00] cycle 169.748 — 직무유기 훅 근본 결함 회수 (사용자 "직무유기 훅 안돌아" 지적). `tools/hook_dereliction_check.sh` — HEAD-TTL skip 가 미커밋 작업(HEAD 불변)을 못 잡던 역설 수정: clean-tree 일 때만 skip 적용 + 작업트리 dirty(code/doc 미커밋) 검사 #5 신설 (exit 2 block). dirty→fire / clean+동일HEAD→skip 검증 (tools/hook_dereliction_check.sh)
 - [2026-05-24 23:55:00] cycle 169.747 — doc-gardener MIGRATION 테이블 정합 검사 구현 (Phase 3 활성화). `tools/check_migration_tables.py` 신설 — MIGRATION_MARIADB.md 문서 테이블(7) ⊆ migrations SQL 테이블(25) 불변식 검증, drift 시 exit 1. doc-gardener.yml MIGRATION 검사 step + `gh issue create` 자동 생성 배선 + 정본 정합 (tools · .github/workflows · CLAUDE_HARNESS_IMPORTANT.md)
 - [2026-05-24 23:45:00] cycle 169.746 — doc-gardener.yml codex 평가 3건 회수. YAML 주석 U+CE21 단독 글자 2건 제거(line 75/80) + Phase 2/3 주석 정합 + 정본 line 222 정직화(현재 활성 vs 예정 분리) (.github/workflows · CLAUDE_HARNESS_IMPORTANT.md)
 - [2026-05-24 23:30:00] cycle 169.745 — 평가 6 file staleness 회수. productization.md + vibe-coding.md snapshot 전체 rewrite (cycle 169.738~744 batch 41 신규 PASS + cov 81.34% + messages_cache id→msg_id source bug fix) + HTML mirror 2종 동시 sync + handoff §8.82.1 manifest (docs/assessments · docs/html · docs/exec-plans)
