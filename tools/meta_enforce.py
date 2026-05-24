@@ -23,6 +23,7 @@ README = ROOT / "README.md"
 CLAUDE_SETTINGS = ROOT / ".claude" / "settings.json"
 AUTO_COMMIT_HOOK = ROOT / "tools" / "hook_auto_commit_enforce.sh"
 PORTABLE_HARNESS = ROOT / "docs" / "PORTABLE_HARNESS.md"
+WORKFLOW_DIR = ROOT / ".github" / "workflows"
 
 REQUIRED_FILES = [
     "tools/doc-lint.sh",
@@ -172,6 +173,19 @@ def check_doc_gardener_auto_push() -> Tuple[bool, str]:
     return True, "doc-gardener 자동 보정 branch push + PR 경로 확인"
 
 
+def check_workflows_checkout_v5() -> Tuple[bool, str]:
+    """GitHub Actions checkout action 의 Node 24 런타임 기준 검증."""
+    offenders = []
+    for path in sorted(WORKFLOW_DIR.glob("*.yml")):
+        text = _read(path)
+        # 한글 주석 — checkout@v4 는 Node.js 20 deprecation annotation 을 만들기 때문에 차단한다.
+        if "actions/checkout@v4" in text:
+            offenders.append(str(path.relative_to(ROOT)))
+    if offenders:
+        return False, "checkout@v4 잔존 workflow 발견: " + ", ".join(offenders)
+    return True, "workflow checkout@v5 기준 확인"
+
+
 def check_auto_commit_hook_wired() -> Tuple[bool, str]:
     """직무유기 방지 auto-commit hook 의 추적/Stop 연결/PR 경로 정합 검증."""
     tracked = set(_run_git_ls_files())
@@ -274,6 +288,7 @@ def main() -> int:
         ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
         ("latest-cycle-documented", check_latest_cycle_documented),
         ("doc-gardener-auto-push", check_doc_gardener_auto_push),
+        ("workflows-checkout-v5", check_workflows_checkout_v5),
         ("auto-commit-hook-wired", check_auto_commit_hook_wired),
         ("no-main-push-guidance-in-hooks", check_no_main_push_guidance_in_hooks),
         ("portable-harness-pr-policy", check_portable_harness_pr_policy),

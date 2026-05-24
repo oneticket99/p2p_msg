@@ -22,7 +22,7 @@ jobs:
     # self-hosted runner 복귀 + Apple Developer ID proper sign 별 cycle 의무.
     runs-on: [self-hosted, macOS, ARM64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Python 3.13 venv + dev deps (brew python)
         # 한글 주석 — cycle 169.642: self-hosted runner 복귀 + brew python retain.
         # NFR-03 .app crash root cause = PyInstaller bootloader + Apple-signed Python framework
@@ -62,7 +62,7 @@ jobs:
     name: Windows x64 native (.exe)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Python 3.13
         uses: actions/setup-python@v5
         with:

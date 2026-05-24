@@ -26,7 +26,7 @@ jobs:
     name: macOS arm64 release
     runs-on: [self-hosted, macOS, ARM64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Python 3.13 venv + deps
         run: |
@@ -93,7 +93,7 @@ jobs:
     name: Windows x64 release
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Python 3.13 setup
         uses: actions/setup-python@v5
