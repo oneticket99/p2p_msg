@@ -113,6 +113,20 @@ status: active
 - 검증 도구: 서버 log + httpx 의 직접 호출 + Anthropic console
 - 권한: 서버 호스트 SSH + 환경 변수 주입
 
+### 2.9 원격 데스크탑 M4 session 실 OS 검증 (cycle 169.776~788 follow-up — Phase 5 G3 게이트)
+
+> 자동 검증 완료분 (G2): RemoteSessionRunner + permission handshake + coord_transform + 실 aiortc DataChannel loopback (headless). 아래는 실 OS + 물리 2 장비 의 사용자 직접 ack 만 가능한 잔여(M4).
+
+- [ ] macOS Screen Recording 권한 grant — 시스템 설정 → 개인정보 보호 → 화면 기록 → TooTalk 의 check (host 측 capture)
+- [ ] macOS Accessibility 권한 grant — 손쉬운 사용 → TooTalk 의 check (host 측 input dispatch)
+- [ ] friend 2 장비 의 실 P2P 원격 세션 — chat_header 원격 요청/연결 → RemoteCallDialog accept → `_start_remote_session` 의 RemoteSessionRunner 기동
+- [ ] friend peer connection 의 `_remote_data_channel` 실 생성 + runner send callable 의 실 채널 결선 확인 (현 production 경로 no-op — M4 binding 의무)
+- [ ] HOST runner 의 PermissionGrant 실 주입 — 현 grant=None fail-closed(input 전량 거부) → handshake GRANT 수신 시 runner grant 주입 경로 확인
+- [ ] **controller 창에 host 화면 frame 실 표시** + **controller 클릭/키 의 host OS 실 적용** 의 사람 눈 visual ack (mock dispatch 아닌 실 OS event)
+- [ ] expiry + 1-click revoke 의 실 동작 — grant 만료/revoke 시 input 즉시 차단 확인
+- 검증 도구: 2 물리 장비(Mac + Mac/Windows) + 화면 녹화 + 사용자 직접 관찰
+- 권한: macOS Screen Recording + Accessibility + 양 장비 친구 등록
+
 ---
 
 ## 3. Claude 자율 가능 chain (manual test 의 외)
