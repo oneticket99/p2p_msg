@@ -1,13 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""cycle 139 — main_window 의 그룹 채팅 통합 의 pytest 5 PASS.
+"""cycle 169.839 — 그룹 생성 flow 재구성 의 pytest 6 PASS.
+
+cycle 169.838 의 "방 입장"(room_id 직접 입력) 전수 제거 정합. 그룹방 진입은
+방번호 입력(`room_entered.emit`)이 아니라 "그룹 만들기" wizard + 멤버 초대
+chain 으로만 이뤄진다. 통합 ChatView (StackedWidget idx 0) 가 canonical 위젯이며
+구 GroupChatView(idx 1) + `room_entered` 경로는 legacy 폐기.
 
 본 test 의 커버 영역:
 
-- RoomList sidebar 의 존재 + 빈 placeholder 의 초기 상태
-- RoomList 의 room_entered 시그널 emit 시 GroupChatView swap + 1:1 입력 차단
-- 그룹 채팅 모드 active 일 때 1:1 보내기 슬롯 의 차단 검증
-- members_panel_requested 시그널 의 MemberList swap
-- "직접 메시지" 액션 의 1:1 ChatView 회귀 (backward compat)
+- 좌측 ChatListPanel 존재 + 초기 direct ChatView (idx 0) default
+- NewGroupDialog Step1 그룹명 필수 → Step2 참가자 추가 전환
+- NewGroupDialog 친구 select toggle + group_created(name, ids) emit payload
+- `_on_group_created` → ChatListEntry kind=group 상단 insert + direct view 진입
+- `_on_drawer_new_group` → NewGroupDialog open (offscreen non-blocking 가드)
+- 전 wizard chain — 그룹 만들기 → 참가자 선택 → 생성 → direct view 진입
 
 RoomsClient mock 의 의무 — 실 HTTP 호출 차단. PyQt6 graceful 의 headless
 QApplication fixture 의 의무.
@@ -62,7 +68,7 @@ def app_state_reset():
 def main_window(qapp, config, app_state_reset):
     """RoomsClient mock 주입 의 MainWindow 인스턴스.
 
-    실 HTTP 호출 차단 의무 — rooms_client = MagicMock 의 의 graceful 의 dummy.
+    실 HTTP 호출 차단 의무 — rooms_client = MagicMock 의 graceful dummy.
     """
 
     # 한글 주석 — 본 fixture 안 lazy import 로 PyQt6 graceful 정합.
@@ -81,116 +87,166 @@ def main_window(qapp, config, app_state_reset):
     window.deleteLater()
 
 
+def _seed_friends(main_window, friends: list[tuple[int, str]]) -> None:
+    """ChatListPanel 에 friend kind entry 주입 — wizard 친구 list 의 source."""
+
+    from datetime import datetime
+
+    from app.ui.chat_list_panel import ChatListEntry
+
+    entries = [
+        ChatListEntry(
+            kind="friend",
+            target_id=uid,
+            name=name,
+            last_message="",
+            last_ts=datetime.now(),
+            unread_count=0,
+            is_pinned=False,
+            is_online=True,
+        )
+        for uid, name in friends
+    ]
+    main_window._chat_list_panel.set_entries(entries)
+
+
 # ----------------------------------------------------------------------
-# TestMainWindowRoomsIntegration — 5 PASS
+# TestGroupCreationFlow — 6 PASS
 # ----------------------------------------------------------------------
 
 
-class TestMainWindowRoomsIntegration:
-    """cycle 139 의 그룹 채팅 통합 5 행위 검증."""
+class TestGroupCreationFlow:
+    """cycle 169.839 의 그룹 생성 wizard chain 6 행위 검증."""
 
-    def test_sidebar_room_list_present_with_empty_placeholder(
+    def test_chat_list_panel_present_with_direct_view_default(
         self, main_window
     ) -> None:
-        """좌측 sidebar RoomListWidget 의 존재 + 빈 placeholder 행 표기."""
+        """좌측 ChatListPanel 존재 + 초기 direct ChatView (idx 0) default."""
 
-        from app.ui.room_list import RoomListWidget
-
-        # RoomListWidget 인스턴스 의 보유 — sidebar 의 의무
-        assert isinstance(main_window._room_list, RoomListWidget)
-        # 빈 목록 의 placeholder 행 1개
-        assert main_window._room_list.count() == 1
-        placeholder_item = main_window._room_list.item(0)
-        assert "참여" in placeholder_item.text()
-        # 초기 StackedWidget = 1:1 ChatView 페이지
-        assert main_window._stacked.currentIndex() == 0
-        # 1:1 입력 영역 visible (직접 메시지 default) — show 미호출 환경 의
-        # isHidden() 검증 (QWidget.setVisible(False) 의 부재 = 기본 visible)
-        assert not main_window._input_container.isHidden()
-
-    def test_room_entered_signal_swaps_to_group_chat_view(
-        self, main_window
-    ) -> None:
-        """RoomList 의 room_entered emit 시 GroupChatView swap + 1:1 입력 차단."""
-
-        from app.ui.group_chat_view import GroupChatView
-
-        # room_id=42 의 emit 직접 trigger
-        main_window._room_list.room_entered.emit(42)
-
-        # GroupChatView 인스턴스 의 생성 + 보관
-        assert main_window._group_chat_view is not None
-        assert isinstance(main_window._group_chat_view, GroupChatView)
-        assert main_window._group_chat_view.room_id == 42
-        # StackedWidget idx = 1 (그룹 채팅 페이지)
-        assert main_window._stacked.currentIndex() == 1
-        # 1:1 입력 영역 의 비활성 (그룹 모드 의무)
-        assert not main_window._input_container.isVisible()
-        # AppState 의 room_id 갱신 — str("42")
-        assert main_window._state.room_id == "42"
-        # _current_room_id getter
-        assert main_window._current_room_id == 42
-
-    def test_group_mode_blocks_1on1_send_slot(self, main_window) -> None:
-        """그룹 모드 active 일 때 1:1 보내기 슬롯 의 echo 차단."""
-
-        # 그룹 채팅 진입
-        main_window._room_list.room_entered.emit(7)
-        assert main_window._stacked.currentIndex() == 1
-        # 1:1 입력 영역 의 hidden 상태 — 그룹 모드 의 의무
-        assert main_window._input_container.isHidden()
-
-        # 1:1 입력창 의 텍스트 주입 + 보내기 호출 — 그룹 모드 의 의무 차단
-        # cycle 169.71 회수 — InputBar widget 안 _text_edit QTextEdit 의 의 정합
-        main_window._input_bar._text_edit.setPlainText("이 메시지 는 차단 되어야 함")
-        main_window._on_send_clicked()
-
-        # ChatView (1:1) message_count 증가 부재 검증 — 초기 1 시스템 안내 만
-        # 보존된 텍스트 (clear 호출 부재) 검증
-        assert main_window._input_bar._text_edit.toPlainText() == "이 메시지 는 차단 되어야 함"
-
-    def test_members_panel_opens_modal_member_list(self, main_window) -> None:
-        """멤버 보기 → 모달 dialog 안 MemberListWidget populate (cycle 169.837)."""
-
-        # cycle 169.837 — StackedWidget 패널 swap → 모달 dialog. 원형 아바타 행 MemberListWidget.
-        from app.ui.member_list import MemberListWidget
-
-        # 그룹 채팅 진입 → GroupChatView 인스턴스 보유
-        main_window._room_list.room_entered.emit(10)
-        view = main_window._group_chat_view
-        assert view is not None
-
-        # 멤버 보기 트리거 ("..." 드롭다운 "멤버 보기" 등가 — 동일 핸들러 직접 호출)
-        main_window._on_open_members_panel()
-
-        # cycle 169.838 — 멤버 보기 = in-app overlay 모달(_exec_dialog_centered). dialog 인스턴스
-        # 보유(self._members_dialog) ref 검증. offscreen 가드가 setParent+show(setModal 아님)라
-        # isModal 미검증.
-        dlg = getattr(main_window, "_members_dialog", None)
-        assert dlg is not None
-        # 모달 안 MemberListWidget 의 멤버 수 = 1 (self_peer 방장, known_peers 부재)
-        lst = dlg.findChild(MemberListWidget)
-        assert lst is not None
-        assert lst.member_count() == 1
-        dlg.close()
-
-    def test_direct_chat_action_restores_1on1_view(self, main_window) -> None:
-        """1:1 ChatView 의 backward compat — "직접 메시지" 액션 의 회귀."""
-
+        from app.ui.chat_list_panel import ChatListPanel
         from app.ui.chat_view import ChatView
 
-        # 그룹 채팅 진입 → idx=1
-        main_window._room_list.room_entered.emit(5)
-        assert main_window._stacked.currentIndex() == 1
-        assert main_window._input_container.isHidden()
-
-        # 직접 메시지 액션 의 직접 호출
-        main_window._on_open_direct_chat()
-
-        # idx = 0 (1:1) + 입력 영역 hidden 해제 회귀
-        assert main_window._stacked.currentIndex() == 0
-        assert not main_window._input_container.isHidden()
-        # 1:1 ChatView 의 instance 보존
+        # 좌측 sidebar = ChatListPanel (방번호 입력 RoomList 폐기)
+        assert isinstance(main_window._chat_list_panel, ChatListPanel)
+        # 초기 StackedWidget = direct ChatView 페이지 (idx 0)
+        assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
         assert isinstance(main_window._chat_view, ChatView)
-        # rooms_client mock 의 주입 보존 (backward compat 검증)
-        assert main_window._rooms_client is not None
+        # 입력 영역 visible (direct chat default)
+        assert not main_window._input_container.isHidden()
+
+    def test_new_group_dialog_step1_requires_name(self, qapp) -> None:
+        """NewGroupDialog Step1 그룹명 필수 → 입력 후 Step2 참가자 추가 전환."""
+
+        from app.ui.new_group_dialog import NewGroupDialog
+
+        dialog = NewGroupDialog(friends=[{"target_id": 1, "name": "민지"}])
+        # 초기 Step1 (idx 0)
+        assert dialog._stack.currentIndex() == 0
+        # 그룹명 공백 시 다음 차단 — Step1 잔존
+        dialog._name_edit.setText("   ")
+        dialog._on_next()
+        assert dialog._stack.currentIndex() == 0
+        # 그룹명 입력 후 Step2 (idx 1) 전환
+        dialog._name_edit.setText("주말 등산팀")
+        dialog._on_next()
+        assert dialog._stack.currentIndex() == 1
+        dialog.deleteLater()
+
+    def test_new_group_dialog_friend_select_and_emit(self, qapp) -> None:
+        """친구 select toggle + group_created(name, ids) emit payload 검증."""
+
+        from app.ui.new_group_dialog import NewGroupDialog
+
+        friends = [
+            {"target_id": 101, "name": "민지"},
+            {"target_id": 102, "name": "현우"},
+        ]
+        dialog = NewGroupDialog(friends=friends)
+
+        captured: list[tuple[str, list]] = []
+        dialog.group_created.connect(
+            lambda name, ids: captured.append((name, list(ids)))
+        )
+
+        # 친구 2명 select (item 0, 1)
+        dialog._on_friend_click(dialog._friend_list.item(0))
+        dialog._on_friend_click(dialog._friend_list.item(1))
+        assert dialog._selected_ids == [101, 102]
+        # 1명 재클릭 = toggle off
+        dialog._on_friend_click(dialog._friend_list.item(1))
+        assert dialog._selected_ids == [101]
+
+        # 그룹명 + 만들기 → group_created emit
+        dialog._name_edit.setText("점심팟")
+        dialog._on_create()
+        assert captured == [("점심팟", [101])]
+        dialog.deleteLater()
+
+    def test_on_group_created_inserts_entry_and_enters_direct_view(
+        self, main_window
+    ) -> None:
+        """`_on_group_created` → ChatListEntry kind=group 상단 insert + direct view 진입."""
+
+        # 사전 친구 entry 1건 주입 (insert 후 상단 정렬 검증용)
+        _seed_friends(main_window, [(101, "민지")])
+
+        main_window._on_group_created("팀 회의방", [101])
+
+        entries = main_window._chat_list_panel._entries
+        # 신규 group entry 보유 + kind=group + 음수 gid
+        group_entries = [e for e in entries if e.kind == "group"]
+        assert len(group_entries) == 1
+        assert group_entries[0].name == "팀 회의방"
+        assert group_entries[0].target_id < 0
+        # 생성 직후 direct ChatView (idx 0) 진입 + 입력 영역 visible
+        # (window 미표시 offscreen 환경 — isVisible 대신 isHidden 부정 검증)
+        assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
+        assert not main_window._input_container.isHidden()
+
+    def test_drawer_new_group_opens_dialog_offscreen_safe(
+        self, main_window
+    ) -> None:
+        """`_on_drawer_new_group` → NewGroupDialog open (offscreen non-blocking 가드)."""
+
+        from app.ui.new_group_dialog import NewGroupDialog
+
+        # 친구 2건 주입 → wizard 친구 list source
+        _seed_friends(main_window, [(101, "민지"), (102, "현우")])
+
+        # 그룹 만들기 trigger — offscreen 가드로 즉시 반환 (hang 부재)
+        main_window._on_drawer_new_group()
+
+        # child NewGroupDialog 인스턴스 생성 + 친구 2명 populate
+        dialog = main_window.findChild(NewGroupDialog)
+        assert dialog is not None
+        assert dialog._friend_list.count() == 2
+        dialog.deleteLater()
+
+    def test_full_wizard_chain_create_to_entry(self, main_window) -> None:
+        """전 wizard chain — 그룹 만들기 → 참가자 선택 → 생성 → direct view 진입."""
+
+        from app.ui.new_group_dialog import NewGroupDialog
+
+        _seed_friends(main_window, [(101, "민지"), (102, "현우")])
+
+        # 1) 그룹 만들기 wizard open
+        main_window._on_drawer_new_group()
+        dialog = main_window.findChild(NewGroupDialog)
+        assert dialog is not None
+
+        # 2) 그룹명 입력 + 참가자 선택
+        dialog._name_edit.setText("동아리방")
+        dialog._on_friend_click(dialog._friend_list.item(0))
+        dialog._on_friend_click(dialog._friend_list.item(1))
+
+        # 3) 만들기 → group_created → _on_group_created chain
+        dialog._on_create()
+
+        # 4) ChatListEntry kind=group insert + direct view (idx 0) 진입
+        group_entries = [
+            e for e in main_window._chat_list_panel._entries if e.kind == "group"
+        ]
+        assert len(group_entries) == 1
+        assert group_entries[0].name == "동아리방"
+        assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
+        assert not main_window._input_container.isHidden()
