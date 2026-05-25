@@ -29,8 +29,9 @@ EXPECTED_FILES: dict[str, dict[str, float]] = {
     "tootalk_soft.wav": {"duration_min": 0.20, "duration_max": 0.30},
 }
 
-# 한글 주석 — Phase 2 directive — 200~400ms 범위 cap 의 전체 상한
-DURATION_CAP_SEC = 0.450
+# 한글 주석 — 알림음 전체 상한. cycle 169.834 — 사용자 제공 메시지 수신음(messenger
+# ding, ppyong slot 교체)이 0.48s → 상한을 0.50s 로 완화(per-file ppyong max 0.50 정합).
+DURATION_CAP_SEC = 0.500
 SIZE_MIN_BYTES = 1000
 
 
