@@ -46,6 +46,7 @@ from .db.repositories import rooms as rooms_repo
 from .db.repositories.user_activity import ActivityAction, log_activity
 from .room import Peer, RoomRegistry
 from .sfu_registry import SfuRegistry
+from .sfu_room import AIORTC_AVAILABLE
 from .signaling_persistence import (
     persist_peer_join,
     persist_peer_leave,
@@ -195,6 +196,12 @@ async def _handle_sfu_publish(
     sdp = payload.get("sdp")
     if not isinstance(sdp, str) or not sdp:
         await _send_error(ws, ERR_MISSING_FIELD, "SFU_PUBLISH: sdp 누락.")
+        return
+
+    # 한글 주석 — aiortc 미설치 환경에서는 SFU room 생성이 불가하므로 사전 차단한다.
+    # (subscribe 는 room 이 끝내 생성되지 않아 자연히 ERR_SFU_NO_PRODUCER 로 귀결)
+    if not AIORTC_AVAILABLE:
+        await _send_error(ws, ERR_ROOM_NOT_FOUND, "SFU 미가용 — 서버 aiortc 미설치.")
         return
 
     sfu = _get_sfu_registry(ws)

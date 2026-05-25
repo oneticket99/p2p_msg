@@ -33,8 +33,22 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from aiortc import RTCPeerConnection, RTCSessionDescription
-from aiortc.contrib.media import MediaRelay
+# aiortc 는 native(av/pylibsrtp) 의존이라 graceful optional import — 미설치 시
+# SFU(9+ peer 그룹 통화)만 비활성화하고 코어 시그널링·인증·메시지는 정상 부팅한다.
+# requirements.txt 의 httpx·firebase·websockets·Pillow 등 다른 optional 의존성과
+# 동일한 폴백 정책 (모듈 로드 단계 hard import 로 전체 서버가 죽는 회귀 차단).
+try:
+    from aiortc import RTCPeerConnection, RTCSessionDescription
+    from aiortc.contrib.media import MediaRelay
+
+    AIORTC_AVAILABLE = True
+except ImportError:  # pragma: no cover - aiortc 부재 환경 폴백
+    # 한글 주석 — 부재 시 심볼을 None 으로 두고 가용 플래그만 내린다.
+    # __future__ annotations 덕에 타입 주석은 문자열로 지연 평가되어 영향 없음.
+    RTCPeerConnection = None  # type: ignore[assignment,misc]
+    RTCSessionDescription = None  # type: ignore[assignment,misc]
+    MediaRelay = None  # type: ignore[assignment,misc]
+    AIORTC_AVAILABLE = False
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
@@ -62,6 +76,13 @@ class SfuRoom:
     """
 
     def __init__(self, room_id: str) -> None:
+        # 한글 주석 — aiortc 부재 시 SFU room 생성 불가. Router 가 사전 차단하는 게
+        # 정상 경로지만, 직접 생성 오용을 막기 위한 방어 가드(명확한 메시지로 즉시 실패).
+        if not AIORTC_AVAILABLE:
+            raise RuntimeError(
+                "aiortc 미설치 — SFU 그룹 통화 비활성. "
+                "server/requirements.txt 에 aiortc 추가 후 재배포 필요."
+            )
         # 한글 주석 — room 식별자 + relay + producer/subscriber registry
         self._room_id = room_id
         self._relay = MediaRelay()
