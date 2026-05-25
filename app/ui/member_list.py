@@ -94,24 +94,31 @@ else:
             self._member = member
 
             layout = QHBoxLayout(self)
-            layout.setContentsMargins(6, 2, 6, 2)
-            layout.setSpacing(6)
+            layout.setContentsMargins(10, 6, 10, 6)
+            layout.setSpacing(10)
 
-            # 온라인/오프라인 dot — 색상은 QSS 변수 도입 전 inline
-            status = "●" if member.is_online else "○"
-            self._status_label = QLabel(status, self)
-            self._status_label.setFixedWidth(14)
+            # cycle 169.837 — 멤버 행 = 친구 검색/초대 행과 동일한 원형 아바타 디자인으로 통합
+            # (사용자 directive: 멤버 보기·친구 초대 검색 전부 같은 아바타-행). 기존 "●" 텍스트
+            # dot → make_initial_pixmap 원형 아바타(이니셜 + deterministic palette).
+            from app.ui._avatar_helper import make_initial_pixmap
+            self._avatar = QLabel(self)
+            self._avatar.setFixedSize(36, 36)
+            self._avatar.setPixmap(make_initial_pixmap(member.username, size=36))
+            self._avatar.setStyleSheet("background: transparent;")
 
             # username + role tag (owner 만 표시)
             display = member.username
             if member.role == "owner":
                 display = f"{member.username} (방장)"
             self._name_label = QLabel(display, self)
+            self._name_label.setStyleSheet(
+                "color: #f3f4f6; font-size: 14px; font-weight: 600; background: transparent;"
+            )
             self._name_label.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
 
-            layout.addWidget(self._status_label)
+            layout.addWidget(self._avatar)
             layout.addWidget(self._name_label, stretch=1)
 
             # 추방 버튼 — viewer 가 owner 이고 대상이 member 일 때만 표시

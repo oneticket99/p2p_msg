@@ -149,26 +149,28 @@ class TestMainWindowRoomsIntegration:
         # 보존된 텍스트 (clear 호출 부재) 검증
         assert main_window._input_bar._text_edit.toPlainText() == "이 메시지 는 차단 되어야 함"
 
-    def test_members_panel_signal_swaps_to_member_list(self, main_window) -> None:
-        """GroupChatView 의 members_panel_requested 의 emit → MemberPanel swap."""
+    def test_members_panel_opens_modal_member_list(self, main_window) -> None:
+        """멤버 보기 → 모달 dialog 안 MemberListWidget populate (cycle 169.837)."""
 
-        # cycle 169.819 — _member_list 는 MemberListWidget → MemberPanel(뒤로 헤더 래퍼) 교체
-        from app.ui.member_panel import MemberPanel
+        # cycle 169.837 — StackedWidget 패널 swap → 모달 dialog. 원형 아바타 행 MemberListWidget.
+        from app.ui.member_list import MemberListWidget
 
         # 그룹 채팅 진입 → GroupChatView 인스턴스 보유
         main_window._room_list.room_entered.emit(10)
         view = main_window._group_chat_view
         assert view is not None
 
-        # members_panel_requested 의 emit (헤더 버튼 클릭 등가)
-        view.members_panel_requested.emit()
+        # 멤버 보기 트리거 ("..." 드롭다운 "멤버 보기" 등가 — 동일 핸들러 직접 호출)
+        main_window._on_open_members_panel()
 
-        # StackedWidget idx = 2 (멤버 페이지)
-        assert main_window._stacked.currentIndex() == 2
-        # MemberPanel 의 인스턴스 노출 (member_count 는 내부 MemberListWidget 위임)
-        assert isinstance(main_window._member_list, MemberPanel)
-        # cycle 169.819 — 빈 stub([]) 폐기 → self_peer(방장) populate. known_peers 부재 시 self 1명
-        assert main_window._member_list.member_count() == 1
+        # cycle 169.837 — 모달 dialog 인스턴스 보유 (GC 방지 ref) + 비차단 modal
+        dlg = getattr(main_window, "_members_dialog", None)
+        assert dlg is not None and dlg.isModal()
+        # 모달 안 MemberListWidget 의 멤버 수 = 1 (self_peer 방장, known_peers 부재)
+        lst = dlg.findChild(MemberListWidget)
+        assert lst is not None
+        assert lst.member_count() == 1
+        dlg.close()
 
     def test_direct_chat_action_restores_1on1_view(self, main_window) -> None:
         """1:1 ChatView 의 backward compat — "직접 메시지" 액션 의 회귀."""
