@@ -75,7 +75,8 @@ class ConfirmDialog(QDialog):
         # 한글 주석 — header (title + close X)
         header_row = QHBoxLayout()
         title = QLabel(resolved_title)
-        title.setStyleSheet("color: #f3f4f6; font-size: 16px; font-weight: 600;")
+        # 한글 주석 — cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거 — wrap 배경에 blend)
+        title.setStyleSheet("color: #f3f4f6; font-size: 16px; font-weight: 600; background: transparent;")
         header_row.addWidget(title)
         header_row.addStretch(1)
         close_btn = make_close_button(self.reject, self)
@@ -84,7 +85,8 @@ class ConfirmDialog(QDialog):
 
         # 한글 주석 — message body
         msg_label = QLabel(resolved_msg)
-        msg_label.setStyleSheet("color: #e5e7eb; font-size: 14px;")
+        # 한글 주석 — cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거)
+        msg_label.setStyleSheet("color: #e5e7eb; font-size: 14px; background: transparent;")
         msg_label.setWordWrap(True)
         body.addWidget(msg_label, stretch=1)
 

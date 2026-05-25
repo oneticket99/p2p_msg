@@ -95,6 +95,9 @@ class Config:
     sound_enabled: bool
     sound_volume: float
     sound_signature_path: str
+    # cycle 169.817 — REST API base URL (auth/rooms/friends/bot/contacts 공통). 데모 = signaling 동일 8765 직결.
+    # 마지막 필드 + default "" — 직접 Config() 생성(test fixture) 무손상, from_env 는 실 base 주입.
+    api_base: str = ""
 
     @property
     def signaling_url(self) -> str:
@@ -246,6 +249,12 @@ def load_config(dotenv_path: str | None = None) -> Config:
         ),
         sound_signature_path=_env_str(
             "SOUND_SIGNATURE_PATH", _DEFAULT_SOUND_SIGNATURE_PATH
+        ),
+        # cycle 169.817 — REST API base. env override 우선, 없으면 signaling 동일 host:port(8765) http 직결.
+        api_base=(
+            os.environ.get("TOOTALK_API_BASE")
+            or f"http://{_env_str('SIGNAL_SERVER_HOST', _DEFAULT_SIGNAL_HOST)}"
+            f":{_env_int('SIGNAL_SERVER_WS_PORT', _DEFAULT_SIGNAL_PORT)}"
         ),
     )
 
