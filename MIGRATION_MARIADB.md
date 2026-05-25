@@ -200,7 +200,7 @@ CREATE TABLE messages (
 
 ---
 
-## 3.5 확장 테이블 — 18 테이블 (마이그레이션 0002~0016)
+## 3.5 확장 테이블 — 18 테이블 (마이그레이션 0002~0017)
 
 > 본 절은 §3 핵심 7 테이블 이후 Phase 2~5 에서 추가된 18 확장 테이블의 정합 목록이다.
 > **DDL + 필드 COMMENT 5요소(용도/제약/출처/참조/민감도) 정본 = `server/db/migrations/0002~0016*.sql`** 파일이며 (drift 회피 위해 본 절은 `CREATE TABLE` 시그니처 + 용도 + 정본 file 참조만 둔다).
@@ -253,6 +253,7 @@ CREATE TABLE streaming_oauth_tokens ( /* DDL 정본: server/db/migrations/0016_s
 ```
 
 > 참고: 0010_user_profile_fields.sql + 0011_user_nickname_field.sql 은 `users` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외.
+> 참고: 0017_group_roles_meta.sql 은 `peers`·`rooms` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외 — 텔레그램 그룹 관리 정합 (cycle 169.820). 변경 = `peers.role` ENUM owner/member → owner/**admin**/member 3-tier 확장 + `rooms` 에 `name`(그룹명 128자)·`description`(설명 255자)·`avatar_ref`(avatar 참조 키 255자) 3 컬럼 추가. 모델 단계 (write 경로 = 승격/강등 + 그룹 수정 REST foundation). DDL + COMMENT 5요소 정본 = `server/db/migrations/0017_group_roles_meta.sql`.
 
 ---
 

@@ -130,7 +130,7 @@ related_code: ["app/ui/group_info_dialog.py", "app/ui/_room_group_chat_mixin.py"
 | 그룹 description | 부재 | `rooms.description VARCHAR(255) NULL` 추가 | M5 (write, 마이그레이션) |
 | 그룹 avatar | 부재 | `rooms.avatar_ref VARCHAR(255) NULL` (참조 키만, 이미지 업로드 범위 외) 추가 | M5 (write, 마이그레이션) |
 
-> **마이그레이션 신설 명시 (MIGRATION_MARIADB 정합)**: 현 최신 마이그레이션 = `0016_streaming_oauth_tokens.sql`. 신규 = `0017_group_metadata_admin_role.sql` (ENUM 확장 + rooms 3 컬럼). 모든 컬럼 5요소 comment 의무 (메모리 `feedback_db_schema_field_comments.md`). ENUM 확장은 `ALTER TABLE peers MODIFY COLUMN role ENUM('owner','admin','member')` — 기존 값 보존. 본 마이그레이션은 M5 G6 GO 시점에만 신설.
+> **마이그레이션 신설 명시 (MIGRATION_MARIADB 정합)**: 현 최신 마이그레이션 = `0016_streaming_oauth_tokens.sql`. 신규 = `0017_group_roles_meta.sql` (ENUM 확장 + rooms 3 컬럼). 모든 컬럼 5요소 comment 의무 (메모리 `feedback_db_schema_field_comments.md`). ENUM 확장은 `ALTER TABLE peers MODIFY COLUMN role ENUM('owner','admin','member')` — 기존 값 보존. 본 마이그레이션은 M5 G6 GO 시점에만 신설.
 >
 > **online/last-seen 은 마이그레이션 불요**가 핵심이다. `users.last_activity_at` (0003) 가 이미 존재하므로 M2 는 SELECT join + 파생 계산만으로 가능하다. 신규 컬럼 추가는 admin/그룹메타 (M5) 만이다.
 
@@ -209,7 +209,7 @@ gantt
 | T7 | M4 | 참가자/관리자 list dialog (검색바 + role 필터) | `app/ui/group_member_list_dialog.py` (신규, MemberPanel 패턴) | T6 | offscreen Qt | 대기 |
 | T8 | M4 | 그룹 수정 dialog UI (avatar/그룹명/설명 form, 저장 placeholder) | `app/ui/group_edit_dialog.py` (신규) | T6 | offscreen Qt | 대기 |
 | T9 | M4 | 더 보기 컨텍스트 메뉴 (6 action) + "더 보기" signal 결선 | `app/ui/group_info_dialog.py` | T6 | offscreen Qt | 대기 |
-| T10 | M5 | migration `0017` (peers.role admin + rooms name/desc/avatar_ref) | `server/db/migrations/0017_group_metadata_admin_role.sql` (신규) | T9·G6 GO | DDL apply 검증 | 대기 |
+| T10 | M5 | migration `0017` (peers.role admin + rooms name/desc/avatar_ref) | `server/db/migrations/0017_group_roles_meta.sql` (신규) | T9·G6 GO | DDL apply 검증 | 대기 |
 | T11 | M5 | `PATCH /api/rooms/{id}` + `.../members/{uid}` 승격/강등 + RoomsClient method | `server/api/rooms_handlers.py` · `app/net/rooms_client.py` | T10 | handler e2e + client unit | 대기 |
 | T12 | M5 | media-summary count endpoint + 수정 form 실 저장 결선 + admin badge | `server/api/rooms_handlers.py` · `app/ui/group_edit_dialog.py` · `app/ui/member_list.py` | T11 | handler e2e + offscreen Qt | 대기 |
 
@@ -328,7 +328,7 @@ flowchart TD
 | `docs/assessments/productization.md` ↔ `docs/html/productization.html` | 그룹 채팅 / 멤버 관리 row 진척 반영 | 각 마일스톤 완료 시 snapshot 전체 rewrite (CLAUDE.md §10-7, md+html 동시) |
 | `docs/assessments/vibe-coding.md` ↔ `docs/html/vibe-coding.html` | 그룹 관리 UX 관련 row | 각 마일스톤 완료 시 snapshot 전체 rewrite (동시) |
 | `README.md` "변경 이력" (M2) + `History.md` (M3) | 각 commit 1줄 prepend | 각 단계 commit 직후 |
-| migration 정합 문서 (MIGRATION_MARIADB) | `0017_group_metadata_admin_role.sql` 등재 + ENUM 확장 + rooms 3 컬럼 | M5 (G6 GO 시) |
+| migration 정합 문서 (MIGRATION_MARIADB) | `0017_group_roles_meta.sql` 등재 + ENUM 확장 + rooms 3 컬럼 | M5 (G6 GO 시) |
 
 ---
 
@@ -359,7 +359,7 @@ flowchart TD
 - `app/ui/_last_seen_format.py` (M2 신설) — last_activity_at → online 상태 4 포맷 순수 함수.
 - `app/ui/group_member_list_dialog.py` (M4 신설) — 참가자/관리자 목록 dialog (검색바 + role 필터, MemberPanel 패턴).
 - `app/ui/group_edit_dialog.py` (M4 신설) — 그룹 수정 dialog (avatar/그룹명/설명 form).
-- `server/db/migrations/0017_group_metadata_admin_role.sql` (M5 신설) — peers.role admin 확장 + rooms name/description/avatar_ref.
+- `server/db/migrations/0017_group_roles_meta.sql` (M5 신설) — peers.role admin 확장 + rooms name/description/avatar_ref.
 
 ### 13.4 외부 조사 (오프라인 결정 보강)
 
