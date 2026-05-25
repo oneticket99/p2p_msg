@@ -522,8 +522,9 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 | MainWindow mixin 직접 dialog | `self._exec_dialog_centered(dialog)` (backdrop dim + 중앙 child overlay + manual modal loop) |
 | 비차단 dialog (async 후속 작업) | `self._embed_dialog_centered(dialog)` (loop 생략, 예: GroupCallDialog SFU publish) |
 | dialog 내부 nested sub-dialog (self ≠ MainWindow) | `app.ui._modal_helper.exec_modal(dialog, self)` (parent 체인 walk → MainWindow `_exec_dialog_centered` 위임, 미발견 시 `.exec()` 폴백) |
+| 알림/확인 popup (`ConfirmDialog.show_info`/`show_warning`/`show_critical`/`ask`) | 정적 헬퍼 내부서 `exec_modal(dlg, parent)` 호출 — 호출 사이트 변경 없이 in-app overlay 모달. startup/부모 부재 시 `.exec()` 폴백 |
 
-- 적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내.
+- 적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내·알림/확인 popup(ConfirmDialog).
 - 테스트(offscreen/pytest) 환경에서는 `_exec_dialog_centered` 가 `loop.exec()` 무한 블록을 피하려고 non-blocking `show` 만 하고 `0` 을 반환한다.
 
 ### 16.2 별도 OS 윈도우 예외 (in-app 모달 아님)

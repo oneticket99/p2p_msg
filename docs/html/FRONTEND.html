@@ -1002,11 +1002,12 @@ flowchart TB
 <tr><td>MainWindow mixin 직접 dialog</td><td><code>self._exec_dialog_centered(dialog)</code> (backdrop dim + 중앙 child overlay + manual modal loop)</td></tr>
 <tr><td>비차단 dialog (async 후속 작업)</td><td><code>self._embed_dialog_centered(dialog)</code> (loop 생략, 예: GroupCallDialog SFU publish)</td></tr>
 <tr><td>dialog 내부 nested sub-dialog (self ≠ MainWindow)</td><td><code>app.ui._modal_helper.exec_modal(dialog, self)</code> (parent 체인 walk → MainWindow <code>_exec_dialog_centered</code> 위임, 미발견 시 <code>.exec()</code> 폴백)</td></tr>
+<tr><td>알림/확인 popup (<code>ConfirmDialog.show_info</code>/<code>show_warning</code>/<code>show_critical</code>/<code>ask</code>)</td><td>정적 헬퍼 내부서 <code>exec_modal(dlg, parent)</code> 호출 — 호출 사이트 변경 없이 in-app overlay 모달. startup/부모 부재 시 <code>.exec()</code> 폴백</td></tr>
 </tbody>
 </table>
 
 <ul>
-<li>적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내.</li>
+<li>적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내·알림/확인 popup(ConfirmDialog).</li>
 <li>테스트(offscreen/pytest) 환경에서는 <code>_exec_dialog_centered</code> 가 <code>loop.exec()</code> 무한 블록을 피하려고 non-blocking <code>show</code> 만 하고 <code>0</code> 을 반환한다.</li>
 </ul>
 

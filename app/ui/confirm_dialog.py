@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""ConfirmDialog — frameless 모달 popup (cycle 169.365).
+"""ConfirmDialog — in-app overlay 모달 (cycle 169.365 / 169.838).
 
 사용자 directive — 모든 dialog 모달 + main center + i18n. QMessageBox.question 등 native
 popup 폐기 chain entry. labels.tr() 우선 lookup.
+cycle 169.838 — 정적 헬퍼(show_info/warning/critical/ask)가 별도 OS 윈도우 .exec() 대신
+exec_modal(parent 체인 walk → MainWindow _exec_dialog_centered 위임)로 메인 레이아웃 안
+in-app overlay 모달로 뜬다(부모 부재 시 .exec() 폴백).
 """
 
 from __future__ import annotations
@@ -121,21 +124,31 @@ class ConfirmDialog(QDialog):
 
     @staticmethod
     def show_info(parent, title: str, message: str) -> None:
-        """QMessageBox.information swap — frameless modal."""
-        ConfirmDialog(title, message, parent=parent, mode="info", raw_text=True).exec()
+        """QMessageBox.information swap — in-app overlay 모달 (cycle 169.838)."""
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → exec_modal(parent 체인 walk → MainWindow
+        # _exec_dialog_centered 위임, 부모 부재 시 .exec() 폴백). 호출 사이트 변경 0.
+        from app.ui._modal_helper import exec_modal
+        dlg = ConfirmDialog(title, message, parent=parent, mode="info", raw_text=True)
+        exec_modal(dlg, parent)
 
     @staticmethod
     def show_warning(parent, title: str, message: str) -> None:
-        """QMessageBox.warning swap — frameless modal."""
-        ConfirmDialog(title, message, parent=parent, mode="warning", raw_text=True).exec()
+        """QMessageBox.warning swap — in-app overlay 모달 (cycle 169.838)."""
+        from app.ui._modal_helper import exec_modal
+        dlg = ConfirmDialog(title, message, parent=parent, mode="warning", raw_text=True)
+        exec_modal(dlg, parent)
 
     @staticmethod
     def show_critical(parent, title: str, message: str) -> None:
-        """QMessageBox.critical swap — frameless modal."""
-        ConfirmDialog(title, message, parent=parent, mode="critical", raw_text=True).exec()
+        """QMessageBox.critical swap — in-app overlay 모달 (cycle 169.838)."""
+        from app.ui._modal_helper import exec_modal
+        dlg = ConfirmDialog(title, message, parent=parent, mode="critical", raw_text=True)
+        exec_modal(dlg, parent)
 
     @staticmethod
     def ask(parent, title: str, message: str) -> bool:
-        """QMessageBox.question swap — Yes 클릭 → True."""
+        """QMessageBox.question swap — Yes 클릭 → True (in-app overlay 모달, cycle 169.838)."""
+        # 한글 주석 — exec_modal 반환 1(accept)/0(reject) 은 DialogCode.Accepted(=1) 비교와 정합.
+        from app.ui._modal_helper import exec_modal
         d = ConfirmDialog(title, message, parent=parent, mode="question", raw_text=True)
-        return d.exec() == QDialog.DialogCode.Accepted
+        return exec_modal(d, parent) == QDialog.DialogCode.Accepted
