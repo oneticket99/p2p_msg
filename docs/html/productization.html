@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.771)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.771 미러.
-     cycle 169.771 = §3.1 "음성·영상 통화" row label 정정 (table 이 기본 구현분까지 미래로 오해 소지). 기본 1:1 + mesh ≤ 8 음성·영상 통화 = aiortc RTCPeerConnection + CallDialog + voice/video browser E2E PASS ✅ 구현 완료, SFU 확장(9 peer+)만 🟡 Phase 6+. cov 89.73% / 2463 PASS / 38 skip retain.
-     last_verified = 2026-05-25T13:50:00+09:00. -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.778)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.778 미러.
+     cycle 169.778 batch refresh (169.774~777): (a) DI refactor 무효 확정 + superseded skip 14건 은퇴(38→24), Codex P0 SignalingClient 실 backoff 재연결+reJOIN(test 9 PASS, FR-10 [x]) → 가용성 실 진척, (c) RemoteSessionRunner orchestration core 신설(host/controller loop + 직렬화 + backend DI, headless 13 PASS) → Phase 5 차별화 실 binding 1차 진입. 약 2485 PASS, tests/app/ui skip 24.
+     last_verified = 2026-05-25T14:55:00+09:00. -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;

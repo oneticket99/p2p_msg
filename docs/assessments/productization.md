@@ -1,11 +1,11 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T13:50:00+09:00
+last_verified: 2026-05-25T14:55:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-25 13:50 KST — cycle 169.771 §3.1 "음성·영상 통화" row label 정정 (사용자 critique — table 이 기본 구현분까지 미래로 오해 소지). 기본 1:1 + mesh ≤ 8 음성·영상 통화 = aiortc RTCPeerConnection + CallDialog + voice/video browser E2E PASS 로 ✅ 구현 완료, SFU 확장(9 peer 이상)만 🟡 Phase 6+. cov 89.73% / 2463 PASS / 38 skip retain.<br>**이전 갱신**: 2026-05-25 13:25 KST — cycle 169.769 staleness refresh (commit `c791460` = cycle 169.768 반영). 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 상태 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (`env.DOC_GARDENER_UPDATED`/`env.MIGRATION_DRIFT` GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 tests = 2463 PASS + 38 skip + coverage **89.73%** retain.<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
+> **최신 갱신 시점**: 2026-05-25 14:55 KST — cycle 169.778 batch refresh (cycle 169.774~777 진척 반영). **(a) DI refactor 무효 확정 + superseded skip 14건 은퇴**(38→24, hang root=async fixture). **Codex P0 회수 — SignalingClient 실 backoff 재연결 + reJOIN + RECONNECTING 상태**(통합 test 9 PASS, FR-10 `[x]`) → 가용성(NFR-04) 실 구현 진척. **(c) 원격 데스크탑 실 binding M1~M2 진척 — RemoteSessionRunner orchestration core 신설**(host/controller loop + frame/input 직렬화 + backend DI, headless test 13 PASS) → Phase 5 차별화 실 binding 1차 진입(잔존 M3 permission on-channel + UI 결선 + M4 실 OS 수동 ack). 전체 tests ≈ 2463 + 신규 22(reconnect 9 + session_runner 13) = 약 2485 PASS, tests/app/ui skip 24.<br>**이전 갱신**: 2026-05-25 13:50 KST — cycle 169.771 §3.1 음성·영상 통화 row label 정정 (기본 ✅ / SFU 🟡 분리).<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
