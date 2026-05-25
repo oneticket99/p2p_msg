@@ -120,9 +120,10 @@ from app.ui._menu_actions_mixin import MenuActionsMixin
 from app.ui._invite_mixin import InviteMixin
 from app.ui._lifecycle_events_mixin import LifecycleEventsMixin
 from app.ui._friend_status_mixin import FriendStatusMixin
+from app.ui._sfu_call_mixin import SfuCallMixin
 
 
-class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, DialogCenterMixin, MenuActionsMixin, InviteMixin, LifecycleEventsMixin, FriendStatusMixin, QMainWindow):
+class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHelperMixin, MenuBarMixin, SignalingMixin, RoomGroupChatMixin, RestPostMixin, FolderMixin, ChatHeaderMixin, UpdateLifecycleMixin, AuthChainMixin, ChatNavigationMixin, FriendProfileMixin, ChatSendMixin, DialogCenterMixin, MenuActionsMixin, InviteMixin, LifecycleEventsMixin, FriendStatusMixin, SfuCallMixin, QMainWindow):
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
@@ -188,6 +189,8 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         # cycle 169.530 — __init__ 9 helper split (302 line CRITICAL blocker 회수)
         self._init_state(config, auth_client, rooms_client, messages_client,
                          group_message_client, friends_client, reactions_client)
+        # cycle 169.809 — SFU 그룹 통화 상태 초기화 (SfuCallMixin 합성)
+        self._init_sfu_call()
         self._init_window_properties()
         splitter = self._init_splitter()
         self._init_sidebar_rail(splitter)

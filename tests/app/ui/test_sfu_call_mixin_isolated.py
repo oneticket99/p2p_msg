@@ -78,9 +78,18 @@ class _FakeDialog:
         pass
 
 
+class _FakeState:
+    """AppState 대역 — room_id/peer_id 노출."""
+
+    def __init__(self, room_id=None, peer_id=None) -> None:  # noqa: ANN001
+        self.room_id = room_id
+        self.peer_id = peer_id
+
+
 class _Host(SfuCallMixin):
-    def __init__(self, signaling) -> None:  # noqa: ANN001
-        self._signaling = signaling
+    def __init__(self, signaling, state=None) -> None:  # noqa: ANN001
+        self._signaling_client = signaling
+        self._state = state
         self._init_sfu_call()
 
 
@@ -147,3 +156,22 @@ class TestSfuCallMixin:
         host = _Host(sig)
         host._on_sfu_answer("publish", "v=0", "alice")  # 예외 없이 통과
         host._on_sfu_producers("r1", ["alice"])
+
+    @pytest.mark.asyncio
+    async def test_on_start_group_call_uses_appstate(self) -> None:
+        # 한글 주석 — 방 입장 상태(room/peer 존재)면 start_group_call 호출
+        sig = _FakeSignaling()
+        host = _Host(sig, state=_FakeState(room_id="r1", peer_id="alice"))
+        host._on_start_group_call()
+        await asyncio.sleep(0)
+        assert host._sfu_call_client is not None
+        assert host._group_call_dialog.room_id == "r1"
+        host.end_group_call()
+
+    def test_on_start_group_call_noop_without_room(self) -> None:
+        # 한글 주석 — 방 미입장(room/peer 부재)이면 no-op
+        sig = _FakeSignaling()
+        host = _Host(sig, state=_FakeState(room_id=None, peer_id=None))
+        host._on_start_group_call()
+        assert host._sfu_call_client is None
+        assert host._group_call_dialog is None

@@ -6,7 +6,7 @@ server-side SFU + SfuCallClient(net) + GroupCallDialog(UI) 를 MainWindow 에서
 sfu_producers_received)를 SfuCallClient 의 async 핸들러로 라우팅하고,
 SfuCallClient 가 받은 forward track 을 GroupCallDialog 타일로 표시한다.
 
-본 mixin 은 ``self._signaling`` (SignalingClient) 가 주입돼 있다고 가정한다.
+본 mixin 은 ``self._signaling_client`` (SignalingClient) 가 주입돼 있다고 가정한다.
 Qt 신호 → async 핸들러 연결은 ``asyncio.ensure_future`` 로 스케줄한다 (qasync
 event loop 정합).
 """
@@ -24,7 +24,7 @@ class SfuCallMixin:
     """MainWindow 에 합성되는 SFU 그룹 통화 제어 mixin."""
 
     # 합성 대상이 보유한다고 가정하는 속성 (타입 힌트용)
-    _signaling: Any
+    _signaling_client: Any
 
     def _init_sfu_call(self) -> None:
         """SFU 통화 상태 초기화 — MainWindow __init__ 에서 1회 호출."""
@@ -53,7 +53,7 @@ class SfuCallMixin:
 
         async def _send(payload: dict[str, Any]) -> None:
             # 한글 주석 — SfuCallClient 가 만든 완성 payload 를 signaling 으로 송신
-            await self._signaling._send(payload)
+            await self._signaling_client._send(payload)
 
         def _on_track(producer_id: str, track: Any) -> None:
             # 한글 주석 — forward track 도달 시 GroupCallDialog 타일 추가
@@ -69,19 +69,19 @@ class SfuCallMixin:
 
     def _connect_sfu_signals(self) -> None:
         """SignalingClient SFU 수신 신호 → mixin 슬롯 연결 (중복 연결 차단)."""
-        if self._sfu_signals_connected or self._signaling is None:
+        if self._sfu_signals_connected or self._signaling_client is None:
             return
-        self._signaling.sfu_answer_received.connect(self._on_sfu_answer)
-        self._signaling.sfu_producers_received.connect(self._on_sfu_producers)
+        self._signaling_client.sfu_answer_received.connect(self._on_sfu_answer)
+        self._signaling_client.sfu_producers_received.connect(self._on_sfu_producers)
         self._sfu_signals_connected = True
 
     def _disconnect_sfu_signals(self) -> None:
         """SFU 신호 연결 해제 (통화 종료 시)."""
-        if not self._sfu_signals_connected or self._signaling is None:
+        if not self._sfu_signals_connected or self._signaling_client is None:
             return
         try:
-            self._signaling.sfu_answer_received.disconnect(self._on_sfu_answer)
-            self._signaling.sfu_producers_received.disconnect(self._on_sfu_producers)
+            self._signaling_client.sfu_answer_received.disconnect(self._on_sfu_answer)
+            self._signaling_client.sfu_producers_received.disconnect(self._on_sfu_producers)
         except (TypeError, RuntimeError) as exc:
             log.warning("[SfuCallMixin] SFU 신호 해제 실패 — %r", exc)
         self._sfu_signals_connected = False
@@ -110,3 +110,17 @@ class SfuCallMixin:
             self._group_call_dialog.close_all()
             self._group_call_dialog.close()
             self._group_call_dialog = None
+
+    def _on_start_group_call(self) -> None:
+        """메뉴 entry — 현재 합류한 방의 room/peer 로 그룹 통화 시작.
+
+        AppState(self._state) 의 room_id/peer_id 가 모두 있어야 시작한다 (방
+        미입장 시 no-op + 로그). 영상 기본 on 으로 publish 한다.
+        """
+        state = getattr(self, "_state", None)
+        room_id = getattr(state, "room_id", None) if state is not None else None
+        peer_id = getattr(state, "peer_id", None) if state is not None else None
+        if not room_id or not peer_id:
+            log.warning("[SfuCallMixin] 그룹 통화 시작 불가 — 방 미입장 (room/peer 부재)")
+            return
+        self.start_group_call(room_id, peer_id, video=True)
