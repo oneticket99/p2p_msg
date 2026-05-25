@@ -127,6 +127,11 @@ class RoomGroupChatMixin:
 
         self._group_chat_view = new_view
         self._current_room_id = room_id
+        # cycle 169.836 — room = group kind 명시. 미설정 시 직전 chat 의 kind(friend/bot)가
+        # 잔존해 헤더 "..." 메뉴가 단순(채팅정보/알림/나가기) 분기로 잘못 표시됐다(사용자 발견).
+        # group kind 설정 → "..." 가 group 분기(그룹 정보 보기 + 멤버 보기 + 그룹 관리 등) 노출.
+        self._active_chat_kind = "group"
+        self._active_chat_target_id = room_id
         # cycle 169.59 — room entry 시 active_peer_id = room_id str 형식 set
         self._active_peer_id = f"room:{room_id}"
 
