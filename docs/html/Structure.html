@@ -509,7 +509,7 @@ sequenceDiagram
 
 <h2>11. ERD — MariaDB 로컬 스키마 (mermaid)</h2>
 
-<p>클라 영역 MariaDB (환경변수 <code>DB_HOST</code>/<code>DB_PORT</code>/<code>DB_USER</code>/<code>DB_PASS</code>/<code>DB_NAME</code> — <a href="../../app/README.md">app/README.md §2</a>, 사용자 directive 2026-05-17) 의 4 테이블. 본 시점 스키마 정의 코드 (<code>app/db/</code>) 미생성·본 ERD 가 단일 진실 공급원. 신규 컬럼·테이블은 본 도식을 먼저 갱신. 마이그레이션 정본은 <code>MIGRATION_MARIADB.md</code> (작성 예정 — 운영 8/8).</p>
+<p>MariaDB (환경변수 <code>DB_HOST</code>/<code>DB_PORT</code>/<code>DB_USER</code>/<code>DB_PASS</code>/<code>DB_NAME</code> — <a href="../../app/README.md">app/README.md §2</a>, 사용자 directive 2026-05-17) 스키마는 <strong>25 테이블</strong> (마이그레이션 <code>0001</code>~<code>0016</code>). 본 §11 mermaid 는 그 중 P2P <strong>chat-core 4 테이블</strong> (<code>rooms</code>·<code>peers</code>·<code>file_meta</code>·<code>messages</code>) 의 필드 상세를 보여주고, 나머지 21 테이블 (auth 3 + 확장 18) 은 §11.3 도메인 인벤토리에 등재한다. DDL + 필드 COMMENT 의 단일 진실 공급원은 <code>server/db/migrations/*.sql</code> + <a href="../../MIGRATION_MARIADB.md">MIGRATION_MARIADB.md</a> (정합 검사 = <code>tools/check_migration_tables.py --strict</code>, doc 25 = SQL 25). 신규 컬럼·테이블은 본 §11 + MIGRATION_MARIADB.md 를 동시 갱신.</p>
 
 <pre class="mermaid">
 erDiagram
@@ -570,7 +570,46 @@ erDiagram
 
 <h3>11.2 마이그레이션 정합</h3>
 
-<p>4 테이블은 <code>MIGRATION_MARIADB.md</code> (예정) 의 <code>tables</code> 배열 FK 순서 (<code>rooms</code> → <code>peers</code> → <code>file_meta</code> → <code>messages</code>) 와 일치한다. DB 모델 추가 시 본 §11 ERD 와 <code>MIGRATION_MARIADB.md</code> 동시 갱신 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §N</a>).</p>
+<p>위 chat-core 4 테이블은 <a href="../../MIGRATION_MARIADB.md">MIGRATION_MARIADB.md</a> <code>tables</code> 배열 FK 순서 (<code>rooms</code> → <code>peers</code> → <code>file_meta</code> → <code>messages</code>) 와 일치한다. DB 모델 추가 시 본 §11 + <code>MIGRATION_MARIADB.md</code> 동시 갱신 (<a href="../../CLAUDE_HARNESS_IMPORTANT.md">정본 §N</a>). 정합 검사 = <code>tools/check_migration_tables.py --strict</code> (doc 25 = SQL 25 전수, <code>doc-gardener.yml</code> Phase 3 CI gate).</p>
+
+<h3>11.3 전체 25 테이블 도메인 인벤토리</h3>
+
+<p>본 §11 mermaid 가 다루지 않는 21 테이블 포함 전체 스키마. DDL + 필드 COMMENT 정본 = <code>server/db/migrations/NNNN_*.sql</code> (drift 회피 위해 본 표는 도메인·용도·정본 file 만 등재).</p>
+
+<table>
+<thead>
+<tr><th>도메인</th><th>테이블</th><th>용도</th><th>마이그레이션 정본</th></tr>
+</thead>
+<tbody>
+<tr><td>auth (3)</td><td><code>users</code></td><td>계정 루트 (이메일 + bcrypt + OTP 검증 상태)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>auth</td><td><code>email_verification</code></td><td>회원가입 이메일 OTP (3분 유효)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>auth</td><td><code>password_reset</code></td><td>비밀번호 재설정 토큰 (UUID4 + 30분)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>chat-core (4)</td><td><code>rooms</code></td><td>시그널링 방 (room_uuid UNIQUE)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>chat-core</td><td><code>peers</code></td><td>방 참여자 (peer_uuid + last_seen GC)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>chat-core</td><td><code>file_meta</code></td><td>파일 전송 메타 (sha256 + status 전이)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>chat-core</td><td><code>messages</code></td><td>메시지 (msg_uuid UNIQUE + type + acked_at)</td><td><code>0001_init.sql</code></td></tr>
+<tr><td>device (4)</td><td><code>devices</code></td><td>사용자 디바이스 등록</td><td><code>0002_devices.sql</code></td></tr>
+<tr><td>device</td><td><code>user_sessions</code></td><td>로그인 세션 (토큰 + 만료)</td><td><code>0003_user_activity.sql</code></td></tr>
+<tr><td>device</td><td><code>user_activity_log</code></td><td>활동 감사 로그</td><td><code>0003_user_activity.sql</code></td></tr>
+<tr><td>device</td><td><code>device_tokens</code></td><td>푸시 토큰 (FCM/APNs)</td><td><code>0013_device_tokens.sql</code></td></tr>
+<tr><td>emoji (2)</td><td><code>emoji_packs</code></td><td>이모지 팩 (등록 + 공유 메타)</td><td><code>0004_emoji_packs.sql</code></td></tr>
+<tr><td>emoji</td><td><code>emoji_pack_items</code></td><td>팩 안 개별 이모지 항목</td><td><code>0004_emoji_packs.sql</code></td></tr>
+<tr><td>bot (3)</td><td><code>bots</code></td><td>bot 등록 (BotFather 등가)</td><td><code>0012_bots.sql</code></td></tr>
+<tr><td>bot</td><td><code>bot_tokens</code></td><td>bot API 토큰</td><td><code>0012_bots.sql</code></td></tr>
+<tr><td>bot</td><td><code>bot_escalations</code></td><td>bot → 상담원 에스컬레이션</td><td><code>0005_bot_escalations.sql</code></td></tr>
+<tr><td>social (6)</td><td><code>friends</code></td><td>친구 관계 (요청/수락/차단)</td><td><code>0007_friends.sql</code></td></tr>
+<tr><td>social</td><td><code>message_reactions</code></td><td>메시지 리액션 (이모지)</td><td><code>0008_message_reactions.sql</code></td></tr>
+<tr><td>social</td><td><code>folders</code></td><td>채팅 폴더 (분류)</td><td><code>0009_folders.sql</code></td></tr>
+<tr><td>social</td><td><code>folder_chats</code></td><td>폴더 ↔ 채팅 매핑</td><td><code>0009_folders.sql</code></td></tr>
+<tr><td>social</td><td><code>folder_invites</code></td><td>폴더 공유 초대</td><td><code>0009_folders.sql</code></td></tr>
+<tr><td>social</td><td><code>user_contacts</code></td><td>연락처 동기화</td><td><code>0015_user_contacts.sql</code></td></tr>
+<tr><td>misc (3)</td><td><code>app_versions</code></td><td>앱 버전 배포 메타 (자동 업데이트)</td><td><code>0006_app_versions.sql</code></td></tr>
+<tr><td>misc</td><td><code>read_states</code></td><td>읽음 상태 (last_read_msg)</td><td><code>0014_read_states.sql</code></td></tr>
+<tr><td>misc</td><td><code>streaming_oauth_tokens</code></td><td>스트리밍 플랫폼 OAuth 토큰</td><td><code>0016_streaming_oauth_tokens.sql</code></td></tr>
+</tbody>
+</table>
+
+<p>마이그레이션 <code>0010</code>·<code>0011</code> 은 <code>users</code> ALTER (신규 테이블 부재) 이므로 본 표에서 제외. 25 = core 7 + 확장 18.</p>
 
 <hr>
 
@@ -646,7 +685,7 @@ erDiagram
 
 <hr>
 
-<p>마지막 갱신: 2026-05-17 (Structure.md 신설 — 루트 18 동결 슬롯 12/18 채택·5 mermaid 도식·4 ERD 테이블)</p>
+<p>마지막 갱신: 2026-05-25 (cycle 169.794 — §11 ERD drift 회수: 4 테이블 → 전체 25 테이블 도메인 인벤토리 §11.3 신설, chat-core 4 mermaid retain, MIGRATION_MARIADB --strict 정합)</p>
 
 </body>
 </html>
