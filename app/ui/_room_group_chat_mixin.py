@@ -241,7 +241,8 @@ class RoomGroupChatMixin:
             return
         log.debug("[main_window] open_members_panel room=%s", self._current_room_id)
 
-        from app.ui.member_list import MemberItem
+        from app.ui.member_list import MemberItem, MemberListWidget
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel
 
         self_peer = self._state.peer_id or self._config.user_nickname or "나"
         members = [MemberItem(user_id=0, username=self_peer, role="owner", is_online=True)]
@@ -251,5 +252,22 @@ class RoomGroupChatMixin:
                 MemberItem(user_id=idx, username=peer_id, role="member", is_online=True)
             )
 
-        self._member_list.set_members(members, viewer_role="member")
-        self._stacked.setCurrentIndex(self._STACK_MEMBERS)
+        # cycle 169.837 — StackedWidget 패널 swap → 모달 dialog (텔레그램 그룹 메뉴 = 전부 모달).
+        # MemberListWidget 의 원형 아바타 행(cycle 169.837 통합)으로 표시.
+        dlg = QDialog(self)
+        dlg.setWindowTitle("멤버")
+        dlg.setMinimumSize(340, 420)
+        dlg.setStyleSheet("QDialog { background-color: #131C30; }")
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(12, 12, 12, 12)
+        title = QLabel(f"멤버 {len(members)}명", dlg)
+        title.setStyleSheet("color: #f3f4f6; font-size: 15px; font-weight: 700; background: transparent;")
+        lst = MemberListWidget(parent=dlg)
+        lst.set_members(members, viewer_role="member")
+        lay.addWidget(title)
+        lay.addWidget(lst, stretch=1)
+        # cycle 169.837 — exec()(blocking) 대신 modal+show()(non-blocking) — test event loop
+        # 블록/hang 회피 + 인스턴스 참조 보유로 GC 방지(local 변수면 즉시 소멸).
+        dlg.setModal(True)
+        self._members_dialog = dlg
+        dlg.show()

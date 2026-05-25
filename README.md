@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-26 00:40:00] cycle 169.837 — 그룹 멤버 UX 완성: 멤버 보기 → 모달 + 원형 아바타 행(친구행과 동일 디자인) + 그룹 "..." 메뉴 미구현 stub 전수 제거(알림끄기·그룹정보·그룹관리·설문·채팅정보 → working 항목만). 사용자 directive(미구현 노출 금지). UI 341 passed(hang 해소). (app/ui · tests)
 - [2026-05-26 00:10:00] cycle 169.836 — 그룹 "멤버 보기" 헤더 "..." 드롭다운 entry 이동(텔레그램 플로우) + room 진입 시 `_active_chat_kind="group"` 미설정으로 "..." 가 단순 메뉴 표시되던 버그 회수(별도 버튼 제거). + 메시지 수신음 실 파일 교체 정정 — cycle834 가 미사용 시스템 파일(tootalk_ppyong.wav)을 교체해 구버전 소리 잔존 → 실 재생 파일 `app/assets/sounds/signature.wav` 를 ding 으로 교체. UI 341 + sound 45 passed. (app/ui · app/assets)
 - [2026-05-25 23:00:00] cycle 169.835 — startup 로그인 경로 계정 메뉴 auth 토글 회수. main window 진입 후에도 회원가입/로그인 메뉴 잔존(재로그인해야 토글) — cycle831 이 `_on_open_login` 만 커버, startup(`main.py`) 경로 누락 → token 주입 직후 `apply_auth_menu_visibility` 재호출. reviewer PASS + menu isolated 4 passed. (app)
 - [2026-05-25 22:40:00] cycle 169.834 — dogfooding 버그 6종 + user-facing 문구 i18n 5언어 친절화. (1)채팅 스크롤 중복 dedup+cursor (2)로그인후 메뉴 auth 토글 (3)친구 요청/승인 모델(instant→pending, accept 시 DM room) (4)헤더 멤버수 stub (5)트레이 문구 (6)`labels.py` 5언어 tr 키+11 UI 친절화. i18n16+UI341+friends32 passed, doc-lint 0위반. (app/ui · app/i18n · server/api · tests · docs)
@@ -337,7 +338,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - [2026-05-25 17:40:00] cycle 169.791 — cycle 169.790 변경이력 entry 의 인용 literal 재-위반 회수 (changelog 본문이 위반 문자열을 그대로 인용해 BPE 재발 → 인용 제거 rephrase). doc-lint EXIT=0 gate 확인 후 commit (이번엔 push 전 검증). 교훈 = 위반 문자열 인용 금지 (README · History)
 - [2026-05-25 17:35:00] cycle 169.790 — BPE 측단독 회수 (cycle 169.789 MANUAL_TESTS §2.9 의 capture/dispatch 측단독(U+CE21) 표기 2건 → "쪽", doc-lint EXIT=1 push 후 즉시 정정). doc-lint PASS 재확인 (docs/exec-plans/active)
 - [2026-05-25 17:30:00] cycle 169.789 — Codex P1 원격 데스크탑 M4 수동 검증 절차 문서화 (사용자 directive "잔존작업 다 진행", Codex P1 #5). `docs/exec-plans/active/MANUAL_TESTS.md` §2.9 신설 — 원격 M4 의 실 OS + 물리 2 장비 사용자 직접 ack 항목(macOS Screen Recording/Accessibility 권한 + friend P2P 세션 + `_remote_data_channel` 실 결선 + HOST grant 주입 + controller 화면 표시/클릭 실 적용 visual ack + revoke). 자동 검증 완료분(G2 headless loopback) 과 분리. M4 = G3 사용자 게이트 — 실 OS/물리 장비 의존이라 Claude 자동 불가, 본 문서가 수동 절차 정본 (docs/exec-plans/active)
-- [2026-05-25 17:15:00] cycle 169.788 — Codex P1 NFR-04 실 server chaos test (사용자 directive "잔존작업 다 진행"). `tests/integration/test_signaling_chaos_reconnect.py` 신설 1 PASS — 실 aiohttp WebSocket server(동적 port) 1회차 연결 강제 close(1011) → SignalingClient 비정상 drop 감지 → RECONNECTING 상태 → backoff 재연결 → 2회차 연결 + 마지막 JOIN 식별자 reJOIN(server 가 room-chaos/peer-X 재수신) 검증. 기존 test_signaling_reconnect(FSM mock 격리)와 달리 실 WS 왕복 chaos. StatusBar ERROR 미오표시(RECONNECTING 정상 경로) 정합. test-only(signaling_client = cycle 169.775 reviewer PASS분 무변경) (tests/integration)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시

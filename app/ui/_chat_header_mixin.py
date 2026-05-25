@@ -221,28 +221,22 @@ class ChatHeaderMixin:
             "QMenu::item:selected { background-color: #1F2937; }"
             "QMenu::separator { height: 1px; background: #1f2937; margin: 4px 0; }"
         )
-        # cycle 169.334 — group/channel kind = telegram align 6 entry
+        # cycle 169.837 — "..." 메뉴 = 실 구현 완료 항목만 노출 (사용자 directive: 미구현
+        # 메뉴 노출 금지). 그룹 정보 보기·그룹 관리·설문 만들기·알림 끄기는 실 데이터/기능
+        # 미완(Exec Plan cycle820 M3~M5)이라 메뉴서 제거 — 완성 시 재노출.
         if kind in ("group", "channel"):
-            act_mute = menu.addAction("알림 끄기")
-            menu.addSeparator()
-            act_info = menu.addAction("그룹 정보 보기" if kind == "group" else "채널 정보 보기")
-            # cycle 169.836 — 멤버 보기 = 별도 헤더 버튼 → "..." 드롭다운 entry 이동 (텔레그램
-            # 그룹 멤버보기 플로우 directive). members_panel_requested 동등 핸들러 직접 호출.
+            # 멤버 보기 = 원형 아바타 모달(cycle 169.836~837 통합), 대화 비우기/나가기 = 실 동작
             act_members = menu.addAction("멤버 보기")
-            act_manage = menu.addAction("그룹 관리" if kind == "group" else "채널 관리")
-            act_poll = menu.addAction("설문 만들기")
             act_clear = menu.addAction("대화 내용 비우기")
             menu.addSeparator()
             act_leave = menu.addAction("삭제하고 나가기")
-            act_info.triggered.connect(self._on_group_info)  # type: ignore[arg-type]
             act_members.triggered.connect(self._on_open_members_panel)  # type: ignore[arg-type]
-            act_manage.triggered.connect(lambda: log.info("[group_manage] placeholder"))  # type: ignore[arg-type]
-            act_poll.triggered.connect(lambda: log.info("[group_poll] placeholder"))  # type: ignore[arg-type]
             act_clear.triggered.connect(self._on_chat_clear)  # type: ignore[arg-type]
             act_leave.triggered.connect(self._on_chat_leave)  # type: ignore[arg-type]
         else:
-            menu.addAction("채팅 정보")
-            menu.addAction("알림 끄기")
+            act_clear_f = menu.addAction("대화 내용 비우기")
             menu.addSeparator()
-            menu.addAction("채팅 나가기")
+            act_leave_f = menu.addAction("채팅 나가기")
+            act_clear_f.triggered.connect(self._on_chat_clear)  # type: ignore[arg-type]
+            act_leave_f.triggered.connect(self._on_chat_leave)  # type: ignore[arg-type]
         menu.exec(QCursor.pos())
