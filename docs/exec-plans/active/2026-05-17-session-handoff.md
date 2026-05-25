@@ -8,29 +8,30 @@ status: active
 # TooTalk 세션 인계 — 2026-05-17 → 다음 세션
 
 > 본 문서는 정본 [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §Q 등가 패턴. 다음 세션 Claude(=Watcher) 가 본 저장소 재진입 시 **최우선 정독 대상**.
-> 본 인계 시점: 2026-05-25 04:10 KST (cycle 169.765 갱신 — server repo 계층 전수 cov 회수 + fixture hang DI refactor + codex 3종 평가 회수 + 미커버 branch 소진). 최신 commit `fa6a8d9`. **다음 세션 우선 정독 = §1.1 이번 세션 인계 요약**.
+> 본 인계 시점: 2026-05-25 16:25 KST (cycle 169.785 — 원격 데스크탑 M3 완결 + reviewer 게이트 정책 확립 + Codex 7.6/10 외부평가 환류). 최신 commit `438d520`. **다음 세션 우선 정독 = §1.1 이번 세션 인계 요약**.
 
-## 1.1 이번 세션 인계 요약 (cycle 169.745~765, 2026-05-24~25)
+## 1.1 이번 세션 인계 요약 (cycle 169.768~785, 2026-05-25)
 
 **핵심 성과**:
 
-- **server/db/repositories 계층 전수 cov 회수** — file_meta/password_reset/read_states/devices/friends/peers/remote_handlers 100% + bots 99% + folders 87% + messages/email_verification 85~97% + emoji_packs 75%. mock async pool(`acquire`+`cursor` 2단 async context) + `_FakeRequest`(aiohttp handler) 패턴.
-- **전체 tests 2309 → 2463 PASS** (+154), coverage 81.34% → **89.73%** (+8.39%p), 49 → 38 skip.
-- **fixture hang DI refactor** — MainWindow 21 mixin cumulative QWidget retain hang 의 중복 full-instantiation skip 11건 제거 (admin_menu 4 + update_task 7). cure = mixin method 에 MagicMock self 주입(DI 등가) mock isolation. **dialog/e2e 실 widget instantiation 포팅 = cumulative QWidget retain hang 차단 확정** (8 비-asyncio dialog 도 hang — 38 skip 잔존 root, mock isolation 외 우회 부재).
-- **직무유기 훅 근본 결함 회수** (cycle 169.748) — `tools/hook_dereliction_check.sh` HEAD-TTL skip 역설(미커밋 작업 미detect) 수정 + dirty-tree detect 추가.
-- **doc-gardener MIGRATION 검사 구현** (cycle 169.747) — `tools/check_migration_tables.py` (doc 7 ⊆ SQL 25 forward + `--strict` reverse opt-in) + doc-gardener.yml Issue 자동 생성 (Phase 3 활성).
-- **전체 5 workflow actionlint 0 issue** (cycle 169.749~750) — ci.yml SC2086/SC2012/SC2035 정리. `brew install actionlint` (1.7.12 + shellcheck 0.11.0).
-- **codex 외부 평가 3종 전수 회수** — (A) doc-gardener MIGRATION/Issue 미구현 → 구현. (B) Phase 2/3 주석 정합. (C) check_migration --strict 역방향 + docstring 예시.
+- **(a) MainWindow DI refactor = 데이터로 무효 확정 + superseded skip 14건 은퇴** (cycle 169.770/774). planning-agent Exec Plan + M1 spike(skip 1 file 단독 subprocess 도 40s hang) → hang root cause = **test 자체 async fixture chain**(fake_http_worker + qasync.asyncSlot 이 offscreen 환경에서 never-firing signal await), MainWindow 21-mixin 상속도 cumulative QWidget retain 도 아님. → 전면 DI refactor + subprocess 격리 모두 무효. test_e2e_flow(7)+http_worker(2)+e2e_button_click(5)=14 skip 삭제(logic 은 test_auth_chain_isolated/test_dialog_chain_isolated 가 cover). **tests/app/ui skip 38→24**. dialog_functional 22 는 unique test 포함이라 skip 유지.
+- **Codex P0 — SignalingClient 실 자동 재연결 구현** (cycle 169.775) — `app/net/signaling_client.py` backoff(0.5s ×2 cap 30s) + reJOIN + RECONNECTING 상태 + disconnect 시 reconnect 취소. `app_state._VALID_CONN_STATES` + RECONNECTING. 통합 test 9 PASS. CheckList FR-10 `[~]→[x]`. (cycle 169.780 status_bar RECONNECTING whitelist 회귀 fix.)
+- **(c) 원격 데스크탑 실 binding M1~M3 + G2 완결** (cycle 169.776~782, PR #10) — `app/remote/session_runner.py`(RemoteSessionRunner host/controller loop + frame/input 직렬화 + backend DI + grant 게이트) + `remote_handshake.py`(permission control 채널 REQUEST/GRANT/DENY/REVOKE + verify_revoke 상수시간) + coord_transform 결선 + `_chat_header_mixin._start_remote_session`(accepted_signal→runner) + **G2 실 aiortc DataChannel loopback PASS**. remote 영역 146→150 PASS. **M4(실 OS) = G3 사용자 게이트 미통과**.
+- **reviewer-agent 게이트 정책 확립** (cycle 169.779~782) — 사용자 "자동 구간도 reviewer 리뷰" 정정 → 모든 feat = commit 前 reviewer-agent 게이트 의무(자동검증 면제 부재). memory `feedback_reviewer_gate_all_feat_mandatory.md` 영구화. feature branch + PR + reviewer PASS + merge flow 정착(PR #10).
+- **M6 WBS 활성 + backfill** (cycle 169.781) — `data/wbs.sqlite` cycle 169.745~781 누락 37 row INSERT (236→273). M6 활성 확정(§8 단서 M6 한정 해제). **단 `data/` gitignored = local only.**
+- **Codex 외부 전면평가 7.6/10 환류** (cycle 169.783~784) — `docs/assessments/current-project-review.md` 7.6/10 + Claude 작업 큐. P0 doc-freshness 반영: Specification FR-10 trace + README 과거/거짓 표현 6건(L52 자동연결 부재=거짓 등) + productization pair fingerprint 동기.
+- **전체 ≈ 2490 PASS** (신규 reconnect 9 + session_runner 15 + handshake 12 + status_bar 3 + remote_session_wire 4 + loopback 1). 평가 productization 7.6/10(Codex) · vibe-coding 8.4/10.
 
-**잔존 (자동 도달 불가)**:
+**다음 세션 진입 = Codex 작업 큐 "정합성 마감"이 병목** (새 기능 아님):
 
-- **38 skip** = dialog_functional 22 + e2e 12 + http_worker 2 + aiortc 1. 전부 PyQt6 cumulative QWidget retain hang (architecture 벽). 진짜 cure = MainWindow 21 mixin 진짜 DI 아키텍처 refactor (multi-day, 큰 risk) — 미진행.
-- **사용자 manual visual ack** (task #11, HIGH) — SMTP 메일 + dialog switch + OTP cancel + header click + splitter hover. 사용자 직접.
-- **MIGRATION strict CI gate 강제 여부** = 정책 결정 대기. default forward-only (MIGRATION_MARIADB.md 의도적 부분 reference 문서, 핵심 7/25 DDL 예시). 전수 강제 시 18 table 문서화 선행 + Phase 전환 조건 필요.
-- **streaming**(chzzk/kick/twitch) 최후순위 · **원격 CI success / Windows smoke / .app codesign** external.
-- `email_verification.py` L56 = unreachable RuntimeError defensive (도달 부재).
+- **P0 M6 enforcement 마감** — wbs_tasks 169.782+ row 추가 + status `done`/`completed` 통일 + post-commit WBS hook 설치(현 미설치). `data/` gitignored 정책 정합 확인.
+- **P0 productization 장문 본문(§2~§9) 전수 783 rewrite** — 상단 snapshot/H1/score row 는 7.6/10 갱신됨, 장문 본문은 cycle 169.765~778 표현 잔존.
+- **P1 원격 데스크탑 M4** (G3 사용자 게이트) — 실 OS capture(macOS Screen Recording 권한)/input dispatch(Accessibility) + friend peer connection `_remote_data_channel` 실 생성/binding + HOST runner permission grant 주입(현 grant=None fail-closed) + 수동 visual ack(`MANUAL_TESTS.md`).
+- **P1 NFR-04 실 server chaos** — 실 SignalingClient + aiohttp WS server close 강제 → RECONNECTING→CONNECTED→reJOIN event 순서 + StatusBar ERROR 미오표시 smoke.
+- **P2 DB/배포** — MIGRATION_MARIADB.md ↔ SQL strict + check_migration `--strict` CI gate 승격 시점 + macOS `.app` 실행성(Developer ID/Nuitka/rpath).
+- **잔존 24 UI skip** (asyncSlot 직접 호출 부적합 + PyQt6 부재 + isolated 미완료) + 사용자 manual visual ack(task #11) + streaming 최후순위.
 
-**다음 세션 진입 시 = 의미 있는 자동 cov gap 소진 상태.** 추가 작업 = (a) MainWindow DI 아키텍처 refactor(큰 scope, 38 skip 활성화) OR (b) 사용자 manual visual ack OR (c) Phase 5 본격 기능(원격 데스크탑 실 binding) 진입 OR (d) MIGRATION strict CI gate 결정.
+**병렬 Codex 주의** — 사용자가 Codex 를 병렬 실행하여 current-project-review.md + productization snapshot + README/History 를 직접 갱신·commit 한다. cycle 번호 충돌 + 평가 pair fingerprint mismatch(md/html cycle 비동기) 빈발. 작업 전 `git status` + `git log --oneline -8` 로 Codex commit 확인, 평가 pair 편집 시 layer2 fingerprint(첫 "사이클 N" + last_verified) 정합 의무.
 
 ---
 
