@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.765)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.765 미러.
-     cycle 169.760 — cycle 169.745~760 batch 누계 (126 repo PASS: server/db/repositories 9 repo 전수) + fixture hang DI(skip 49→38) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수 반영. dialog/e2e 실 widget 포팅 = cumulative QWidget retain hang 차단 확정. 전체 2435 PASS + 38 skip + cov 81.34% → 89.39%.
-     last_verified = 2026-05-25T03:15:00+09:00. -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.769)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.769 미러 (commit c791460 = cycle 169.768 반영).
+     cycle 169.769 staleness refresh — 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (env.X GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 2463 PASS + 38 skip + cov 89.73% retain.
+     last_verified = 2026-05-25T13:25:00+09:00. -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -54,8 +54,8 @@
   <h1>TooTalk 제품화 가능성 평가 — Snapshot</h1>
   <div class="sub">
     문서 = <code>docs/assessments/productization.md</code> · 등가 HTML.
-    최신 갱신 = 2026-05-25 04:20 KST — cycle 169.765 batch end (cov 89.73%, 2463 PASS, 자동 cov gap 소진).
-    cycle 169.745~760 사이 server/db/repositories 9 repo 전수 126 PASS + fixture hang DI(skip 49→38) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수. 전체 2435 PASS + 38 skip + cov 81.34% → 89.39%.
+    최신 갱신 = 2026-05-25 13:25 KST — cycle 169.769 staleness refresh (cov 89.73%, 2463 PASS, 38 skip, 자동 cov gap 소진 retain).
+    직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재. cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (env.DOC_GARDENER_UPDATED/env.MIGRATION_DRIFT GITHUB_ENV runtime 주입 → steps.&lt;id&gt;.outputs step output 전환, 전체 5 workflow actionlint 0 issue retain).
     기능 테스트 축은 강하지만, CI GREEN 은 최신 workflow success 와 함께만 확정한다.
   </div>
 </header>

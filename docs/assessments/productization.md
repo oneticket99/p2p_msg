@@ -1,17 +1,17 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T04:20:00+09:00
+last_verified: 2026-05-25T13:25:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-25 04:20 KST — cycle 169.765 batch end. cycle 169.745~765 사이 server/db/repositories 전수 + 잔존 미커버 영역 소진. peers/remote_handlers/rotate_key/avatar_palette/_icons 100% + email_verification retry 97% 추가 회수 (cycle 169.763~765). fixture hang DI(skip 49→38) + codex 3종 평가 회수. 전체 tests = 2463 PASS + 38 skip + coverage 81.34% → **89.73%** (+8.39%p).<br>**이전 갱신**: 2026-05-25 03:15 KST — cycle 169.760 재평가. server repo 9 repo 전수 126 PASS + cov 89.39%.
+> **최신 갱신 시점**: 2026-05-25 13:25 KST — cycle 169.769 staleness refresh (commit `c791460` = cycle 169.768 반영). 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 상태 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (`env.DOC_GARDENER_UPDATED`/`env.MIGRATION_DRIFT` GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 tests = 2463 PASS + 38 skip + coverage **89.73%** retain.<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.765 누계 (commit `0756a86` 기준 main branch). 본 cycle = 잔존 미커버 영역 소진 + 인계 자료 반영.
+> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.769 누계 (commit `c791460` = cycle 169.768 기준 main branch). 본 cycle = doc-gardener.yml actionlint warning 회수 + 평가 staleness refresh.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
