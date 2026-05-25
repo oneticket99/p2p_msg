@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 13:20:00] cycle 169.768 — doc-gardener.yml actionlint context warning 2건 회수. `env.DOC_GARDENER_UPDATED`/`env.MIGRATION_DRIFT` (GITHUB_ENV runtime 주입 → static 검증 불가) → step output (`steps.autofix.outputs`/`steps.migration.outputs`) 전환. autofix/migration step `id` 추가 + `GITHUB_ENV`→`GITHUB_OUTPUT`. actionlint EXIT=0 + Actions 확장 context 정적 인지 (.github/workflows)
 - [2026-05-25 04:25:00] cycle 169.767 — 평가 6 file staleness 회수 (56cb561 이후 5 commit drift). productization.md + vibe-coding.md snapshot + HTML mirror 2종 cycle 169.765 갱신 — cov 89.39→89.73%, 2435→2463 PASS (peers/remote_handlers/rotate_key/avatar_palette/_icons 100% + email retry 97% + 인계 자료 반영). 자동 cov gap 소진 명시. 종합 6.7/10 유지 (docs/assessments · docs/html)
 - [2026-05-25 04:20:00] cycle 169.766 — 다음 세션 인계 자료 갱신. handoff doc §1.1 "이번 세션 인계 요약 (cycle 169.745~765)" 신설 — server repo 전수 cov / fixture hang DI / codex 3종 / 잔존(38 skip architecture + manual + MIGRATION strict 결정) + 다음 진입 4 선택지. intro 시점 + §8.82.1 manifest row(fa6a8d9) + last_verified 갱신 (docs/exec-plans/active)
 - [2026-05-25 04:10:00] cycle 169.765 — _icons 미존재 file fallback 회수. `tests/app/ui/test_icons_missing.py` 2 PASS — load_icon/load_pixmap svg_path 부재 시 empty QIcon/QPixmap 반환 분기(L28/45). _icons 88.89→100% (QIcon/QPixmap 경량, hang 무관) (tests/app/ui)
