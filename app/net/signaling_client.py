@@ -82,6 +82,8 @@ class SignalingClient(QObject):
     - ``answer_received(str, str)``     : (from, sdp)
     - ``ice_received(str, dict)``       : (from, candidate)
     - ``error_received(str, str)``      : (code, message)
+    - ``sfu_answer_received(str, str, str)`` : (kind, sdp, producer_id) — SFU 그룹 통화
+    - ``sfu_producers_received(str, list)``  : (room, producers) — SFU producer 목록
     """
 
     # ---- Qt 신호 정의 (스켈레톤 단계에서 정의만, 슬롯 결합은 Task #16) ----
@@ -93,6 +95,9 @@ class SignalingClient(QObject):
     answer_received = pyqtSignal(str, str)
     ice_received = pyqtSignal(str, dict)
     error_received = pyqtSignal(str, str)
+    # SFU 그룹 통화 (cycle 169.805 M4b) — SfuCallClient 로 라우팅되는 수신 신호
+    sfu_answer_received = pyqtSignal(str, str, str)  # (kind, sdp, producer_id)
+    sfu_producers_received = pyqtSignal(str, list)   # (room, producers)
 
     def __init__(self, config: Config, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
@@ -245,6 +250,30 @@ class SignalingClient(QObject):
             }
         )
 
+    async def send_sfu_publish(self, room: str, sdp: str) -> None:
+        """``SFU_PUBLISH`` 송신 — 그룹 통화 upstream offer (self peer_id 보강)."""
+
+        peer_id = self._require_self_peer_id()
+        await self._send(
+            {"type": "SFU_PUBLISH", "room": room, "peer_id": peer_id, "sdp": sdp}
+        )
+
+    async def send_sfu_subscribe(
+        self, room: str, producer_id: str, sdp: str
+    ) -> None:
+        """``SFU_SUBSCRIBE`` 송신 — 특정 producer downstream offer (recvonly)."""
+
+        peer_id = self._require_self_peer_id()
+        await self._send(
+            {
+                "type": "SFU_SUBSCRIBE",
+                "room": room,
+                "peer_id": peer_id,
+                "producer_id": producer_id,
+                "sdp": sdp,
+            }
+        )
+
     # ------------------------------------------------------------------
     # 내부 — 송신/수신/상태 전이
     # ------------------------------------------------------------------
@@ -353,6 +382,19 @@ class SignalingClient(QObject):
             self.error_received.emit(
                 str(payload.get("code") or "UNKNOWN"),
                 str(payload.get("message") or ""),
+            )
+        elif msg_type == "SFU_ANSWER":
+            # SFU publish/subscribe offer 에 대한 server answer → SfuCallClient 로 라우팅
+            self.sfu_answer_received.emit(
+                str(payload.get("kind") or ""),
+                str(payload.get("sdp") or ""),
+                str(payload.get("producer_id") or ""),
+            )
+        elif msg_type == "SFU_PRODUCERS":
+            producers = list(payload.get("producers") or [])
+            self.sfu_producers_received.emit(
+                str(payload.get("room") or ""),
+                producers,
             )
         else:
             log.warning("알 수 없는 메시지 type=%r — 무시", msg_type)

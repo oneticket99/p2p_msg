@@ -58,6 +58,12 @@ class MenuBarMixin:
         act_direct.triggered.connect(self._on_open_direct_chat)
         menu_settings.addAction(act_direct)
 
+        # cycle 169.809 — SFU 그룹 음성·영상 통화 시작 (현재 방의 9 peer+ forward)
+        act_group_call = QAction("그룹 통화 시작…", self)
+        act_group_call.setShortcut(QKeySequence("Ctrl+Shift+G"))
+        act_group_call.triggered.connect(self._on_start_group_call)
+        menu_settings.addAction(act_group_call)
+
         # 한글 주석 — "환경" + "설정" .ts entry 결합
         act_pref = QAction(f"환경{_tr('설정')}…", self)
         act_pref.setShortcut(QKeySequence("Ctrl+,"))
