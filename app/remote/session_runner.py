@@ -35,6 +35,11 @@ from enum import Enum
 from typing import Any, Awaitable, Callable, Optional
 
 from app.remote.capture import CaptureBackend, CapturedFrame, captured_to_remote_frame
+from app.remote.coord_transform import (
+    AspectRatioPolicy,
+    RemoteScreenInfo,
+    transform_coordinates,
+)
 from app.remote.input_forward import InputForwardBackend, apply_events
 from app.remote.permission import PermissionGrant, check_grant_active
 from app.remote.protocol import FrameFormat, InputEventType, RemoteFrame, RemoteInput
@@ -142,6 +147,9 @@ class RemoteSessionRunner:
         send_frame: Optional[_SendCallable] = None,
         send_input: Optional[_SendCallable] = None,
         on_frame: Optional[_FrameCallback] = None,
+        controller_screen: Optional[RemoteScreenInfo] = None,
+        host_screen: Optional[RemoteScreenInfo] = None,
+        coord_policy: AspectRatioPolicy = AspectRatioPolicy.LETTERBOX,
         frame_interval_s: float = 0.1,
         max_frames: Optional[int] = None,
         now_ms: Optional[Callable[[], int]] = None,
@@ -180,6 +188,10 @@ class RemoteSessionRunner:
         self._send_frame = send_frame
         self._send_input = send_input
         self._on_frame = on_frame
+        # cycle 169.779 (M3b) — 좌표 보정: controller 화면 좌표 → host 화면 좌표
+        self._controller_screen = controller_screen
+        self._host_screen = host_screen
+        self._coord_policy = coord_policy
         self._frame_interval_s = frame_interval_s
         self._max_frames = max_frames
         self._now_ms = now_ms or (lambda: int(time.time() * 1000))
@@ -263,9 +275,44 @@ class RemoteSessionRunner:
         except Exception:
             log.exception("input decode 실패 — drop")
             return 0
+        # M3b — mouse 좌표를 controller 화면 → host 화면 공간으로 보정 후 적용
+        event = self._transform_input(event)
         applied = apply_events(self._input_backend, [event])
         self._applied_count += applied
         return applied
+
+    def _transform_input(self, event: RemoteInput) -> RemoteInput:
+        """mouse 이벤트의 (x, y) 를 controller→host 화면 좌표로 보정.
+
+        양쪽 screen info 미설정 또는 mouse 아닌 이벤트는 원본 그대로 통과.
+        """
+
+        if self._controller_screen is None or self._host_screen is None:
+            return event
+        if event.event_type not in (
+            InputEventType.MOUSE_MOVE,
+            InputEventType.MOUSE_CLICK,
+        ):
+            return event
+        x = event.payload.get("x")
+        y = event.payload.get("y")
+        if x is None or y is None:
+            return event
+        new_x, new_y = transform_coordinates(
+            sender=self._controller_screen,
+            target=self._host_screen,
+            sender_x=int(x),
+            sender_y=int(y),
+            policy=self._coord_policy,
+        )
+        new_payload = dict(event.payload)
+        new_payload["x"] = new_x
+        new_payload["y"] = new_y
+        return RemoteInput(
+            event_type=event.event_type,
+            payload=new_payload,
+            timestamp_ms=event.timestamp_ms,
+        )
 
     # ------------------------------------------------------------------
     # CONTROLLER 측 — frame 수신/렌더 + input 송신

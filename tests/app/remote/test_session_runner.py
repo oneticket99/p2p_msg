@@ -20,6 +20,7 @@ from __future__ import annotations
 import pytest
 
 from app.remote.capture import MockCaptureBackend
+from app.remote.coord_transform import RemoteScreenInfo, transform_coordinates
 from app.remote.input_forward import MockInputForwardBackend
 from app.remote.permission import (
     PermissionGrant,
@@ -231,6 +232,48 @@ class TestControllerInputSend:
     async def test_send_without_callable_returns_false(self) -> None:
         runner = RemoteSessionRunner(SessionRole.CONTROLLER, now_ms=lambda: _NOW_MS)
         assert await runner.send_local_input(_mouse_move(1, 1)) is False
+
+
+class TestCoordTransformBinding:
+    """M3b — host input dispatch 시 controller→host 좌표 보정."""
+
+    async def test_mouse_coords_transformed(self) -> None:
+        backend = MockInputForwardBackend()
+        controller_screen = RemoteScreenInfo(
+            width=1920, height=1080, logical_width=1920, logical_height=1080,
+        )
+        host_screen = RemoteScreenInfo(
+            width=3840, height=2160, logical_width=1920, logical_height=1080,
+            backing_scale=2.0,
+        )
+        runner = RemoteSessionRunner(
+            SessionRole.HOST,
+            grant=_active_grant(),
+            input_backend=backend,
+            controller_screen=controller_screen,
+            host_screen=host_screen,
+            now_ms=lambda: _NOW_MS,
+        )
+        # controller (960, 540) → host 화면 좌표로 변환된 값이 적용돼야
+        expected_x, expected_y = transform_coordinates(
+            sender=controller_screen, target=host_screen, sender_x=960, sender_y=540,
+        )
+        applied = await runner.handle_incoming_input(encode_input(_mouse_move(960, 540)))
+        assert applied == 1
+        assert backend.applied[0].payload["x"] == expected_x
+        assert backend.applied[0].payload["y"] == expected_y
+        # 변환이 실제로 원본과 달라야 (host 가 2x 크므로)
+        assert (expected_x, expected_y) != (960, 540)
+
+    async def test_no_screen_info_passthrough(self) -> None:
+        backend = MockInputForwardBackend()
+        runner = RemoteSessionRunner(
+            SessionRole.HOST, grant=_active_grant(), input_backend=backend,
+            now_ms=lambda: _NOW_MS,
+        )
+        await runner.handle_incoming_input(encode_input(_mouse_move(100, 200)))
+        # screen info 부재 → 원본 좌표 그대로
+        assert backend.applied[0].payload == {"x": 100, "y": 200}
 
 
 class TestHostControllerLoopback:
