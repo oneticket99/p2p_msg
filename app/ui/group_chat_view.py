@@ -130,13 +130,11 @@ else:
             self._member_count_label = QLabel(f"멤버 {member_count}", header)
             self._member_count_label.setStyleSheet("color: #6b7280; font-size: 12px;")
 
-            self._members_btn = QPushButton("멤버 보기", header)
-            self._members_btn.setFixedWidth(80)
-            self._members_btn.clicked.connect(self.members_panel_requested.emit)
-
+            # cycle 169.836 — "멤버 보기" 별도 버튼 제거. 멤버 보기는 헤더 "..." 드롭다운
+            # entry 로 이동(텔레그램 그룹 멤버보기 플로우 directive). members_panel_requested
+            # 신호는 호환 위해 정의 유지(현재 미발화 — "..." 메뉴가 핸들러 직접 호출).
             header_layout.addWidget(self._title_label, stretch=1)
             header_layout.addWidget(self._member_count_label)
-            header_layout.addWidget(self._members_btn)
 
             root.addWidget(header)
 
