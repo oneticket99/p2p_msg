@@ -20,6 +20,7 @@
 #   - MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사 (tools/check_migration_tables.py, 본 파일 "MIGRATION 테이블 정합 검사 (Phase 3)" step)
 #   - MIGRATION drift 감지 시 Issue 자동 생성 (gh issue create, 중복 차단, 본 파일 "MIGRATION drift Issue 자동 생성 (Phase 3)" step)
 #   - 검사 방향 = `--strict` (doc ⊇ SQL 전수 + doc ⊆ SQL). cycle 169.793 MIGRATION_MARIADB.md §3.5 에 18 확장 테이블 등재 완료(doc 25 = SQL 25) → strict CI gate 승격 (tools/check_migration_tables.py --strict)
+#   - current-project-review.md consistency 검사 (tools/check_assessment_consistency.py) — 최신 commit/WBS/MIGRATION 과 평가 큐 모순 차단
 #
 # 트리거:
 #   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
@@ -164,6 +165,11 @@ jobs:
           else
             echo "MIGRATION_DRIFT=0" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: 평가 문서 consistency 검사
+        run: |
+          # 한글 주석 — 최신 commit/WBS/MIGRATION 상태와 반대되는 평가 큐가 반복 작업을 만든다.
+          python3 tools/check_assessment_consistency.py
 
       - name: drift 리포트 요약 (Phase 1)
         if: always()

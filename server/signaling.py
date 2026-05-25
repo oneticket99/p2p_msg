@@ -27,6 +27,7 @@ from .protocol import (
     ERR_NOT_JOINED,
     ERR_PEER_NOT_FOUND,
     ERR_ROOM_NOT_FOUND,
+    ERR_SFU_NO_PRODUCER,
     ERR_UNKNOWN_TYPE,
     MSG_ANSWER,
     MSG_ERROR,
@@ -34,12 +35,17 @@ from .protocol import (
     MSG_JOIN,
     MSG_LEAVE,
     MSG_OFFER,
+    MSG_SFU_ANSWER,
+    MSG_SFU_PRODUCERS,
+    MSG_SFU_PUBLISH,
+    MSG_SFU_SUBSCRIBE,
     is_valid_client_type,
     wire_to_internal,
 )
 from .db.repositories import rooms as rooms_repo
 from .db.repositories.user_activity import ActivityAction, log_activity
 from .room import Peer, RoomRegistry
+from .sfu_registry import SfuRegistry
 from .signaling_persistence import (
     persist_peer_join,
     persist_peer_leave,
@@ -51,6 +57,8 @@ logger = logging.getLogger(__name__)
 
 # aiohttp app 안에서 RoomRegistry 를 꺼내올 때 사용하는 키
 APP_KEY_REGISTRY: str = "room_registry"
+# aiohttp app 안에서 SfuRegistry (그룹 통화 SFU room) 를 꺼내올 때 사용하는 키
+APP_KEY_SFU_REGISTRY: str = "sfu_registry"
 
 
 async def handle_ws(request: web.Request) -> web.WebSocketResponse:
@@ -89,6 +97,11 @@ async def handle_ws(request: web.Request) -> web.WebSocketResponse:
             # CLOSE/CLOSED/CLOSING 은 루프가 자연 종료
     finally:
         if peer is not None:
+            # SFU producer/subscriber 연결도 함께 정리 (room_id 보유 시)
+            if peer.room_id is not None:
+                sfu = _get_sfu_registry(ws)
+                if sfu is not None:
+                    await sfu.remove_peer(peer.room_id, peer.peer_id)
             await registry.cleanup_peer(peer)
         if not ws.closed:
             await ws.close()
@@ -141,10 +154,111 @@ async def _dispatch_text(
     if msg_type in (MSG_OFFER, MSG_ANSWER, MSG_ICE):
         await _handle_relay(ws, peer, payload, registry)
         return peer
+    if msg_type == MSG_SFU_PUBLISH:
+        await _handle_sfu_publish(ws, peer, payload, registry)
+        return peer
+    if msg_type == MSG_SFU_SUBSCRIBE:
+        await _handle_sfu_subscribe(ws, peer, payload)
+        return peer
 
     # 위 화이트리스트 검증에서 걸러져야 하지만 방어적으로 한번 더 처리
     await _send_error(ws, ERR_UNKNOWN_TYPE, f"라우팅 불가 타입: {msg_type!r}")
     return peer
+
+
+def _get_sfu_registry(ws: web.WebSocketResponse) -> SfuRegistry | None:
+    """app context 에서 SfuRegistry 를 꺼내되 없으면 lazy 생성해 등록한다.
+
+    프로덕션은 서버 기동 시 등록하지만, 미등록 환경(테스트 등)에서도 동작하게
+    fallback 으로 1개를 생성·저장한다.
+    """
+    app = ws._req.app if hasattr(ws, "_req") and ws._req else None
+    if app is None:
+        return None
+    registry = app.get(APP_KEY_SFU_REGISTRY)
+    if registry is None:
+        registry = SfuRegistry()
+        app[APP_KEY_SFU_REGISTRY] = registry
+    return registry
+
+
+async def _handle_sfu_publish(
+    ws: web.WebSocketResponse,
+    peer: Peer | None,
+    payload: dict[str, Any],
+    registry: RoomRegistry,
+) -> None:
+    """SFU_PUBLISH 처리 — publisher upstream offer 를 받아 SFU answer 회신 + producer 목록 broadcast."""
+    if peer is None or peer.room_id is None:
+        await _send_error(ws, ERR_NOT_JOINED, "SFU_PUBLISH 이전에 JOIN 필요.")
+        return
+    sdp = payload.get("sdp")
+    if not isinstance(sdp, str) or not sdp:
+        await _send_error(ws, ERR_MISSING_FIELD, "SFU_PUBLISH: sdp 누락.")
+        return
+
+    sfu = _get_sfu_registry(ws)
+    if sfu is None:
+        await _send_error(ws, ERR_ROOM_NOT_FOUND, "SFU registry 미가용.")
+        return
+
+    sfu_room = await sfu.get_or_create(peer.room_id)
+    answer_sdp = await sfu_room.add_publisher(peer.peer_id, sdp)
+    # publisher 본인에게 upstream answer 회신
+    await ws.send_json(
+        {
+            "type": MSG_SFU_ANSWER,
+            "kind": "publish",
+            "sdp": answer_sdp,
+            "producer_id": peer.peer_id,
+        }
+    )
+    # 방 안 모든 peer 에게 갱신된 producer 목록 announce (구독 대상 인지용)
+    await registry.broadcast(
+        peer.room_id,
+        {
+            "type": MSG_SFU_PRODUCERS,
+            "room": peer.room_id,
+            "producers": sfu_room.producer_ids(),
+        },
+    )
+
+
+async def _handle_sfu_subscribe(
+    ws: web.WebSocketResponse,
+    peer: Peer | None,
+    payload: dict[str, Any],
+) -> None:
+    """SFU_SUBSCRIBE 처리 — subscriber recvonly offer 를 받아 forward track 실은 answer 회신."""
+    if peer is None or peer.room_id is None:
+        await _send_error(ws, ERR_NOT_JOINED, "SFU_SUBSCRIBE 이전에 JOIN 필요.")
+        return
+    producer_id = payload.get("producer_id")
+    sdp = payload.get("sdp")
+    if not isinstance(producer_id, str) or not producer_id:
+        await _send_error(ws, ERR_MISSING_FIELD, "SFU_SUBSCRIBE: producer_id 누락.")
+        return
+    if not isinstance(sdp, str) or not sdp:
+        await _send_error(ws, ERR_MISSING_FIELD, "SFU_SUBSCRIBE: sdp 누락.")
+        return
+
+    sfu = _get_sfu_registry(ws)
+    sfu_room = sfu.get(peer.room_id) if sfu is not None else None
+    if sfu_room is None or not sfu_room.has_producer(producer_id):
+        await _send_error(
+            ws, ERR_SFU_NO_PRODUCER, f"SFU producer 없음: {producer_id!r}"
+        )
+        return
+
+    answer_sdp = await sfu_room.subscribe(peer.peer_id, producer_id, sdp)
+    await ws.send_json(
+        {
+            "type": MSG_SFU_ANSWER,
+            "kind": "subscribe",
+            "sdp": answer_sdp,
+            "producer_id": producer_id,
+        }
+    )
 
 
 async def _handle_join(

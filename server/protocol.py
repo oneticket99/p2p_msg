@@ -21,6 +21,16 @@ MSG_OFFER: Final[str] = "OFFER"
 MSG_ANSWER: Final[str] = "ANSWER"
 MSG_ICE: Final[str] = "ICE"
 
+# SFU 그룹 통화 메시지 타입 (9 peer 이상 — cycle 169.798, SFU 확장 M3)
+#
+# 1:1/소규모는 기존 OFFER/ANSWER/ICE mesh 그대로 두고, 9+ 그룹 음성·영상은
+# SFU(Selective Forwarding Unit) 경로로 승격한다. 클라이언트는 자신의 미디어를
+# 1개 upstream 으로 SFU 에 publish 하고, 서버가 이를 다른 peer 들로 forward 한다.
+MSG_SFU_PUBLISH: Final[str] = "SFU_PUBLISH"      # 클라 → 서버: upstream 미디어 offer (publish 의향 + SDP)
+MSG_SFU_SUBSCRIBE: Final[str] = "SFU_SUBSCRIBE"  # 클라 → 서버: 특정 producer downstream 구독 요청
+MSG_SFU_PRODUCERS: Final[str] = "SFU_PRODUCERS"  # 서버 → 클라: room 안 현 producer 목록 broadcast
+MSG_SFU_ANSWER: Final[str] = "SFU_ANSWER"        # 서버 → 클라: publish/subscribe offer 에 대한 SDP answer
+
 # 서버 → 클라이언트 메시지 타입 식별자 (4종)
 MSG_PEERS: Final[str] = "PEERS"
 MSG_PEER_JOINED: Final[str] = "PEER_JOINED"
@@ -28,8 +38,19 @@ MSG_PEER_LEFT: Final[str] = "PEER_LEFT"
 MSG_ERROR: Final[str] = "ERROR"
 
 # 클라이언트 → 서버 허용 타입 집합 (라우터 화이트리스트)
+#
+# SFU_PUBLISH/SFU_SUBSCRIBE 는 클라 → 서버 방향. SFU_PRODUCERS/SFU_ANSWER 는
+# 서버 → 클라 방향이므로 화이트리스트에 포함하지 않는다.
 CLIENT_MSG_TYPES: Final[frozenset[str]] = frozenset(
-    {MSG_JOIN, MSG_LEAVE, MSG_OFFER, MSG_ANSWER, MSG_ICE}
+    {
+        MSG_JOIN,
+        MSG_LEAVE,
+        MSG_OFFER,
+        MSG_ANSWER,
+        MSG_ICE,
+        MSG_SFU_PUBLISH,
+        MSG_SFU_SUBSCRIBE,
+    }
 )
 
 
@@ -99,8 +120,68 @@ class IceMessage(TypedDict):
 
 
 # ---------------------------------------------------------------------------
+# SFU 그룹 통화 envelope (클라 → 서버 2종 + 서버 → 클라 2종)
+# ---------------------------------------------------------------------------
+
+
+class SfuPublishMessage(TypedDict):
+    """클라이언트가 자신의 미디어를 SFU 에 upstream publish 할 때 전송.
+
+    ``sdp`` 는 publisher → SFU 단방향 upstream 연결의 SDP offer 다. 서버는
+    이를 받아 server-side ``RTCPeerConnection`` 으로 answer 를 생성하고
+    ``SFU_ANSWER`` 로 회신하며, 수신한 track 을 room 의 producer 로 등록한다.
+    """
+
+    type: Literal["SFU_PUBLISH"]
+    room: str
+    peer_id: str
+    sdp: str
+
+
+class SfuSubscribeMessage(TypedDict):
+    """클라이언트가 특정 producer 의 미디어를 downstream 구독할 때 전송.
+
+    ``producer_id`` 는 구독 대상 publisher 의 peer 식별자다. 서버는 해당
+    producer 의 forward track 을 담은 downstream offer 를 생성해 ``SFU_ANSWER``
+    (offer 본문 포함) 로 회신한다. ``sdp`` 는 클라이언트가 먼저 보내는 경우의
+    구독자 offer 이며, 생략 시 서버가 offer 를 주도한다.
+    """
+
+    type: Literal["SFU_SUBSCRIBE"]
+    room: str
+    peer_id: str
+    producer_id: str
+    sdp: str
+
+
+# ---------------------------------------------------------------------------
 # 서버 → 클라이언트 envelope (4종)
 # ---------------------------------------------------------------------------
+
+
+class SfuProducersMessage(TypedDict):
+    """room 안 현재 publish 중인 producer 목록 (publish/leave 시 broadcast).
+
+    구독자는 본 목록을 보고 어떤 producer 를 ``SFU_SUBSCRIBE`` 할지 결정한다.
+    본인 식별자도 포함될 수 있으므로 클라이언트가 self 를 제외한다.
+    """
+
+    type: Literal["SFU_PRODUCERS"]
+    room: str
+    producers: list[str]
+
+
+class SfuAnswerMessage(TypedDict):
+    """SFU_PUBLISH / SFU_SUBSCRIBE offer 에 대한 SDP answer (서버 → 클라).
+
+    ``kind`` 로 publish/subscribe 응답을 구분하며, subscribe 응답의 경우
+    ``producer_id`` 가 어떤 producer 의 downstream 인지 식별한다.
+    """
+
+    type: Literal["SFU_ANSWER"]
+    kind: Literal["publish", "subscribe"]
+    sdp: str
+    producer_id: str
 
 
 class PeersMessage(TypedDict):
@@ -150,6 +231,8 @@ ERR_MISSING_FIELD: Final[str] = "MISSING_FIELD"
 ERR_NOT_JOINED: Final[str] = "NOT_JOINED"
 ERR_PEER_NOT_FOUND: Final[str] = "PEER_NOT_FOUND"
 ERR_ROOM_NOT_FOUND: Final[str] = "ROOM_NOT_FOUND"
+# SFU 구독 대상 producer 가 room 안에 없을 때
+ERR_SFU_NO_PRODUCER: Final[str] = "SFU_NO_PRODUCER"
 
 
 # ---------------------------------------------------------------------------
