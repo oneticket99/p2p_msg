@@ -150,9 +150,10 @@ class TestMainWindowRoomsIntegration:
         assert main_window._input_bar._text_edit.toPlainText() == "이 메시지 는 차단 되어야 함"
 
     def test_members_panel_signal_swaps_to_member_list(self, main_window) -> None:
-        """GroupChatView 의 members_panel_requested 의 emit → MemberList swap."""
+        """GroupChatView 의 members_panel_requested 의 emit → MemberPanel swap."""
 
-        from app.ui.member_list import MemberListWidget
+        # cycle 169.819 — _member_list 는 MemberListWidget → MemberPanel(뒤로 헤더 래퍼) 교체
+        from app.ui.member_panel import MemberPanel
 
         # 그룹 채팅 진입 → GroupChatView 인스턴스 보유
         main_window._room_list.room_entered.emit(10)
@@ -164,10 +165,10 @@ class TestMainWindowRoomsIntegration:
 
         # StackedWidget idx = 2 (멤버 페이지)
         assert main_window._stacked.currentIndex() == 2
-        # MemberListWidget 의 인스턴스 노출
-        assert isinstance(main_window._member_list, MemberListWidget)
-        # 빈 멤버 목록 (RoomsClient.get_room binding 별개 cycle 의 stub)
-        assert main_window._member_list.member_count() == 0
+        # MemberPanel 의 인스턴스 노출 (member_count 는 내부 MemberListWidget 위임)
+        assert isinstance(main_window._member_list, MemberPanel)
+        # cycle 169.819 — 빈 stub([]) 폐기 → self_peer(방장) populate. known_peers 부재 시 self 1명
+        assert main_window._member_list.member_count() == 1
 
     def test_direct_chat_action_restores_1on1_view(self, main_window) -> None:
         """1:1 ChatView 의 backward compat — "직접 메시지" 액션 의 회귀."""

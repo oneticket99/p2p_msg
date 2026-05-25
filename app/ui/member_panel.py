@@ -84,3 +84,15 @@ class MemberPanel(QWidget):
         self._list.set_members(members, viewer_role=viewer_role)
         # 한글 주석 — 빈 목록이면 안내 라벨 page, 아니면 list page
         self._stack.setCurrentWidget(self._empty_label if not members else self._list)
+
+    def member_count(self) -> int:
+        """현재 표시 중인 멤버 수 — 내부 MemberListWidget 위임.
+
+        cycle 169.821 — MemberListWidget → MemberPanel 교체(cycle 169.819) 후
+        ``_member_list.member_count()`` 호출부(invite refresh test 등) 정합 회복.
+        """
+        return self._list.member_count()
+
+    def viewer_role(self) -> str:
+        """현재 viewer 의 role — 내부 MemberListWidget 위임."""
+        return self._list.viewer_role()

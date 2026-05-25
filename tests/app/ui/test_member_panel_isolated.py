@@ -51,3 +51,25 @@ class TestMemberPanel:
         # 내부 리스트 신호 → 패널 passthrough
         panel._list.member_kicked.emit(42)
         assert captured == [42]
+
+    def test_member_count_delegates(self, qapp) -> None:
+        # cycle 169.821 — MemberPanel.member_count() 내부 MemberListWidget 위임 회복
+        panel = MemberPanel()
+        assert panel.member_count() == 0
+        panel.set_members(
+            [
+                MemberItem(user_id=0, username="alice", role="owner", is_online=True),
+                MemberItem(user_id=1, username="bob", role="member", is_online=True),
+            ],
+            viewer_role="owner",
+        )
+        assert panel.member_count() == 2
+
+    def test_viewer_role_delegates(self, qapp) -> None:
+        # cycle 169.821 — viewer_role() 위임 검증
+        panel = MemberPanel()
+        panel.set_members(
+            [MemberItem(user_id=0, username="alice", role="owner", is_online=True)],
+            viewer_role="owner",
+        )
+        assert panel.viewer_role() == "owner"
