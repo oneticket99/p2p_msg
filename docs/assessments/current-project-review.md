@@ -1,15 +1,15 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-25T20:30:00+09:00
+last_verified: 2026-05-25T21:00:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 cycle 169.810 main branch. cycle 169.797 Codex snapshot 에 cycle 169.793~810 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수)을 환류 반영.
+> 검토 기준: 2026-05-25 cycle 169.814 main branch 준비 상태. cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
 > 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 협업용 평가 snapshot.
-> 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + doc-gardener 연결로 차단한다.
+> 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + ci/doc-gardener 연결로 차단한다.
 
 ## 1. 종합 판정
 
@@ -78,12 +78,12 @@ cycle 169.793에서 [MIGRATION_MARIADB.md](../../MIGRATION_MARIADB.md) §3.5에 
 
 ### 3.5 반복 방지 가드레일
 
-cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_assessment_consistency.py)를 추가한다.
+cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_assessment_consistency.py)를 추가했고, cycle 169.814에서 [ci.yml](../../.github/workflows/ci.yml)의 PR/main push job으로 승격한다.
 
 - HEAD commit cycle marker가 본 평가 문서에 없으면 실패한다.
 - WBS 최신 row가 HEAD commit `completed` 인데 M6를 잔존 큐로 남기면 실패한다.
 - DB strict PASS 이후 같은 항목을 큐에 다시 두면 실패한다.
-- [doc-gardener.yml](../../.github/workflows/doc-gardener.yml)과 [tools/meta_enforce.py](../../tools/meta_enforce.py)에 연결한다.
+- [ci.yml](../../.github/workflows/ci.yml), [doc-gardener.yml](../../.github/workflows/doc-gardener.yml), [tools/meta_enforce.py](../../tools/meta_enforce.py)에 연결한다.
 
 판정: **반복 방지 ACTIVE.**
 
