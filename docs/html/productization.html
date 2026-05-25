@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.769)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.769 미러 (commit c791460 = cycle 169.768 반영).
-     cycle 169.769 staleness refresh — 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (env.X GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 2463 PASS + 38 skip + cov 89.73% retain.
-     last_verified = 2026-05-25T13:25:00+09:00. -->
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.771)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.771 미러.
+     cycle 169.771 = §3.1 "음성·영상 통화" row label 정정 (table 이 기본 구현분까지 미래로 오해 소지). 기본 1:1 + mesh ≤ 8 음성·영상 통화 = aiortc RTCPeerConnection + CallDialog + voice/video browser E2E PASS ✅ 구현 완료, SFU 확장(9 peer+)만 🟡 Phase 6+. cov 89.73% / 2463 PASS / 38 skip retain.
+     last_verified = 2026-05-25T13:50:00+09:00. -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -332,7 +332,7 @@
     <tr><td>bot LLM 응답 chain Q&amp;A + ContentTypeError graceful + OpenAI 우선 provider</td><td class="good">✅ cycle 169.203 + 209 + 210</td><td>cycle 169.203 / 209 / 210</td></tr>
     <tr><td>PORTABLE_HARNESS.md 공용 한벌</td><td class="good">✅ cycle 169.207</td><td>cycle 169.207</td></tr>
     <tr><td>dereliction-detector 자동 spawn + hook stderr redirect + false positive 회수</td><td class="good">✅ cycle 169.189 + 212 + 215</td><td>cycle 169.189 / 212 / 215</td></tr>
-    <tr><td>음성·영상 통화</td><td class="warn">🟡 Phase 6+ 후보</td><td>cycle 200+</td></tr>
+    <tr><td>음성·영상 통화 (1:1 + mesh ≤ 8)</td><td>✅ 기본 구현 (aiortc RTCPeerConnection + audio/video track + CallDialog/RemoteCallDialog + voice/video browser E2E PASS) · <span class="warn">🟡 SFU 확장(9 peer+)만 Phase 6+</span></td><td>기본 cycle 169.57~60 + 169.659 / SFU cycle 200+</td></tr>
   </tbody>
 </table>
 

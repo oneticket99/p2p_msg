@@ -1,17 +1,17 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T13:25:00+09:00
+last_verified: 2026-05-25T13:50:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-25 13:25 KST — cycle 169.769 staleness refresh (commit `c791460` = cycle 169.768 반영). 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 상태 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (`env.DOC_GARDENER_UPDATED`/`env.MIGRATION_DRIFT` GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 tests = 2463 PASS + 38 skip + coverage **89.73%** retain.<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
+> **최신 갱신 시점**: 2026-05-25 13:50 KST — cycle 169.771 §3.1 "음성·영상 통화" row label 정정 (사용자 critique — table 이 기본 구현분까지 미래로 오해 소지). 기본 1:1 + mesh ≤ 8 음성·영상 통화 = aiortc RTCPeerConnection + CallDialog + voice/video browser E2E PASS 로 ✅ 구현 완료, SFU 확장(9 peer 이상)만 🟡 Phase 6+. cov 89.73% / 2463 PASS / 38 skip retain.<br>**이전 갱신**: 2026-05-25 13:25 KST — cycle 169.769 staleness refresh (commit `c791460` = cycle 169.768 반영). 직전 cycle 169.768(doc-gardener.yml actionlint) 외 app 코드 변경 부재 (자동 도달 cov gap 소진 상태 retain). cycle 169.768 = doc-gardener.yml actionlint "Context access might be invalid" warning 2건 회수 (`env.DOC_GARDENER_UPDATED`/`env.MIGRATION_DRIFT` GITHUB_ENV runtime 주입 → step output 전환, 전체 5 workflow actionlint 0 issue retain). 전체 tests = 2463 PASS + 38 skip + coverage **89.73%** retain.<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.769 누계 (commit `c791460` = cycle 169.768 기준 main branch). 본 cycle = doc-gardener.yml actionlint warning 회수 + 평가 staleness refresh.
+> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.771 누계 (commit `0909de7` 이후 main branch). 본 cycle = §3.1 음성·영상 통화 row label 정정 (기본 구현 ✅ / SFU 확장 🟡 분리).
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
@@ -394,7 +394,7 @@ cycle 169.693 — qtbot fixture hang refactor (scope=function 변경) + admin_me
 | bot LLM 응답 chain Q&A 실 응답 + ContentTypeError graceful + OpenAI 우선 provider | ✅ cycle 169.203 + 169.209 + 169.210 | cycle 169.203 / 209 / 210 |
 | PORTABLE_HARNESS.md 공용 한벌 | ✅ cycle 169.207 | cycle 169.207 |
 | dereliction-detector 자동 spawn 강제 chain + hook stderr redirect + false positive 회수 | ✅ cycle 169.189 + 169.212 + 169.215 | cycle 169.189 / 212 / 215 |
-| 음성·영상 통화 | 🟡 Phase 6+ 후보 (WebRTC mesh ≤ 8 → SFU 마이그레이션 의무) | cycle 200+ |
+| 음성·영상 통화 (1:1 + mesh ≤ 8) | ✅ 기본 구현 (aiortc RTCPeerConnection + audio/video track + OS별 MediaPlayer + CallDialog/RemoteCallDialog + voice/video browser E2E PASS) · 🟡 SFU 확장(9 peer 이상)만 Phase 6+ | 기본 cycle 169.57~60 + 169.659 / SFU cycle 200+ |
 
 ### 3.2 ~~보안 deprioritized~~ — Phase 4 cycle 112~117 회수 완료 + cycle 169.101~102 dialog 보안 강화
 
