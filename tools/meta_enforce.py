@@ -28,6 +28,7 @@ WORKFLOW_DIR = ROOT / ".github" / "workflows"
 REQUIRED_FILES = [
     "tools/doc-lint.sh",
     "tools/md_agents.py",
+    "tools/check_assessment_consistency.py",
     "tools/hook_check_bpe_token_input.sh",
     "tools/hook_telegram_report_stop.sh",
     "tools/hook_auto_commit_enforce.sh",
@@ -173,6 +174,19 @@ def check_doc_gardener_auto_push() -> Tuple[bool, str]:
     return True, "doc-gardener 자동 보정 branch push + PR 경로 확인"
 
 
+def check_doc_gardener_assessment_consistency() -> Tuple[bool, str]:
+    """doc-gardener workflow 가 평가 문서 consistency 검사를 실행하는지 검증."""
+    text = _read(DOC_GARDENER)
+    required_tokens = [
+        "평가 문서 consistency 검사",
+        "python3 tools/check_assessment_consistency.py",
+    ]
+    missing = [token for token in required_tokens if token not in text]
+    if missing:
+        return False, "doc-gardener 평가 consistency 검사 누락: " + ", ".join(missing)
+    return True, "doc-gardener 평가 consistency 검사 확인"
+
+
 def check_workflows_checkout_v5() -> Tuple[bool, str]:
     """GitHub Actions checkout action 의 Node 24 런타임 기준 검증."""
     offenders = []
@@ -288,6 +302,7 @@ def main() -> int:
         ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
         ("latest-cycle-documented", check_latest_cycle_documented),
         ("doc-gardener-auto-push", check_doc_gardener_auto_push),
+        ("doc-gardener-assessment-consistency", check_doc_gardener_assessment_consistency),
         ("workflows-checkout-v5", check_workflows_checkout_v5),
         ("auto-commit-hook-wired", check_auto_commit_hook_wired),
         ("no-main-push-guidance-in-hooks", check_no_main_push_guidance_in_hooks),

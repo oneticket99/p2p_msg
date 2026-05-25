@@ -1,7 +1,7 @@
 ---
 title: "Doc Gardening Policy — 문서·코드 drift 자동 보정"
 owner: oneticket99
-last_verified: 2026-05-24
+last_verified: 2026-05-25
 status: active
 ---
 
@@ -21,6 +21,7 @@ status: active
 2. **메타데이터 drift** — frontmatter 필수 4 필드 (title · owner · last_verified · status) 누락
 3. **링크 drift** — 깨진 상대 markdown 링크
 4. **스테일 drift** — `last_verified` 의 90일 초과
+5. **평가 큐 drift** — `current-project-review.md` 가 최신 commit/WBS/MIGRATION 상태와 반대로 말하는 상황
 
 ---
 
@@ -55,6 +56,7 @@ status: active
 | `docs-lint.yml` | cron 매일 00:00 UTC + dispatch + path-filter | GitHub Actions |
 | `doc-gardener.yml` | cron 매주 월요일 00:00 UTC + dispatch | GitHub Actions |
 | `tools/doc-lint.sh` (로컬) | 파일 수정 직후 (사용자 가드레일 [[feedback-lint-before-push-guardrail]]) | 사용자 직접 |
+| `tools/check_assessment_consistency.py` | doc-gardener + meta-enforcement | GitHub Actions / 로컬 |
 
 ---
 
@@ -97,8 +99,21 @@ status: active
   - 신규 정책 도입
   - 오너십 변경
   - BPE / 1인칭/3인칭 위반 정정 (의미 정합 필요)
+  - 평가 문서 큐 의미 정정 (`current-project-review.md` 최신 cycle/WBS/MIGRATION 모순)
 
-### 6.3 머지 게이트
+### 6.4 평가 문서 consistency 검사
+
+`tools/check_assessment_consistency.py` 는 Claude 협업 진입점인
+`docs/assessments/current-project-review.md` 를 별도로 검사한다.
+
+- HEAD commit 의 `cycle169.NNN` marker 가 평가 문서에 없으면 실패한다.
+- `data/wbs.sqlite` 가 존재하고 최신 row 가 HEAD commit `completed` 상태이면, M6 를
+  `PARTIAL` 또는 마감 잔존 작업으로 표현하는 문장을 실패 처리한다.
+- `tools/check_migration_tables.py --strict` 가 통과하면, MIGRATION strict 를 잔존
+  작업으로 표현하는 문장을 실패 처리한다.
+- 본 검사는 doc-gardener 와 `tools/meta_enforce.py` 의 자기검증에 모두 연결한다.
+
+### 6.5 머지 게이트
 
 - 보정 PR = `@reviewer-agent` PASS + 사용자 직접 승인 의무
 - main 직접 push 금지 (정본 §K 정합)
@@ -114,6 +129,7 @@ status: active
 | 깨진 링크 | doc-lint.sh push 차단 | 대상 신설 또는 텍스트 변경 |
 | frontmatter 누락 | doc-lint.sh push 차단 | 4 필수 필드 추가 |
 | 90일 스테일 | doc-gardener.yml warning | 오너 직접 갱신 또는 archive 이동 |
+| 평가 큐 drift | check_assessment_consistency.py 차단 | current-project-review.md 최신 cycle 기준 rewrite |
 | 루트 18 동결 위반 | ci.yml root-18-freeze 차단 | docs/ 하위로 이동 |
 
 ---
@@ -136,6 +152,6 @@ status: active
 - 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../CLAUDE_HARNESS_IMPORTANT.md) §H · §L · §M · §S
 - 에이전트 정의: [.claude/agents/doc-gardener-agent.md](../../.claude/agents/doc-gardener-agent.md)
 - 워크플로우: [.github/workflows/doc-gardener.yml](../../.github/workflows/doc-gardener.yml) · [.github/workflows/docs-lint.yml](../../.github/workflows/docs-lint.yml)
-- 도구: [tools/doc-lint.sh](../../tools/doc-lint.sh) · [.markdownlint.json](../../.markdownlint.json)
+- 도구: [tools/doc-lint.sh](../../tools/doc-lint.sh) · [tools/check_assessment_consistency.py](../../tools/check_assessment_consistency.py) · [.markdownlint.json](../../.markdownlint.json)
 - 메모리 가드레일: `feedback-no-korean-chuck-token` · `feedback-no-self-other-pronoun` · `feedback-lint-before-push-guardrail` · `feedback-doc-perfection-before-code`
 - 관련 정책: [adoption-roadmap.md](adoption-roadmap.md) · [execution-harness.md](execution-harness.md)
