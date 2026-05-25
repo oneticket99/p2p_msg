@@ -56,7 +56,7 @@ status: active
 | `docs-lint.yml` | cron 매일 00:00 UTC + dispatch + path-filter | GitHub Actions |
 | `doc-gardener.yml` | cron 매주 월요일 00:00 UTC + dispatch | GitHub Actions |
 | `tools/doc-lint.sh` (로컬) | 파일 수정 직후 (사용자 가드레일 [[feedback-lint-before-push-guardrail]]) | 사용자 직접 |
-| `tools/check_assessment_consistency.py` | doc-gardener + meta-enforcement | GitHub Actions / 로컬 |
+| `tools/check_assessment_consistency.py` | ci + doc-gardener + meta-enforcement | GitHub Actions / 로컬 |
 
 ---
 
@@ -111,7 +111,7 @@ status: active
   `PARTIAL` 또는 마감 잔존 작업으로 표현하는 문장을 실패 처리한다.
 - `tools/check_migration_tables.py --strict` 가 통과하면, MIGRATION strict 를 잔존
   작업으로 표현하는 문장을 실패 처리한다.
-- 본 검사는 doc-gardener 와 `tools/meta_enforce.py` 의 자기검증에 모두 연결한다.
+- 본 검사는 `ci.yml`, doc-gardener, `tools/meta_enforce.py` 의 자기검증에 모두 연결한다.
 
 ### 6.5 머지 게이트
 

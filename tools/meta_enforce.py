@@ -117,6 +117,19 @@ def check_ci_meta_job() -> Tuple[bool, str]:
     return True, "ci.yml meta-enforcement job 확인"
 
 
+def check_ci_assessment_consistency_job() -> Tuple[bool, str]:
+    """ci.yml 이 협업용 전면평가 consistency 검사를 직접 실행하는지 확인."""
+    text = _read(CI)
+    required_tokens = [
+        "assessment-consistency",
+        "python3 tools/check_assessment_consistency.py",
+    ]
+    missing = [token for token in required_tokens if token not in text]
+    if missing:
+        return False, "ci.yml assessment consistency job 누락: " + ", ".join(missing)
+    return True, "ci.yml assessment consistency job 확인"
+
+
 def check_ci_m3_uses_md_agents() -> Tuple[bool, str]:
     """CI M3 job 이 로컬 하네스와 같은 검증기를 쓰는지 확인."""
     text = _read(CI)
@@ -299,6 +312,7 @@ def main() -> int:
         ("root-markdown-freeze", check_root_markdown_freeze),
         ("ci-soft-fail", check_ci_soft_fail),
         ("ci-meta-job", check_ci_meta_job),
+        ("ci-assessment-consistency", check_ci_assessment_consistency_job),
         ("ci-m3-md-agents", check_ci_m3_uses_md_agents),
         ("latest-cycle-documented", check_latest_cycle_documented),
         ("doc-gardener-auto-push", check_doc_gardener_auto_push),

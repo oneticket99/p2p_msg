@@ -1,14 +1,15 @@
 # =============================================================================
 # ci.yml — TooTalk(p2p_msg) 기본 CI 게이트
 # -----------------------------------------------------------------------------
-# 본 워크플로우는 PR + main push 시점에 다음 7 게이트를 강제한다.
+# 본 워크플로우는 PR + main push 시점에 다음 8 게이트를 강제한다.
 #   1) docs-lint       — markdownlint-cli2 + tools/doc-lint.sh
-#   2) root-18-freeze  — 루트 .md 정확히 18개 (정본 §K)
-#   3) m1-doc-precedence — 코드 변경 PR 에 docs/ 동행 변경 검증
-#   4) m2-readme-history — README.md "변경 이력" 헤더 존재 검증
-#   5) m3-history-prepend — History.md 첫 Phase 헤더 최신 일자 prepend 검증
-#   6) m4-korean-comments — 신규/수정 .py/.js/.html/.css/.sql/.sh 한글 주석 1줄 이상
-#   7) import-smoke    — app/server import 매트릭스 (macOS arm64 + Windows x64)
+#   2) assessment-consistency — current-project-review.md 최신 cycle/WBS/MIGRATION 모순 차단
+#   3) root-18-freeze  — 루트 .md 정확히 18개 (정본 §K)
+#   4) m1-doc-precedence — 코드 변경 PR 에 docs/ 동행 변경 검증
+#   5) m2-readme-history — README.md "변경 이력" 헤더 존재 검증
+#   6) m3-history-prepend — History.md 첫 Phase 헤더 최신 일자 prepend 검증
+#   7) m4-korean-comments — 신규/수정 .py/.js/.html/.css/.sql/.sh 한글 주석 1줄 이상
+#   8) import-smoke    — app/server import 매트릭스 (macOS arm64 + Windows x64)
 #
 # 정책 정합:
 #   - 사용자 directive 2026-05-17 — CI = self-hosted macOS arm64 단독
@@ -69,6 +70,27 @@ jobs:
 
       - name: meta-enforcement 실행
         run: python3 tools/meta_enforce.py
+
+  # ---------------------------------------------------------------------------
+  # assessment-consistency — 협업용 전면평가 stale 큐 차단
+  # ---------------------------------------------------------------------------
+  assessment-consistency:
+    name: assessment-consistency (current-project-review)
+    runs-on: [self-hosted, macOS, arm64]
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: brew python@3.13 PATH 등록
+        if: runner.os == 'macOS'
+        run: echo "/opt/homebrew/opt/python@3.13/libexec/bin" >> "$GITHUB_PATH"
+
+      - name: current-project-review.md consistency 검증
+        run: |
+          # 한글 주석 — 협업용 전면평가가 최신 cycle/WBS/MIGRATION 상태와 어긋나면 PR/main push 를 차단한다.
+          python3 tools/check_assessment_consistency.py
 
   # ---------------------------------------------------------------------------
   # root-18-freeze — 루트 마크다운 정확히 18개 동결 (정본 §K)
