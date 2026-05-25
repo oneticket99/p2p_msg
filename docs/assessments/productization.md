@@ -1,24 +1,24 @@
 ---
 title: "TooTalk 제품화 가능성 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T14:55:00+09:00
+last_verified: 2026-05-25T16:05:00+09:00
 status: active
 ---
 
-> **최신 갱신 시점**: 2026-05-25 14:55 KST — cycle 169.778 batch refresh (cycle 169.774~777 진척 반영). **(a) DI refactor 무효 확정 + superseded skip 14건 은퇴**(38→24, hang root=async fixture). **Codex P0 회수 — SignalingClient 실 backoff 재연결 + reJOIN + RECONNECTING 상태**(통합 test 9 PASS, FR-10 `[x]`) → 가용성(NFR-04) 실 구현 진척. **(c) 원격 데스크탑 실 binding M1~M2 진척 — RemoteSessionRunner orchestration core 신설**(host/controller loop + frame/input 직렬화 + backend DI, headless test 13 PASS) → Phase 5 차별화 실 binding 1차 진입(잔존 M3 permission on-channel + UI 결선 + M4 실 OS 수동 ack). 전체 tests ≈ 2463 + 신규 22(reconnect 9 + session_runner 13) = 약 2485 PASS, tests/app/ui skip 24.<br>**이전 갱신**: 2026-05-25 13:50 KST — cycle 169.771 §3.1 음성·영상 통화 row label 정정 (기본 ✅ / SFU 🟡 분리).<br>**이전 갱신**: 2026-05-25 04:20 KST — cycle 169.765 batch end (server/db/repositories 전수 + 잔존 미커버 소진, cov 81.34→89.73%).
+> **최신 갱신 시점**: 2026-05-25 16:05 KST — cycle 169.783 assessment refresh (cycle 169.779~782 진척 반영). **원격 데스크탑 M3 진척**: permission on-channel handshake(REQUEST/GRANT/DENY/REVOKE), coord_transform host input 결선, UI accept→RemoteSessionRunner 생성, 실 aiortc DataChannel loopback 1 PASS. **SignalingClient P0 후속 회귀 회수**: RECONNECTING 상태가 StatusBar에서 ERROR로 오표시되던 whitelist drift 수정. **M6 WBS 활성 + backfill**: 169.745~781 누락 row 보강, 단 169.782 row·status 통일·post-commit hook 설치는 잔존. 최신 집중 검증 = remote/signaling/status 경로 162 PASS + md_agents PASS + doc-lint PASS. 종합 평가는 `current-project-review.md` 기준 7.6/10. 외부 dogfooding 전 선행 조건 = 원격 M4 실 OS capture/input 수동 ack + M6 enforcement 마감 + product 본문 전수 rewrite.<br>**이전 갱신**: 2026-05-25 14:55 KST — cycle 169.778 batch refresh (cycle 169.774~777 진척 반영). **(a) DI refactor 무효 확정 + superseded skip 14건 은퇴**(38→24, hang root=async fixture). **Codex P0 회수 — SignalingClient 실 backoff 재연결 + reJOIN + RECONNECTING 상태**(통합 test 9 PASS, FR-10 `[x]`) → 가용성(NFR-04) 실 구현 진척. **(c) 원격 데스크탑 실 binding M1~M2 진척 — RemoteSessionRunner orchestration core 신설**.
 
 # TooTalk 제품화 가능성 평가 (Snapshot)
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.771 누계 (commit `0909de7` 이후 main branch). 본 cycle = §3.1 음성·영상 통화 row label 정정 (기본 구현 ✅ / SFU 확장 🟡 분리).
+> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 cycle 169.782 누계 (commit `43d9b59` 기준 main branch). 본 cycle = 평가 freshness 회수 + Claude 작업 큐 동기화.
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
 
 ## 1. 총평 (TL;DR)
 
-**현재 단계** (cycle 169.765 batch 누계 반영): server/db/repositories 계층 전수 + 잔존 자동 도달 미커버 영역 소진이 본 batch 의 축이다. cycle 169.745~765 사이 repo 전수(file_meta/password_reset/read_states/messages/bots/email_verification/devices/friends/device_tokens/folders/emoji_packs/peers) + remote_handlers + rotate_key + avatar_palette + _icons 회수 — peers/remote_handlers/rotate_key/avatar_palette/_icons 100% + email_verification 97% + repo 계층 75~100%. fixture hang DI refactor = mixin method 에 MagicMock self 주입 (dependency injection 등가) 의 mock isolation 으로 중복 full-instantiation skip 11건 제거 (skip 49 → 38). **단 dialog/e2e 의 실 widget instantiation 포팅 은 PyQt6 cumulative QWidget retain hang 으로 차단 확정** (8 비-asyncio dialog 도 hang — MainWindow 21 mixin 과 동일 root, mock isolation 외 우회 부재). 본 branch 기준 전체 로컬 tests = **2463 PASS** + 38 skip + e2e 약 15+ PASS + coverage 81.34% → **89.73%** (+8.39%p). 누계 cycle 169.694~765 ≈ 약 **608 신규 PASS**. **자동 도달 가능 cov gap 사실상 소진** (잔여 = 38 skip architecture hang + manual visual ack + 도달 불가 defensive). cycle 169.715 — `youtube_client` 삭제 (사용자 directive, streaming 영역 deprioritized). **제품화 readiness = 내부 dogfooding 후보, 외부 dogfooding 보류**. 선행 조건은 최신 원격 CI success, 사용자 manual visual ack, 패키징 산출 재검증, Windows smoke 재확인이다. 종합은 **6.7 / 10** 유지한다 (test cov 89.73% + 가드레일 hardening 강화 단, 외부 dogfooding 단계 부재 + UI/dialog GUI 자동 검증 architecture 한계 retain 으로 종합 보류).
+**현재 단계** (cycle 169.782 누계 반영): cycle 169.774~782에서 평가가 실제로 달라졌다. (a) MainWindow 전면 DI refactor는 무효 확정 후 superseded skip 14건을 은퇴했고, tests/app/ui skip은 38→24로 줄었다. Codex P0였던 `SignalingClient` 자동 재연결은 backoff + reJOIN + RECONNECTING 상태로 구현됐으며 StatusBar whitelist 회귀도 cycle 169.780에서 회수됐다. (c) 원격 데스크탑은 `RemoteSessionRunner` headless core, permission handshake, coord transform, UI accept 결선, 실 aiortc DataChannel loopback까지 진척됐다. M6 WBS도 backfill로 다시 활성화됐다. 최신 집중 검증은 **162 PASS**(remote/signaling/status 경로) + `md_agents.py` PASS + `doc-lint.sh` PASS. **제품화 readiness = 내부 dogfooding 후보, 원격 데스크탑 M4 실 OS 검증 전**이다. 종합은 `current-project-review.md` 기준 **7.6 / 10** 으로 상향하되, 본 productization 문서의 장문 본문은 아직 과거 cycle 표현이 남아 있어 다음 cycle 전수 rewrite가 필요하다.
 
 | 항목 | 점수 (10점, 0.1 단위) | 직전 → 현재 | 근거 |
 |---|---|---|---|
@@ -31,7 +31,7 @@ status: active
 | 가드레일 자동화 | 8.4 / 10 | 8.2 → 8.4 ▲ | hook, doc-lint, meta-enforcement, dereliction-detector 설계는 강하다. cycle 169.748 직무유기 훅 HEAD-TTL 역설 (미커밋 작업 미detect) 근본 회수 + dirty-tree detect 추가 + cycle 169.749~750 전체 5 workflow actionlint 0 issue 도달로 자동 차단 신뢰성이 올랐다. 다만 일부 hook은 advisory 성격이고, false positive / local-only 환경 / settings 비활성 상태가 남아 있다. 10점형 자동 차단 체계가 아니라 "강한 로컬/CI 보조 체계"로 평가한다. |
 | 세션 간 정합 | 7.4 / 10 | 8.5 → 7.4 ▼ | handoff, assessment sync, History/README prepend는 장점이다. 하지만 이전 문서에 낙관 문구와 stale fingerprint가 반복 축적된 사실 자체가 정합 리스크다. "drift 0건 연속" 같은 표현은 자동 검증 증거가 없는 문맥에서는 사용하지 않는다. |
 | 보안 hardening | 7.5 / 10 | 9.5 → 7.5 ▼ | E2EE Signal + encrypted backup + GPLv3 + jailbreak 17 패턴 + threading.RLock + DB audit IP 90일 retention + SPF/DKIM RSA 2048/DMARC + Docker secret + non-root uid 1000 + nginx TLS 1.2/1.3 + 6 cipher + OCSP + 5 보안 header + 5 rate limit zone + production validate ConfigError + X-Request-ID contextvar + parameterized SQL injection 차단 + activity 1분 throttle + sensitive redact 9 pattern + cycle 169.102 update_last_login graceful skip + cycle 169.101 6 dialog setModal regex fix + cycle 169.209 bot LLM ContentTypeError graceful HTTP status + JSON parse 분기 + cycle 169.228 bearer_token chain 회수 self._session_token (HTTP 401 차단) |
-| **종합** | **6.7 / 10** | 유지 | **cycle 169.745~765 batch 약 608 신규 PASS + cov 81.34% → 89.73% (server repo 전수 + 잔존 미커버 소진) + fixture hang DI (11 skip 제거) + codex 3종 회수. 자동 도달 cov gap 사실상 소진. 단, 외부 dogfooding 단계 부재 + dialog/e2e GUI 자동 검증 architecture 한계 retain — 원격 CI success / manual visual ack / .app codesign (production phase) 가 확인돼야 다음 단계로 올린다.** |
+| **종합** | **7.6 / 10** | 6.7 → 7.6 ▲ | **cycle 169.774~782에서 SignalingClient 자동 재연결 구현 + StatusBar RECONNECTING 회귀 회수 + superseded skip 14건 은퇴 + RemoteSessionRunner/permission handshake/coord transform/UI accept 결선 + 실 aiortc DataChannel loopback까지 진척. 최신 집중 검증 162 PASS + md_agents/doc-lint PASS. 단, 원격 M4 실 OS capture/input 수동 ack, M6 enforcement 마감, product 본문 전수 rewrite 전까지 외부 dogfooding은 보류.** |
 
 ---
 

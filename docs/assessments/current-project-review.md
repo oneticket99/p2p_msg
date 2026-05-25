@@ -1,233 +1,238 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-25T13:55:00+09:00
+last_verified: 2026-05-25T16:05:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 13:40 KST 로컬 작업 트리.
-> 범위: 실 구현, 문서 정합성, 테스트·CI 게이트, 배포 가능성, 구조 리스크.
-> 목적: 다음 Claude 세션이 즉시 읽고 우선순위를 잡을 수 있는 평가 기록.
+> 검토 기준: 2026-05-25 cycle 169.782 main branch.
+> 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 최신 평가 snapshot.
+> 핵심 판정: 구현 진척은 좋고, 병목은 평가 문서 freshness + M6 enforcement + 원격 데스크탑 M4 검증이다.
 
 ## 1. 종합 판정
 
-**현재 점수: 7.1 / 10**
+**현재 점수: 7.6 / 10**
 
-TooTalk 는 문서만 있는 스켈레톤이 아니라 실제 구현·테스트·운영 자산이 상당히 누적된 프로젝트다. 서버 API, PyQt6 클라이언트, WebRTC/DataChannel, 파일·이미지 전송, 봇, 원격 제어, i18n, 배포 인프라가 실제 파일과 테스트로 존재한다.
+TooTalk 는 문서만 있는 프로젝트가 아니라 PyQt6 클라이언트, aiohttp 시그널링, aiortc DataChannel, MariaDB/SQLite 저장, 봇, i18n, 원격 데스크탑, CI/문서 가드레일이 실제 파일과 테스트로 누적된 프로젝트다.
 
-다만 문서 표현 중 일부는 구현보다 앞서 있거나 과거 상태를 아직 말한다. 특히 자동 재연결, DB 정본, README 빠른 시작, coverage 해석, macOS 앱 실행성은 “완료”보다 “부분 구현 또는 검증 보류”로 분류해야 한다.
+cycle 169.774~782 사이의 핵심 진척으로 이전 7.1/10 평가는 더 이상 유효하지 않다. `SignalingClient` 자동 재연결은 구현됐고, 원격 데스크탑은 `RemoteSessionRunner` 단위 검증을 넘어 실 aiortc DataChannel loopback까지 통과했다. M6 WBS backfill도 수행되어 프로세스 추적이 다시 살아났다.
 
-현재 단계는 **외부 사용자 배포 직전**이 아니라 **내부 dogfooding 안정화 단계**다.
+다만 외부 사용자 배포 단계로 보기는 아직 이르다. 원격 데스크탑은 실 OS capture/input dispatch 수동 검증 전이고, macOS `.app` 배포 신뢰성·DB 문서 strict·WBS 자동 강제·평가 snapshot 동기화가 남아 있다. 현재 단계는 **내부 dogfooding 후보 + 원격 데스크탑 M4 진입 직전**이다.
 
-## 2. 이번 검증 결과
+## 2. 최신 검증 결과
 
-로컬 검증 결과.
+이번 재평가에서 확인한 로컬 결과.
 
+- `git status -sb`: clean, `main...origin/main`
+- `.venv/bin/pytest -q tests/app/remote tests/app/ui/test_remote_session_wire.py tests/integration/test_remote_session_loopback.py tests/app/net/test_signaling_reconnect.py tests/app/ui/test_status_bar_states.py`: `162 passed, 1 deselected`
 - `python3 tools/md_agents.py`: PASS
 - `bash tools/doc-lint.sh`: PASS
-- `python3 tools/check_migration_tables.py`: PASS
+- `data/wbs.sqlite` `wbs_tasks`: 274 row (cycle 169.783 current directive row 포함)
+
+이전 전체 검증 기준.
+
 - 기본 unit: `2463 passed, 38 skipped, 307 deselected`
 - integration/server: `307 passed, 591 deselected`
 - e2e: `10 passed`
-- CI 유사 coverage: `2770 passed, 38 skipped`, coverage `90.45%`
+- coverage 실행: `2770 passed, 38 skipped`, coverage `90.45%`
 
 주의점.
 
-- 기본·통합·coverage 실행 후 SQLite `ResourceWarning: unclosed database` 가 반복 발생했다.
-- skip 38건 중 UI hang, asyncSlot 직접 호출 부적합, fake worker fixture 누적 hang 계열이 남아 있다.
-- coverage 90.45%는 넓은 omit 범위 위에서 산출된 값이다.
+- 전체 suite 재실행은 이번 문서 갱신에서 새로 수행하지 않았다. 위 162 PASS는 최신 변경 경로 집중 검증이다.
+- coverage 90.45%는 `pyproject.toml` omit 범위가 넓은 상태의 측정값이다.
+- SQLite `ResourceWarning: unclosed database` 반복 이슈는 이전 평가의 잔존 리스크다.
 
-## 3. 실 구현된 항목
+## 3. 최근 구현 진척
 
-실 구현으로 분류 가능한 영역.
+### 3.1 SignalingClient 자동 재연결
 
-- 서버: auth, devices, messages, reactions, rooms, friends, bot, remote, health 라우트와 repository 계층이 존재한다.
-- 클라이언트: PyQt6 앱, 로그인·회원가입, 채팅 UI, 파일·이미지 전송 모듈, i18n, 사운드, updater, bot, remote 관련 모듈이 존재한다.
-- WebRTC/DataChannel: `app/rtc/*`, browser e2e, 파일·이미지 e2e가 통과했다.
-- 테스트: unit/integration/e2e가 광범위하게 존재하며 로컬 기준 모두 통과했다.
-- 운영: Docker, nginx, postfix, build workflow, release workflow, doc-gardener workflow가 존재한다.
+cycle 169.775에서 [app/net/signaling_client.py](../../app/net/signaling_client.py) 에 backoff 재연결 + reJOIN 복구가 구현됐다.
+
+구현된 항목.
+
+- `_should_reconnect` 로 비정상 drop과 명시적 `disconnect()` 구분
+- `_recv_loop` 종료 시 `_schedule_reconnect()` 예약
+- `_reconnect_loop` 지수 backoff + max attempts + `RECONNECTING` 상태 전이
+- 마지막 `join()` 식별자 기반 reJOIN 복구
+- `disconnect()` 중 재연결 task 취소
+- [app/core/app_state.py](../../app/core/app_state.py) `RECONNECTING` valid state 추가
+- cycle 169.780에서 [app/ui/status_bar.py](../../app/ui/status_bar.py) `_VALID_STATES` 동기화
+
+검증.
+
+- [tests/app/net/test_signaling_reconnect.py](../../tests/app/net/test_signaling_reconnect.py): 9 PASS
+- [tests/app/ui/test_status_bar_states.py](../../tests/app/ui/test_status_bar_states.py): 3 PASS
+
+판정: **IMPLEMENTED.** 실 서버 강제 close 기반 e2e chaos는 아직 필요하므로 NFR-04는 **VERIFIED 아님**.
+
+### 3.2 UI skip/DI 방향 정리
+
+cycle 169.774에서 superseded skip 파일 3개가 삭제되어 UI skip 38건이 24건으로 줄었다. MainWindow 전면 DI refactor는 hang 원인과 직접 관련이 없다는 진단이 확정됐다.
+
+판정: **DI refactor 재개 금지.** 남은 24 skip은 asyncSlot 직접 호출 부적합, PyQt6 부재 skip, isolated 대체 미완료 항목으로 분류해서 다룬다.
+
+### 3.3 원격 데스크탑 실 binding
+
+cycle 169.777~782에서 원격 데스크탑 wire layer가 크게 진척됐다.
+
+구현된 항목.
+
+- [app/remote/session_runner.py](../../app/remote/session_runner.py): host/controller orchestration
+- frame/input 별도 wire 직렬화
+- capture/input backend DI
+- host grant gate 기반 무단 input 차단
+- [app/remote/remote_handshake.py](../../app/remote/remote_handshake.py): REQUEST/GRANT/DENY/REVOKE control protocol
+- revoke token 상수시간 검증
+- controller 화면 좌표를 host 화면 좌표로 보정
+- [app/ui/_chat_header_mixin.py](../../app/ui/_chat_header_mixin.py): RemoteCallDialog accept 후 runner 생성 결선
+
+검증.
+
+- [tests/app/remote/test_session_runner.py](../../tests/app/remote/test_session_runner.py)
+- [tests/app/remote/test_remote_handshake.py](../../tests/app/remote/test_remote_handshake.py)
+- [tests/app/ui/test_remote_session_wire.py](../../tests/app/ui/test_remote_session_wire.py)
+- [tests/integration/test_remote_session_loopback.py](../../tests/integration/test_remote_session_loopback.py)
+
+판정: **IMPLEMENTED에 가까운 PARTIAL.** 실 DataChannel loopback은 통과했지만, 실제 친구 peer connection binding, OS capture/dispatch, 권한 팝업, 사용자 visual ack 전까지 `VERIFIED` 로 올리면 안 된다.
+
+### 3.4 M6 WBS 활성
+
+cycle 169.781에서 `data/wbs.sqlite` `wbs_tasks` backfill이 수행됐다.
+
+현재 상태.
+
+- 총 row: 274
+- cycle 169.745~781 누락분 상당수 backfill
+- M6 활성 전환 결정 기록됨
+
+잔존 문제.
+
+- cycle 169.782 row가 아직 없다.
+- id 274 `cycle 169.781` self row의 `commit_sha`가 비어 있다.
+- status 값이 `done`과 `completed`로 갈라져 있다.
+- `.git/hooks`에는 실제 post-commit WBS hook이 설치되어 있지 않다.
+
+판정: **M6는 활성화됐지만 enforcement는 PARTIAL.**
 
 ## 4. 문서와 구현 불일치
 
-### 4.1 자동 재연결
+### 4.1 해결된 불일치
 
-[CheckList.md](../../CheckList.md) 는 NFR-04를 chaos PASS 근거로 부분 충족 상태로 둔다. 하지만 [app/net/signaling_client.py](../../app/net/signaling_client.py) 의 `connect()` 는 단발 연결 + 수신 루프 예약만 수행하고, 수신 루프 종료 시 `DISCONNECTED` 로 전이한다. 앱 내부 backoff 재연결 루프와 reJOIN 복구 흐름은 없다.
+이전 평가의 “`SignalingClient` 자동 재연결 부재” 판정은 현재 폐기한다. cycle 169.775~780 구현과 테스트로 앱 클라이언트 재연결은 실제 존재한다.
 
-[tools/chaos_signaling.py](../../tools/chaos_signaling.py) 는 새 aiohttp 클라이언트를 만들어 JOIN 재성공 시간을 측정한다. 이는 서버 접속 가능성 벤치이며 앱 클라이언트 자동 재연결 구현 증거로는 부족하다.
+[CheckList.md](../../CheckList.md) FR-10 `[x]` 표기는 현재 구현과 정합한다. 단, NFR-04의 30초 안 99% 성공률은 실 서버 chaos evidence가 별도 필요하므로 `[~]` 유지가 맞다.
 
-판정: **문서가 구현보다 앞섬.**
+### 4.2 아직 남은 불일치
 
-### 4.2 DB 정본
+다음 문서는 Claude가 먼저 손봐야 한다.
 
-[MIGRATION_MARIADB.md](../../MIGRATION_MARIADB.md) 는 MariaDB 7개 핵심 테이블 중심 문서다. 실제 migrations SQL은 25개 테이블이며 `tools/check_migration_tables.py` 역시 “문서 테이블이 SQL에 존재하는가”만 기본 검사한다.
-
-[Structure.md](../../Structure.md) 는 아직 `app/db/` 미생성, `MIGRATION_MARIADB.md` 작성 예정 같은 과거 표현을 포함한다. 실제로는 `app/db/local_db.py`, `app/db/messages_cache.py`가 존재하고 클라 SQLite cache도 사용된다.
-
-판정: **DB 문서가 실제 구현을 전수 반영하지 못함.**
-
-### 4.3 README 빠른 시작
-
-[README.md](../../README.md) 는 “본 Phase 스켈레톤은 시그널링 자동 연결을 수행하지 않는다”, `rtc/` 예정, 운영 문서 작성 예정 같은 과거 문구를 포함한다. 실제 트리와 구현 수준을 반영하도록 갱신이 필요하다.
-
-판정: **사용자 안내 문서 드리프트.**
-
-### 4.4 Coverage 해석
-
-[pyproject.toml](../../pyproject.toml) 의 coverage omit 범위가 매우 넓다. `app/ui/_*_mixin.py`, `app/ui/main_window.py`, RTC binding, 여러 net client, server auth/api 일부가 제외되어 있다.
-
-판정: **coverage 90.45%는 “전체 제품 품질 90%”가 아니라 “측정 대상 기준 90%”로 해석해야 함.**
-
-### 4.5 macOS 앱 배포
-
-[README.md](../../README.md) 와 [History.md](../../History.md) 에 PyInstaller `.app` Team ID mismatch, codesign 실패, Nuitka 또는 Developer ID 필요성이 남아 있다.
-
-판정: **소스 실행과 Windows 빌드 경로는 강하지만 macOS `.app` 실사용 배포는 보류.**
+- [Specification.md](../../Specification.md) FR-10 trace row에 `app/net/signaling_client.py (예정)` 같은 과거 표현이 남아 있다.
+- [docs/assessments/productization.md](productization.md) 상단 snapshot은 cycle 169.783에서 보정됐지만, 장문 본문에는 cycle 169.765~778 표현이 아직 남아 있다.
+- [MIGRATION_MARIADB.md](../../MIGRATION_MARIADB.md) 와 [Structure.md](../../Structure.md) 는 실제 SQL 테이블 전수와 클라이언트 SQLite cache를 충분히 반영하지 못한다.
+- [README.md](../../README.md) 일부 본문은 과거 스켈레톤 표현이 남아 있을 가능성이 있다. 변경 이력은 최신이지만 본문 전수 sweep이 필요하다.
 
 ## 5. 구조 리스크
 
-가장 큰 구조 리스크는 `MainWindow` 중심 UI 결합이다.
+가장 큰 구조 리스크는 여전히 UI 결합이다. 다만 MainWindow 전면 DI refactor가 정답이라는 결론은 폐기됐다.
 
-현재 `app/ui/main_window.py` 는 20개 안팎의 mixin을 상속하고, 로그인 이후 세션 상태, 채팅, 친구, 폴더, 봇, 원격, 업데이트, 트레이, dialog routing을 한 객체에 모은다. 이미 별도 Exec Plan [2026-05-25-mainwindow-di-refactor.md](../exec-plans/active/2026-05-25-mainwindow-di-refactor.md) 가 존재하며, 전면 DI보다 skip 분류 후 단계적 격리가 타당하다는 결론이 기록되어 있다.
+현재 유효한 방향.
 
-권장 방향.
+1. mixin full-instantiation hang 테스트를 무리하게 되살리지 않는다.
+2. MagicMock self 기반 isolated test로 로직을 검증한다.
+3. 실제 QWidget wiring은 subprocess/offscreen smoke 또는 수동 visual ack로 분리한다.
+4. 원격 데스크탑은 runner/core와 UI binding을 계속 분리한다.
 
-1. dead/중복 skip 제거
-2. asyncSlot 직접 호출 부적합 테스트 정리
-3. 실제 QWidget wiring 계열은 subprocess 격리 또는 presenter 추출
-4. 1 mixin = 1 file = 1 commit 단위로 회귀 확인
+원격 데스크탑의 다음 구조 리스크.
 
-## 6. 우선순위
+- `_remote_data_channel` 실 생성 지점이 아직 명확히 제품 경로에 결선되지 않았다.
+- HOST 역할 runner는 현재 grant 미주입 시 input 전량 거부하는 안전 기본값이다. 실제 승인 grant 주입 경로가 M4에서 필요하다.
+- frame/input/control 3채널의 수명 관리, close/revoke, 재협상 정책이 아직 얇다.
 
-### P0
+## 6. Claude 즉시 작업 큐
 
-1. `SignalingClient` 실제 backoff reconnect + reJOIN + 상태 복구 구현.
-2. 자동 재연결 통합 테스트를 `SignalingClient` 기반으로 작성.
-3. `README.md`, `Structure.md`, `MIGRATION_MARIADB.md` 의 과거 표현 정리.
+### P0 — 문서 freshness 회수
 
-### P1
+1. [Specification.md](../../Specification.md) FR-10 trace row 수정: code ref를 `app/net/signaling_client.py`, test ref를 `tests/app/net/test_signaling_reconnect.py` / `tests/app/ui/test_status_bar_states.py`로 교체.
+2. [docs/assessments/productization.md](productization.md) 장문 본문을 cycle 169.782 기준으로 전수 rewrite.
+3. HTML mirror가 정책상 필요하면 `docs/html/productization.html`도 동기화.
+4. README 본문에서 `(예정)`, `스켈레톤`, `자동 연결 수행하지 않는다`, `작성 예정` 류 표현 전수 grep.
 
-1. coverage omit 목록 축소: `app/net/signaling_client.py`, RTC binding, server signaling부터 복구.
-2. skip 38건 중 hang 계열 UI 테스트 격리.
-3. SQLite unclosed database ResourceWarning 원인 추적.
+권장 grep.
 
-### P2
+```bash
+rg -n "예정|작성 예정|스켈레톤|자동 연결 수행하지|Task #|placeholder|Phase [0-9]+ .*활성" README.md Specification.md Structure.md MIGRATION_MARIADB.md CheckList.md docs/assessments
+```
 
-1. macOS `.app` 실행성 회수: Developer ID, Nuitka, rpath refactor 중 하나 결정.
-2. DB 문서 strict 모드 정책 결정: 핵심 7개 문서 유지 또는 25개 전수 문서화.
-3. 제품화 평가 snapshot의 낙관 표현을 로컬 검증 근거 중심으로 재작성.
+### P0 — M6 enforcement 마감
 
-## 7. 불일치 방지 방법
+1. `wbs_tasks` cycle 169.782 row 추가.
+2. id 274 `commit_sha` 보정 또는 self row 정책 문서화.
+3. `status` 값을 `done` 또는 `completed` 하나로 통일할지 결정.
+4. post-commit WBS hook 설치 여부 결정. hook 설치 전까지는 reviewer gate에서 WBS row 존재를 직접 검사한다.
 
-앞으로 개발 항목과 문서가 다시 어긋나지 않게 하려면 “문서를 더 많이 쓰기”보다 **상태 전이를 기계가 검증 가능한 형태로 제한**해야 한다.
+검증 SQL.
 
-### 7.1 상태 라벨을 증거 기반으로 고정
+```bash
+sqlite3 -header -column data/wbs.sqlite \
+  "select id, cycle, status, commit_sha, directive from wbs_tasks order by id desc limit 12;"
+```
 
-문서 안 상태 라벨은 다음 정의로만 쓴다.
+### P1 — 원격 데스크탑 M4
+
+1. 실 OS capture backend 실행 확인: macOS Screen Recording 권한 포함.
+2. 실 input dispatch 확인: Accessibility 권한 포함.
+3. friend peer connection 경로에서 `_remote_data_channel` 생성과 runner send callable을 실제 채널에 결선.
+4. permission GRANT를 HOST runner에 주입하는 UI/채널 경로 구현.
+5. M4 수동 visual ack를 `MANUAL_TESTS.md` 또는 Exec Plan evidence에 남긴다.
+
+### P1 — NFR-04 실 서버 chaos
+
+1. 실제 `SignalingClient` 인스턴스 기반으로 aiohttp WS server close를 강제하는 integration test 추가.
+2. close 후 `RECONNECTING -> CONNECTED -> reJOIN` event 순서를 검증.
+3. StatusBar 표시가 `ERROR`로 잘못 떨어지지 않는지 smoke 추가.
+
+### P2 — DB/배포 정합
+
+1. `MIGRATION_MARIADB.md` tables 배열과 SQL migration table 목록을 strict 기준으로 맞춘다.
+2. `tools/check_migration_tables.py --strict` 를 warning에서 CI gate로 올리는 시점을 정한다.
+3. macOS `.app` 실행성: Developer ID, Nuitka, rpath refactor 중 하나를 결정한다.
+
+## 7. 불일치 방지 규칙
+
+문서 상태 라벨은 다음 의미로만 사용한다.
 
 | 라벨 | 허용 조건 |
 |---|---|
 | `TODO` | 요구만 있고 코드·테스트 없음 |
-| `PARTIAL` | 코드 또는 테스트 중 하나만 있거나, 앱 wiring / 배포 / 수동 QA 중 하나가 비어 있음 |
+| `PARTIAL` | 코드 또는 테스트 중 하나만 있거나 앱 wiring·배포·수동 QA 중 하나가 비어 있음 |
 | `IMPLEMENTED` | 코드 + 자동 테스트 PASS + 문서 링크가 모두 있음 |
 | `VERIFIED` | `IMPLEMENTED` + 수동 QA 또는 배포 산출물 실행 증거 있음 |
 | `DEFERRED` | 명시적으로 뒤로 미룬 항목. 이유와 재개 조건 필요 |
 
 `DONE`, `완료`, `PASS` 는 `VERIFIED` 와 같은 강도로 취급한다. 자동 테스트만 통과한 상태는 `IMPLEMENTED` 까지만 허용한다.
 
-### 7.2 FR/NFR 추적표를 단일 소스로 운영
+FR/NFR 추적표 필수 열.
 
-[Specification.md](../../Specification.md), [CheckList.md](../../CheckList.md), [Structure.md](../../Structure.md) 에 흩어진 FR/NFR 매핑을 하나의 표준 행 구조로 맞춘다.
+- `id`
+- `status`
+- `code_refs`
+- `test_refs`
+- `doc_refs`
+- `last_verified`
+- `evidence`
 
-필수 열.
+`status=VERIFIED` 인데 `test_refs` 또는 `evidence` 가 비어 있으면 reviewer가 차단한다.
 
-- `id`: FR-xx 또는 NFR-xx
-- `status`: TODO / PARTIAL / IMPLEMENTED / VERIFIED / DEFERRED
-- `code_refs`: 실제 파일 링크 1개 이상
-- `test_refs`: 테스트 파일 또는 수동 QA 문서 링크
-- `doc_refs`: 관련 정책·요구사항 문서 링크
-- `last_verified`: YYYY-MM-DD
-- `evidence`: 명령 결과 또는 workflow run id
+## 8. 다음 Claude 세션 시작 절차
 
-이 표에서 `status=VERIFIED` 인데 `test_refs` 나 `evidence` 가 비어 있으면 CI가 실패해야 한다.
-
-### 7.3 “예정” 문구 자동 차단
-
-이미 존재하는 파일이나 구현된 기능을 가리키면서 `(예정)`, `작성 예정`, `스켈레톤`, `Task #`, `placeholder`, `Phase 후반 활성` 같은 표현이 남으면 drift 후보로 본다.
-
-권장 검사.
-
-```bash
-rg -n "예정|작성 예정|스켈레톤|Task #|placeholder|Phase [0-9]+ .*활성" README.md Specification.md Structure.md MIGRATION_MARIADB.md CheckList.md docs/assessments
-```
-
-검사 결과는 전부 제거하는 방식이 아니라, 각 항목을 다음 셋 중 하나로 분류한다.
-
-1. 실제 미구현이면 `DEFERRED` 로 바꾸고 재개 조건 기록
-2. 구현 완료면 실제 코드·테스트 링크로 교체
-3. 의도적 placeholder면 owner와 만료일 기록
-
-### 7.4 DB 문서 strict 모드 단계적 도입
-
-현재 `tools/check_migration_tables.py` 는 기본값으로 “문서 테이블이 SQL에 존재하는가”만 본다. DB drift를 강하게 막으려면 두 단계로 올린다.
-
-1. Phase A: `--strict` 결과를 doc-gardener summary에 warning으로 게시
-2. Phase B: SQL 테이블 25개 전수 문서화 후 `--strict` 를 CI 차단 게이트로 승격
-
-전수 문서화 전 strict를 바로 차단하면 기존 의도적 부분 문서가 전부 실패하므로, 먼저 `MIGRATION_MARIADB.md` 와 `Structure.md` ERD를 실제 25개 테이블 기준으로 맞춘다.
-
-### 7.5 PR 템플릿에 정합 증거 추가
-
-PR 본문에 다음 체크를 강제한다.
-
-```text
-## Docs Sync
-- [ ] Specification / CheckList / Structure 중 영향 문서 갱신
-- [ ] README 변경 이력 1행 추가
-- [ ] History.md 1행 prepend
-- [ ] FR/NFR status 변경 시 code_refs/test_refs/evidence 갱신
-- [ ] "(예정)" 문구가 실제 구현 파일을 가리키지 않음
-- [ ] DB 변경 시 MIGRATION_MARIADB.md + Structure.md ERD 동시 갱신
-```
-
-코드 변경 PR에서 위 항목이 비어 있으면 reviewer가 차단한다.
-
-### 7.6 doc-gardener 검사를 “링크”에서 “의미”로 확장
-
-현재 doc-gardener는 링크·frontmatter·스테일·BPE 위주다. 다음 검사를 추가하면 드리프트를 훨씬 빨리 잡는다.
-
-- README/Structure 안 “예정” 파일이 실제 존재하면 warning
-- CheckList `done` 항목의 `code_refs` 파일이 없으면 fail
-- CheckList `done` 항목의 `test_refs` 가 없으면 fail
-- `MIGRATION_MARIADB.md` tables 배열과 SQL migration table 목록 비교
-- coverage omit 파일이 `VERIFIED` 기능의 핵심 코드면 warning
-- e2e/수동 QA 필요한 NFR이 자동 테스트만으로 `VERIFIED` 되면 fail
-
-### 7.7 릴리즈 직전 “정합 스냅샷”을 별도 산출
-
-릴리즈 후보마다 `docs/assessments/release-readiness-YYYY-MM-DD.md` 를 생성한다. 이 문서는 다음 5개만 본다.
-
-1. FR/NFR 상태표
-2. 자동 테스트 결과
-3. 수동 QA 결과
-4. 배포 산출물 실행 증거
-5. 문서 drift 검사 결과
-
-이 snapshot이 통과하기 전에는 `productization.md` 에 강한 완료 표현을 쓰지 않는다.
-
-## 8. 다음 Claude 진입 메모
-
-다음 세션은 새 기능 추가보다 정합성 회수를 우선한다.
-
-추천 시작 순서.
-
-1. `git status -sb` 로 기존 변경 확인.
-2. `docs/assessments/current-project-review.md` 본 문서 확인.
-3. `app/net/signaling_client.py` 재연결 구현 여부 확인.
-4. `README.md`, `Structure.md`, `MIGRATION_MARIADB.md` 드리프트 수정 계획 수립.
-5. 수정 전후 `python3 tools/md_agents.py`, `bash tools/doc-lint.sh`, `.venv/bin/pytest -q -x --ignore=tests/e2e -m "not integration and not e2e"` 실행.
+1. `git status -sb`
+2. `git log --oneline -8`
+3. `sqlite3 data/wbs.sqlite "select id, cycle, status, commit_sha from wbs_tasks order by id desc limit 12;"`
+4. `rg -n "예정|스켈레톤|자동 연결 수행하지" README.md Specification.md Structure.md MIGRATION_MARIADB.md docs/assessments`
+5. P0 문서 freshness → M6 enforcement → 원격 M4 순서로 진행.
 
 ## 9. 결론
 
-TooTalk 는 기능 자산과 테스트 자산이 충분히 있는 프로젝트다. 현재 병목은 “무엇을 더 만들 것인가”보다 “문서·테스트·배포 판정이 실제 구현과 같은 말을 하게 만들 것인가”다. 자동 재연결, DB 정본, README, coverage omit, UI skip을 회수하면 제품화 신뢰도가 크게 올라간다.
+Claude가 바로 들어가야 할 작업은 새 기능 추가가 아니라 **정합성 마감**이다. 구현은 169.782 기준으로 꽤 좋아졌다. 지금 병목은 “구현된 사실을 문서·WBS·검증 evidence가 같은 말로 고정하는 것”이다.
