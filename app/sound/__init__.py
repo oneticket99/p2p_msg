@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 # 한글 주석 — 6 옵션 chiptune WAV (200~400ms 단음 + 8-bit retro 풍)
 SIGNATURE_OPTIONS = {
-    "ppyong": "tootalk_ppyong.wav",       # default — 뿅 (사용자 directive 2026-05-18)
+    "ppyong": "tootalk_ppyong.wav",       # default — 메신저 수신 ding (사용자 directive 2026-05-25 교체, 구 "뿅")
     "blip": "tootalk_blip.wav",            # 깔끔한 단음
     "ding": "tootalk_ding.wav",            # 종소리
     "chime": "tootalk_chime.wav",          # 차임벨 2음
