@@ -154,11 +154,19 @@ class ChatNavigationMixin:
                 self._chat_list_panel.update()
 
     def _on_chat_selected(self, kind: str, target_id: int) -> None:
-        """ChatListPanel.chat_selected → group room 진입 또는 friend/bot chat 진입 (cycle 169.62)."""
+        """ChatListPanel.chat_selected → 통합 ChatView 진입 (friend/bot/saved/room/group).
+
+        cycle 169.844 M4 — 구 `kind=="room"` → `_on_room_entered`(GroupChatView idx 1)
+        early return 제거. room 도 통합 ChatView(idx 0) 진입으로 통일한다 (room broadcast
+        → unified ChatView 마이그레이션). GroupChatView 경로는 M5(G-final 게이트 후) 회수.
+        """
         log.info("[main_window] chat_selected kind=%s target_id=%d", kind, target_id)
+        # cycle 169.844 M4 — 서버 room (kind="room") 진입 시 room context 설정.
+        # 통합 송신 경로(_on_send_clicked)의 REST POST(_current_room_id) + 멤버 보기
+        # (_on_open_members_panel None 가드)를 활성한다. friend/bot/saved/group(로컬 음수
+        # gid)은 server room 부재 → _current_room_id 미변경(기존 의미 보존).
         if kind == "room":
-            self._on_room_entered(target_id)
-            return
+            self._current_room_id = target_id
         # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
         # cycle 169.159 — telegram align fallback "최근에 접속함" (actual last_seen REST = 별 cycle)
         chat_panel = getattr(self, "_chat_list_panel", None)

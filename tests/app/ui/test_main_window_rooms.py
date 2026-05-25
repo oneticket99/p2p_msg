@@ -294,3 +294,53 @@ class TestRoomCacheMigration:
             e for e in main_window._chat_list_panel._entries if e.kind == "room"
         ]
         assert room_entries == []
+
+
+# ----------------------------------------------------------------------
+# TestRoomUnifiedEntry — cycle 169.844 M4 (kind=room 통합 ChatView 진입)
+# ----------------------------------------------------------------------
+
+
+class TestRoomUnifiedEntry:
+    """서버 room (kind=room) 진입이 legacy GroupChatView(idx 1) → 통합 ChatView(idx 0)
+    로 통일됐는지 검증. `_on_chat_selected("room")` 가 `_on_room_entered` 를 호출하지
+    않고 통합 진입 분기를 타며, 통합 송신/멤버 보기에 필요한 room context 를 설정한다
+    (DoD D5/D6).
+    """
+
+    def test_room_enters_unified_chat_view_not_group_chat_view(
+        self, main_window
+    ) -> None:
+        """`_on_chat_selected("room")` → idx 0 진입 + `_on_room_entered` 미호출."""
+
+        from unittest.mock import patch as _patch
+
+        # 한글 주석: legacy GroupChatView 진입 핸들러가 호출되지 않아야 함 (통합 진입)
+        with _patch.object(main_window, "_on_room_entered") as spy:
+            main_window._on_chat_selected("room", 42)
+
+        spy.assert_not_called()
+        # 통합 ChatView (idx 0) 진입 + room context 설정 + 입력 영역 visible
+        assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
+        assert main_window._current_room_id == 42
+        assert main_window._active_chat_kind == "room"
+        assert not main_window._input_container.isHidden()
+
+    def test_room_member_view_functional_after_unified_entry(
+        self, main_window
+    ) -> None:
+        """room 통합 진입 후 멤버 보기가 동작한다 (`_current_room_id` None 가드 통과)."""
+
+        # 한글 주석: room 진입 → _current_room_id 설정 → _on_open_members_panel 이
+        # early return 하지 않고 in-app 모달(_members_dialog) 생성.
+        main_window._on_chat_selected("room", 42)
+        main_window._on_open_members_panel()
+
+        dlg = getattr(main_window, "_members_dialog", None)
+        assert dlg is not None
+        from app.ui.member_list import MemberListWidget
+        lst = dlg.findChild(MemberListWidget)
+        assert lst is not None
+        # self peer (방장) 최소 1명
+        assert lst.member_count() >= 1
+        dlg.close()

@@ -224,7 +224,11 @@ class ChatHeaderMixin:
         # cycle 169.837 — "..." 메뉴 = 실 구현 완료 항목만 노출 (사용자 directive: 미구현
         # 메뉴 노출 금지). 그룹 정보 보기·그룹 관리·설문 만들기·알림 끄기는 실 데이터/기능
         # 미완(Exec Plan cycle820 M3~M5)이라 메뉴서 제거 — 완성 시 재노출.
-        if kind in ("group", "channel"):
+        # cycle 169.844 M4 — "room" 추가. room broadcast → 통합 ChatView 마이그레이션 후
+        # 서버 room 은 _on_chat_selected("room") 통합 진입으로 _active_chat_kind="room" 이
+        # 된다(이전 _on_room_entered 의 "group" 강제 폐기). group/channel 과 동일하게 멤버
+        # 보기 노출 의무 — room 이 친구 메뉴(else)로 빠져 멤버 보기를 잃는 회귀 차단.
+        if kind in ("group", "channel", "room"):
             # 멤버 보기 = 원형 아바타 모달(cycle 169.836~837 통합), 대화 비우기/나가기 = 실 동작
             act_members = menu.addAction("멤버 보기")
             act_clear = menu.addAction("대화 내용 비우기")
