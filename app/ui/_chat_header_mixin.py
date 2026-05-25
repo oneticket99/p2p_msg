@@ -128,6 +128,10 @@ class ChatHeaderMixin:
                 peer_name=peer, mode="request", parent=self,
                 outgoing_label="원격 도움 요청 발신 중… (상대 PC 제어 의도)",
             )
+            # cycle 169.782 (M3c) — accept 시 controller(상대 PC 제어) 세션 기동 결선
+            dialog.accepted_signal.connect(  # type: ignore[attr-defined]
+                lambda p=peer: self._start_remote_session("controller", p)
+            )
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("RemoteCallDialog request 실패 — %r", exc)
@@ -173,9 +177,35 @@ class ChatHeaderMixin:
                 peer_name=peer, mode="request", parent=self,
                 outgoing_label="원격 제어 요청 발신 중… (내 PC 제어 위임)",
             )
+            # cycle 169.782 (M3c) — accept 시 host(내 PC 제어 위임) 세션 기동 결선
+            dialog.accepted_signal.connect(  # type: ignore[attr-defined]
+                lambda p=peer: self._start_remote_session("host", p)
+            )
             self._exec_dialog_centered(dialog)
         except Exception as exc:
             log.warning("RemoteCallDialog connect 실패 — %r", exc)
+
+    def _start_remote_session(self, role_name: str, peer_name: str) -> None:
+        """RemoteCallDialog accept → RemoteSessionRunner 기동 (cycle 169.782 M3c).
+
+        role_name = "controller"(상대 PC 제어) / "host"(내 PC 제어 위임).
+        send callable 은 friend peer connection 의 원격 DataChannel(`_remote_data_channel`)
+        확립 시 결선, 미확립 시 graceful no-op (실 OS backend + 채널 binding = M4 단계).
+        본 결선 = accept signal → runner 생성 + 역할/grant 보관 chain.
+        """
+
+        try:
+            from app.remote.session_runner import RemoteSessionRunner, SessionRole
+
+            role = SessionRole.HOST if role_name == "host" else SessionRole.CONTROLLER
+            chan = getattr(self, "_remote_data_channel", None)
+            # 한글 주석 — 채널 확립 시 send 결선, 미확립 시 graceful no-op (M4 binding 지점)
+            send = (lambda b: chan.send(b)) if chan is not None else (lambda b: None)
+            runner = RemoteSessionRunner(role, send_frame=send, send_input=send)
+            self._remote_runner = runner
+            log.info("원격 세션 runner 생성 — role=%s peer=%s", role_name, peer_name)
+        except Exception as exc:
+            log.warning("원격 세션 기동 실패 role=%s — %r", role_name, exc)
 
     @pyqtSlot()
     def _on_header_menu(self) -> None:
