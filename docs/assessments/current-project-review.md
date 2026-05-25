@@ -1,13 +1,13 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-25T23:55:00+09:00
+last_verified: 2026-05-26T01:30:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 cycle 169.823 main branch. (cycle 169.814 base + 819~823 진척 환류: 텔레그램 그룹 관리 모델 단계 migration 0017 + 443 nginx 전수조사·클라이언트 443/8080 하드코딩 전수 제거 502 회수.) cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
+> 검토 기준: 2026-05-25 cycle 169.826 main branch (`5ea8b2e`) — 평가 marker 동기 commit cycle 169.827. (cycle 169.814 base + 819~826 진척 환류: 텔레그램 그룹 관리 모델 단계 migration 0017 + 443 nginx 전수조사·클라이언트 443/8080 하드코딩 전수 제거 502 회수 + cycle 169.826 데모 서버 502 회수 — SFU aiortc graceful optional import 로 코어 시그널링/인증/메시지 부팅 보장·web/ws crash loop 해소·데모 서버 deployability 복구.) cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
 > 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + ci/doc-gardener 연결로 차단한다.
 
@@ -114,6 +114,14 @@ Windows 빌드 회원가입 502 사용자 발견 → 443 nginx 전수조사. 데
 
 판정: **클라이언트 IMPLEMENTED.** 서버측 443 nginx 정상화(docker `web`/`ws` 재기동)는 SSH chain(`.env.ssh` 자격) 미수행 — DEFERRED(데모 서버 운영, 사용자 SSH 게이트).
 
+### 3.9 데모 서버 502 회수 — SFU aiortc graceful optional import (cycle 169.826)
+
+데모 서버가 244-commit stale clone redeploy 직후 web·ws 컨테이너가 `ModuleNotFoundError: aiortc` 로 crash loop → nginx 502. 근본 원인은 cycle 169.799 SFU 가 [server/sfu_room.py](../../server/sfu_room.py) 상단에 aiortc 를 module-level hard import 한 부분(requirements 누락)이다.
+
+- 회수: aiortc 를 `try/except` graceful optional import(`AIORTC_AVAILABLE` 플래그, httpx/firebase 와 동일 convention)로 전환 → 코어 시그널링/인증/메시지 부팅 보장 + SFU 만 degrade. `SfuRoom` 생성 가드 + `_handle_sfu_publish` 차단 경로 추가. 로컬 차단모사 검증 + reviewer PASS (main `5ea8b2e`, PR #17 merge).
+
+판정: **기존 기능 복구(IMPLEMENTED 유지).** 502 회수는 신규 capability 가 아니라 코어 부팅·데모 서버 deployability 복구다 — 점수 변동 부재. SFU 미디어 재가용(aiortc 설치 후)은 별 task.
+
 ## 4. 문서와 구현 불일치
 
 ### 4.1 해결된 불일치
@@ -124,6 +132,7 @@ Windows 빌드 회원가입 502 사용자 발견 → 443 nginx 전수조사. 데
 - NFR-04 실 서버 chaos 테스트 부재 판정은 폐기한다.
 - Structure.md 가 DB 스키마 4 테이블만 등재하던 drift 는 cycle 169.794 에서 §11.3 전체 25 테이블 도메인 인벤토리로 회수했다(폐기).
 - "mesh ≤ 8 그룹 음성·영상 기본 구현" 부정확 표기는 cycle 169.794~810 SFU greenfield 종단 구현으로 정정됐다.
+- cycle 169.826 에서 SFU aiortc module-level hard import 가 데모 서버 web/ws crash loop(502) 를 유발하던 drift 는 graceful optional import 로 회수됐다(폐기) — 코어 부팅·데모 서버 deployability 복구.
 
 ### 4.2 아직 남은 불일치
 
