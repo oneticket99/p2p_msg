@@ -143,7 +143,7 @@
 
 <h3>2.8 QA 인프라</h3>
 <ul>
-  <li>테스트 스위트 + Playwright + integration test + dual chain smoke. cycle 169.694~757 batch 누계 약 <strong>563 신규 PASS</strong> (169.745~757 99 추가) + 전체 2408 PASS. coverage 87.76%.</li>
+  <li>테스트 스위트 + Playwright + integration test + dual chain smoke. cycle 169.694~757 batch 누계 약 <strong>563 신규 PASS</strong> 의 historical 기록. 현 시점(cycle 169.785) 전체 약 2490 PASS + tests/app/ui skip 24 + coverage 90.45% (current-project-review 7.6/10 기준).</li>
   <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture) + voice call + 원격 데스크탑 chain + emoji pack share + bot framework</li>
   <li>integration test + folder handlers + signaling protocol + dispatcher pipeline + RAG ranking + Embedder cache + dmca + obs websocket + emoji moderation</li>
   <li>6 dialog setModal regex multi-line 차단 (cycle 169.101)</li>
@@ -158,7 +158,7 @@
   <li><strong>직무유기 훅 근본 회수</strong> (cycle 169.748) — HEAD-TTL 역설 (미커밋 작업 미detect) 수정 + dirty-tree detect 추가.</li>
   <li><strong>CI 위생</strong> (cycle 169.749~750 + 757) — 전체 5 workflow actionlint 0 issue (ci.yml SC2086 정리) + test_messages_handlers monkeypatch leak 근본 회수.</li>
 </ul>
-<p>직전 169.694~744 batch 누계 약 464 PASS + 본 batch 99 = 누계 약 563. 전체 로컬 tests = 2408 PASS + 49 skip + cov 87.76%.</p>
+<p>직전 169.694~744 batch 누계 약 464 + 99 = 약 563 의 historical 기록. 현 시점(169.785) 전체 ≈ 2490 PASS + skip 24(tests/app/ui) + cov 90.45%.</p>
 <p>cycle 169.715 — <code>youtube_client</code> 삭제 (사용자 directive). streaming 영역 가장 후순위 retain (memory <code>project_streaming_deprioritized.md</code> 정합). 4 platform 중 YouTube 만 폐기, Twitch + CHZZK + Kick 3 platform retain. cycle 169.693 — qtbot fixture hang refactor (scope=function 변경) + admin_menu isolated 4 PASS — mixin isolated 4 batch 64+ PASS 진입 base.</p>
 
 <h3>2.9 UI 디자인 시스템 Toonation BI 통합 (cycle 169.x sweep)</h3>
@@ -471,7 +471,7 @@
   <li><strong>13 sub-cycle / 99 신규 PASS velocity</strong> = cycle 169.745 (2026-05-24 KST) → 169.757 (2026-05-25 02:20 KST) ≈ 본 batch 의 server/db/repositories 계층 cov dense focus (6 repo batch) + 가드레일/CI hardening</li>
   <li><strong>commit 분류</strong>: test 6 (repo 6 batch 99 PASS) + feat 1 (MIGRATION 검사 구현) + fix 2 (직무유기 훅 회수 + monkeypatch leak) + ci 2 (actionlint 검증 + ci.yml SC2086) + docs 1 (codex 평가 3건 회수) + 본 회수 docs 1 (평가 6 file staleness rewrite cycle 169.758)</li>
   <li><strong>drift recovery 누계</strong> = cycle 169.745~757 안 평가 staleness 12 commit drift 회수 (commit 3af5129 이후 12 commit) — 본 cycle 169.758 회수</li>
-  <li><strong>cov 약진</strong>: 81.34% → 87.76% (+6.42%p) — server repo 계층 (file_meta/password_reset/read_states/devices/friends 100% + bots 99%) 회수가 핵심. fixture hang root cure 부재 retain (mock isolation pattern).</li>
+  <li><strong>cov 약진(historical)</strong>: 81.34% → 87.76% → 현 90.45% — server repo 계층 (file_meta/password_reset/read_states/devices/friends 100% + bots 99%) 회수가 핵심. fixture hang root cure 부재 retain (mock isolation pattern).</li>
   <li><strong>누적 가드레일</strong>: 50+ active retain. memory <code>project_streaming_deprioritized.md</code> + <code>project_no_user_distribution.md</code> 정합 운영.</li>
 </ul>
 
