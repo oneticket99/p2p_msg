@@ -121,7 +121,7 @@ class AddFriendByUsernameDialog(QDialog):
         username = self._username_edit.text().strip().lstrip("@")
         if not username or len(username) < 3:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "친구 추가", "사용자명 3자 이상 의무")
+            ConfirmDialog.show_warning(self, "친구 추가", _tr("msg_username_min_3"))
             return
         self.friend_added.emit(username)
         self.accept()

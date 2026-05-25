@@ -21,6 +21,8 @@ from PyQt6.QtWidgets import (
 
 from app.net.auth_client import AuthClient
 from app.ui.confirm_dialog import ConfirmDialog as _ConfirmDialog
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n.labels import tr as _tr
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ class PasswordResetDialog(QDialog):
         self._client = auth_client
         self._email: str = ""
 
-        self.setWindowTitle("TooTalk 비밀번호 재설정")
+        self.setWindowTitle(_tr("tootalk_비밀번호_재설정"))
         self.setMinimumWidth(360)
 
         self._stack = QStackedWidget(self)
@@ -50,9 +52,9 @@ class PasswordResetDialog(QDialog):
 
         self._email_edit = QLineEdit()
         self._email_edit.setPlaceholderText("user@example.com")
-        form.addRow("이메일", self._email_edit)
+        form.addRow(_tr("label_email"), self._email_edit)
 
-        btn = QPushButton("OTP 발송")
+        btn = QPushButton(_tr("btn_otp_send"))
         btn.clicked.connect(self._on_request_clicked)  # type: ignore[arg-type]
         form.addRow(btn)
         return page
@@ -63,18 +65,18 @@ class PasswordResetDialog(QDialog):
 
         self._otp_edit = QLineEdit()
         self._otp_edit.setMaxLength(6)
-        self._otp_edit.setPlaceholderText("6자리 OTP (3분 유효)")
-        form.addRow("인증코드", self._otp_edit)
+        self._otp_edit.setPlaceholderText(_tr("ph_reset_otp"))
+        form.addRow(_tr("label_otp_code"), self._otp_edit)
 
         self._new_pw_edit = QLineEdit()
         self._new_pw_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self._new_pw_edit.setPlaceholderText("8~128자")
-        form.addRow("새 비밀번호", self._new_pw_edit)
+        self._new_pw_edit.setPlaceholderText(_tr("ph_new_password_len"))
+        form.addRow(_tr("label_new_password"), self._new_pw_edit)
 
         row = QHBoxLayout()
-        btn_back = QPushButton("이전")
+        btn_back = QPushButton(_tr("btn_prev"))
         btn_back.clicked.connect(lambda: self._stack.setCurrentIndex(0))  # type: ignore[arg-type]
-        btn_consume = QPushButton("비밀번호 갱신")
+        btn_consume = QPushButton(_tr("btn_password_update"))
         btn_consume.clicked.connect(self._on_consume_clicked)  # type: ignore[arg-type]
         row.addWidget(btn_back)
         row.addWidget(btn_consume)
@@ -84,7 +86,7 @@ class PasswordResetDialog(QDialog):
     def _on_request_clicked(self) -> None:
         email = self._email_edit.text().strip()
         if not email:
-            _ConfirmDialog.show_warning(self, "TooTalk", "이메일을 입력하세요.")
+            _ConfirmDialog.show_warning(self, "TooTalk", _tr("ph_reset_email"))
             return
         self._email = email
         asyncio.ensure_future(self._do_request(email))
@@ -95,7 +97,7 @@ class PasswordResetDialog(QDialog):
         _ConfirmDialog.show_info(
             self,
             "TooTalk",
-            "이메일 등록 시 OTP 가 발송됩니다. 이메일을 확인하세요.",
+            _tr("msg_reset_email_sent"),
         )
         self._stack.setCurrentIndex(1)
 
@@ -103,21 +105,25 @@ class PasswordResetDialog(QDialog):
         code = self._otp_edit.text().strip()
         new_pw = self._new_pw_edit.text()
         if len(code) != 6 or not code.isdigit():
-            _ConfirmDialog.show_warning(self, "TooTalk", "6자리 숫자 OTP 의무")
+            _ConfirmDialog.show_warning(
+                self, "TooTalk", _tr("msg_password_reset_otp_required")
+            )
             return
         if not new_pw:
-            _ConfirmDialog.show_warning(self, "TooTalk", "새 비밀번호 입력 의무")
+            _ConfirmDialog.show_warning(
+                self, "TooTalk", _tr("msg_new_password_required")
+            )
             return
         asyncio.ensure_future(self._do_consume(self._email, code, new_pw))
 
     async def _do_consume(self, email: str, code: str, new_password: str) -> None:
         result = await self._client.consume_reset(email, code, new_password)
         if result.ok:
-            _ConfirmDialog.show_info(self, "TooTalk", "비밀번호 갱신 완료. 로그인하세요.")
+            _ConfirmDialog.show_info(self, "TooTalk", _tr("msg_password_update_done"))
             self.accept()
         else:
             _ConfirmDialog.show_critical(
                 self,
-                "재설정 실패",
+                _tr("title_password_reset_failed"),
                 f"{result.error_code}: {result.error_message}",
             )

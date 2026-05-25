@@ -20,6 +20,9 @@ from typing import Optional
 
 from PyQt6.QtCore import pyqtSlot
 
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n import labels as _i18n_labels
+
 log = logging.getLogger(__name__)
 
 
@@ -52,7 +55,9 @@ class InviteMixin:
         target_room_id = room_id if room_id is not None else self._current_room_id
         if target_room_id is None or target_room_id <= 0:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "초대 = 그룹 방 진입 의무")
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_invite_need_group_room")
+            )
             return None
 
         dialog = InviteDialog(

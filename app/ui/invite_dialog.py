@@ -25,6 +25,9 @@ import logging
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n import labels as _i18n_labels
+
 # PyQt6 graceful — headless 환경 의 ImportError 차단
 try:
     from PyQt6.QtCore import pyqtSignal
@@ -232,7 +235,9 @@ else:
                 log.warning(
                     "[invite_dialog] friends_client 미주입 — populate skip"
                 )
-                self._status_label.setText("친구 목록 client 미초기화 — 사전 주입 의무")
+                self._status_label.setText(
+                    _i18n_labels.tr("msg_invite_client_unavailable")
+                )
                 return
 
             try:
@@ -284,7 +289,9 @@ else:
             friend_id = self.selected_friend_id()
             if friend_id is None:
                 from app.ui.confirm_dialog import ConfirmDialog
-                ConfirmDialog.show_warning(self, "TooTalk", "친구 선택 의무")
+                ConfirmDialog.show_warning(
+                    self, "TooTalk", _i18n_labels.tr("msg_invite_select_friend")
+                )
                 return
 
             log.info(

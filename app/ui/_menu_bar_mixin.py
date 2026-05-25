@@ -275,7 +275,8 @@ class MenuBarMixin:
             log.warning(
                 "[main_window] emoji moderation queue fetch FAIL — graceful (%r)", exc,
             )
-            self._status_bar.showMessage(f"moderation queue fetch 실패 — {exc}", 4000)
+            # 한글 주석 — cycle 169.834 — 친절 안내 문구 i18n 바인딩 (dev jargon 제거)
+            self._status_bar.showMessage(_tr("msg_moderation_queue_failed"), 4000)
 
     @pyqtSlot(int, str)
     def _on_moderation_decision(self, pack_id: int, decision: str) -> None:
