@@ -30,6 +30,8 @@ from app.net.auth_client import AuthClient
 from app.ui.login_dialog import LoginDialog
 from app.ui.password_reset_dialog import PasswordResetDialog
 from app.ui.signup_dialog import SignupDialog
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n import labels as _i18n_labels
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +44,9 @@ class AuthChainMixin:
 
         if self._auth_client is None:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "AuthClient 미초기화 — main 진입점 의무")
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_auth_client_unavailable")
+            )
             return None
         return self._auth_client
 
@@ -73,11 +77,14 @@ class AuthChainMixin:
                 bool(self._session_token), len(self._session_token or ""), self._current_user_id,
             )
             log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
+            # cycle 169.831 — 로그인 직후 계정 메뉴 가시성 재토글 (회원가입/로그인 숨김)
+            if hasattr(self, "apply_auth_menu_visibility"):
+                self.apply_auth_menu_visibility()
             # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
             self._post_login_refresh()
             from app.ui.confirm_dialog import ConfirmDialog
             ConfirmDialog.show_info(
-                self, "TooTalk", f"로그인 완료. user_id={self._current_user_id}"
+                self, "TooTalk", _i18n_labels.tr("msg_login_done")
             )
 
     def _post_login_refresh(self) -> None:
@@ -135,7 +142,7 @@ class AuthChainMixin:
 
         from app.ui.confirm_dialog import ConfirmDialog
         if self._session_token is None:
-            ConfirmDialog.show_info(self, "TooTalk", "로그인 상태 아님")
+            ConfirmDialog.show_info(self, "TooTalk", _i18n_labels.tr("msg_not_logged_in"))
             return
         # 한글 주석 — tray menu logout chain 동일 활용
         self._perform_logout_and_relogin()

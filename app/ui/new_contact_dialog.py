@@ -178,11 +178,11 @@ class NewContactDialog(QDialog):
         digits_only = "".join(c for c in phone_raw if c.isdigit())
         if not first_name and not last_name:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "연락처 추가", "이름 또는 성 입력 의무")
+            ConfirmDialog.show_warning(self, "연락처 추가", _tr("msg_contact_name_required"))
             return
         if len(digits_only) < 10:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "연락처 추가", "전화번호 입력 의무 (+82 안 10자리)")
+            ConfirmDialog.show_warning(self, "연락처 추가", _tr("msg_contact_phone_required"))
             return
         payload = {
             "last_name": last_name,

@@ -58,11 +58,13 @@ class LifecycleEventsMixin:
                 # 한글 주석 — 첫 hide 시점 사용자 안내 balloon (1회만)
                 if not getattr(self, "_tray_hint_shown", False):
                     from PyQt6.QtWidgets import QSystemTrayIcon
+                    # 한글 주석 — cycle 169.834 — 트레이 안내 문구 i18n 바인딩 (5언어)
+                    from app.i18n import labels as _i18n_labels
                     self._tray_icon.showMessage(
                         "TooTalk",
-                        "트레이 안 retain 됐다. RMB 클릭 → 로그아웃/종료.",
+                        _i18n_labels.tr("tray_minimized_hint"),
                         QSystemTrayIcon.MessageIcon.Information,
-                        3000,
+                        5000,
                     )
                     self._tray_hint_shown = True
             except Exception:

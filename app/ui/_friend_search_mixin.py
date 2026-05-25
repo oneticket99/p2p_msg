@@ -24,6 +24,9 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n import labels as _i18n_labels
+
 if TYPE_CHECKING:
     from app.ui.add_friend_dialog import AddFriendDialog
 
@@ -39,7 +42,9 @@ class FriendSearchMixin:
 
         if self._session_token is None:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "친구 추가 = 로그인 의무")
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_login_required_add_friend")
+            )
             return
 
         dlg = AddFriendDialog(parent=self)
@@ -98,7 +103,9 @@ class FriendSearchMixin:
         fc = getattr(self, "_friends_client", None)
         if fc is None or self._session_token is None:
             log.warning("[friend_request] friends_client/session_token 부재 — skip")
-            self._status_bar.showMessage("친구 요청 실패 — 인증 부재", 3000)
+            self._status_bar.showMessage(
+                _i18n_labels.tr("msg_friend_request_no_auth"), 3000
+            )
             return
 
         async def _do_request() -> None:
@@ -113,10 +120,17 @@ class FriendSearchMixin:
             try:
                 friend_id = await fc.request_friend(user_id, nickname or None)
                 log.info("[friend_request] PASS friend_row_id=%d", friend_id)
-                self._status_bar.showMessage(f"친구 요청 발신 — user_id={user_id}", 3000)
+                self._status_bar.showMessage(
+                    _i18n_labels.tr("msg_friend_request_sent_status").format(
+                        user_id=user_id
+                    ),
+                    3000,
+                )
                 if dlg is not None:
                     dlg.accept()
-                ConfirmDialog.show_info(self, "친구 추가", "친구 요청 발신 PASS")
+                ConfirmDialog.show_info(
+                    self, "친구 추가", _i18n_labels.tr("msg_friend_request_sent")
+                )
             except FriendsConflictError:
                 log.info("[friend_request] 이미 친구 또는 pending 상태")
                 if dlg is not None:
@@ -152,7 +166,9 @@ class FriendSearchMixin:
         """
         if self._session_token is None:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "받은 요청 보기 = 로그인 의무")
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_login_required_pending")
+            )
             return
         from app.ui.pending_requests_dialog import PendingRequestsDialog
 

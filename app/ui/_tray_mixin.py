@@ -121,6 +121,9 @@ class TrayMixin:
         self._session_token = None
         self._current_user_id = None
         self._auth_token = None
+        # cycle 169.831 — 로그아웃 시 계정 메뉴 가시성 재토글 (회원가입/로그인 복귀)
+        if hasattr(self, "apply_auth_menu_visibility"):
+            self.apply_auth_menu_visibility()
         # friends_client token retain 만 폐기 (instance 보존 + 신규 login 시 swap)
         try:
             fc = getattr(self, "_friends_client", None)

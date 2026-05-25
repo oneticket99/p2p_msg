@@ -121,6 +121,10 @@ class TestAddByUsername:
 
     @pytest.mark.asyncio
     async def test_add_success_201(self, monkeypatch) -> None:
+        # cycle 169.832 — 요청/승인 모델 전환: username 추가 = pending 요청 생성.
+        # 기존 친구/요청 부재(get_friend=None) → status=pending 신규 INSERT.
+        # 양방향 accepted + DM room 은 수락(handle_accept_friend) 시점으로 이동했으므로
+        # 본 응답엔 room_id 부재 + status=pending.
         app = web.Application()
         app["db_pool"] = _build_pool()
         monkeypatch.setattr(
@@ -128,21 +132,20 @@ class TestAddByUsername:
             AsyncMock(return_value=SimpleNamespace(id=20)),
         )
         monkeypatch.setattr(
-            "server.db.repositories.friends.insert_friend",
-            AsyncMock(return_value=1),
+            "server.db.repositories.friends.get_friend",
+            AsyncMock(return_value=None),
         )
+        insert_mock = AsyncMock(return_value=1)
         monkeypatch.setattr(
-            "server.db.repositories.rooms.find_or_create_dm_room",
-            AsyncMock(return_value=99),
-        )
-        monkeypatch.setattr(
-            "server.db.repositories.messages.insert_text_message",
-            AsyncMock(return_value=1),
+            "server.db.repositories.friends.insert_friend", insert_mock,
         )
         req = _FakeRequest(app, user_id=10, body={"username": "alice"})
         resp = await handle_add_friend_by_username(req)
         assert resp.status == 201
         data = json.loads(resp.body)
         assert data["friend_user_id"] == 20
-        assert data["room_id"] == 99
         assert data["username"] == "alice"
+        assert data["status"] == "pending"
+        assert "room_id" not in data
+        # 한글 주석 — pending status 로 INSERT 됐는지 검증 (instant accepted 아님)
+        assert insert_mock.await_args.kwargs.get("status") == "pending"

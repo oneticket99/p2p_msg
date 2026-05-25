@@ -28,6 +28,8 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._icons import load_icon
+# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+from app.i18n import labels as _i18n_labels
 
 
 FOLDER_COLORS = [
@@ -228,7 +230,9 @@ class FolderEditDialog(QDialog):
         name = self._name_edit.text().strip()
         if not name:
             from app.ui.confirm_dialog import ConfirmDialog
-            ConfirmDialog.show_warning(self, "TooTalk", "폴더명 입력 의무")
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_folder_name_required")
+            )
             return
         existing_id = self._existing.get("folder_id")
         folder_data = {

@@ -354,8 +354,34 @@ async def handle_accept_friend(request: web.Request) -> web.Response:
         metadata=None,
     )
 
+    # cycle 169.832 — 수락 시점 DM room + system message 생성 (요청→수락 시점 이동).
+    # 기존 instant-accept 가 요청 시점에 만들던 DM room/notify 를 정식 수락 시점으로 옮겨
+    # pending 단계에 DM 이 미리 생기던 부정합을 제거한다.
+    room_id = 0
+    try:
+        from server.db.repositories.rooms import find_or_create_dm_room
+        from server.db.repositories.messages import insert_text_message
+        room_id = await find_or_create_dm_room(pool, user_id, sender_id)
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT COALESCE(nickname, username) AS display FROM users WHERE id = %s LIMIT 1",
+                    (user_id,),
+                )
+                row = await cur.fetchone()
+        accepter_display = str(row[0]) if row else "사용자"
+        await insert_text_message(
+            pool,
+            room_id=room_id,
+            sender_id=user_id,
+            body=f"{accepter_display}님이 친구 요청을 수락했습니다. 이제 대화를 시작할 수 있어요.",
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("[friends accept] DM room/system msg 생성 실패 — %r", exc)
+
     return web.json_response(
-        {"ok": True, "sender_id": sender_id, "user_id": user_id}, status=200
+        {"ok": True, "sender_id": sender_id, "user_id": user_id, "room_id": room_id},
+        status=200,
     )
 
 

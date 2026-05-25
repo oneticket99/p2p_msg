@@ -217,6 +217,9 @@ class ChatView(QScrollArea):
         # key = (kind, target_id) → int (scrollbar.value())
         self._scroll_offsets: dict[tuple[str, int], int] = {}
         self._scroll_active_key: Optional[tuple[str, int]] = None
+        # cycle 169.830 — 표시된 msg_id 집합 (scroll-up lazy load 중복 prepend 차단).
+        # add_message/prepend_message 가 msg_id>0 중복 시 skip → "하나씩 증식" 버그 회수.
+        self._displayed_msg_ids: set[int] = set()
 
         self.setWidget(self._content)
 
@@ -233,6 +236,7 @@ class ChatView(QScrollArea):
         """cycle 169.444 — chat 전환 시점 active room_id 갱신 (lazy load chain 의 cursor)."""
         self._active_room_id = int(room_id)
         self._lazy_load_active = False  # 새 chat 진입 = lock reset
+        self._displayed_msg_ids.clear()  # cycle 169.830 — chat 전환 시 dedup 집합 reset
 
     def prepend_message(
         self,
@@ -249,6 +253,12 @@ class ChatView(QScrollArea):
         clear+replay 대신 layout 최상단 insertWidget(0) — scroll position retain 정합.
         rangeChanged 자동 scroll bottom 차단 (play_sound=False 정합).
         """
+        # cycle 169.830 — 중복 msg_id skip (scroll-up 재fetch 시 동일 과거 메시지 재증식 차단)
+        if isinstance(msg_id, int) and msg_id > 0:
+            if msg_id in self._displayed_msg_ids:
+                return
+            self._displayed_msg_ids.add(int(msg_id))
+
         bubble = MessageBubble(
             sender=sender, text=text, ts=ts, is_self=is_self,
             parent=self._content,
@@ -257,6 +267,16 @@ class ChatView(QScrollArea):
         )
         # 한글 주석 — index 0 = layout 최상단 (모든 기존 bubble 위 prepend)
         self._messages_layout.insertWidget(0, bubble)
+
+    def min_displayed_msg_id(self) -> int:
+        """cycle 169.830 — 현재 표시된 msg_id 중 최소값 (lazy load cursor 정합).
+
+        scroll-up older fetch 시 ``before_msg_id`` cursor 로 사용 — sync_state 기반
+        stale cursor 대신 실제 화면 최하단(과거) msg_id 기준으로 strictly older fetch →
+        동일 window 재fetch(중복 원인) 차단. 표시 id 부재 시 0 반환.
+        """
+        ids = [m for m in self._displayed_msg_ids if m > 0]
+        return min(ids) if ids else 0
 
     def apply_last_read(self, last_read_msg_id: int) -> None:
         """cycle 169.470 — server last_read_msg_id 안 비교 chain → bubble set_read 갱신.
@@ -354,6 +374,12 @@ class ChatView(QScrollArea):
         is_self : bool
             ``True`` 인 경우 self 발신 — 버블이 우측 정렬되고 색상 분기.
         """
+
+        # cycle 169.830 — 중복 msg_id skip (lazy load 재fetch 시 동일 메시지 재추가 차단)
+        if isinstance(message_id, int) and message_id > 0:
+            if message_id in self._displayed_msg_ids:
+                return
+            self._displayed_msg_ids.add(message_id)
 
         # cycle 169.179 — day separator inject (date 변경 시 label "오늘/어제/YYYY년 M월 D일")
         if self._prev_ts is None or self._prev_ts.date() != ts.date():
@@ -519,3 +545,8 @@ class ChatView(QScrollArea):
             widget = item.widget() if item is not None else None
             if widget is not None:
                 widget.deleteLater()
+        # cycle 169.830 — clear 시 dedup 집합도 reset (재로드 시 정상 재표시 보장)
+        self._displayed_msg_ids.clear()
+        self._prev_sender = None
+        self._prev_is_self = None
+        self._prev_ts = None

@@ -211,7 +211,10 @@ class LoginDialog(QDialog):
         password = self._password_edit.text()
         from app.ui.confirm_dialog import ConfirmDialog
         if not email or not password:
-            ConfirmDialog.show_warning(self, "TooTalk", f"이메일 + {_tr('비밀번호')} 입력 의무")
+            # 한글 주석 — cycle 169.834 — 친절 안내 문구 i18n 키 직접 lookup (5언어)
+            ConfirmDialog.show_warning(
+                self, "TooTalk", _i18n_labels.tr("msg_login_input_required")
+            )
             return
         base_url = getattr(self._client, "_base_url", "")
         if not base_url:
