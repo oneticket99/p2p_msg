@@ -255,6 +255,19 @@ class RoomRegistry:
             return False, "PEER_NOT_FOUND"
         return True, None
 
+    async def broadcast(self, room_id: str | None, payload: dict[str, Any]) -> None:
+        """방 안 모든 peer 에게 동일 payload 송신.
+
+        SFU producer 목록(``SFU_PRODUCERS``) 의 room-wide announce 에 쓰인다.
+        방이 없으면 무해(no-op). 빈 except_peer_id 로 전체 송신을 위임한다.
+        """
+        if room_id is None:
+            return
+        room = self._rooms.get(room_id)
+        if room is None:
+            return
+        await room.broadcast_except(payload, except_peer_id="")
+
     async def cleanup_peer(self, peer: Peer) -> None:
         """소켓 연결이 끊겼을 때 호출되는 cleanup 진입점.
 

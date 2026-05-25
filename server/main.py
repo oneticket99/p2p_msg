@@ -51,7 +51,8 @@ from .middleware import (
     request_id_middleware,
 )
 from .room import RoomRegistry
-from .signaling import build_routes
+from .signaling import APP_KEY_SFU_REGISTRY, build_routes
+from .sfu_registry import SfuRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +152,7 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     app = web.Application(
         middlewares=[request_id_middleware, auth_middleware, activity_middleware]
     )
-    # 한글 주석: 후속 endpoint 의 의존성 주입 — app["config"] 등록
+    # 한글 주석: 후속 endpoint 의존성 주입 — app["config"] 등록
     app["config"] = cfg
     # cycle 111 — DB audit migration 0003 의 actual code wiring base.
     # ActivityTracker = 1분 throttle in-memory (single-worker 정합).
@@ -160,6 +161,17 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     # 시그널링 룸 registry (기존)
     registry = RoomRegistry()
     build_routes(app, registry)
+
+    # SFU 그룹 통화 registry (cycle 169.801 M3c) — startup 단일 인스턴스 등록.
+    # _get_sfu_registry 의 lazy fallback split-brain/누수 회피 + on_shutdown 정리 결선.
+    sfu_registry = SfuRegistry()
+    app[APP_KEY_SFU_REGISTRY] = sfu_registry
+
+    async def _close_sfu_registry(_app: web.Application) -> None:
+        # 한글 주석 — graceful shutdown 시 활성 SFU room 의 RTCPeerConnection 전수 정리
+        await sfu_registry.shutdown()
+
+    app.on_shutdown.append(_close_sfu_registry)
 
     # 세션 store (Phase 1 = in-memory dict, Phase 2 = redis)
     app["session_store"] = {}
