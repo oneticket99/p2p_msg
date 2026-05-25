@@ -7,7 +7,7 @@ status: active
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 cycle 169.826 main branch (`5ea8b2e`) — 평가 marker 동기 cycle 169.827 + SFU 서버 재가용(aiortc requirements 추가, python:3.13-slim 빌드 검증) cycle 169.828. (cycle 169.814 base + 819~826 진척 환류: 텔레그램 그룹 관리 모델 단계 migration 0017 + 443 nginx 전수조사·클라이언트 443/8080 하드코딩 전수 제거 502 회수 + cycle 169.826 데모 서버 502 회수 — SFU aiortc graceful optional import 로 코어 시그널링/인증/메시지 부팅 보장·web/ws crash loop 해소·데모 서버 deployability 복구.) cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
+> 검토 기준: 2026-05-25 cycle 169.826 main branch (`5ea8b2e`) — 평가 marker 동기 cycle 169.827 + SFU 서버 재가용(aiortc requirements 추가, python:3.13-slim 빌드 검증) cycle 169.828 + markdownlint `$schema` 제거(VSCode schema-fetch 경고 해소, lint 무영향) cycle 169.829. (cycle 169.814 base + 819~826 진척 환류: 텔레그램 그룹 관리 모델 단계 migration 0017 + 443 nginx 전수조사·클라이언트 443/8080 하드코딩 전수 제거 502 회수 + cycle 169.826 데모 서버 502 회수 — SFU aiortc graceful optional import 로 코어 시그널링/인증/메시지 부팅 보장·web/ws crash loop 해소·데모 서버 deployability 복구.) cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
 > 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + ci/doc-gardener 연결로 차단한다.
 
