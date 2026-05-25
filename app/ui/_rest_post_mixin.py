@@ -60,7 +60,7 @@ class RestPostMixin:
         try:
             self_id = getattr(self, "_current_user_id", None)
             token = getattr(self, "_session_token", None) or ""
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
             if not isinstance(self_id, int) or self_id <= 0 or not token:
                 return
             headers = {"Authorization": f"Bearer {token}"}
@@ -109,7 +109,7 @@ class RestPostMixin:
             token = getattr(self, "_session_token", None) or ""
             if not token or room_id_server <= 0:
                 return
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
             headers = {"Authorization": f"Bearer {token}"}
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector, headers=headers) as session:

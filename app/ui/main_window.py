@@ -90,8 +90,8 @@ from app.updater.version_check import CURRENT_VERSION
 log = logging.getLogger(__name__)
 
 # 한글 주석: 업데이트 서버 base URL — `.env` 의 `UPDATE_SERVER_URL` override 가능.
-# 부재 시 데모 서버 (114.207.112.73:8080) 폴백 — cycle 132 server skeleton 정합.
-_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8080"
+# 부재 시 데모 서버 (114.207.112.73:8765) 폴백 — cycle 132 server skeleton 정합.
+_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8765"
 
 
 # 한글 주석 — cycle 144 i18n production binding helper.

@@ -1,13 +1,13 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-25T21:00:00+09:00
+last_verified: 2026-05-25T23:55:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 cycle 169.814 main branch 준비 상태. cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
+> 검토 기준: 2026-05-25 cycle 169.823 main branch. (cycle 169.814 base + 819~823 진척 환류: 텔레그램 그룹 관리 모델 단계 migration 0017 + 443 nginx 전수조사·클라이언트 443/8080 하드코딩 전수 제거 502 회수.) cycle 169.797 Codex snapshot 에 cycle 169.793~812 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수 + Specification/CheckList 과거 표현 sweep)을 환류 반영하고, cycle 169.813 평가 2종 refresh 이후 169.814 에서 assessment consistency 를 PR/main push CI 게이트로 승격한다.
 > 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + ci/doc-gardener 연결로 차단한다.
 
@@ -96,6 +96,23 @@ cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_as
 - test: [tests/integration/test_sfu_room_loopback.py](../../tests/integration/test_sfu_room_loopback.py)(1→2 forward + 실 frame) + [tests/integration/test_sfu_call_client_e2e.py](../../tests/integration/test_sfu_call_client_e2e.py)(종단) + signaling/dialog/mixin isolated
 
 판정: **IMPLEMENTED.** reviewer-gate 11 feat 전수 PASS + headless aiortc 실 forward + offscreen Qt + MRO smoke. 실 OS 미디어 캡처/다중 화면 visual ack 전까지 `VERIFIED` 아님 (G4 사용자 게이트, visual ack 후반 일괄 큐).
+
+### 3.7 텔레그램 그룹 관리 모델 단계 (cycle 169.820~821)
+
+텔레그램 5 화면 그룹 멤버 관리를 model→REST→UI 순으로 착수. cycle 169.820 Exec Plan([docs/exec-plans/active/2026-05-25-telegram-group-management.md](../exec-plans/active/2026-05-25-telegram-group-management.md)) 신설 후 cycle 169.821 에서 모델 단계 완결.
+
+- migration: [server/db/migrations/0017_group_roles_meta.sql](../../server/db/migrations/0017_group_roles_meta.sql) — `peers.role` ENUM owner/member → owner/admin/member 3-tier(기존 row 무손상) + `rooms` name/description/avatar_ref 그룹 메타 컬럼.
+- test: [tests/server/test_migration_0017_group_meta.py](../../tests/server/test_migration_0017_group_meta.py) — SQL 정적 파싱 + doc 정합 isolated 15.
+
+판정: **IMPLEMENTED (모델 단계 한정).** write 경로(승격/강등 PATCH members + 그룹 수정 PATCH rooms) REST + UI 5 화면은 후속 단계. reviewer→qa→observability 전수 PASS + PR #15 merge.
+
+### 3.8 443 nginx 전수조사 + 클라이언트 dead-path 제거 (cycle 169.823)
+
+Windows 빌드 회원가입 502 사용자 발견 → 443 nginx 전수조사. 데모 nginx 443 의 `/api`→`web:8080`·`/ws`→`ws:8765` upstream 컨테이너가 둘 다 502(docker backend 다운), host-publish 8765 직결만 UP. 회원가입 502 = pre-817 빌드(443 default)가 죽은 nginx 사용.
+
+- 회수: 클라이언트 포트 없는 `https://{host}`(443) fallback 10건 + 죽은 auto-update `:8080` poller 3종 → `http://{host}:8765` 전수 치환 + [tests/app/test_no_443_hardcode.py](../../tests/app/test_no_443_hardcode.py) guard.
+
+판정: **클라이언트 IMPLEMENTED.** 서버측 443 nginx 정상화(docker `web`/`ws` 재기동)는 SSH chain(`.env.ssh` 자격) 미수행 — DEFERRED(데모 서버 운영, 사용자 SSH 게이트).
 
 ## 4. 문서와 구현 불일치
 

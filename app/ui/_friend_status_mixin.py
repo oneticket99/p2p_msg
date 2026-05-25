@@ -31,7 +31,7 @@ class FriendStatusMixin:
         """
         import aiohttp
         try:
-            api_base = getattr(self._config, "api_base", None) or "https://114.207.112.73"
+            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
             token = getattr(self, "_session_token", None) or ""
             if not token:
                 return
