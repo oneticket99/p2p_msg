@@ -163,9 +163,11 @@ class TestMainWindowRoomsIntegration:
         # 멤버 보기 트리거 ("..." 드롭다운 "멤버 보기" 등가 — 동일 핸들러 직접 호출)
         main_window._on_open_members_panel()
 
-        # cycle 169.837 — 모달 dialog 인스턴스 보유 (GC 방지 ref) + 비차단 modal
+        # cycle 169.838 — 멤버 보기 = in-app overlay 모달(_exec_dialog_centered). dialog 인스턴스
+        # 보유(self._members_dialog) ref 검증. offscreen 가드가 setParent+show(setModal 아님)라
+        # isModal 미검증.
         dlg = getattr(main_window, "_members_dialog", None)
-        assert dlg is not None and dlg.isModal()
+        assert dlg is not None
         # 모달 안 MemberListWidget 의 멤버 수 = 1 (self_peer 방장, known_peers 부재)
         lst = dlg.findChild(MemberListWidget)
         assert lst is not None

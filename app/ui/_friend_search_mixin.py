@@ -52,7 +52,8 @@ class FriendSearchMixin:
         self._add_friend_dlg_ref = dlg
         dlg.search_requested.connect(self._on_friend_search_requested)
         dlg.friend_requested.connect(self._on_friend_requested)
-        dlg.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(dlg)
         self._add_friend_dlg_ref = None
 
     def _on_friend_search_requested(self, keyword: str) -> None:
@@ -189,7 +190,8 @@ class FriendSearchMixin:
                 log.warning("[pending] spawn fail — %r", exc)
         else:
             dlg.populate([])
-        dlg.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(dlg)
 
     def _on_pending_resolved(self, user_id: int, accepted: bool) -> None:
         """accept/reject 결과 처리 — friend list refresh + badge 갱신."""

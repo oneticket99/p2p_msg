@@ -510,7 +510,40 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 
 ---
 
-## 16. 참조
+## 16. 다이얼로그 모달 정책 (cycle 169.838)
+
+사용자 directive: **앱의 모든 다이얼로그는 메인 레이아웃 안 in-app overlay 모달**이다.
+별도 OS 윈도우로 띄우는 것은 **원격 데스크탑 제어 상대화면 창 1개뿐**이다.
+
+### 16.1 적용 규약
+
+| 호출 위치 | 진입 방식 |
+|---|---|
+| MainWindow mixin 직접 dialog | `self._exec_dialog_centered(dialog)` (backdrop dim + 중앙 child overlay + manual modal loop) |
+| 비차단 dialog (async 후속 작업) | `self._embed_dialog_centered(dialog)` (loop 생략, 예: GroupCallDialog SFU publish) |
+| dialog 내부 nested sub-dialog (self ≠ MainWindow) | `app.ui._modal_helper.exec_modal(dialog, self)` (parent 체인 walk → MainWindow `_exec_dialog_centered` 위임, 미발견 시 `.exec()` 폴백) |
+| 알림/확인 popup (`ConfirmDialog.show_info`/`show_warning`/`show_critical`/`ask`) | 정적 헬퍼 내부서 `exec_modal(dlg, parent)` 호출 — 호출 사이트 변경 없이 in-app overlay 모달. startup/부모 부재 시 `.exec()` 폴백 |
+
+- 적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내·알림/확인 popup(ConfirmDialog).
+- 테스트(offscreen/pytest) 환경에서는 `_exec_dialog_centered` 가 `loop.exec()` 무한 블록을 피하려고 non-blocking `show` 만 하고 `0` 을 반환한다.
+
+### 16.2 별도 OS 윈도우 예외 (in-app 모달 아님)
+
+| 예외 | 사유 |
+|---|---|
+| 원격 데스크탑 제어 상대화면 창 (`RemoteRequestDialog`/`RemoteConnectDialog` 후속 제어 창) | directive 가 명시한 유일 새창 — 상대 화면은 메인 레이아웃 밖 독립 창이어야 한다. |
+| startup auth bootstrap (`app/main.py` 의 welcome/login/signup/find/reset `.exec()`) | MainWindow 생성 **전** 단계라 overlay 대상이 없다. |
+| 로그아웃 후 tray 재인증 chain (`_tray_mixin.py` login/signup `.exec()`) | startup 과 동일한 재인증 단계 + login↔signup 전환에 custom done() code(`res==2/3`)를 쓰는데 `_exec_dialog_centered` 는 `accept=1`/`reject=0` 만 반환해 전환 code 가 손실된다. |
+| `HamburgerDrawer` | QFrame child overlay(좌측 slide-in)로 이미 메인 레이아웃 안. `.exec()` 는 `show+raise` 호환 shim 일 뿐 별도 윈도우/모달 loop 가 아니다. |
+
+### 16.3 "방 입장" 제거 (cycle 169.838)
+
+- room_id/peer_id 직접 입력 다이얼로그(`_on_open_room_dialog` + 메뉴 항목)를 전수 제거했다.
+- 그룹방은 채팅창의 **"그룹 만들기" + 멤버 초대** 로만 생성한다(텔레그램 플로우 정합).
+
+---
+
+## 17. 참조
 
 | 주제 | 문서 |
 |---|---|
@@ -529,4 +562,4 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 
 ---
 
-마지막 갱신: 2026-05-21 (cycle 169.199 — §16 UI Toonation BI 통합 redesign 70+ sub-cycle reflect — sidebar_rail 2 entry + top_bar 60 #0A1019 + chat_header avatar 폐기 + chat_list "채팅" tab 통합 + chat_view day separator/DM cache replay/scroll offset retain + message_bubble grouped tail 부재/ts inline overlay/avatar palette gradient + input_bar composite pill + hamburger_drawer frameless gradient + my_profile_dialog telegram simple rewrite + FolderManageDialog telegram folder edit align)
+마지막 갱신: 2026-05-26 (cycle 169.838 — §16 다이얼로그 모달 정책 신설: 전 dialog in-app overlay 모달 + 별도 OS 윈도우 예외 4종(원격제어 창·startup auth bootstrap·tray 재인증·HamburgerDrawer) 명문화 + "방 입장" 제거 기록. 참조 §16→§17 renumber)

@@ -64,7 +64,12 @@ class SfuCallMixin:
             room_id, peer_id, _send, on_remote_track=_on_track
         )
         self._connect_sfu_signals()
-        self._group_call_dialog.show()
+        # cycle 169.838 — 별도 OS 윈도우(.show()) → 메인 레이아웃 안 in-app overlay.
+        # publish 가 이어서 async 스케줄돼야 하므로 비차단 embed 헬퍼 사용(loop.exec() 생략).
+        if hasattr(self, "_embed_dialog_centered"):
+            self._embed_dialog_centered(self._group_call_dialog)
+        else:
+            self._group_call_dialog.show()
         asyncio.ensure_future(self._sfu_call_client.publish(video=video))
 
     def _connect_sfu_signals(self) -> None:
@@ -108,6 +113,14 @@ class SfuCallMixin:
             self._sfu_call_client = None
         if self._group_call_dialog is not None:
             self._group_call_dialog.close_all()
+            # cycle 169.838 — in-app overlay backdrop 정리 (embed 시 부착한 dim layer)
+            backdrop = getattr(self._group_call_dialog, "_embed_backdrop", None)
+            if backdrop is not None:
+                try:
+                    backdrop.hide()
+                    backdrop.deleteLater()
+                except Exception:
+                    pass
             self._group_call_dialog.close()
             self._group_call_dialog = None
 

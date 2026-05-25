@@ -305,6 +305,11 @@ jobs:
           python -m pip install -r app/requirements-dev.txt
           python -m pip install -r server/requirements-dev.txt
 
+      - name: playwright chromium 설치 (e2e 브라우저 의존성 — 러너 self-provision)
+        # cycle 169.838 — self-hosted 러너 chromium 미설치 → e2e step "Executable doesn't exist"
+        # 회귀 회수. playwright install 은 idempotent(이미 있으면 skip) — chromium + headless shell 동시 설치.
+        run: python -m playwright install chromium
+
       - name: pytest 실행 (unit + ui safe + integration — e2e 제외)
         # cycle 169.638: tests/integration -m integration 활성 (44 PASS 0.87s green chain).
         # cycle 169.640: tests/e2e (browser RTC + signaling) 별 step 분리 — playwright + demo server 의존성 retain.

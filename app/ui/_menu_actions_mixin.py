@@ -7,8 +7,10 @@ codex 2.5 13차 — main_window.py 책임 분리 batch.
 - `_on_open_friend_list()` — FriendListWidget page 활성 + chat_list refresh
 - `_on_open_direct_chat()` — 1:1 직접 메시지 페이지 진입
 - `_on_open_settings_dialog()` — SettingsDialog modal (centered)
-- `_on_open_room_dialog()` — room_id + peer_id QInputDialog chain
 - `_on_show_about()` — About 다이얼로그 (서비스명/버전/라이선스)
+
+cycle 169.838 — "방 입장"(room_id/peer_id 직접 입력) 제거. 그룹방은 채팅창의
+"그룹 만들기" + 멤버 초대로만 생성하므로 `_on_open_room_dialog` 핸들러 전수 삭제.
 
 본 mixin 안 의존:
 - `self._friend_list`, `self._stacked`, `self._STACK_FRIENDS`, `self._STACK_DIRECT_CHAT`
@@ -21,10 +23,8 @@ codex 2.5 13차 — main_window.py 책임 분리 batch.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QInputDialog, QLineEdit
 
 from app.ui.settings_dialog import SettingsDialog
 
@@ -70,43 +70,6 @@ class MenuActionsMixin:
         dialog = SettingsDialog(sound_player=self._sound_player, parent=self)
         result = self._exec_dialog_centered(dialog)
         log.debug("SettingsDialog 종료 — result=%s", result)
-
-    @pyqtSlot()
-    def _on_open_room_dialog(self) -> None:
-        """"방 입장" 다이얼로그 — room_id + peer_id 입력 (기존 호환)."""
-
-        room_id, ok1 = QInputDialog.getText(
-            self,
-            "방 입장",
-            "Room ID 를 입력하세요:",
-            QLineEdit.EchoMode.Normal,
-            self._state.room_id or "demo",
-        )
-        if not ok1 or not room_id.strip():
-            return
-
-        peer_id, ok2 = QInputDialog.getText(
-            self,
-            "방 입장",
-            "Peer ID (self 식별자) 를 입력하세요:",
-            QLineEdit.EchoMode.Normal,
-            self._state.peer_id or self._config.user_nickname,
-        )
-        if not ok2 or not peer_id.strip():
-            return
-
-        self._state.set_identity(room_id=room_id.strip(), peer_id=peer_id.strip())
-        log.info(
-            "방 입장 의도 등록 — room=%s peer=%s (실 연결은 Task #16 에서)",
-            room_id,
-            peer_id,
-        )
-        self._chat_view.add_message(
-            sender="system",
-            text=f"방 입장 의도 등록: room={room_id} · peer={peer_id}",
-            ts=datetime.now(),
-            is_self=False,
-        )
 
     @pyqtSlot()
     def _on_show_about(self) -> None:

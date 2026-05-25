@@ -106,6 +106,10 @@ class RoomGroupChatMixin:
         # (signaling 접속 구성원) 기준 = "멤버 보기" 패널 표시 수와 정합 (방 진입 시점 count).
         # 동적 join/leave 갱신은 후속 — 본 cycle 은 "멤버 0" stub 회수 한정.
         member_count = 1 + len(getattr(self._state, "known_peers", ()) or ())
+        # cycle 169.838 — room 진입 시 상단 ChatHeader 갱신. 미갱신 시 직전 chat 이름
+        # (예: 투네이션 고객센터)이 헤더에 잔존(사용자 발견). 방 제목 + 멤버 수로 set_chat.
+        if hasattr(self, "_chat_header"):
+            self._chat_header.set_chat(f"Room #{room_id}", status=f"멤버 {member_count}명")
         new_view = GroupChatView(
             room_id=room_id,
             room_title=f"Room #{room_id}",
@@ -252,22 +256,20 @@ class RoomGroupChatMixin:
                 MemberItem(user_id=idx, username=peer_id, role="member", is_online=True)
             )
 
-        # cycle 169.837 — StackedWidget 패널 swap → 모달 dialog (텔레그램 그룹 메뉴 = 전부 모달).
-        # MemberListWidget 의 원형 아바타 행(cycle 169.837 통합)으로 표시.
+        # cycle 169.838 — 별도 OS 윈도우(QDialog.show) → 메인 레이아웃 안 in-app overlay 모달.
+        # 사용자 directive: 얼럿창(별도 윈도우) 금지, 메인 레이아웃 안 모달. _exec_dialog_centered
+        # (backdrop dim + child overlay + manual modal loop)로 다른 dialog 들과 동일 처리.
         dlg = QDialog(self)
         dlg.setWindowTitle("멤버")
-        dlg.setMinimumSize(340, 420)
+        dlg.setFixedSize(360, 440)
         dlg.setStyleSheet("QDialog { background-color: #131C30; }")
         lay = QVBoxLayout(dlg)
-        lay.setContentsMargins(12, 12, 12, 12)
+        lay.setContentsMargins(16, 16, 16, 16)
         title = QLabel(f"멤버 {len(members)}명", dlg)
         title.setStyleSheet("color: #f3f4f6; font-size: 15px; font-weight: 700; background: transparent;")
         lst = MemberListWidget(parent=dlg)
         lst.set_members(members, viewer_role="member")
         lay.addWidget(title)
         lay.addWidget(lst, stretch=1)
-        # cycle 169.837 — exec()(blocking) 대신 modal+show()(non-blocking) — test event loop
-        # 블록/hang 회피 + 인스턴스 참조 보유로 GC 방지(local 변수면 즉시 소멸).
-        dlg.setModal(True)
-        self._members_dialog = dlg
-        dlg.show()
+        self._members_dialog = dlg  # 참조 보유 (test 검증 + GC 방지)
+        self._exec_dialog_centered(dlg)

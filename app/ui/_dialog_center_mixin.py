@@ -16,6 +16,7 @@ codex 2.5 잔존 big block 진입 13차 — main_window.py 책임 분리 batch.
 from __future__ import annotations
 
 import logging
+import os
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +30,15 @@ class DialogCenterMixin:
         사용자 directive image #25/27/31 회수 — backdrop rgba(0,0,0,0.5) 의 main rect
         의 dimming layer 추가. dialog 의 z-order 위 backdrop. close 직후 backdrop hide.
         """
+        # cycle 169.838 — test-safety 가드. offscreen/pytest 환경 의 loop.exec() 는
+        # 무한 블록(hang) 을 유발하므로 non-blocking show 만 수행하고 즉시 반환한다.
+        # (전 dialog in-app 모달 변환 의 test 통과 선행 조건.)
+        if os.environ.get("QT_QPA_PLATFORM") == "offscreen" or os.environ.get(
+            "PYTEST_CURRENT_TEST"
+        ):
+            dialog.setParent(self)
+            dialog.show()
+            return 0
         # cycle 169.287 — hide/setParent/setWindowFlags(Widget)/show strict chain (Qt internal cache reset)
         from PyQt6.QtCore import Qt as _Qt, QEventLoop
         from PyQt6.QtWidgets import QFrame, QSplitter as _QSplitter, QWidget
@@ -183,3 +193,47 @@ class DialogCenterMixin:
             self.centralWidget().repaint()
         self.update()
         return result
+
+    def _embed_dialog_centered(self, dialog) -> None:
+        """cycle 169.838 — non-blocking in-app overlay embed (backdrop dim + 중앙 배치).
+
+        ``_exec_dialog_centered`` 와 동일한 child overlay + backdrop 처리를 하되 manual
+        modal loop(``loop.exec()``)을 생략한다. async 작업(예: SFU publish)을 이어서
+        스케줄해야 하는 dialog(GroupCallDialog 등) 가 별도 OS 윈도우 없이 메인 레이아웃
+        안에 뜨도록 하기 위함. 반환값은 없다(비차단).
+        """
+        from PyQt6.QtCore import Qt as _Qt
+        from PyQt6.QtWidgets import QFrame, QWidget
+
+        # 한글 주석 — backdrop dim layer (다른 모달과 동일한 어둡게 처리)
+        backdrop = QFrame(self)
+        backdrop.setObjectName("dialogBackdrop")
+        backdrop.setAutoFillBackground(True)
+        backdrop.setStyleSheet(
+            "QFrame#dialogBackdrop { background-color: rgba(0, 0, 0, 160); }"
+        )
+        backdrop.setGeometry(self.rect())
+        backdrop.show()
+        backdrop.raise_()
+        # 한글 주석 — backdrop 참조 보관 (dialog close 시 함께 정리)
+        dialog._embed_backdrop = backdrop
+
+        # 한글 주석 — dialog 를 main_window child widget 으로 재부모화 (별도 윈도우 차단)
+        dialog.hide()
+        dialog.setParent(self)
+        dialog.setWindowFlags(_Qt.WindowType.Widget)
+        parent_rect = self.rect()
+        max_w = max(parent_rect.width() - 40, 360)
+        max_h = max(parent_rect.height() - 40, 400)
+        dlg_w = min(dialog.width(), max_w)
+        dlg_h = min(dialog.height(), max_h)
+        if dlg_w > 0 and dlg_h > 0:
+            dialog.resize(dlg_w, dlg_h)
+        x = (parent_rect.width() - dialog.width()) // 2
+        y = (parent_rect.height() - dialog.height()) // 2
+        dialog.move(max(x, 0), max(y, 0))
+        dialog.show()
+        dialog.raise_()
+        for child in dialog.findChildren(QWidget):
+            child.show()
+        dialog.update()

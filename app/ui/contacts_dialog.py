@@ -133,7 +133,8 @@ class ContactsDialog(QDialog):
             from app.ui.new_contact_dialog import NewContactDialog
             dialog = NewContactDialog(parent=self)
             dialog.contact_submitted.connect(self._on_new_contact_submitted)
-            dialog.exec()
+            from app.ui._modal_helper import exec_modal
+            exec_modal(dialog, self)  # cycle 169.838 — in-app overlay 모달 (별도 윈도우 금지)
         except Exception as exc:
             log.warning("[new_contact_dialog] spawn 실패 — %r", exc)
 
@@ -143,7 +144,8 @@ class ContactsDialog(QDialog):
             from app.ui.add_friend_by_username_dialog import AddFriendByUsernameDialog
             dialog = AddFriendByUsernameDialog(parent=self)
             dialog.friend_added.connect(self._on_friend_username_submitted)
-            dialog.exec()
+            from app.ui._modal_helper import exec_modal
+            exec_modal(dialog, self)  # cycle 169.838 — in-app overlay 모달 (별도 윈도우 금지)
         except Exception as exc:
             log.warning("[add_friend_by_username] spawn 실패 — %r", exc)
 

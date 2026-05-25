@@ -118,25 +118,15 @@ else:
             root.setContentsMargins(0, 0, 0, 0)
             root.setSpacing(0)
 
-            # ── 1) 헤더 ────────────────────────────────────
-            header = QWidget(self)
-            header_layout = QHBoxLayout(header)
-            header_layout.setContentsMargins(8, 6, 8, 6)
-
+            # ── 1) 내부 헤더 제거 (cycle 169.838) ──────────
+            # 상단 공용 ChatHeader 가 방 제목 + 멤버 수를 표시하므로 본 view 내부 헤더는
+            # 중복(사용자 발견). 헤더 블록을 레이아웃에서 제거한다. 단 _title_label /
+            # _member_count_label 은 set_member_count() 호환 위해 생성만 유지(미표시).
             title_text = room_title or f"Room #{room_id}"
-            self._title_label = QLabel(title_text, header)
-            self._title_label.setStyleSheet("font-weight: 700; font-size: 14px;")
-
-            self._member_count_label = QLabel(f"멤버 {member_count}", header)
-            self._member_count_label.setStyleSheet("color: #6b7280; font-size: 12px;")
-
-            # cycle 169.836 — "멤버 보기" 별도 버튼 제거. 멤버 보기는 헤더 "..." 드롭다운
-            # entry 로 이동(텔레그램 그룹 멤버보기 플로우 directive). members_panel_requested
-            # 신호는 호환 위해 정의 유지(현재 미발화 — "..." 메뉴가 핸들러 직접 호출).
-            header_layout.addWidget(self._title_label, stretch=1)
-            header_layout.addWidget(self._member_count_label)
-
-            root.addWidget(header)
+            self._title_label = QLabel(title_text, self)
+            self._title_label.setVisible(False)
+            self._member_count_label = QLabel(f"멤버 {member_count}", self)
+            self._member_count_label.setVisible(False)
 
             # ── 2) 메시지 스크롤 영역 ──────────────────────
             self._scroll = QScrollArea(self)

@@ -241,8 +241,12 @@ class SignupDialog(QDialog):
         if ok:
             # 한글 주석 — register PASS → OTP dialog 진입 (modal block + cancel 시 signup 잔존)
             from app.ui.otp_dialog import OTPDialog
+            from app.ui._modal_helper import exec_modal
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
-            if otp.exec() == otp.DialogCode.Accepted:
+            # cycle 169.838 — nested OTP 도 in-app overlay 모달(별도 윈도우 금지).
+            # SignupDialog 가 MainWindow overlay 안서 열린 경우 parent 체인 walk 로
+            # _exec_dialog_centered 위임, startup bootstrap(부모 부재) 시 .exec() 폴백.
+            if exec_modal(otp, self) == otp.DialogCode.Accepted:
                 # 한글 주석 — cycle 169.54 회수 — OTP PASS 의 자동 발급 token + user_id propagate
                 self._email = email
                 self._token = otp._token

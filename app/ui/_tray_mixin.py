@@ -144,6 +144,11 @@ class TrayMixin:
         except Exception:
             pass
         # 한글 주석 — 3) LoginDialog modal re-spawn
+        # cycle 169.838 scope-out — 재인증(로그아웃 후) chain 은 in-app overlay 모달 directive
+        # 예외다. (1) startup auth bootstrap(app/main.py)과 동일한 재인증 단계이고,
+        # (2) login↔signup 전환을 위해 custom done() code(res==2/3)를 사용하는데
+        # _exec_dialog_centered 는 accept=1/reject=0 만 반환해 전환 code 가 손실된다.
+        # 따라서 별도 윈도우 .exec() 를 유지한다(FRONTEND.md 모달 정책 §예외 참조).
         try:
             from app.ui.login_dialog import LoginDialog
             from app.ui.signup_dialog import SignupDialog
