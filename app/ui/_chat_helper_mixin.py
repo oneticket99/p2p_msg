@@ -59,7 +59,10 @@ class ChatHelperMixin:
         try:
             from app.db import messages_cache as _mc
             from datetime import datetime as _dt
-            min_id = _mc.get_min_msg_id(room_id_local)
+            # cycle 169.830 — cursor = 실제 표시된 최소 msg_id 우선 (sync_state stale 회수).
+            # 표시 기준으로 strictly older fetch → 동일 window 재fetch(중복 증식) 차단.
+            disp_min = self._chat_view.min_displayed_msg_id()
+            min_id = disp_min if disp_min > 0 else _mc.get_min_msg_id(room_id_local)
             if min_id is None or min_id <= 1:
                 log.info("[lazy_load] room=%d local cache exhausted — server fetch fire", room_id_local)
                 kind = self._active_chat_kind or "saved"

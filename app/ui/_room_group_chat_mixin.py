@@ -102,10 +102,14 @@ class RoomGroupChatMixin:
 
         # 2) 신규 GroupChatView
         self_username = self._config.user_nickname
+        # cycle 169.833 — 헤더 멤버 수 하드코딩 0 회수. self(방장) + 동일 방 known_peers
+        # (signaling 접속 구성원) 기준 = "멤버 보기" 패널 표시 수와 정합 (방 진입 시점 count).
+        # 동적 join/leave 갱신은 후속 — 본 cycle 은 "멤버 0" stub 회수 한정.
+        member_count = 1 + len(getattr(self._state, "known_peers", ()) or ())
         new_view = GroupChatView(
             room_id=room_id,
             room_title=f"Room #{room_id}",
-            member_count=0,
+            member_count=member_count,
             self_username=self_username,
             parent=self._stacked,
         )

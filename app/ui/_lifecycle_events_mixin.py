@@ -60,9 +60,10 @@ class LifecycleEventsMixin:
                     from PyQt6.QtWidgets import QSystemTrayIcon
                     self._tray_icon.showMessage(
                         "TooTalk",
-                        "트레이 안 retain 됐다. RMB 클릭 → 로그아웃/종료.",
+                        "창을 닫아도 TooTalk는 트레이에서 계속 실행됩니다. "
+                        "트레이 아이콘을 마우스 오른쪽 버튼으로 클릭하면 로그아웃하거나 종료할 수 있어요.",
                         QSystemTrayIcon.MessageIcon.Information,
-                        3000,
+                        5000,
                     )
                     self._tray_hint_shown = True
             except Exception:

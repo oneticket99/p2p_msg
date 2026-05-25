@@ -33,8 +33,6 @@ async def handle_add_friend_by_username(request: web.Request) -> web.Response:
 
     from server.db.repositories.users import get_user_by_username
     from server.db.repositories import friends as _fr_repo
-    from server.db.repositories.rooms import find_or_create_dm_room
-    from server.db.repositories.messages import insert_text_message
 
     target = await get_user_by_username(pool, username)
     if target is None:
@@ -42,53 +40,35 @@ async def handle_add_friend_by_username(request: web.Request) -> web.Response:
     if target.id == user_id:
         raise web.HTTPBadRequest(reason="자기 자신 친구 추가 불가")
 
-    # cycle 169.470 — telegram 등가 — username 검색 = 양방향 friends INSERT (target side 자동 노출)
-    # 신청자 + target 양측 friend retain → 양측 chat_list 등장
+    # cycle 169.832 — 요청/승인 모델 정합 (instant-accept leak 봉합).
+    # username 검색 친구 추가 = 단방향 pending 요청 생성 → 수신자 "받은 친구 요청" +
+    # badge 노출. 양방향 accepted + DM room + system message 는 수락 시점
+    # (handle_accept_friend) 으로 이동한다. (기존 instant-accept 가 pending 을 우회해
+    # 수신자에게 요청이 전혀 보이지 않던 버그 회수 — 사용자 dogfooding 발견.)
+    existing = await _fr_repo.get_friend(
+        pool, user_id=user_id, friend_user_id=target.id,
+    )
+    if existing is not None and existing.status in ("accepted", "pending"):
+        # 한글 주석 — 이미 친구이거나 요청 진행 중이면 중복 생성 금지 (멱등 응답)
+        return web.json_response({
+            "friend_user_id": target.id,
+            "username": username,
+            "status": existing.status,
+        }, status=200)
     try:
         await _fr_repo.insert_friend(
-            pool, user_id=user_id, friend_user_id=target.id, status="accepted",
+            pool, user_id=user_id, friend_user_id=target.id, status="pending",
         )
     except Exception as exc:
-        log.debug("[friends_by_username] INSERT forward graceful — %r", exc)
-    try:
-        await _fr_repo.insert_friend(
-            pool, user_id=target.id, friend_user_id=user_id, status="accepted",
-        )
-    except Exception as exc:
-        log.debug("[friends_by_username] INSERT reverse graceful — %r", exc)
-
-    # DM room 생성 + welcome system message
-    room_id = 0
-    try:
-        room_id = await find_or_create_dm_room(pool, user_id, target.id)
-        # cycle 169.470 — system message INSERT (target side notify chain)
-        # 본 사용자 display lookup → "{닉네임}님이 친구 등록했습니다" system message
-        async with pool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    "SELECT COALESCE(nickname, username) AS display FROM users WHERE id = %s LIMIT 1",
-                    (user_id,),
-                )
-                row = await cur.fetchone()
-        requester_display = str(row[0]) if row else "사용자"
-        body = f"{requester_display}님이 친구 등록했습니다."
-        try:
-            await insert_text_message(
-                pool, room_id=room_id, sender_id=user_id, body=body,
-            )
-        except Exception as exc:
-            log.debug("[friends_by_username] system msg graceful — %r", exc)
-        log.info(
-            "[friends_by_username] PASS user=%d target=%d (%s) room=%d",
-            user_id, target.id, username, room_id,
-        )
-    except Exception as exc:
-        log.warning("[friends_by_username] DM room 실패 — %r", exc)
-
+        log.debug("[friends_by_username] pending INSERT graceful — %r", exc)
+    log.info(
+        "[friends_by_username] 친구 요청 발신 user=%d target=%d (%s) status=pending",
+        user_id, target.id, username,
+    )
     return web.json_response({
         "friend_user_id": target.id,
         "username": username,
-        "room_id": room_id,
+        "status": "pending",
     }, status=201)
 
 

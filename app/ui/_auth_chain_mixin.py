@@ -73,6 +73,9 @@ class AuthChainMixin:
                 bool(self._session_token), len(self._session_token or ""), self._current_user_id,
             )
             log.info("[main_window] 로그인 PASS user_id=%s", self._current_user_id)
+            # cycle 169.831 — 로그인 직후 계정 메뉴 가시성 재토글 (회원가입/로그인 숨김)
+            if hasattr(self, "apply_auth_menu_visibility"):
+                self.apply_auth_menu_visibility()
             # cycle 169.107 회수 — login PASS 직후 friend/room server fetch chain
             self._post_login_refresh()
             from app.ui.confirm_dialog import ConfirmDialog
@@ -135,7 +138,7 @@ class AuthChainMixin:
 
         from app.ui.confirm_dialog import ConfirmDialog
         if self._session_token is None:
-            ConfirmDialog.show_info(self, "TooTalk", "로그인 상태 아님")
+            ConfirmDialog.show_info(self, "TooTalk", "현재 로그인되어 있지 않아요.")
             return
         # 한글 주석 — tray menu logout chain 동일 활용
         self._perform_logout_and_relogin()

@@ -80,40 +80,45 @@ class MenuBarMixin:
         # "계정" 메뉴
         menu_account = menubar.addMenu("계정")
 
-        act_signup = QAction(f"{_tr('회원가입')}…", self)
-        act_signup.triggered.connect(self._on_open_signup)
-        menu_account.addAction(act_signup)
+        # cycle 169.831 — auth 상태별 가시성 토글 대상 action 보관.
+        # 로그인 시 회원가입/로그인/재설정 숨김 + 로그아웃/친구 노출, 로그아웃 시 반대.
+        self._act_signup = QAction(f"{_tr('회원가입')}…", self)
+        self._act_signup.triggered.connect(self._on_open_signup)
+        menu_account.addAction(self._act_signup)
 
-        act_login = QAction(f"{_tr('로그인')}…", self)
-        act_login.setShortcut(QKeySequence("Ctrl+L"))
-        act_login.triggered.connect(self._on_open_login)
-        menu_account.addAction(act_login)
+        self._act_login = QAction(f"{_tr('로그인')}…", self)
+        self._act_login.setShortcut(QKeySequence("Ctrl+L"))
+        self._act_login.triggered.connect(self._on_open_login)
+        menu_account.addAction(self._act_login)
 
-        act_reset = QAction(f"{_tr('비밀번호')} 재설정…", self)
-        act_reset.triggered.connect(self._on_open_reset)
-        menu_account.addAction(act_reset)
+        self._act_reset = QAction(f"{_tr('비밀번호')} 재설정…", self)
+        self._act_reset.triggered.connect(self._on_open_reset)
+        menu_account.addAction(self._act_reset)
 
         menu_account.addSeparator()
 
         # cycle 144 — 친구 관리 진입점 2 actions
-        act_friend_list = QAction("친구 목록", self)
-        act_friend_list.triggered.connect(self._on_open_friend_list)
-        menu_account.addAction(act_friend_list)
+        self._act_friend_list = QAction("친구 목록", self)
+        self._act_friend_list.triggered.connect(self._on_open_friend_list)
+        menu_account.addAction(self._act_friend_list)
 
-        act_friend_add = QAction("친구 추가…", self)
-        act_friend_add.triggered.connect(self._on_open_add_friend)
-        menu_account.addAction(act_friend_add)
+        self._act_friend_add = QAction("친구 추가…", self)
+        self._act_friend_add.triggered.connect(self._on_open_add_friend)
+        menu_account.addAction(self._act_friend_add)
 
         # cycle 169.499 — 받은 친구 요청 진입점
-        act_pending = QAction("받은 친구 요청…", self)
-        act_pending.triggered.connect(self._on_open_pending_requests)
-        menu_account.addAction(act_pending)
+        self._act_pending = QAction("받은 친구 요청…", self)
+        self._act_pending.triggered.connect(self._on_open_pending_requests)
+        menu_account.addAction(self._act_pending)
 
         menu_account.addSeparator()
 
-        act_logout = QAction("로그아웃", self)
-        act_logout.triggered.connect(self._on_logout)
-        menu_account.addAction(act_logout)
+        self._act_logout = QAction("로그아웃", self)
+        self._act_logout.triggered.connect(self._on_logout)
+        menu_account.addAction(self._act_logout)
+
+        # cycle 169.831 — 초기 = 로그아웃 상태 기준 가시성 적용 (login/logout 시 재토글)
+        self.apply_auth_menu_visibility()
 
         # cycle 148 — "관리자" 메뉴 (admin / owner role 만 가시)
         self._menu_admin = None
@@ -131,6 +136,32 @@ class MenuBarMixin:
         act_about = QAction("TooTalk 정보…", self)
         act_about.triggered.connect(self._on_show_about)
         menu_help.addAction(act_about)
+
+    def apply_auth_menu_visibility(self) -> None:
+        """cycle 169.831 — 로그인 상태별 계정 메뉴 action 가시성 토글.
+
+        ``_session_token`` 보유(로그인) 시 회원가입/로그인/비밀번호 재설정을 숨기고
+        로그아웃 + 친구 관리(목록/추가/받은 요청)를 노출한다. 로그아웃 시 반대.
+        사용자 발견 버그(로그인 후 회원가입/로그인 메뉴 잔존) 회수.
+        """
+        logged_in = getattr(self, "_session_token", None) is not None
+        # 한글 주석 — 로그아웃 전용 (로그인 시 숨김)
+        for act in (
+            getattr(self, "_act_signup", None),
+            getattr(self, "_act_login", None),
+            getattr(self, "_act_reset", None),
+        ):
+            if act is not None:
+                act.setVisible(not logged_in)
+        # 한글 주석 — 로그인 전용 (로그아웃 시 숨김)
+        for act in (
+            getattr(self, "_act_logout", None),
+            getattr(self, "_act_friend_list", None),
+            getattr(self, "_act_friend_add", None),
+            getattr(self, "_act_pending", None),
+        ):
+            if act is not None:
+                act.setVisible(logged_in)
 
     def _is_admin_role(self) -> bool:
         """현재 user 의 role 가 admin / owner 인지 검사 (cycle 148)."""
