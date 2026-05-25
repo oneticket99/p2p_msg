@@ -250,3 +250,47 @@ class TestGroupCreationFlow:
         assert group_entries[0].name == "동아리방"
         assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
         assert not main_window._input_container.isHidden()
+
+
+# ----------------------------------------------------------------------
+# TestRoomCacheMigration — cycle 169.843 M3 (room 적재 source-of-truth 이전)
+# ----------------------------------------------------------------------
+
+
+class TestRoomCacheMigration:
+    """로그인 시 room 적재의 source-of-truth 가 `_room_list._rooms` → `_rooms_cache` 로
+    이전됐는지 검증. `_refresh_chat_list_panel` 가 `_rooms_cache` 를 읽어 kind=room
+    ChatListEntry 를 만든다 (RoomListWidget 비참조 정합, DoD D4).
+    """
+
+    def test_refresh_reads_rooms_from_cache_not_room_list(self, main_window) -> None:
+        """`_refresh_chat_list_panel` 가 `_room_list._rooms` 가 아닌 `_rooms_cache` 를 읽는다."""
+
+        from types import SimpleNamespace
+
+        # 한글 주석: _room_list._rooms 는 비우고 _rooms_cache 에만 room 주입 →
+        # ChatListPanel 에 kind=room entry 가 나타나면 reader 가 cache 를 읽는 증거.
+        main_window._room_list.set_rooms([])
+        main_window._rooms_cache = [
+            SimpleNamespace(room_id=501, name="개발팀 공지방"),
+        ]
+
+        main_window._refresh_chat_list_panel()
+
+        room_entries = [
+            e for e in main_window._chat_list_panel._entries if e.kind == "room"
+        ]
+        assert len(room_entries) == 1
+        assert room_entries[0].target_id == 501
+        assert room_entries[0].name == "개발팀 공지방"
+
+    def test_empty_cache_yields_no_room_entry(self, main_window) -> None:
+        """`_rooms_cache` 가 비면 kind=room entry 미생성 (회귀 안전망)."""
+
+        main_window._rooms_cache = []
+        main_window._refresh_chat_list_panel()
+
+        room_entries = [
+            e for e in main_window._chat_list_panel._entries if e.kind == "room"
+        ]
+        assert room_entries == []

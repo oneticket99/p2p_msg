@@ -292,6 +292,11 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._chat_list_panel.set_active_tab("friends")
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
+        # cycle 169.843 M3 — room broadcast 마이그레이션: 로그인 시 room 적재의
+        # source-of-truth 를 hidden RoomListWidget(_room_list._rooms) → 직접 cache
+        # (_rooms_cache) 로 이전. _refresh_chat_list_panel 가 본 cache 를 읽는다.
+        # _room_list 자체는 M5(G-final 게이트 후) 회수까지 병행 잔존(안전망).
+        self._rooms_cache: list = []
         # RoomListWidget hidden sibling
         self._room_list = RoomListWidget(parent=self)
         self._room_list.setVisible(False)

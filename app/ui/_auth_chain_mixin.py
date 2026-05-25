@@ -112,6 +112,9 @@ class AuthChainMixin:
                 if rc is not None and self._session_token:
                     try:
                         rooms = await rc.list_rooms(self._session_token)  # type: ignore[attr-defined]
+                        # cycle 169.843 M3 — room 적재 source-of-truth 를 _rooms_cache 로 이전.
+                        # _refresh_chat_list_panel 가 _room_list._rooms 대신 본 cache 를 읽는다.
+                        self._rooms_cache = list(rooms)
                         if hasattr(self, "_room_list"):
                             self._room_list.set_rooms(rooms)
                         log.info("[post_login] rooms fetch — count=%d", len(rooms))

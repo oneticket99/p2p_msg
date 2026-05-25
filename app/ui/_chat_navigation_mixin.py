@@ -76,8 +76,9 @@ class ChatNavigationMixin:
                 )
             )
 
-        # 한글 주석 — room_list 안 rooms → ChatListEntry kind=room 변환
-        rooms = getattr(self._room_list, "_rooms", []) if hasattr(self, "_room_list") else []
+        # 한글 주석 — cycle 169.843 M3 — room source-of-truth 를 _rooms_cache 로 전환.
+        # 이전 _room_list._rooms 직접 의존 해소 (RoomListWidget 은 M5 회수까지 병행 잔존).
+        rooms = getattr(self, "_rooms_cache", [])
         for rm in rooms:
             rid = getattr(rm, "room_id", None) or getattr(rm, "id", None) or 0
             rname = getattr(rm, "name", None) or getattr(rm, "title", None) or f"room_{rid}"
