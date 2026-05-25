@@ -26,8 +26,8 @@ from app.updater.version_check import CURRENT_VERSION
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — main_window 와 동일 default fallback URL (114.207.112.73:8080).
-_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8080"
+# 한글 주석 — main_window 와 동일 default fallback URL (114.207.112.73:8765).
+_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8765"
 
 
 class UpdateLifecycleMixin:

@@ -20,6 +20,8 @@ _APP_DIR = _REPO_ROOT / "app"
 
 # 한글 주석 — 데모 IP 의 포트 없는 https(=443) literal. 8765/8443 명시 포트는 별도 허용.
 _BARE_443 = re.compile(r'https://114\.207\.112\.73"')
+# 한글 주석 — 죽은 내부 web 컨테이너 포트 8080 (nginx 443 upstream, host 미공개). 8765 직결로 치환 의무.
+_DEAD_8080 = re.compile(r'114\.207\.112\.73:8080')
 
 
 def _python_sources() -> list[Path]:
@@ -41,15 +43,33 @@ class TestNo443Hardcode:
             + ", ".join(offenders)
         )
 
+    def test_no_dead_8080_literal_in_app(self) -> None:
+        # 한글 주석 — 죽은 내부 web 컨테이너 포트 8080 하드코딩 부재 (auto-update poller 회귀 차단)
+        offenders: list[str] = []
+        for src in _python_sources():
+            text = src.read_text(encoding="utf-8")
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                if _DEAD_8080.search(line):
+                    offenders.append(f"{src.relative_to(_REPO_ROOT)}:{lineno}")
+        assert offenders == [], (
+            "죽은 web 컨테이너 포트 8080 하드코딩 잔존 — 8765 직결 치환 의무: "
+            + ", ".join(offenders)
+        )
+
     @pytest.mark.parametrize(
         "module,attr",
-        [("app.ui._menu_bar_mixin", "_DEFAULT_UPDATE_SERVER_URL")],
+        [
+            # 한글 주석 — _DEFAULT_UPDATE_SERVER_URL 3중 정의 전부 8765 잠금 (cycle 169.823 reviewer HIGH)
+            ("app.ui._menu_bar_mixin", "_DEFAULT_UPDATE_SERVER_URL"),
+            ("app.ui._update_lifecycle_mixin", "_DEFAULT_UPDATE_SERVER_URL"),
+            ("app.ui.main_window", "_DEFAULT_UPDATE_SERVER_URL"),
+        ],
     )
     def test_update_server_url_is_8765(self, module: str, attr: str) -> None:
-        # 한글 주석 — 자동 업데이트 server URL 도 http 8765 직결 (443 nginx 우회)
+        # 한글 주석 — 자동 업데이트 server URL 도 http 8765 직결 (443 nginx + 죽은 8080 우회)
         import importlib
 
         mod = importlib.import_module(module)
         url = getattr(mod, attr)
         assert url == "http://114.207.112.73:8765", f"{attr}={url!r} — 8765 직결 기대"
-        assert ":443" not in url and not url.startswith("https://114")
+        assert ":443" not in url and ":8080" not in url and not url.startswith("https://114")

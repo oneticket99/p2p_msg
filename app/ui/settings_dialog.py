@@ -646,7 +646,7 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
         w = QWidget()
         form = QFormLayout(w)
         form.setContentsMargins(20, 20, 20, 20)
-        form.addRow(_tr("server endpoint"), QLineEdit("114.207.112.73:8080"))
+        form.addRow(_tr("server endpoint"), QLineEdit("114.207.112.73:8765"))
         form.addRow(_tr("STUN URL"), QLineEdit("stun:stun.l.google.com:19302"))
         form.addRow(_tr("네트워크 사용량"), QLabel("0 MB"))
         debug = QCheckBox(_tr("debug log 활성"))
