@@ -73,6 +73,7 @@ from app.ui.friend_list import FriendListWidget
 from app.ui.group_chat_view import GroupChatView
 from app.ui.login_dialog import LoginDialog
 from app.ui.member_list import MemberListWidget
+from app.ui.member_panel import MemberPanel
 from app.ui.password_reset_dialog import PasswordResetDialog
 from app.ui.room_list import RoomListWidget
 from app.ui.settings_dialog import SettingsDialog
@@ -343,8 +344,15 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         # 4-2) GroupChatView placeholder idx 1
         self._group_placeholder = QWidget(self._stacked)
         self._stacked.addWidget(self._group_placeholder)
-        # 4-3) MemberListWidget idx 2
-        self._member_list = MemberListWidget(parent=self._stacked)
+        # 4-3) MemberPanel(헤더 뒤로 + MemberListWidget) idx 2 — cycle 169.819
+        self._member_list = MemberPanel(parent=self._stacked)
+        # 한글 주석 — 멤버 화면 "← 뒤로" → 직전 그룹 채팅 화면 복귀
+        try:
+            self._member_list.back_requested.connect(
+                lambda: self._stacked.setCurrentIndex(self._STACK_GROUP_CHAT)
+            )
+        except Exception as exc:  # pragma: no cover - graceful
+            log.debug('member back_requested binding 실패 — %r', exc)
         self._stacked.addWidget(self._member_list)
         # 4-4) FriendListWidget idx 3
         self._friend_list = FriendListWidget(parent=self._stacked)

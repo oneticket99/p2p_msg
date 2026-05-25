@@ -222,10 +222,25 @@ class RoomGroupChatMixin:
 
     @pyqtSlot()
     def _on_open_members_panel(self) -> None:
-        """GroupChatView 의 members_panel_requested 핸들러 — MemberList toggle."""
+        """GroupChatView 의 members_panel_requested 핸들러 — 방 구성원 목록 표시.
+
+        cycle 169.819 — 빈 stub([]) 회수. AppState 의 self peer + 동일 방 known_peers
+        를 MemberItem 으로 구성한다 (signaling 기준 현재 접속 구성원). self = 방장
+        표기. 서버 REST 영속 멤버(rooms_client.get_room)는 후속 결선 여지.
+        """
         if self._current_room_id is None:
             return
         log.debug("[main_window] open_members_panel room=%s", self._current_room_id)
-        # cycle 139 stub — 빈 멤버 목록 swap
-        self._member_list.set_members([], viewer_role="member")
+
+        from app.ui.member_list import MemberItem
+
+        self_peer = self._state.peer_id or self._config.user_nickname or "나"
+        members = [MemberItem(user_id=0, username=self_peer, role="owner", is_online=True)]
+        # 한글 주석 — 동일 방 다른 peer (signaling known_peers) 를 멤버로 추가
+        for idx, peer_id in enumerate(sorted(self._state.known_peers), start=1):
+            members.append(
+                MemberItem(user_id=idx, username=peer_id, role="member", is_online=True)
+            )
+
+        self._member_list.set_members(members, viewer_role="member")
         self._stacked.setCurrentIndex(self._STACK_MEMBERS)
