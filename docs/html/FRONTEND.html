@@ -988,7 +988,52 @@ flowchart TB
 
 <hr>
 
-<h2>17. 참조</h2>
+<h2>17. 다이얼로그 모달 정책 (cycle 169.838)</h2>
+
+<p>사용자 directive: <strong>앱의 모든 다이얼로그는 메인 레이아웃 안 in-app overlay 모달</strong>이다. 별도 OS 윈도우로 띄우는 것은 <strong>원격 데스크탑 제어 상대화면 창 1개뿐</strong>이다.</p>
+
+<h3>17.1 적용 규약</h3>
+
+<table>
+<thead>
+<tr><th>호출 위치</th><th>진입 방식</th></tr>
+</thead>
+<tbody>
+<tr><td>MainWindow mixin 직접 dialog</td><td><code>self._exec_dialog_centered(dialog)</code> (backdrop dim + 중앙 child overlay + manual modal loop)</td></tr>
+<tr><td>비차단 dialog (async 후속 작업)</td><td><code>self._embed_dialog_centered(dialog)</code> (loop 생략, 예: GroupCallDialog SFU publish)</td></tr>
+<tr><td>dialog 내부 nested sub-dialog (self ≠ MainWindow)</td><td><code>app.ui._modal_helper.exec_modal(dialog, self)</code> (parent 체인 walk → MainWindow <code>_exec_dialog_centered</code> 위임, 미발견 시 <code>.exec()</code> 폴백)</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li>적용 대상 예: 멤버 보기·받은 친구 요청·연락처·설정·프로필·그룹/채널 만들기·통화·OTP(회원가입 nested)·관리자 emoji moderation·업데이트 안내.</li>
+<li>테스트(offscreen/pytest) 환경에서는 <code>_exec_dialog_centered</code> 가 <code>loop.exec()</code> 무한 블록을 피하려고 non-blocking <code>show</code> 만 하고 <code>0</code> 을 반환한다.</li>
+</ul>
+
+<h3>17.2 별도 OS 윈도우 예외 (in-app 모달 아님)</h3>
+
+<table>
+<thead>
+<tr><th>예외</th><th>사유</th></tr>
+</thead>
+<tbody>
+<tr><td>원격 데스크탑 제어 상대화면 창 (<code>RemoteRequestDialog</code>/<code>RemoteConnectDialog</code> 후속 제어 창)</td><td>directive 가 명시한 유일 새창 — 상대 화면은 메인 레이아웃 밖 독립 창이어야 한다.</td></tr>
+<tr><td>startup auth bootstrap (<code>app/main.py</code> 의 welcome/login/signup/find/reset <code>.exec()</code>)</td><td>MainWindow 생성 <strong>전</strong> 단계라 overlay 대상이 없다.</td></tr>
+<tr><td>로그아웃 후 tray 재인증 chain (<code>_tray_mixin.py</code> login/signup <code>.exec()</code>)</td><td>startup 과 동일한 재인증 단계 + login↔signup 전환에 custom done() code(<code>res==2/3</code>)를 쓰는데 <code>_exec_dialog_centered</code> 는 <code>accept=1</code>/<code>reject=0</code> 만 반환해 전환 code 가 손실된다.</td></tr>
+<tr><td><code>HamburgerDrawer</code></td><td>QFrame child overlay(좌측 slide-in)로 이미 메인 레이아웃 안. <code>.exec()</code> 는 <code>show+raise</code> 호환 shim 일 뿐 별도 윈도우/모달 loop 가 아니다.</td></tr>
+</tbody>
+</table>
+
+<h3>17.3 "방 입장" 제거 (cycle 169.838)</h3>
+
+<ul>
+<li>room_id/peer_id 직접 입력 다이얼로그(<code>_on_open_room_dialog</code> + 메뉴 항목)를 전수 제거했다.</li>
+<li>그룹방은 채팅창의 <strong>"그룹 만들기" + 멤버 초대</strong> 로만 생성한다(텔레그램 플로우 정합).</li>
+</ul>
+
+<hr>
+
+<h2>18. 참조</h2>
 
 <table>
 <thead>
@@ -1012,7 +1057,7 @@ flowchart TB
 
 <hr>
 
-<p>마지막 갱신: 2026-05-21 (cycle 169.199 — §16 UI Toonation BI 통합 redesign 70+ sub-cycle reflect — sidebar_rail 2 entry + top_bar 60 #0A1019 + chat_header avatar 폐기 + chat_list "채팅" tab 통합 + chat_view day separator/DM cache replay/scroll offset retain + message_bubble grouped tail 부재/ts inline overlay/avatar palette gradient + input_bar composite pill + hamburger_drawer frameless gradient + my_profile_dialog telegram simple rewrite + FolderManageDialog telegram folder edit align)</p>
+<p>마지막 갱신: 2026-05-26 (cycle 169.838 — §17 다이얼로그 모달 정책 신설: 전 dialog in-app overlay 모달 + 별도 OS 윈도우 예외 4종(원격제어 창·startup auth bootstrap·tray 재인증·HamburgerDrawer) 명문화 + "방 입장" 제거 기록. 참조 §17→§18 renumber)</p>
 
 </body>
 </html>

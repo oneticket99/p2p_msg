@@ -78,6 +78,10 @@ class DrawerMixin:
         sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
         # cycle 169.501 — drawer height = main_window full client area
         drawer.setGeometry(sidebar_w, 0, 256, self.height())
+        # cycle 169.838 — HamburgerDrawer 는 QFrame child overlay(parent=self, main_window
+        # 내부 slide-in)이며 .exec() 는 show+raise 호환 shim 일 뿐 별도 OS 윈도우/모달 loop 가
+        # 아니다. 따라서 in-app overlay 모달 directive 에 이미 정합(원형 _exec_dialog_centered
+        # 중앙배치 대신 좌측 slide-in geometry 를 유지).
         drawer.exec()
         # 한글 주석 — close 시점 ref clear
         def _on_drawer_closed():

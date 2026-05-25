@@ -47,8 +47,8 @@ class MenuBarMixin:
         # 한글 주석 — "설정" .ts entry tr() (5 locale)
         menu_settings = menubar.addMenu(_tr("설정"))
 
-        # cycle 169.838 — "방 입장…" 메뉴 제거 (사용자 directive: 방입장 불필요 —
-        # 그룹방은 채팅창에서 멤버 초대로 생성). _on_open_room_dialog 핸들러는 dead code 로 둔다.
+        # cycle 169.838 — "방 입장…" 메뉴 + _on_open_room_dialog 핸들러 전수 제거
+        # (사용자 directive: 방입장 불필요 — 그룹방은 채팅창의 "그룹 만들기" + 멤버 초대로만 생성).
 
         # cycle 139 — 1:1 직접 메시지 회귀 액션
         act_direct = QAction(f"직접 {_tr('메시지')}", self)
