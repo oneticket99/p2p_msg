@@ -49,9 +49,9 @@ python -m app.main
 상태로 시작한다. 메뉴바 "방 → 입장" 다이얼로그에서 `room id` + `peer_id`
 입력 후 JOIN.
 
-> 본 Phase 스켈레톤은 시그널링 자동 연결을 수행하지 않는다. 실 연결 활성화는
-> Task #16 (`app.net.webrtc` 결합) 에서 적용된다. 자세한 사용은
-> [app/README.md](app/README.md) 참조.
+> 시그널링 클라이언트는 WebSocket 연결 + 비정상 drop 시 지수 backoff 자동 재연결 +
+> 마지막 JOIN 식별자 기반 reJOIN 복구를 수행한다 (cycle 169.775, `app/net/signaling_client.py`).
+> 자세한 사용은 [app/README.md](app/README.md) 참조.
 
 ### 2.3 의존성 설치 + 실행 (시그널링 서버)
 
@@ -217,7 +217,7 @@ p2p_msg/
 ├── app/                      # PyQt6 + qasync 클라이언트
 │   ├── core/                 # AppState · Config (.env 로딩)
 │   ├── net/                  # 시그널링 WebSocket 클라이언트
-│   ├── rtc/                  # WebRTC peer / transfer (예정)
+│   ├── rtc/                  # WebRTC peer_connection · mesh_manager · file 송수신
 │   └── ui/                   # MainWindow · ChatView · StatusBar · 위젯
 ├── server/                   # aiohttp 시그널링 서버
 │   ├── signaling.py          # Router — WebSocket 핸들러
@@ -240,7 +240,7 @@ p2p_msg/
 | 저장소 맵 (네비게이션) | [AGENTS.md](AGENTS.md) |
 | Watcher 정본 + M1~M7 규약 | [CLAUDE_HARNESS_IMPORTANT.md](CLAUDE_HARNESS_IMPORTANT.md) |
 | 9 정책 문서 (루트) | [ARCHITECTURE.md](ARCHITECTURE.md) · [DESIGN.md](DESIGN.md) · [FRONTEND.md](FRONTEND.md) · [PLANS.md](PLANS.md) · [PRODUCT_SENSE.md](PRODUCT_SENSE.md) · [QUALITY_SCORE.md](QUALITY_SCORE.md) · [RELIABILITY.md](RELIABILITY.md) · [SECURITY.md](SECURITY.md) (+ AGENTS.md) |
-| 8 운영 문서 (루트) | [Specification.md](Specification.md) · [Structure.md](Structure.md) · CheckList.md (작성 예정) · History.md (작성 예정) · README.md (본 문서) · EXTENSION_GUIDE.md (작성 예정) · MIGRATION_MARIADB.md (작성 예정) · CLAUDE.md (작성 예정) |
+| 8 운영 문서 (루트) | [Specification.md](Specification.md) · [Structure.md](Structure.md) · [CheckList.md](CheckList.md) · [History.md](History.md) · README.md (본 문서) · [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) · [MIGRATION_MARIADB.md](MIGRATION_MARIADB.md) · [CLAUDE.md](CLAUDE.md) |
 | 활성 실행계획 | [docs/exec-plans/](docs/exec-plans/) |
 | 영역 README | [app/README.md](app/README.md) · [server/README.md](server/README.md) |
 | 에이전트 개별 사양 | [.claude/agents/](.claude/agents/) |
@@ -281,10 +281,10 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - 신규 에이전트 추가 — [AGENTS.md §6](AGENTS.md) + `.claude/agents/<name>.md` 정의
 - 신규 정책 문서 — `docs/` 하위에만 (정본 §K 18 동결), AGENTS.md 문서 맵 갱신
 - 신규 FR · 코드 위치 — [Specification.md §8 매핑 테이블](Specification.md) + [Structure.md](Structure.md) ERD 동시 갱신
-- 신규 DB 테이블 — MIGRATION_MARIADB.md (작성 예정) `tables` 배열 FK 순서 + Structure.md ERD
+- 신규 DB 테이블 — [MIGRATION_MARIADB.md](MIGRATION_MARIADB.md) `tables` 배열 FK 순서 + Structure.md ERD
 - 작업 완료 직후 — 본 README §11 변경 이력에 한 줄 prepend (M2 의무)
 
-확장 가이드 정본은 EXTENSION_GUIDE.md (작성 예정 — 운영 8 문서 중 7번째)
+확장 가이드 정본은 [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) (운영 8 문서 중 7번째)
 가 출시되면 그쪽으로 위임된다. 본 절은 그 전까지 임시 입구다.
 
 ### 10.1 PR 제출 전 체크리스트 ([AGENTS.md §8](AGENTS.md) 인용)
@@ -303,11 +303,12 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 
 > M2 규약 ([정본 §H](CLAUDE_HARNESS_IMPORTANT.md)) — 최신 30행 상한, 행 형식
 > `- [YYYY-mm-dd H:i:s] 요약 (파일/영역)`, prepend 전용. 30행 초과 시 오래된
-> 항목 제거 + 상세는 [History.md](History.md) (작성 예정) 위임.
+> 항목 제거 + 상세는 [History.md](History.md) 위임.
 >
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 16:20:00] cycle 169.784 — Codex 전면평가(7.6/10) P0 doc-freshness 반영 (사용자 directive "codex 평가문서 정독해서 반영해"). (1) Specification.md FR-10 trace row 정정 — `app/net/signaling_client.py (예정)` → 구현 완료(signaling_client + app_state + status_bar + test_signaling_reconnect, cycle 169.775 IMPLEMENTED). (2) README 과거 표현 정정 — L52 "시그널링 자동 연결 수행하지 않는다"(거짓, 자동 재연결 구현됨) + L220 rtc "(예정)"(app/rtc 존재) + 운영 8 문서 "(작성 예정)" 5건(CheckList/History/EXTENSION_GUIDE/MIGRATION/CLAUDE 전부 존재) 링크화. (3) productization.md/html 평가 pair fingerprint 동기 — md H1 + 사이클 169.783 Korean marker + html title/last_verified 169.783/16:05 (Codex 783 갱신 후 html 미동기 + 본문 역사적 "사이클 6" false-match 해소). 잔존 = productization 장문 본문 전수 783 rewrite + MIGRATION/Structure DB strict (Codex P1/P2) (README · Specification · docs/assessments · docs/html)
 - [2026-05-25 16:05:00] cycle 169.783 — 평가 문서 freshness 회수 (사용자 directive "평가문서 업데이트 해줘 claude 가 바로 작업 할 수 있게"). `docs/assessments/current-project-review.md` 전면 갱신 — 7.6/10, cycle 169.782 main 기준, SignalingClient 재연결 구현/StatusBar 회귀 회수/원격 데스크탑 M3+실 aiortc loopback/M6 backfill 반영 + Claude 즉시 작업 큐(P0 문서 freshness, M6 enforcement, 원격 M4, NFR-04 실 서버 chaos) 명시. `docs/assessments/productization.md` 상단 snapshot + 종합 row 7.6/10 동기 (docs/assessments)
 - [2026-05-25 15:50:00] cycle 169.782 — (c) M3 잔존 완결: G2 aiortc 실 DataChannel loopback + M3c UI accept 결선 (사용자 directive "m3 잔존 진행해"). G2 = `tests/integration/test_remote_session_loopback.py` — 실 RTCPeerConnection 2 peer + DataChannel 위 RemoteSessionRunner host capture→frame 채널→controller on_frame + controller send_input→input 채널→host grant 게이트→apply 검증(1 PASS, mock backend). M3c = `app/ui/_chat_header_mixin.py` `_start_remote_session(role, peer)` 신설 + `_on_remote_request`(controller)/`_on_remote_connect`(host) 의 RemoteCallDialog accepted_signal→runner 기동 결선 + mock isolation test 4 PASS(role 매핑 + 채널 no-op/결선). reviewer-agent 게이트 선행(정책) → feature branch + PR(직접 main 미머지). remote 회귀 150 PASS. 잔존=M4 실 OS capture/dispatch 수동 ack(G3 게이트 후) (app/ui · tests/integration · tests/app/ui)
 - [2026-05-25 15:35:00] cycle 169.781 — M6 WBS backfill (사용자 directive "활성 — 누락 backfill", dereliction-detector MEDIUM 회수). `data/wbs.sqlite` `wbs_tasks` 가 cycle 169.744 이후 등록 중단 → cycle 169.745~781 누락 37 row INSERT (directive=commit subject, status=completed, commit_sha=cycle 매핑 sha). M6 활성 확정(CLAUDE.md §8 단서 해제). 236→273 row (data)

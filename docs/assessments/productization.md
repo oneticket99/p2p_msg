@@ -7,7 +7,7 @@ status: active
 
 > **최신 갱신 시점**: 2026-05-25 16:05 KST — cycle 169.783 assessment refresh (cycle 169.779~782 진척 반영). **원격 데스크탑 M3 진척**: permission on-channel handshake(REQUEST/GRANT/DENY/REVOKE), coord_transform host input 결선, UI accept→RemoteSessionRunner 생성, 실 aiortc DataChannel loopback 1 PASS. **SignalingClient P0 후속 회귀 회수**: RECONNECTING 상태가 StatusBar에서 ERROR로 오표시되던 whitelist drift 수정. **M6 WBS 활성 + backfill**: 169.745~781 누락 row 보강, 단 169.782 row·status 통일·post-commit hook 설치는 잔존. 최신 집중 검증 = remote/signaling/status 경로 162 PASS + md_agents PASS + doc-lint PASS. 종합 평가는 `current-project-review.md` 기준 7.6/10. 외부 dogfooding 전 선행 조건 = 원격 M4 실 OS capture/input 수동 ack + M6 enforcement 마감 + product 본문 전수 rewrite.<br>**이전 갱신**: 2026-05-25 14:55 KST — cycle 169.778 batch refresh (cycle 169.774~777 진척 반영). **(a) DI refactor 무효 확정 + superseded skip 14건 은퇴**(38→24, hang root=async fixture). **Codex P0 회수 — SignalingClient 실 backoff 재연결 + reJOIN + RECONNECTING 상태**(통합 test 9 PASS, FR-10 `[x]`) → 가용성(NFR-04) 실 구현 진척. **(c) 원격 데스크탑 실 binding M1~M2 진척 — RemoteSessionRunner orchestration core 신설**.
 
-# TooTalk 제품화 가능성 평가 (Snapshot)
+# TooTalk 제품화 가능성 평가 (Snapshot) — 사이클 169.783
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
