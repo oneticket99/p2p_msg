@@ -115,3 +115,80 @@ class TestSignalingDispatch:
         client._handle_text_frame(json.dumps({"type": "FOO_BAR_BAZ"}))
         assert emitted_peers == []
         assert emitted_offer == []
+
+
+# ---------------------------------------------------------------------------
+# SFU 그룹 통화 dispatch + send helper (cycle 169.805 M4b)
+# ---------------------------------------------------------------------------
+
+
+class TestSfuDispatch:
+    """SFU_ANSWER / SFU_PRODUCERS 수신 분기 + send helper."""
+
+    def test_sfu_answer_received(self, client) -> None:
+        # 한글 주석 — SFU_ANSWER → (kind, sdp, producer_id) 신호 발행
+        emitted = _collect(client.sfu_answer_received)
+        payload = {
+            "type": "SFU_ANSWER",
+            "kind": "publish",
+            "sdp": "v=0...",
+            "producer_id": "alice",
+        }
+        client._handle_text_frame(json.dumps(payload))
+        assert emitted == [("publish", "v=0...", "alice")]
+
+    def test_sfu_producers_received(self, client) -> None:
+        # 한글 주석 — SFU_PRODUCERS → (room, producers) 신호 발행
+        emitted = _collect(client.sfu_producers_received)
+        payload = {
+            "type": "SFU_PRODUCERS",
+            "room": "r1",
+            "producers": ["alice", "bob"],
+        }
+        client._handle_text_frame(json.dumps(payload))
+        assert emitted == [("r1", ["alice", "bob"])]
+
+    @pytest.mark.asyncio
+    async def test_send_sfu_publish(self, client) -> None:
+        # 한글 주석 — send_sfu_publish 가 self peer_id 보강 + 올바른 payload 송신
+        client._state.set_identity(room_id="r1", peer_id="alice")
+        sent: list[str] = []
+
+        class _FakeWS:
+            closed = False
+
+            async def send_str(self, raw: str) -> None:
+                sent.append(raw)
+
+        client._ws = _FakeWS()
+        await client.send_sfu_publish("r1", "v=0-pub")
+        payload = json.loads(sent[-1])
+        assert payload == {
+            "type": "SFU_PUBLISH",
+            "room": "r1",
+            "peer_id": "alice",
+            "sdp": "v=0-pub",
+        }
+
+    @pytest.mark.asyncio
+    async def test_send_sfu_subscribe(self, client) -> None:
+        # 한글 주석 — send_sfu_subscribe 가 producer_id + recvonly offer 송신
+        client._state.set_identity(room_id="r1", peer_id="bob")
+        sent: list[str] = []
+
+        class _FakeWS:
+            closed = False
+
+            async def send_str(self, raw: str) -> None:
+                sent.append(raw)
+
+        client._ws = _FakeWS()
+        await client.send_sfu_subscribe("r1", "alice", "v=0-sub")
+        payload = json.loads(sent[-1])
+        assert payload == {
+            "type": "SFU_SUBSCRIBE",
+            "room": "r1",
+            "peer_id": "bob",
+            "producer_id": "alice",
+            "sdp": "v=0-sub",
+        }
