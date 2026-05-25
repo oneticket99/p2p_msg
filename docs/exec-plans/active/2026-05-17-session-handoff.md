@@ -200,6 +200,7 @@ status: active
 
 | commit | cycle | scope |
 |---|---|---|
+| 37a1fad | 169.839~842 | group-flow isolated test 재구성(room_entered.emit → 그룹 만들기 wizard chain, 통합 ChatView idx 0 canonical, 6 PASS) + token-usage-30d 재산출(원격 .bak 병합 누적 187억) + current-project-review 7.7/10 + **room broadcast → 통합 ChatView 마이그레이션 착수** (planning-agent Exec Plan 6 단계 M1~M6 + G-final 게이트, M1 재검증 inbound 결선 부재 확정 option b, M2 송신 echo 재배선 hide_sender=False + _dispatch_message_chain 불변). UI 344 PASS 회귀 0 |
 | (본 cycle) | 169.758 | 평가 6 file staleness 회수 — cycle 169.745~757 batch 99 신규 PASS (server/db/repositories 6 batch) + cov 81.34% → 87.76% + 종합 6.7/10 유지 (기술완성도 8.7→8.8 + 가드레일 8.2→8.4) + HTML mirror 2종 sync |
 | 6241d3f | 169.745~757 | server repo 6 batch 99 PASS (file_meta/password_reset/read_states/messages/bots/email_verification/devices/friends) + doc-gardener MIGRATION 검사 + 직무유기 훅 회수 + actionlint 0 issue + monkeypatch leak 회수 |
 | (본 cycle) | 169.745 | 평가 6 file staleness 회수 — cycle 169.738~744 batch 41 신규 PASS (security 17 + config 18 + messages_cache 6) + cov 81.34% + messages_cache id→msg_id source bug fix + HTML mirror 2종 sync |

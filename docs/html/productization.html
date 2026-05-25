@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.838)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.838 미러.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.842)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.842 미러.
+     cycle 169.839~842 marker 동기 — (839) group-flow isolated test 재구성(cycle169.838 "방 입장" 폐지 정합, room_entered.emit → 그룹 만들기 wizard chain 전면 교체, 통합 ChatView idx 0 canonical 확정, 6 PASS). (840) token-usage-30d 재산출(원격 .bak 병합, 누적 187억 토큰/$41,954). (841) current-project-review 전면평가 최신화(7.7/10 보수 조정, legacy room path 마이그레이션 P0 승격). (842) room broadcast → 통합 ChatView 마이그레이션 착수 — Exec Plan 6 단계(M1~M6 + G-final) + M1 재검증(group broadcast inbound 표시 결선 부재 확정) + M2 송신 echo 재배선(_on_group_message_send echo 를 legacy _group_chat_view.append_message → 통합 _chat_view.add_message(hide_sender=False, play_sound=False), _dispatch_message_chain REST+mesh 불변). UI 344 PASS, 회귀 0. 기능 보존 단계 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.838 marker 동기 — 전 dialog in-app overlay 모달 변환 완성(별도 OS 윈도우 제거, 새창=원격제어 상대화면 창 1개뿐): _exec_dialog_centered/_embed_dialog_centered/_modal_helper.exec_modal 3 진입 경로 + ConfirmDialog 정적 헬퍼(얼럿/확인) in-app 화(40+ 호출 무변경) + signup→OTP nested exec_modal + "방 입장" 전수 제거(그룹방=그룹만들기+초대) + ChatHeader stale 수정 + 별도 윈도우 예외 4종 FRONTEND.md §16 명문화. reviewer-gate 2차 PASS. UX 정합 완성도 향상이나 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.837 marker 동기 — startup 로그인 메뉴 토글(835) + 그룹 멤버 보기 "..." 드롭다운·room kind=group·수신음 실 파일 교체(836) + 그룹 멤버 UX 완성(멤버 모달 + 원형 아바타 행 통합 + 그룹 메뉴 미구현 stub 전수 제거, 837). dogfooding 회수 chain — UX 정합이나 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.834 marker — dogfooding 버그 6종 배치(채팅 스크롤 중복·로그인후 메뉴 auth·친구 요청/승인 모델·헤더 멤버수·트레이 문구) + user-facing 문구 i18n 5언어 친절화(11 UI) + 메시지 수신음 교체. 친구 요청 흐름·UX 개선이나 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
@@ -13,7 +14,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-26T06:48:00+09:00 (사이클 169.838 — 전 dialog in-app overlay 모달 변환 완성 + 방입장 제거)<style>
+     last_verified = 2026-05-26T08:40:00+09:00 (사이클 169.842 — room broadcast 마이그레이션 M1~M2 + group-flow test 재구성 + token 재산출)<style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
     --accent:#2563eb; --accent-soft:#dbeafe; --border:#e5e7eb;
