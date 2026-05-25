@@ -117,8 +117,8 @@ status: active
 
 > 자동 검증 완료분 (G2): RemoteSessionRunner + permission handshake + coord_transform + 실 aiortc DataChannel loopback (headless). 아래는 실 OS + 물리 2 장비 의 사용자 직접 ack 만 가능한 잔여(M4).
 
-- [ ] macOS Screen Recording 권한 grant — 시스템 설정 → 개인정보 보호 → 화면 기록 → TooTalk 의 check (host 측 capture)
-- [ ] macOS Accessibility 권한 grant — 손쉬운 사용 → TooTalk 의 check (host 측 input dispatch)
+- [ ] macOS Screen Recording 권한 grant — 시스템 설정 → 개인정보 보호 → 화면 기록 → TooTalk 의 check (host 쪽 capture)
+- [ ] macOS Accessibility 권한 grant — 손쉬운 사용 → TooTalk 의 check (host 쪽 input dispatch)
 - [ ] friend 2 장비 의 실 P2P 원격 세션 — chat_header 원격 요청/연결 → RemoteCallDialog accept → `_start_remote_session` 의 RemoteSessionRunner 기동
 - [ ] friend peer connection 의 `_remote_data_channel` 실 생성 + runner send callable 의 실 채널 결선 확인 (현 production 경로 no-op — M4 binding 의무)
 - [ ] HOST runner 의 PermissionGrant 실 주입 — 현 grant=None fail-closed(input 전량 거부) → handshake GRANT 수신 시 runner grant 주입 경로 확인
