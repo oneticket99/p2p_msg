@@ -2,7 +2,7 @@
 
 ``QStatusBar`` 를 상속하여 다음 두 영역을 보유한다.
 
-- 좌측 (``addWidget``)         : 연결 상태 (DISCONNECTED / CONNECTING / CONNECTED / ERROR)
+- 좌측 (``addWidget``)         : 연결 상태 (DISCONNECTED / CONNECTING / CONNECTED / RECONNECTING / ERROR)
 - 우측 (``addPermanentWidget``): peer 수 표시 ("peers: N")
 
 연결 상태 문자열은 화이트리스트로 검증하여 의도치 않은 값이 들어오지
@@ -16,9 +16,10 @@ from typing import Final, Optional
 from PyQt6.QtWidgets import QLabel, QStatusBar, QWidget
 
 
-# 허용 연결 상태 화이트리스트
+# 허용 연결 상태 화이트리스트 — cycle 169.780: RECONNECTING 추가
+# (SignalingClient backoff 재연결 상태와 동기, app_state._VALID_CONN_STATES 정합)
 _VALID_STATES: Final[frozenset[str]] = frozenset(
-    {"DISCONNECTED", "CONNECTING", "CONNECTED", "ERROR"}
+    {"DISCONNECTED", "CONNECTING", "CONNECTED", "RECONNECTING", "ERROR"}
 )
 
 
@@ -49,7 +50,7 @@ class StatusBar(QStatusBar):
         ----------
         state : str
             허용 값: ``DISCONNECTED`` / ``CONNECTING`` / ``CONNECTED`` /
-            ``ERROR``. 허용 범위 밖이면 ``ERROR`` 로 강제한다.
+            ``RECONNECTING`` / ``ERROR``. 허용 범위 밖이면 ``ERROR`` 로 강제한다.
         """
 
         normalized = state if state in _VALID_STATES else "ERROR"
