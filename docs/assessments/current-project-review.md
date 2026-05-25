@@ -133,9 +133,9 @@ cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_as
 
 1. 아래 grep 결과를 기준으로 `Specification.md`, `Structure.md`, `CheckList.md`, `MIGRATION_MARIADB.md`를 최신 구현 링크로 교체한다.
 
-```bash
-rg -n "예정|작성 예정|스켈레톤|자동 연결 수행하지|Task #|placeholder" README.md Specification.md Structure.md MIGRATION_MARIADB.md CheckList.md docs/assessments
-```
+   ```bash
+   rg -n "예정|작성 예정|스켈레톤|자동 연결 수행하지|Task #|placeholder" README.md Specification.md Structure.md MIGRATION_MARIADB.md CheckList.md docs/assessments
+   ```
 
 2. 과거 상태를 의도적으로 남길 때는 “historical” 또는 “완료된 과거 표기”처럼 현재 작업 큐가 아님을 명시한다.
 
