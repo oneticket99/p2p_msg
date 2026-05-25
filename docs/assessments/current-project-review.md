@@ -1,13 +1,13 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-25T18:25:00+09:00
+last_verified: 2026-05-25T20:30:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-25 cycle 169.797 main branch 준비 상태. 직전 HEAD 기준 cycle 169.796 결과도 함께 반영.
+> 검토 기준: 2026-05-25 cycle 169.810 main branch. cycle 169.797 Codex snapshot 에 cycle 169.793~810 진척(음성·영상 SFU 그룹 통화 종단 코드 완결 PR #12/#13 merge + Structure §11 ERD drift 회수)을 환류 반영.
 > 목적: Claude가 다음 세션에서 바로 작업 순서를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 구현·검증 자동화는 내부 dogfooding 후보권에 들어왔고, 반복 작업 방지는 `tools/check_assessment_consistency.py` + doc-gardener 연결로 차단한다.
 
@@ -15,7 +15,7 @@ status: active
 
 **현재 점수: 7.8 / 10**
 
-TooTalk 는 PyQt6 클라이언트, aiohttp 시그널링, aiortc DataChannel, MariaDB/SQLite 저장, 봇, i18n, 원격 데스크탑, CI/문서 가드레일이 실제 파일과 테스트로 누적된 프로젝트다. cycle 169.787~793 사이에 M6 post-commit hook, NFR-04 chaos 재연결 검증, 원격 M4 수동 절차, MIGRATION strict 정합이 추가되어 직전 7.6/10보다 소폭 올린다.
+TooTalk 는 PyQt6 클라이언트, aiohttp 시그널링, aiortc DataChannel, MariaDB/SQLite 저장, 봇, i18n, 원격 데스크탑, CI/문서 가드레일이 실제 파일과 테스트로 누적된 프로젝트다. cycle 169.787~793 사이에 M6 post-commit hook, NFR-04 chaos 재연결 검증, 원격 M4 수동 절차, MIGRATION strict 정합이 추가되어 직전 7.6/10보다 소폭 올린다. cycle 169.794~810 에서 **음성·영상 SFU 그룹 통화(9 peer+)** 가 server(aiortc MediaRelay) + client net(SfuCallClient) + UI(GroupCallDialog) + MainWindow entry 까지 종단 코드 완결되어(PR #12/#13 merge, reviewer-gate 11 feat 전수 PASS, headless aiortc forward + offscreen Qt 검증) 그룹 통화가 TODO 에서 IMPLEMENTED 로 승급했다 — 단 실 OS 미디어 캡처/다중 화면 visual ack 전까지 VERIFIED 아님.
 
 다만 외부 사용자 배포 단계로 보기는 아직 이르다. 원격 데스크탑은 실 OS capture/input dispatch와 친구 peer 경로 결선 전이고, macOS/Windows 배포 산출물의 실제 실행 증거가 부족하다. 현재 단계는 **내부 dogfooding 후보 + 원격 데스크탑 M4 사용자 게이트 대기**다.
 
@@ -87,6 +87,16 @@ cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_as
 
 판정: **반복 방지 ACTIVE.**
 
+### 3.6 음성·영상 SFU 그룹 통화 (cycle 169.794~810)
+
+9 peer 이상 그룹 음성·영상은 기존 표기("mesh ≤ 8 ✅ 기본 구현")가 부정확했다 — `CallClient`=1:1만, `MeshManager`=text fan-out 전용으로 group 미디어는 미결선이었다. cycle 169.794~810 에서 SFU 경로를 greenfield 로 종단 구현했다.
+
+- server: [server/sfu_room.py](../../server/sfu_room.py)(aiortc MediaRelay publisher→N forward) + [server/sfu_registry.py](../../server/sfu_registry.py)(room lifecycle) + [server/protocol.py](../../server/protocol.py) SFU 메시지 4종 + [server/signaling.py](../../server/signaling.py) 라우팅 + [server/main.py](../../server/main.py) startup 등록 (PR #12 merge)
+- client: [app/net/sfu_call_client.py](../../app/net/sfu_call_client.py)(publish/subscribe/on_remote_track) + [app/net/signaling_client.py](../../app/net/signaling_client.py) SFU dispatch/send + [app/ui/group_call_dialog.py](../../app/ui/group_call_dialog.py)(타일 그리드) + [app/ui/_sfu_call_mixin.py](../../app/ui/_sfu_call_mixin.py) 배선 + MainWindow 합성 + "그룹 통화 시작"(Ctrl+Shift+G) 메뉴 entry (PR #13 merge)
+- test: [tests/integration/test_sfu_room_loopback.py](../../tests/integration/test_sfu_room_loopback.py)(1→2 forward + 실 frame) + [tests/integration/test_sfu_call_client_e2e.py](../../tests/integration/test_sfu_call_client_e2e.py)(종단) + signaling/dialog/mixin isolated
+
+판정: **IMPLEMENTED.** reviewer-gate 11 feat 전수 PASS + headless aiortc 실 forward + offscreen Qt + MRO smoke. 실 OS 미디어 캡처/다중 화면 visual ack 전까지 `VERIFIED` 아님 (G4 사용자 게이트, visual ack 후반 일괄 큐).
+
 ## 4. 문서와 구현 불일치
 
 ### 4.1 해결된 불일치
@@ -95,6 +105,8 @@ cycle 169.797에서 [tools/check_assessment_consistency.py](../../tools/check_as
 - M6 WBS 자동화 미설치 판정은 폐기한다.
 - MIGRATION strict 미완료 판정은 폐기한다.
 - NFR-04 실 서버 chaos 테스트 부재 판정은 폐기한다.
+- Structure.md 가 DB 스키마 4 테이블만 등재하던 drift 는 cycle 169.794 에서 §11.3 전체 25 테이블 도메인 인벤토리로 회수했다(폐기).
+- "mesh ≤ 8 그룹 음성·영상 기본 구현" 부정확 표기는 cycle 169.794~810 SFU greenfield 종단 구현으로 정정됐다.
 
 ### 4.2 아직 남은 불일치
 
