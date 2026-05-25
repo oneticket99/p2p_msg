@@ -168,7 +168,7 @@ class ContactsDialog(QDialog):
         """POST /api/friends/by-username chain."""
         import aiohttp
         try:
-            api_base = getattr(main_window._config, "api_base", None) or "https://114.207.112.73"
+            api_base = getattr(main_window._config, "api_base", None) or "http://114.207.112.73:8765"
             token = getattr(main_window, "_session_token", "") or ""
             if not token:
                 return
@@ -226,7 +226,7 @@ class ContactsDialog(QDialog):
         """cycle 169.455 — POST /api/contacts async chain."""
         import aiohttp
         try:
-            api_base = getattr(main_window._config, "api_base", None) or "https://114.207.112.73"
+            api_base = getattr(main_window._config, "api_base", None) or "http://114.207.112.73:8765"
             token = getattr(main_window, "_session_token", "") or ""
             if not token:
                 return
