@@ -375,3 +375,44 @@ class TestMessagePermissionAbsent:
         finally:
             window.close()
             window.deleteLater()
+
+
+# ----------------------------------------------------------------------
+# TestGroupSendEchoUnifiedChatView — cycle 169.842 M2 (echo 재배선, DoD D2/D3)
+# ----------------------------------------------------------------------
+
+
+class TestGroupSendEchoUnifiedChatView:
+    """group 송신 echo 가 legacy GroupChatView → 통합 ChatView 로 재배선됐는지 검증.
+
+    room broadcast → unified ChatView 마이그레이션 M2. group/room 은 발신자 라벨
+    유지(hide_sender=False), 자기 송신이므로 수신음 차단(play_sound=False).
+    """
+
+    def test_group_send_echo_targets_unified_chat_view(self, main_window) -> None:
+        """_on_group_message_send → `_chat_view.add_message(hide_sender=False)` echo."""
+
+        from unittest.mock import patch as _patch
+
+        # 한글 주석: 송신 echo 의 target 을 spy — 통합 ChatView add_message 호출 검증.
+        # asyncio running loop 부재(sync test) → echo(step 2) 후 dispatch chain 은 graceful skip.
+        with _patch.object(main_window._chat_view, "add_message") as spy:
+            main_window._on_group_message_send(42, "그룹 인사")
+
+        spy.assert_called_once()
+        kwargs = spy.call_args.kwargs
+        # 한글 주석: 자기 송신 + 그룹 발신자 라벨 유지 + 수신음 차단 정합
+        assert kwargs.get("is_self") is True
+        assert kwargs.get("hide_sender") is False
+        assert kwargs.get("play_sound") is False
+        assert kwargs.get("text") == "그룹 인사"
+
+    def test_group_send_empty_body_no_echo(self, main_window) -> None:
+        """빈 body → echo 미발생 (early return 정합)."""
+
+        from unittest.mock import patch as _patch
+
+        with _patch.object(main_window._chat_view, "add_message") as spy:
+            main_window._on_group_message_send(42, "   ")
+
+        spy.assert_not_called()

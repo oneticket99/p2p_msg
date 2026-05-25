@@ -173,11 +173,18 @@ class RoomGroupChatMixin:
                   room_id, len(body))
 
         # 2) UI append — local echo
-        if self._group_chat_view is not None:
-            self._group_chat_view.append_message(
-                sender=self._config.user_nickname,
-                text=body, ts=datetime.now(), is_self=True,
-            )
+        # cycle 169.842 M2 — legacy GroupChatView.append_message → 통합 ChatView.add_message
+        # 재배선 (room broadcast → unified ChatView 마이그레이션). group/room 은 발신자 라벨
+        # 유지 의무라 hide_sender=False, 자기 송신이므로 수신음 차단 play_sound=False.
+        # _dispatch_message_chain (REST POST + mesh broadcast) 는 불변 (기능 보존).
+        self._chat_view.add_message(
+            sender=self._config.user_nickname,
+            text=body,
+            ts=datetime.now(),
+            is_self=True,
+            hide_sender=False,
+            play_sound=False,
+        )
 
         # 3) REST POST + 4) mesh broadcast — async
         loop: Optional[asyncio.AbstractEventLoop] = None
