@@ -41,7 +41,8 @@ class FolderMixin:
             dialog.folder_create_requested.connect(self._on_folder_create_requested)  # type: ignore[arg-type]
             dialog.folder_delete_requested.connect(self._on_folder_delete_requested)  # type: ignore[arg-type]
             dialog.folder_edit_requested.connect(self._on_folder_edit_requested)  # type: ignore[arg-type]
-            dialog.exec()
+            # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+            self._exec_dialog_centered(dialog)
             return
         if hasattr(self, "_chat_list_panel"):
             self._chat_list_panel.set_active_folder(folder_id)

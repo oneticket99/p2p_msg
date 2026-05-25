@@ -101,7 +101,8 @@ class UpdateLifecycleMixin:
             )
             # 한글 주석: dialog 참조 보관 — gc 회피 + 테스트 가시성
             self._current_update_dialog = dialog
-            dialog.exec()
+            # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+            self._exec_dialog_centered(dialog)
         except Exception as exc:  # noqa: BLE001
             log.warning(
                 "[main_window] UpdateDialog instantiation 실패 — graceful skip (%r)",

@@ -172,7 +172,8 @@ class DrawerMixin:
             self._profile_worker = worker  # gc 회피
 
         dialog.save_requested.connect(_on_save)  # type: ignore[arg-type]
-        dialog.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot(bool, str, str, dict)
     def _on_profile_update_finished(self, ok: bool, error_code: str, error_message: str, data: dict) -> None:

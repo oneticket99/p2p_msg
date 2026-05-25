@@ -58,7 +58,8 @@ class AuthChainMixin:
         if client is None:
             return
         dialog = SignupDialog(client, self)
-        dialog.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot()
     def _on_open_login(self) -> None:
@@ -68,7 +69,9 @@ class AuthChainMixin:
         if client is None:
             return
         dialog = LoginDialog(client, self)
-        if dialog.exec() == dialog.DialogCode.Accepted:
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        # 반환값(int) == DialogCode.Accepted 비교 패턴 유지.
+        if self._exec_dialog_centered(dialog) == dialog.DialogCode.Accepted:
             self._session_token = dialog.token
             self._current_user_id = dialog.user_id
             # cycle 169.271 — 사용자 critique bot 401 root cause trace
@@ -134,7 +137,8 @@ class AuthChainMixin:
         client = self._require_auth_client()
         if client is None:
             return
-        PasswordResetDialog(client, self).exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(PasswordResetDialog(client, self))
 
     @pyqtSlot()
     def _on_logout(self) -> None:

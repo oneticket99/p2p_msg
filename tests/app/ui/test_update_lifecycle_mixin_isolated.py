@@ -74,7 +74,8 @@ class TestOnNewVersion:
 
             fake_cls.assert_called_once()
             assert self_mock._current_update_dialog is fake_dialog
-            fake_dialog.exec.assert_called_once()
+            # cycle 169.838 — .exec()(별도 윈도우) → _exec_dialog_centered(in-app overlay) 전환
+            self_mock._exec_dialog_centered.assert_called_once()
 
     def test_dialog_instantiation_graceful_on_error(self) -> None:
         from app.ui._update_lifecycle_mixin import UpdateLifecycleMixin

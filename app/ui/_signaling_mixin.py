@@ -48,7 +48,8 @@ class SignalingMixin:
         asyncio.ensure_future(call_client.accept_offer(remote_sdp=sdp, video=False))
         dialog = CallDialog(peer_name=from_peer, video_enabled=False, incoming=True, parent=self)
         dialog.attach_client(call_client)
-        dialog.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(dialog)
 
     @pyqtSlot(str, str)
     def _on_signaling_answer(self, from_peer: str, sdp: str) -> None:

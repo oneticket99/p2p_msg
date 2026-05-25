@@ -47,10 +47,8 @@ class MenuBarMixin:
         # 한글 주석 — "설정" .ts entry tr() (5 locale)
         menu_settings = menubar.addMenu(_tr("설정"))
 
-        act_room = QAction("방 입장…", self)
-        act_room.setShortcut(QKeySequence("Ctrl+R"))
-        act_room.triggered.connect(self._on_open_room_dialog)
-        menu_settings.addAction(act_room)
+        # cycle 169.838 — "방 입장…" 메뉴 제거 (사용자 directive: 방입장 불필요 —
+        # 그룹방은 채팅창에서 멤버 초대로 생성). _on_open_room_dialog 핸들러는 dead code 로 둔다.
 
         # cycle 139 — 1:1 직접 메시지 회귀 액션
         act_direct = QAction(f"직접 {_tr('메시지')}", self)
@@ -252,7 +250,8 @@ class MenuBarMixin:
 
         self._current_moderation_dialog = dialog
         try:
-            dialog.exec()
+            # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+            self._exec_dialog_centered(dialog)
         except Exception as exc:  # noqa: BLE001
             log.debug(
                 "[main_window] moderation dialog exec 실패 (stub 환경 가능) — %r", exc,

@@ -73,7 +73,8 @@ class FriendProfileMixin:
         view.mute_clicked.connect(lambda _uid=friend_id: self._profile_mute_clicked(friend_id))  # type: ignore[arg-type]
         view.block_clicked.connect(lambda _uid=friend_id: self._profile_block_clicked(modal, friend_id))  # type: ignore[arg-type]
         layout.addWidget(view)
-        modal.exec()
+        # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
+        self._exec_dialog_centered(modal)
 
     def _profile_message_clicked(self, modal, friend_id: int) -> None:
         """profile 메시지 button → modal close + chat 진입 (cycle 154.2).

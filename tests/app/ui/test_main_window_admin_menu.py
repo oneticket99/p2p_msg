@@ -210,6 +210,9 @@ class TestEmojiModerationDialogLaunch:
             "app.ui.admin.open_emoji_moderation",
             return_value=fake_dialog,
         ) as fake_open:
+            # cycle 169.838 — .exec()(별도 윈도우) → _exec_dialog_centered(in-app overlay) 전환.
+            # 실 overlay loop 대신 mock 으로 1회 호출 검증 (offscreen hang 회피 + 의도 확인).
+            window._exec_dialog_centered = MagicMock(return_value=0)
             window._on_open_emoji_moderation()
 
             # 한글 주석: open_emoji_moderation 1회 호출 + admin_token 전달 검증
@@ -217,8 +220,8 @@ class TestEmojiModerationDialogLaunch:
             kwargs = fake_open.call_args.kwargs
             assert kwargs["admin_token"] == "test-admin-token"
             assert kwargs["parent"] is window
-            # 한글 주석: dialog modal 진입 메서드 의 1회 호출
-            assert modal_method.call_count == 1
+            # 한글 주석: in-app overlay 모달 1회 호출 (dialog 인자 전달)
+            assert window._exec_dialog_centered.call_count == 1
             # 한글 주석: dialog 참조 보관 — gc 회피
             assert window._current_moderation_dialog is fake_dialog
 

@@ -450,7 +450,8 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
         hl.addStretch(1)
         v.addWidget(hdr)
         v.addWidget(widget, stretch=1)
-        sub.exec()
+        from app.ui._modal_helper import exec_modal
+        exec_modal(sub, self)  # cycle 169.838 — in-app overlay 모달 (별도 윈도우 금지)
 
     def _open_account(self):
         self._show_subpage(_tr("내 계정"), self._build_account_tab())
