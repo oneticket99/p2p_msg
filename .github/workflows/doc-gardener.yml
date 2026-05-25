@@ -19,7 +19,7 @@
 # Phase 3 활성 (MIGRATION 검사 + Issue step):
 #   - MIGRATION_MARIADB.md ↔ migrations SQL 테이블 정합 검사 (tools/check_migration_tables.py, 본 파일 "MIGRATION 테이블 정합 검사 (Phase 3)" step)
 #   - MIGRATION drift 감지 시 Issue 자동 생성 (gh issue create, 중복 차단, 본 파일 "MIGRATION drift Issue 자동 생성 (Phase 3)" step)
-#   - 검사 방향 = doc(MIGRATION_MARIADB.md) 참조 테이블 ⊆ SQL 실재 (forward). 역방향(SQL → doc)은 MIGRATION_MARIADB.md 가 의도적 부분 reference 문서(핵심 7/25 테이블 DDL 예시)이므로 informational 만 — `--strict` opt-in 시 error 승격 (tools/check_migration_tables.py)
+#   - 검사 방향 = `--strict` (doc ⊇ SQL 전수 + doc ⊆ SQL). cycle 169.793 MIGRATION_MARIADB.md §3.5 에 18 확장 테이블 등재 완료(doc 25 = SQL 25) → strict CI gate 승격 (tools/check_migration_tables.py --strict)
 #
 # 트리거:
 #   - cron 주 1회 (월요일 00:00 UTC = 09:00 KST)
@@ -146,9 +146,9 @@ jobs:
       - name: MIGRATION 테이블 정합 검사 (Phase 3)
         id: migration
         run: |
-          # 한글 주석 — 검사 실패해도 job 은 통과시키고 drift flag 만 후속 step 에 전달
+          # 한글 주석 — cycle 169.793: doc 25 = SQL 25 전수 문서화 완료 → --strict 승격(CI gate). 검사 실패해도 job 통과 + drift flag 만 후속 step 전달
           set +e
-          OUT=$(python3 tools/check_migration_tables.py 2>&1)
+          OUT=$(python3 tools/check_migration_tables.py --strict 2>&1)
           CODE=$?
           echo "$OUT"
           {
@@ -221,7 +221,7 @@ jobs:
             echo "doc-gardener 주간 검사가 MIGRATION_MARIADB.md 와 migrations SQL 사이 테이블 drift 를 감지했습니다."
             echo ""
             echo '```'
-            python3 tools/check_migration_tables.py 2>&1 || true
+            python3 tools/check_migration_tables.py --strict 2>&1 || true
             echo '```'
             echo ""
             echo "MIGRATION_MARIADB.md 갱신 또는 server/db/migrations SQL 추가로 정합을 회수하세요."

@@ -200,6 +200,62 @@ CREATE TABLE messages (
 
 ---
 
+## 3.5 확장 테이블 — 18 테이블 (마이그레이션 0002~0016)
+
+> 본 절은 §3 핵심 7 테이블 이후 Phase 2~5 에서 추가된 18 확장 테이블의 정합 목록이다.
+> **DDL + 필드 COMMENT 5요소(용도/제약/출처/참조/민감도) 정본 = `server/db/migrations/0002~0016*.sql`** 파일이며 (drift 회피 위해 본 절은 `CREATE TABLE` 시그니처 + 용도 + 정본 file 참조만 둔다).
+> `tools/check_migration_tables.py --strict` 의 doc ⊇ SQL 역방향 검증 통과 기준 = 본 절의 25 테이블 전수 등재.
+
+```sql
+-- 0002_devices.sql — 사용자 멀티 디바이스 등록 + revoke/last_seen 추적
+CREATE TABLE devices ( /* DDL 정본: server/db/migrations/0002_devices.sql */ );
+
+-- 0003_user_activity.sql — 세션 추적 + 활동 로그 (마케팅 통계, IP 90일 retention)
+CREATE TABLE user_sessions ( /* DDL 정본: server/db/migrations/0003_user_activity.sql */ );
+CREATE TABLE user_activity_log ( /* DDL 정본: server/db/migrations/0003_user_activity.sql */ );
+
+-- 0004_emoji_packs.sql — 이모지 팩 공개 디렉토리 + 팩 아이템 (DMCA phash)
+CREATE TABLE emoji_packs ( /* DDL 정본: server/db/migrations/0004_emoji_packs.sql */ );
+CREATE TABLE emoji_pack_items ( /* DDL 정본: server/db/migrations/0004_emoji_packs.sql */ );
+
+-- 0005_bot_escalations.sql — 봇 → 사람 에스컬레이션 큐
+CREATE TABLE bot_escalations ( /* DDL 정본: server/db/migrations/0005_bot_escalations.sql */ );
+
+-- 0006_app_versions.sql — 자동 업데이트 릴리스 버전 메타 (macOS arm64 + win x64)
+CREATE TABLE app_versions ( /* DDL 정본: server/db/migrations/0006_app_versions.sql */ );
+
+-- 0007_friends.sql — 친구 관계 (accepted/pending/blocked status)
+CREATE TABLE friends ( /* DDL 정본: server/db/migrations/0007_friends.sql */ );
+
+-- 0008_message_reactions.sql — 메시지 이모지 리액션 (user × message × emoji)
+CREATE TABLE message_reactions ( /* DDL 정본: server/db/migrations/0008_message_reactions.sql */ );
+
+-- 0009_folders.sql — 채팅 폴더 + 폴더 내 chat 매핑 + 폴더 초대 링크
+CREATE TABLE folders ( /* DDL 정본: server/db/migrations/0009_folders.sql */ );
+CREATE TABLE folder_chats ( /* DDL 정본: server/db/migrations/0009_folders.sql */ );
+CREATE TABLE folder_invites ( /* DDL 정본: server/db/migrations/0009_folders.sql */ );
+
+-- 0012_bots.sql — 봇 등록 + 봇 API 토큰 (BotFather 등가)
+CREATE TABLE bots ( /* DDL 정본: server/db/migrations/0012_bots.sql */ );
+CREATE TABLE bot_tokens ( /* DDL 정본: server/db/migrations/0012_bots.sql */ );
+
+-- 0013_device_tokens.sql — push 알림 토큰 (APNs/FCM)
+CREATE TABLE device_tokens ( /* DDL 정본: server/db/migrations/0013_device_tokens.sql */ );
+
+-- 0014_read_states.sql — 방별 읽음 상태 (last_read_message_id)
+CREATE TABLE read_states ( /* DDL 정본: server/db/migrations/0014_read_states.sql */ );
+
+-- 0015_user_contacts.sql — 사용자 연락처 (전화번호 매칭)
+CREATE TABLE user_contacts ( /* DDL 정본: server/db/migrations/0015_user_contacts.sql */ );
+
+-- 0016_streaming_oauth_tokens.sql — streaming 플랫폼 OAuth 토큰 (chzzk/kick/twitch, 최후순위)
+CREATE TABLE streaming_oauth_tokens ( /* DDL 정본: server/db/migrations/0016_streaming_oauth_tokens.sql */ );
+```
+
+> 참고: 0010_user_profile_fields.sql + 0011_user_nickname_field.sql 은 `users` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외.
+
+---
+
 ## 4. 인덱스·제약 정의
 
 본 절은 §3 DDL 의 인덱스·제약을 한 표로 요약한다. [Structure.md §11.1](Structure.md) 와 1:1 정합.
