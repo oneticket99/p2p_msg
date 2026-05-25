@@ -232,6 +232,13 @@ def main() -> int:
             # cycle 169.276 — attr name 정합 (사용자 critique bot 401 ROOT CAUSE 회수)
             window._session_token = session_token  # type: ignore[attr-defined]
             window._auth_token = session_token  # type: ignore[attr-defined]  # legacy retain
+            # cycle 169.835 — startup 로그인 경로 계정 메뉴 가시성 토글 회수.
+            # MainWindow.__init__ 의 _build_menu_bar 는 token 주입 이전 실행돼 logged-out 으로
+            # 구성된다. token 주입 직후 재토글해야 main 진입 시점에 로그인 상태(친구/로그아웃)로
+            # 보인다. (cycle169.831 의 _on_open_login 경로는 커버했으나 startup 경로 누락 — 사용자
+            # dogfooding 발견: main 진입 후에도 회원가입/로그인 메뉴 잔존, 재로그인해야 토글)
+            if hasattr(window, "apply_auth_menu_visibility"):
+                window.apply_auth_menu_visibility()
         if session_email:
             window._current_email = session_email  # type: ignore[attr-defined]  # cycle 169.279
         # 한글 주석 — cycle 169.55 회수 — auth PASS 시 status bar CONNECTED 강제 set
