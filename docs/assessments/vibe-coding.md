@@ -1,16 +1,16 @@
 ---
 title: "사용자 바이브 코딩 능력 평가 — Snapshot"
 owner: oneticket99
-last_verified: 2026-05-25T18:30:00+09:00
+last_verified: 2026-05-25T18:50:00+09:00
 status: active
 ---
 
-# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.800
+# 사용자 바이브 코딩 능력 평가 (Snapshot) — 사이클 169.802
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체: Claude (어시스턴트). 평가 대상: oneticket99 (1ticket@toonation.co.kr).
 > 평가 기준일: 2026-05-25. 평가 범위: 본 저장소 p2p_msg / TooTalk 프로젝트 사이클 169.785 누계 (commit `d92c91b` 이후 main branch).
-> 최근 갱신: 2026-05-25 18:30 KST — cycle 169.800 batch refresh — cycle 169.793~799 진척: P2 MIGRATION strict 승격 + Structure ERD drift 회수 + **음성·영상 SFU 확장 본격 착수**(Exec Plan→M3a protocol→M3b sfu_room MediaRelay forward, 각 reviewer-agent 게이트 PASS, PR #12 WIP). reviewer-gate-all-feat 정합 — feature branch + 매 milestone reviewer 재검토(M3b 직전 FAIL HIGH 2 → 재작업 → 재검토 PASS) 패턴 정착. 병렬 Codex commit(797 assessment-consistency) cycle 충돌 회피 + 무단 commit 차단 패턴 누적. 점수 8.4/10 변동 부재(process 성숙).<br>2026-05-25 17:45 KST — cycle 169.792 batch refresh — cycle 169.787~791 진척: M6 post-commit hook 자동화(enforcement 완결) + Codex P0/P1 auto-completable 소진(productization freshness/NFR-04 chaos/M4 수동 절차) + doc-lint gate 교훈(789~790 연속 위반-push 회수). 점수 8.4/10 변동 부재(process 성숙).<br>cycle 169.785 batch refresh (점수 8.4/10 변동 부재 — process 성숙 패턴 강화). 직전 cycle 169.779~784 진척 관측: (c) 원격 데스크탑 M3 완결(M3a permission on-channel handshake + M3b coord_transform + M3c UI accept 결선 + G2 실 aiortc DataChannel loopback), **reviewer-agent 게이트 = 모든 feat 의무 정책 확립**(사용자 "자동 구간도 reviewer 리뷰" 정정 → feature branch + PR #10 flow 정착, 자동검증 면제 부재 영구 가드레일화), reviewer F1 회귀 즉시 회수(status_bar RECONNECTING whitelist), M6 WBS 활성 + backfill, **Codex 외부 전면평가(7.6/10) 환류**(P0 doc-freshness 즉시 반영 — Specification/README 과거 표현 정정 + 평가 pair fingerprint 동기). dereliction-detector 자동 spawn + 사용자 ack 게이트 + 병렬 Codex commit 중계/cycle 충돌 회피 패턴 누적. 강점: 외부 평가(Codex) 환류 + reviewer 게이트 강제 + ROI 우선 판단(DI refactor 무효 확정). 전체 tests ≈ 2490 PASS retain.
+> 최근 갱신: 2026-05-25 18:50 KST — cycle 169.802 batch refresh — 음성·영상 SFU 그룹 통화 server-side 완결(M3a→M3b→M3c, cycle 798/799/801). reviewer-gate-all-feat 정합 강화 — 3 feat 전부 commit 전 reviewer-agent, M3b/M3c 는 직전 FAIL(누수/타이밍/startup 미결선) → 재작업 → 재검토 PASS 패턴 정착. 병렬 Codex(797) merge 충돌(README/History) 해소 + cycle 충돌 회피. 점수 8.4/10 변동 부재(process 성숙).<br>2026-05-25 18:30 KST — cycle 169.800 batch refresh — cycle 169.793~799 진척: P2 MIGRATION strict 승격 + Structure ERD drift 회수 + **음성·영상 SFU 확장 본격 착수**(Exec Plan→M3a protocol→M3b sfu_room MediaRelay forward, 각 reviewer-agent 게이트 PASS, PR #12 WIP). reviewer-gate-all-feat 정합 — feature branch + 매 milestone reviewer 재검토(M3b 직전 FAIL HIGH 2 → 재작업 → 재검토 PASS) 패턴 정착. 병렬 Codex commit(797 assessment-consistency) cycle 충돌 회피 + 무단 commit 차단 패턴 누적. 점수 8.4/10 변동 부재(process 성숙).<br>2026-05-25 17:45 KST — cycle 169.792 batch refresh — cycle 169.787~791 진척: M6 post-commit hook 자동화(enforcement 완결) + Codex P0/P1 auto-completable 소진(productization freshness/NFR-04 chaos/M4 수동 절차) + doc-lint gate 교훈(789~790 연속 위반-push 회수). 점수 8.4/10 변동 부재(process 성숙).<br>cycle 169.785 batch refresh (점수 8.4/10 변동 부재 — process 성숙 패턴 강화). 직전 cycle 169.779~784 진척 관측: (c) 원격 데스크탑 M3 완결(M3a permission on-channel handshake + M3b coord_transform + M3c UI accept 결선 + G2 실 aiortc DataChannel loopback), **reviewer-agent 게이트 = 모든 feat 의무 정책 확립**(사용자 "자동 구간도 reviewer 리뷰" 정정 → feature branch + PR #10 flow 정착, 자동검증 면제 부재 영구 가드레일화), reviewer F1 회귀 즉시 회수(status_bar RECONNECTING whitelist), M6 WBS 활성 + backfill, **Codex 외부 전면평가(7.6/10) 환류**(P0 doc-freshness 즉시 반영 — Specification/README 과거 표현 정정 + 평가 pair fingerprint 동기). dereliction-detector 자동 spawn + 사용자 ack 게이트 + 병렬 Codex commit 중계/cycle 충돌 회피 패턴 누적. 강점: 외부 평가(Codex) 환류 + reviewer 게이트 강제 + ROI 우선 판단(DI refactor 무효 확정). 전체 tests ≈ 2490 PASS retain.
 
 ---
 
