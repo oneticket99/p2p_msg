@@ -308,6 +308,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-25 17:45:00] cycle 169.792 — 평가 2종 staleness refresh (Stop hook hook_assessment_freshness — vibe 169.785 이후 6 commit, prod 787 이후 4). productization.md + vibe-coding.md + docs/html 2 mirror 를 cycle 169.792 marker(사이클 169 + last_verified 17:45) 동기 + 최근 갱신 note 에 cycle 169.787~791 진척(Codex P0/P1 auto-completable 소진 + M6 post-commit hook + doc-lint gate 교훈) 반영. 점수 productization 7.6/10 · vibe-coding 8.4/10 변동 부재 (docs/assessments · docs/html)
 - [2026-05-25 17:40:00] cycle 169.791 — cycle 169.790 변경이력 entry 의 인용 literal 재-위반 회수 (changelog 본문이 위반 문자열을 그대로 인용해 BPE 재발 → 인용 제거 rephrase). doc-lint EXIT=0 gate 확인 후 commit (이번엔 push 전 검증). 교훈 = 위반 문자열 인용 금지 (README · History)
 - [2026-05-25 17:35:00] cycle 169.790 — BPE 측단독 회수 (cycle 169.789 MANUAL_TESTS §2.9 의 capture/dispatch 측단독(U+CE21) 표기 2건 → "쪽", doc-lint EXIT=1 push 후 즉시 정정). doc-lint PASS 재확인 (docs/exec-plans/active)
 - [2026-05-25 17:30:00] cycle 169.789 — Codex P1 원격 데스크탑 M4 수동 검증 절차 문서화 (사용자 directive "잔존작업 다 진행", Codex P1 #5). `docs/exec-plans/active/MANUAL_TESTS.md` §2.9 신설 — 원격 M4 의 실 OS + 물리 2 장비 사용자 직접 ack 항목(macOS Screen Recording/Accessibility 권한 + friend P2P 세션 + `_remote_data_channel` 실 결선 + HOST grant 주입 + controller 화면 표시/클릭 실 적용 visual ack + revoke). 자동 검증 완료분(G2 headless loopback) 과 분리. M4 = G3 사용자 게이트 — 실 OS/물리 장비 의존이라 Claude 자동 불가, 본 문서가 수동 절차 정본 (docs/exec-plans/active)
