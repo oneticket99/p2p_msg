@@ -27,3 +27,9 @@ websockets>=12.0
 Pillow>=10.0
 pytesseract>=0.3.10
 ImageHash>=4.3
+# Phase 4 cycle 169.799 — SFU(Selective Forwarding Unit) 그룹 통화 미디어 서버.
+# server/sfu_room.py 의 RTCPeerConnection + MediaRelay 실 binding (9+ peer 그룹 음성·영상 fan-out).
+# python:3.13-slim 에서 av/pylibsrtp manylinux wheel 이 native lib 자체 포함 →
+# 추가 시스템 라이브러리·빌드 의존 불요 (cycle 169.828 throwaway 컨테이너 빌드+import 검증).
+# 미설치 시 sfu_room.AIORTC_AVAILABLE=False → SFU 비활성 + 코어 시그널링/인증/메시지 graceful 부팅 유지.
+aiortc>=1.14
