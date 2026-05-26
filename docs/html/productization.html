@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.852)</title>
 <!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.852 미러.
+     cycle 169.852 marker 동기 — avatar 이미지 picker M5 카메라 — CameraCaptureDialog(QtMultimedia QCamera/QMediaCaptureSession/QImageCapture/QVideoWidget in-app 모달, FRONTEND §16 FramelessWindowHint+exec_modal) live preview+촬영→QImage. graceful 3분기(ImportError/카메라 부재/권한 거부→_show_unavailable 촬영 비활성). 자원 해제(feedback_objc_memory_release) — 종료 3경로(accept/reject/closeEvent) 전부 stop+setActive(False)+QObject 3종 deleteLater+참조 None. picker _on_camera 연결(camera_requested.emit 후방 호환 + exec_modal → Accepted captured_image→_apply_image). test 5 PASS(_init_camera monkeypatch unavailable — 실 webcam 미오픈) + 회귀 fix(기존 test_camera_action_emits_signal full-suite hang stub 차단). 전체 2590 passed(server 642+app 1948) 회귀 0, reviewer PASS(차단 0, OBS 3 비차단). avatar M6 표시/M7+G-final(실 webcam visual ack) 잔존 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.852 marker 동기 — avatar 이미지 picker M3 클라 picker(AvatarPickerButton 드롭다운 파일/카메라/클립보드 이모지 제외 + avatars_client) + M4 서버 chain(room create avatar_ref/name + invite isolated e2e 18 PASS). 클라 dialog 통합/카메라/표시 전파/G-final 잔존. + M1+M2 서버 영속(migration 0018 users.avatar_ref + avatars.py content-addressed 디스크 repo + POST/GET/PATCH endpoint multipart+Pillow 512 crop+EXIF strip + rooms avatar_ref). repo 18+e2e 17=35 PASS, 회귀 0, reviewer 2 PASS. 클라 picker(M3~M5)/표시 전파(M6)/G-final 잔존 IMPLEMENTED 진행 중 — 신규 VERIFIED 부재 — 종합 7.6/10 유지.
      cycle 169.850~851 marker 동기 — (850) server/sfu_room.py 단위 coverage 49→100%(tests/server/test_sfu_room.py 10 PASS, MediaRelay forward/재구독 close/remove_peer 양측/close 전수 mock 분기) + M6 WBS 사용자 ack "재개+backfill" 524 row(total 151→675) + productization.html 빈 화면 회귀 회수(상단 marker 주석 닫는 닫힘 누락 fix). (851) codex §8-5 i18n labels dangling 회수(삭제 group_chat_view 출처 주석 → live _chat_header_mixin.py:240/main_window.py:367 + orphan key 메시지를_입력하세요 4 dict drop, i18n test 81 PASS) + token-usage-30d 재산출(누적 $42562.61) + active-plan archive(완료 handoff 4종 completed/ 이동). reviewer 게이트 전수 PASS(차단 0). 전체 2521 PASS, 회귀 0. codex §8 auto-completable 큐 종결 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.848~849 marker 동기 — (848) 마이그레이션 M5b — StackedWidget idx 완전 재번호(_STACK_GROUP_CHAT 제거 + MEMBERS 2→1 + FRIENDS 3→2 + _group_placeholder 제거) + group_chat_view.py/room_list.py RoomListWidget 파일 삭제(RoomItem 보존) + _group_message_client dead attr 회수 + docstring rewrite + _current_room_id None clear + README §2.2 stale 정정. reviewer PASS(차단 0). 병렬 Codex doc-sync 머지(Structure.md UI tree drift 회수). (849) codex 평가 §8 회수 — §8-1 sqlite ResourceWarning 결정적 close(local_db atexit) + §8-3 sfu_call_client 단위 test 18 PASS coverage 14→89%. 전체 2511 PASS, 회귀 0. 마이그레이션 완결 + 부채 회수 + 실효 커버리지 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
@@ -18,7 +19,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-26T19:30:00+09:00 (사이클 169.852 — avatar 이미지 picker M3 클라 picker + M4 서버 chain e2e: AvatarPickerButton + avatars_client(17 PASS) + room create avatar_ref/invite isolated e2e(18 PASS)) -->
+     last_verified = 2026-05-26T22:30:00+09:00 (사이클 169.852 — avatar 이미지 picker M5 카메라: CameraCaptureDialog QtMultimedia in-app 모달 + picker _on_camera 연결 + 자원 해제(deleteLater) + test 5 PASS + 회귀 hang fix, 전체 2590 passed) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -515,7 +516,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-26 20:45 KST · cycle 169.852 미러 동기 (avatar picker M3 클라 picker + M4 서버 chain e2e, 클라 dialog 통합/카메라/표시 전파/G-final 잔존) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
+  최신 갱신: 2026-05-26 22:30 KST · cycle 169.852 미러 동기 (avatar picker M5 카메라 — CameraCaptureDialog QtMultimedia in-app 모달 + picker _on_camera 연결 + 자원 해제 deleteLater + test 5 PASS + 회귀 hang fix, 전체 2590 passed; M6 표시 전파/M7+G-final 실 webcam visual ack 잔존) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
 </footer>
 
 </body>

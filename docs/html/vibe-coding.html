@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.852)</title>
   <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.852 미러 -->
+  <!-- 한글 주석: cycle 169.852 marker 동기 — avatar 이미지 picker M5 카메라(T-14/T-15). CameraCaptureDialog(QtMultimedia in-app 모달) live preview+촬영→QImage + picker _on_camera 연결 + graceful 3분기 + 자원 해제 3경로(deleteLater, objc-release 정합) + test 5 PASS. 강점: 위험(하드웨어/권한/메모리) 격리 마일스톤 + reviewer 게이트(차단 0) + 회귀 hang 근본 원인 진단(기존 action test 가 M5 핸들러 실 카메라+blocking 모달 진입 → full-suite hang, _init_camera+exec_modal stub monkeypatch 차단) + objc-release 가드레일 정합(OBS-1 deleteLater 보강) + headless 결정성(실 webcam 미오픈). 전체 2590 passed 회귀 0. 점수 8.4/10 변동 부재(process 성숙 — 위험 격리 + 회귀 근본 진단). -->
   <!-- 한글 주석: cycle 169.852 marker 동기 — avatar 이미지 picker M3 클라 picker + M4 서버 chain. 사용자 1번부터 전체 구현 → M3(AvatarPickerButton+avatars_client) → M4 서버 room 생성+invite e2e isolated 보강. M1+M2 서버 영속. 큰 작업 M1 doc-first(planning Exec Plan + GO 게이트) + 위험 등급별 마일스톤(서버 write 선행) + 각 마일스톤 reviewer 게이트 + 보안 검증 chain(traversal/EXIF strip 실측) + content-addressed dedup. 35 PASS 회귀 0. 점수 8.4/10 변동 부재(process 성숙). -->
   <!-- 한글 주석: light theme + 텍스트 #1f2937 + accent #7c3aed (Toonation 브랜드 컬러 보조) + 표 zebra stripe -->
   <!-- 한글 주석: cycle 169.785 batch refresh (점수 8.4/10 변동 부재 — process 성숙). 직전 169.779~784: (c) 원격 데스크탑 M3 완결(handshake/coord/UI accept/G2 aiortc loopback), reviewer-agent 게이트 모든 feat 의무 정책 확립(PR #10 flow), reviewer F1 회귀 회수, M6 활성+backfill, Codex 7.6/10 외부평가 환류(P0 doc-freshness 반영). 약 2490 PASS retain. -->
@@ -14,7 +15,7 @@
   <!-- 한글 주석: cycle 169.838 marker 동기 — 전 dialog in-app overlay 모달 변환 완성(별도 OS 윈도우 제거, 새창=원격제어 상대화면 창 1개뿐) + ConfirmDialog 정적 헬퍼(얼럿/확인) in-app 화 + "방 입장" 전수 제거 + 별도 윈도우 예외 4종 FRONTEND.md §16 명문화. reviewer-gate 2차 PASS — 사용자 dogfooding directive("얼럿창 아닌 메인 레이아웃 안 모달") 정합. 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.837 marker 동기 — startup 로그인 메뉴 토글(835) + 그룹 멤버 보기 "..." 드롭다운·room kind=group·수신음 실 파일 교체(836) + 그룹 멤버 UX 완성(멤버 모달 + 원형 아바타 행 통합 + 그룹 메뉴 미구현 stub 전수 제거, 837). UX 정합이나 신규 VERIFIED capability 부재 — 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.834 marker — dogfooding 버그 6종 배치 + i18n 5언어 친절화(11 UI) + 수신음 교체. 점수 8.4/10 변동 부재. -->
-  <!-- 한글 주석: last_verified = 2026-05-26T19:30:00+09:00 (사이클 169.852 — avatar picker M3+M4 서버 chain, 계획 순차 + 컨벤션 정합 + 서버 write 선행 e2e) -->
+  <!-- 한글 주석: last_verified = 2026-05-26T22:30:00+09:00 (사이클 169.852 — avatar picker M5 카메라: CameraCaptureDialog QtMultimedia in-app 모달 + 자원 해제 deleteLater + 회귀 hang 근본 진단, 위험 격리 마일스톤 + reviewer 게이트, 전체 2590 passed) -->
   <!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 -->
   <style>
     *{box-sizing:border-box}
@@ -467,7 +468,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/vibe-coding.md</code> · 동행 snapshot: <a href="productization.html">productization.html</a><br>
-  최신 갱신: 2026-05-26 20:45 KST · cycle 169.852 미러 동기 · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
+  최신 갱신: 2026-05-26 22:30 KST · cycle 169.852 미러 동기 (avatar picker M5 카메라 — CameraCaptureDialog + 자원 해제 deleteLater + 회귀 hang 근본 진단, 전체 2590 passed) · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
   메모리 인덱스: <code>~/.claude/projects/-Users-1ticket-Documents-vscode-work-p2p-msg/memory/MEMORY.md</code>
 </footer>
 
