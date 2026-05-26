@@ -1,0 +1,72 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_check_bpe_token_input.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_post_write_inspect.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_html_mirror_consistency.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_telegram_report_stop.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_assessment_freshness.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_doc_consistency.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_html_mirror_consistency.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_chat_bpe_check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_self_hosted_ci_trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_assessment_token_rewrite_trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_dereliction_check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/tools/hook_auto_commit_enforce.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
