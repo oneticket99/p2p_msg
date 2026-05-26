@@ -33,6 +33,8 @@ status: active
 
 main HEAD = `cd50dc3` (cycle 169.852). 점수 productization 7.6/10 · vibe-coding 8.4/10 유지.
 
+> **사용자 directive 2026-05-26 (다음 session 진입 지시)**: "전체 구현 하되 1번부터." → 다음 session = avatar 이미지 picker **전체 구현 완주**(M3~M7 + G-final), **1번(M3 AvatarPickerButton)부터 순차** 진행. M1+M2(서버 영속)는 commit+reviewer PASS+35 test 통과 완결분이라 **재작업 불요** — §3 순서대로 스킵/조기중단 없이 G-final 까지.
+
 ---
 
 ## 2. 첫 응답 템플릿 (다음 session 진입)
