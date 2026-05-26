@@ -277,17 +277,26 @@ class RoomsClient:
     # 7 public method
     # ------------------------------------------------------------------
 
-    async def create_room(self, name: str = "", kind: str = "group") -> RoomPayload:
+    async def create_room(
+        self,
+        name: str = "",
+        kind: str = "group",
+        avatar_ref: str = "",
+        description: str = "",
+    ) -> RoomPayload:
         """POST /api/rooms — 룸 생성 + owner 자동 peers row 등록.
 
         Parameters
         ----------
         name : str
-            UI 표기명 — 본 cycle 에서는 서버 schema 의 별도 column 부재 시
-            metadata audit 등 의 후속 cycle 의 책임. 현재는 body 의 ``name``
-            필드로 송신만 수행.
+            그룹/채널 표기명 — 서버 rooms.name(0017) 영속.
         kind : str
             "direct" / "group". default = group.
+        avatar_ref : str
+            cycle 169.852 — POST /api/avatars 업로드 회신 키(`avatars/<sha>.<ext>`).
+            빈값 = avatar 없음(이니셜 fallback). 서버가 실재 검증 후 rooms.avatar_ref 영속.
+        description : str
+            채널 설명 — 서버 rooms.description(0017) 영속. 빈값 허용.
 
         Returns
         -------
@@ -298,6 +307,10 @@ class RoomsClient:
         body = {"kind": kind}
         if name:
             body["name"] = name
+        if avatar_ref:
+            body["avatar_ref"] = avatar_ref
+        if description:
+            body["description"] = description
         payload = await self._request("POST", "/api/rooms", json=body)
         return RoomPayload.from_wire(payload)
 

@@ -55,3 +55,40 @@ class TestRoomPayload:
         from app.net.rooms_client import RoomMemberPayload
 
         assert hasattr(RoomMemberPayload, "__dataclass_fields__")
+
+class TestCreateRoomBody:
+    """create_room body 구성 — cycle 169.852 avatar_ref/description (M4)."""
+
+    @pytest.mark.asyncio
+    async def test_avatar_ref_and_description_included(self) -> None:
+        from unittest.mock import AsyncMock
+
+        from app.net.rooms_client import RoomsClient
+
+        c = RoomsClient("https://api.local", token="t")
+        c._request = AsyncMock(
+            return_value={"id": 1, "room_code": "x", "owner_id": 1, "kind": "group"}
+        )
+        await c.create_room(
+            name="내 그룹", kind="group",
+            avatar_ref="avatars/aa.png", description="설명",
+        )
+        body = c._request.await_args.kwargs["json"]
+        assert body == {
+            "kind": "group", "name": "내 그룹",
+            "avatar_ref": "avatars/aa.png", "description": "설명",
+        }
+
+    @pytest.mark.asyncio
+    async def test_empty_optionals_omitted(self) -> None:
+        # 한글 주석 — 빈 name/avatar_ref/description 은 body 에서 생략(backward compat)
+        from unittest.mock import AsyncMock
+
+        from app.net.rooms_client import RoomsClient
+
+        c = RoomsClient("https://api.local", token="t")
+        c._request = AsyncMock(
+            return_value={"id": 1, "room_code": "x", "owner_id": 1, "kind": "group"}
+        )
+        await c.create_room(kind="group")
+        assert c._request.await_args.kwargs["json"] == {"kind": "group"}
