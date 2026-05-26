@@ -93,7 +93,7 @@ _DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8765"
 
 # 한글 주석 — cycle 144 i18n production binding helper.
 # MainWindow context 의 20 .ts entry 와 정합 의무. 본 module 의 5 file 가
-# 동일 helper 패턴 의 의 QCoreApplication.translate 호출.
+# 동일 helper 패턴의 QCoreApplication.translate 호출.
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 
