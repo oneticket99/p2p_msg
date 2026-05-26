@@ -199,9 +199,9 @@ gantt
 | T-5 | M2 | GET `/api/avatars/{ref}` (path traversal 방어) | main session | T-3 | e2e (정상 200 + `../` reject 400 + 부재 404) | `server/api/avatars_handlers.py` | ✅ |
 | T-6 | M2 | PATCH `/api/me/avatar` + route 등록 | main session | T-2, T-4 | e2e (avatar_ref 갱신 + 빈값 제거) | `server/api/avatars_handlers.py` · `server/main.py` | ✅ |
 | T-7 | M2 | rooms 생성/수정 payload avatar_ref 수용 | main session | T-4 | e2e (생성 시 rooms.avatar_ref 영속) | `server/api/rooms_handlers.py` | ✅ |
-| T-8 | M3 | `AvatarPickerButton` — 원형 button + 드롭다운 3항목 + preview | main session | — | offscreen (드롭다운 3 action 존재 + signal emit) | `app/ui/_avatar_picker_button.py` | todo |
-| T-9 | M3 | 파일/클립보드 핸들러 + 정사각 다운스케일 + EXIF strip | main session | T-8 | offscreen (QFileDialog mock + clipboard.image mock) | `app/ui/_avatar_picker_button.py` | todo |
-| T-10 | M3 | `avatars_client.py` upload/fetch/patch_me | main session | T-4, T-5 | httpx mock unit | `app/net/avatars_client.py` | todo |
+| T-8 | M3 | `AvatarPickerButton` — 원형 button + 드롭다운 3항목 + preview | main session | — | offscreen (드롭다운 3 action 존재 + signal emit) | `app/ui/_avatar_picker_button.py` | ✅ |
+| T-9 | M3 | 파일/클립보드 핸들러 + 정사각 다운스케일 + EXIF strip | main session | T-8 | offscreen (QFileDialog mock + clipboard.image mock) | `app/ui/_avatar_picker_button.py` | ✅ |
+| T-10 | M3 | `avatars_client.py` upload/fetch/patch_me | main session | T-4, T-5 | httpx mock unit | `app/net/avatars_client.py` | ✅ |
 | T-11 | M4 | `new_group_dialog` camera_btn → AvatarPickerButton + payload | main session | T-8, T-10 | offscreen (group_created signal avatar_ref 포함) | `app/ui/new_group_dialog.py` | todo |
 | T-12 | M4 | `new_channel_dialog` 교체 + icon 오용(notification) 시정 | main session | T-8, T-10 | offscreen (channel_created avatar_ref + icon 정상) | `app/ui/new_channel_dialog.py` | todo |
 | T-13 | M4 | `my_profile_dialog` avatar picker + PATCH /api/me/avatar | main session | T-6, T-8, T-10 | offscreen (picker 진입 + refresh 갱신) | `app/ui/my_profile_dialog.py` | todo |
