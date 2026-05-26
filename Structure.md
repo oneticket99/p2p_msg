@@ -151,7 +151,7 @@ p2p_msg/
 │   │   ├── image_processor.py
 │   │   ├── peer.py
 │   │   └── protocol.py
-│   └── ui/                       # 사이클 23~169.193 — 47 widget/dialog (Phase 1 5 → Phase 5 47 누계)
+│   └── ui/                       # 사이클 23~169.848 — 통합 ChatView 중심 widget/dialog
 │       ├── __init__.py
 │       ├── _http_worker.py            # REST QThread worker
 │       ├── _icons.py                  # 사이클 169.x — material icon QPainter SVG render
@@ -172,7 +172,6 @@ p2p_msg/
 │       ├── folder_list.py
 │       ├── folder_manage_dialog.py    # 사이클 169.193 — 편집 tab → FolderManageDialog (telegram folder edit align)
 │       ├── friend_list.py
-│       ├── group_chat_view.py
 │       ├── hamburger_drawer.py        # 사이클 169.117~170 — drawer frameless + Toonation BI gradient header
 │       ├── input_bar.py               # 사이클 169.137~192 — composite pill + circle send + bg align
 │       ├── invite_dialog.py
@@ -186,7 +185,7 @@ p2p_msg/
 │       ├── password_reset_dialog.py
 │       ├── profile_view.py
 │       ├── reactions_poller.py
-│       ├── room_list.py
+│       ├── room_list.py              # cycle 169.848 — RoomListWidget 회수, RoomItem dataclass 만 보존
 │       ├── settings_dialog.py
 │       ├── settings_locale.py
 │       ├── sidebar_rail.py            # 사이클 169.185 — TAB_DEFS 2 entry (모든 대화방 chat_bubble + 편집 sliders, home/phone 폐기)

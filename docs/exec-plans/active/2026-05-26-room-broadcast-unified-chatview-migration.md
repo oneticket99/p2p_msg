@@ -3,7 +3,7 @@ title: "legacy room broadcast 경로 → 통합 ChatView/group flow 마이그레
 owner: oneticket99
 status: active
 created: 2026-05-26
-last_verified: 2026-05-26
+last_verified: 2026-05-26T11:51:00+09:00
 target_completion: 2026-06-12
 related_code: ["app/ui/main_window.py", "app/ui/_room_group_chat_mixin.py", "app/ui/_chat_navigation_mixin.py", "app/ui/_chat_header_mixin.py", "app/ui/_auth_chain_mixin.py", "app/ui/_chat_send_mixin.py", "app/main.py", "app/ui/group_chat_view.py", "app/ui/room_list.py", "app/ui/chat_view.py", "app/net/group_message_client.py", "app/net/rooms_client.py", "tests/app/ui/test_group_chat_ui.py", "tests/app/ui/test_group_chat_broadcast.py", "tests/integration/test_group_message_dual_chain.py", "tests/app/ui/test_main_window_messages.py", "tests/app/ui/test_main_window_mixin_mro.py", "tests/app/ui/test_mixin_isolated_batch3.py"]
 ---
@@ -17,6 +17,15 @@ related_code: ["app/ui/main_window.py", "app/ui/_room_group_chat_mixin.py", "app
 > directive 출처: 사용자 "legacy room broadcast path → unified ChatView/group flow migration 으로 scope 확정 (dead code 제거가 아님)".
 
 ---
+
+## 0.0 Claude 재진입 메모 (2026-05-26 11:51 KST)
+
+본 Exec Plan 의 구현 범위는 cycle 169.848 M5b 로 완료됐다. 다음 Claude 세션은 본 파일에서 추가 코드를 진행하지 말고, 아래 정합성 마감만 확인한다.
+
+1. `Structure.md` UI tree 는 M5b 상태로 정정됨: 삭제된 `group_chat_view.py` 항목 제거, `room_list.py` 는 `RoomItem` dataclass 보존 파일로 설명 변경.
+2. 런타임 잔존 grep 기준은 코드에서 `GroupChatView` / `_STACK_GROUP_CHAT` / `room_entered` / `_room_list` 가 실행 경로에 남지 않는 것이다. 문서·docstring 의 이력 언급은 허용한다.
+3. 후속 작업은 본 plan 이 아니라 `current-project-review.md` §9 의 Claude 직접 작업 큐를 기준으로 진행한다: sqlite ResourceWarning, M6 WBS 정책, SFU coverage, 배포 smoke.
+4. 본 plan 을 archive/finalize 로 옮길 때는 `docs/exec-plans/active/` 안 완료 plan 정리 정책을 먼저 확인하고, README/History M2/M3 를 동시 갱신한다.
 
 ## 0. 핵심 권고 요약 (사용자 재검토용 — 진행 전 필독)
 
