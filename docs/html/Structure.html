@@ -150,6 +150,9 @@ flowchart LR
 │   │   └── protocol.py
 │   └── ui/
 │       ├── __init__.py
+│       ├── _avatar_cache.py          # cycle 169.852 M6 — avatar_ref mem+disk 캐시 + async fetch + avatar_ready
+│       ├── _avatar_picker_button.py  # cycle 169.852 M3 — 원형 picker(파일/카메라/클립보드) 3 dialog 공유
+│       ├── _camera_capture_dialog.py # cycle 169.852 M5 — QtMultimedia webcam 촬영 in-app 모달
 │       ├── chat_view.py
 │       ├── file_progress_widget.py
 │       ├── main_window.py

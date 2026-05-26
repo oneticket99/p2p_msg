@@ -209,7 +209,7 @@ gantt
 | T-15 | M5 | 드롭다운 "카메라에서" 연결 + 권한 거부 graceful + resource release | main session | T-14 | offscreen (권한 거부 시 toast + release 호출 assert) | `app/ui/_avatar_picker_button.py` · `_camera_capture_dialog.py` | ✅ |
 | T-16 | M6 | `_avatar_helper.make_avatar_pixmap(name, avatar_ref, size)` 신설 + `_avatar_cache` 싱글톤(mem+disk + async fetch + avatar_ready signal) | main session | T-5 | unit (avatar_ref present → image / absent → 이니셜, 8 PASS) | `app/ui/_avatar_helper.py` · `app/ui/_avatar_cache.py` | ✅ |
 | T-17 | M6 | 6곳 표시 전파(chat sender=이름 label N/A·drawer header·profile·group·channel·member_list) | main session | T-16 | offscreen (image load + 이니셜 fallback 무손상, 12 PASS) | `app/ui/chat_list_panel.py · member_list.py · hamburger_drawer.py · my_account_dialog.py · _drawer_mixin.py` | ✅ |
-| T-18 | M7 | 문서 동기 + HTML mirror + 회귀 전량 + 인계 | main session | T-1~T-17 | doc lint + markdown lint + pytest 전량 GREEN | `Structure.md` · `FRONTEND.md` · `ARCHITECTURE.md` · `CheckList.md` · 평가 2 + HTML 2 | todo |
+| T-18 | M7 | 문서 동기 + HTML mirror + 회귀 전량 + 인계 | main session | T-1~T-17 | doc lint + markdown lint + pytest 전량 GREEN | `Structure.md`+html · `FRONTEND.md`(§16.4)+html · `ARCHITECTURE.md`(§6)+html · `CheckList.md` · 평가 2 + HTML 2 | ✅ |
 
 > 담당 = main session 직접 작업 (본 저장소에 `@backend-agent`/`@frontend-agent` 미존재 — CLAUDE.md §2). 각 task 완료 직후 `@reviewer-agent` → `@qa-agent` → `@observability-agent` 직렬 게이트 + 즉시 commit/push (M5 가드레일).
 

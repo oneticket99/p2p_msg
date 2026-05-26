@@ -153,6 +153,10 @@ p2p_msg/
 │   │   └── protocol.py
 │   └── ui/                       # 사이클 23~169.848 — 통합 ChatView 중심 widget/dialog
 │       ├── __init__.py
+│       ├── _avatar_cache.py           # cycle 169.852 M6 — avatar_ref mem+disk 캐시 + async fetch + avatar_ready signal (표시 전파 source)
+│       ├── _avatar_helper.py          # avatar fallback — 이니셜 pixmap + make_avatar_pixmap(avatar_ref→캐시 위임)
+│       ├── _avatar_picker_button.py   # cycle 169.852 M3 — 원형 picker(드롭다운 파일/카메라/클립보드, 이모지 제외) 그룹/채널/프로필 공유
+│       ├── _camera_capture_dialog.py  # cycle 169.852 M5 — QtMultimedia webcam 촬영 in-app 모달(자원 해제 의무)
 │       ├── _http_worker.py            # REST QThread worker
 │       ├── _icons.py                  # 사이클 169.x — material icon QPainter SVG render
 │       ├── _video_renderer.py         # Phase 4 call dialog 의 video frame render

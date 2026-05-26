@@ -208,7 +208,7 @@ sequenceDiagram
     <tr><th>모듈</th><th>책임</th><th>의존성</th><th>위치</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>app/ui/</code></td><td>PyQt6 위젯·QSS·이벤트 핸들러</td><td><code>app/core/</code></td><td>클라이언트 UI 계층</td></tr>
+    <tr><td><code>app/ui/</code></td><td>PyQt6 위젯·QSS·이벤트 핸들러 + 아바타 이미지 picker 파이프라인(cycle 169.852 — AvatarPickerButton 드롭다운 파일/카메라/클립보드 + CameraCaptureDialog QtMultimedia in-app 모달 + AvatarCache mem+disk 캐시·async fetch·avatar_ready + make_avatar_pixmap 표시 전파 6 site, 이니셜 fallback 무손상)</td><td><code>app/core/</code> · <code>app/net/avatars_client.py</code></td><td>클라이언트 UI 계층</td></tr>
     <tr><td><code>app/core/</code></td><td>세션 상태·메시지 큐·MariaDB 영속화</td><td><code>app/net/</code> · <code>app/rtc/</code> · <code>app/db/</code></td><td>클라이언트 Core 계층</td></tr>
     <tr><td><code>app/net/</code></td><td>시그널링 WS 클라이언트 + <code>auth_client.py</code> + <code>messages_client.py</code> (사이클 62 lazy load REST) · 재연결 · 백오프</td><td><code>aiohttp</code> · <code>app/core/</code> 콜백</td><td>클라이언트 Net 계층</td></tr>
     <tr><td><code>app/rtc/</code></td><td>aiortc 래퍼·DataChannel·청크 송수신</td><td><code>aiortc</code> · <code>app/core/</code> 콜백</td><td>클라이언트 RTC 계층</td></tr>
@@ -224,6 +224,7 @@ sequenceDiagram
     <tr><td><code>server/api/devices_handlers.py</code></td><td>REST 3 endpoint — POST /api/devices + GET /api/devices + DELETE /api/devices/{device_id} (Phase 2 사이클 43 multi-device sync)</td><td><code>aiohttp</code> + <code>server/db/repositories/devices</code></td><td>서버 Router REST</td></tr>
     <tr><td><code>server/api/messages_handlers.py</code></td><td>REST 1 endpoint — GET /api/messages (Phase 3 사이클 60 ChatView lazy load · limit 1000 default / 5000 max)</td><td><code>aiohttp</code> + <code>server/db/repositories/messages</code></td><td>서버 Router REST</td></tr>
     <tr><td><code>server/api/bot_handlers.py</code></td><td>REST 1 endpoint — POST /api/bot/chat (Phase 3 사이클 74 + 78 + 82 server-side LLM proxy · ANTHROPIC_API_KEY 격리 · per-user RateLimitGate · 32 messages cap · 16KB content cap · system role 차단 · user_id type hardening · jailbreak detector 통합 · 4 종 예외 매핑)</td><td><code>aiohttp</code> + <code>app/bot/llm_proxy.LLMProvider</code> + <code>app/bot/jailbreak_detector.py</code></td><td>서버 Router REST</td></tr>
+    <tr><td><code>server/api/avatars_handlers.py</code></td><td>REST 3 endpoint — POST /api/avatars(multipart 업로드 + Pillow 정사각 512 center crop + EXIF strip) + GET /api/avatars/{filename} + PATCH /api/me/avatar (cycle 169.852 M2). repo = avatars content-addressed 디스크 저장 sha256 dedup + path traversal 방어(M1) · migrations 0018 users.avatar_ref + 0019 rooms.kind channel</td><td><code>aiohttp</code> + <code>Pillow</code> + <code>server/db/repositories/avatars.py</code></td><td>서버 Router REST</td></tr>
     <tr><td><code>server/room.py</code></td><td><code>Peer</code>·<code>Room</code>·<code>RoomRegistry</code> 상태 관리</td><td><code>server/protocol.py</code></td><td>서버 Service</td></tr>
     <tr><td><code>server/protocol.py</code></td><td>TypedDict envelope·오류 코드 상수</td><td>(없음)</td><td>서버 Model</td></tr>
     <tr><td><code>server/main.py</code></td><td>entry point·env 로딩·<code>AppRunner</code></td><td>위 3개 + <code>dotenv</code></td><td>서버 부트스트랩</td></tr>

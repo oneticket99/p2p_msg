@@ -541,6 +541,22 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 - room_id/peer_id 직접 입력 다이얼로그(`_on_open_room_dialog` + 메뉴 항목)를 전수 제거했다.
 - 그룹방은 채팅창의 **"그룹 만들기" + 멤버 초대** 로만 생성한다(텔레그램 플로우 정합).
 
+### 16.4 아바타 이미지 picker + 표시 전파 (cycle 169.852)
+
+텔레그램 정합 — 그룹 만들기 / 채널 만들기 / 개인 프로필 3 dialog 의 원형 아바타를 클릭하면
+드롭다운(**파일에서 / 카메라에서 / 클립보드에서**, "이모지 사용"은 directive 명시 **제외**)이 열린다.
+
+| 컴포넌트 | 역할 |
+|---|---|
+| `_avatar_picker_button.AvatarPickerButton` | 원형 picker(드롭다운 3항목 + center 정사각 crop 원형 preview). 미선택 시 이름 2글자 이니셜, 이름도 없으면 camera 아이콘 blue circle. `avatar_selected(QImage)` signal |
+| `_camera_capture_dialog.CameraCaptureDialog` | "카메라에서" 진입점 — QtMultimedia(`QCamera`/`QImageCapture`/`QVideoWidget`) live preview + 촬영 → QImage. §16.1 in-app 모달(`exec_modal`). 권한 거부/카메라 부재 graceful + 종료 3경로(accept/reject/closeEvent) 자원 해제(stop+setActive(False)+deleteLater) |
+| `_avatar_cache.AvatarCache` | 표시 전파 source — avatar_ref(서버 content-addressed) memory+disk 캐시 + `AvatarFetchWorker` async fetch(dedup) + `avatar_ready(str)` signal. 동기 `make_avatar_pixmap` + 백그라운드 fetch → signal 재렌더(progressive enhancement, UI 블로킹 0) |
+| `_avatar_helper.make_avatar_pixmap(name, avatar_ref, size)` | 표시 전파 6 site 단일 진입점 — avatar_ref hit 시 원형 이미지, 부재/miss 시 이니셜 fallback(무손상) |
+
+- **표시 전파 6 site**: group/channel(chat-list delegate) · member_list · drawer header · profile(MyAccountDialog) · my_profile picker. chat sender 는 telegram grouped 정합상 이름 label(색 텍스트)만이라 avatar pixmap 대상 아님(N/A).
+- **이니셜 fallback 무손상**: 빈 avatar_ref → 기존 palette circle + 2글자 이니셜 동작 동일(회귀 0).
+- **즉시 표시**: 프로필 avatar 변경(업로드 PASS) 시 `_drawer_mixin` 이 cache `seed_image` → drawer header 라이브 갱신(round-trip 없이).
+
 ---
 
 ## 17. 참조
@@ -562,4 +578,4 @@ Toonation 공식 브랜드 컬러 = **블루 계열 메인**. 2023-04 브랜드 
 
 ---
 
-마지막 갱신: 2026-05-26 (cycle 169.838 — §16 다이얼로그 모달 정책 신설: 전 dialog in-app overlay 모달 + 별도 OS 윈도우 예외 4종(원격제어 창·startup auth bootstrap·tray 재인증·HamburgerDrawer) 명문화 + "방 입장" 제거 기록. 참조 §16→§17 renumber)
+마지막 갱신: 2026-05-26 (cycle 169.852 — §16.4 아바타 이미지 picker + 표시 전파 신설: AvatarPickerButton(드롭다운 파일/카메라/클립보드, 이모지 제외) + CameraCaptureDialog(QtMultimedia in-app 모달) + AvatarCache(async fetch + avatar_ready) + make_avatar_pixmap 표시 전파 6 site + 이니셜 fallback 무손상. 직전 cycle 169.838 §16 모달 정책)

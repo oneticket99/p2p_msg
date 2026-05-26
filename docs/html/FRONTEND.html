@@ -1032,6 +1032,26 @@ flowchart TB
 <li>그룹방은 채팅창의 <strong>"그룹 만들기" + 멤버 초대</strong> 로만 생성한다(텔레그램 플로우 정합).</li>
 </ul>
 
+<h3>17.4 아바타 이미지 picker + 표시 전파 (cycle 169.852)</h3>
+
+<p>텔레그램 정합 — 그룹 만들기 / 채널 만들기 / 개인 프로필 3 dialog 의 원형 아바타 클릭 시 드롭다운(<strong>파일에서 / 카메라에서 / 클립보드에서</strong>, "이모지 사용"은 directive 명시 <strong>제외</strong>)이 열린다.</p>
+
+<table>
+<thead><tr><th>컴포넌트</th><th>역할</th></tr></thead>
+<tbody>
+<tr><td><code>AvatarPickerButton</code></td><td>원형 picker(드롭다운 3항목 + center 정사각 crop 원형 preview). 미선택 시 이름 2글자 이니셜, 이름도 없으면 camera 아이콘 blue circle. <code>avatar_selected(QImage)</code></td></tr>
+<tr><td><code>CameraCaptureDialog</code></td><td>"카메라에서" 진입점 — QtMultimedia live preview + 촬영 → QImage. in-app 모달(<code>exec_modal</code>). 권한 거부/카메라 부재 graceful + 종료 3경로 자원 해제(stop+setActive(False)+deleteLater)</td></tr>
+<tr><td><code>AvatarCache</code></td><td>표시 전파 source — avatar_ref memory+disk 캐시 + async fetch(dedup) + <code>avatar_ready(str)</code> signal. 동기 pixmap + 백그라운드 fetch → signal 재렌더(progressive enhancement, UI 블로킹 0)</td></tr>
+<tr><td><code>make_avatar_pixmap(name, avatar_ref, size)</code></td><td>표시 전파 6 site 단일 진입점 — avatar_ref hit 시 원형 이미지, 부재/miss 시 이니셜 fallback(무손상)</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li><strong>표시 전파 6 site</strong>: group/channel(chat-list delegate) · member_list · drawer header · profile(MyAccountDialog) · my_profile picker. chat sender 는 telegram grouped 정합상 이름 label(색 텍스트)만이라 avatar pixmap 대상 아님(N/A).</li>
+<li><strong>이니셜 fallback 무손상</strong>: 빈 avatar_ref → 기존 palette circle + 2글자 이니셜 동작 동일(회귀 0).</li>
+<li><strong>즉시 표시</strong>: 프로필 avatar 변경(업로드 PASS) 시 <code>_drawer_mixin</code> 이 cache <code>seed_image</code> → drawer header 라이브 갱신(round-trip 없이).</li>
+</ul>
+
 <hr>
 
 <h2>18. 참조</h2>
@@ -1058,7 +1078,7 @@ flowchart TB
 
 <hr>
 
-<p>마지막 갱신: 2026-05-26 (cycle 169.838 — §17 다이얼로그 모달 정책 신설: 전 dialog in-app overlay 모달 + 별도 OS 윈도우 예외 4종(원격제어 창·startup auth bootstrap·tray 재인증·HamburgerDrawer) 명문화 + "방 입장" 제거 기록. 참조 §17→§18 renumber)</p>
+<p>마지막 갱신: 2026-05-26 (cycle 169.852 — §17.4 아바타 이미지 picker + 표시 전파 신설: AvatarPickerButton(드롭다운 파일/카메라/클립보드, 이모지 제외) + CameraCaptureDialog(QtMultimedia in-app 모달) + AvatarCache(async fetch + avatar_ready) + make_avatar_pixmap 표시 전파 6 site + 이니셜 fallback 무손상. 직전 cycle 169.838 §17 모달 정책)</p>
 
 </body>
 </html>

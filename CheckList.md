@@ -49,6 +49,7 @@ CheckList.md · 항목 추적·매핑·진행률" — 그대로 본 문서의 �
 | Phase 3 — bot framework (BotFather + Bot API + webhook + inline + payment) | **DONE** | cycle 119~131 + Anthropic + OpenAI + RAG + jailbreak 17 + 3 layer fallback |
 | Phase 4 — production infra (docker compose 6 + nginx TLS + SMTP postfix + certbot + JSON log) | **DONE** | cycle 100~129 + v0.4.0-phase4-infra release |
 | Phase 5 — Item 5 (i18n + emoji pack share + bot 마무리 + 원격 제어 + mobile) | **ACTIVE** | cycle 119~169.82 — i18n actual binding + bot 고객센터 봇 + 방송 도우미 봇 진입 |
+| avatar 이미지 picker (그룹/채널/프로필 3 dialog + 파일/카메라/클립보드 + 표시 전파) | **CODE 완결** | cycle 169.852 M1~M6 — 서버 영속(0018/avatars repo) + AvatarPickerButton + 서버 room kind(0019) + CameraCaptureDialog + AvatarCache 표시 전파 6 site. reviewer T-16/T-17 PASS. M7 문서/**G-final 실 webcam visual ack(사용자 직접)** 잔존. backlog: reviewer MEDIUM-A(_MemberRow signal disconnect 위생, 비차단) |
 | CI 3종 GREEN (ci + docs-lint + doc-gardener) | **PASS** | cycle 169.744 doc-gardener workflow_dispatch PASS + checkout@v5 갱신으로 Node.js 20 deprecation annotation 회수 |
 | reviewer + qa audit chain — HIGH 2 + MEDIUM 4 + LOW 3 finding 전수 회수 | **PASS** | cycle 169.78~80 chain |
 | folder test coverage (repository 8 + handlers 7 + client 6 + signaling 12 + call_env 6 = 70 PASS) | **PASS** | cycle 169.80~82 |
