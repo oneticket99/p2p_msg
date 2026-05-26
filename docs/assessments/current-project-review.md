@@ -1,13 +1,13 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-26T11:15:00+09:00
+last_verified: 2026-05-26T11:51:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> 검토 기준: 2026-05-26 cycle 169.848 main branch + room broadcast → 통합 ChatView 마이그레이션 M1~M5b 완결 반영. 직전 169.841 평가(P0 = legacy room path 전체 마이그레이션)에서 지목한 P0 항목이 cycle 169.842~848 에 단계별(M2 송신 echo → M3 적재 cache → M4 진입 통일 → M5 위젯 회수 → M6 송신 coverage → M5b idx 재번호+파일 삭제) reviewer 게이트 전수 PASS 로 완결됐다.
+> 검토 기준: 2026-05-26 cycle 169.848 main branch + room broadcast → 통합 ChatView 마이그레이션 M1~M5b 완결 반영 + Codex 재평가 후 Claude 진입 큐 정리. 직전 169.841 평가(P0 = legacy room path 전체 마이그레이션)에서 지목한 P0 항목이 cycle 169.842~848 에 단계별(M2 송신 echo → M3 적재 cache → M4 진입 통일 → M5 위젯 회수 → M6 송신 coverage → M5b idx 재번호+파일 삭제) reviewer 게이트 전수 PASS 로 완결됐다.
 > 목적: 다음 작업 세션에서 곧바로 우선순위를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 내부 dogfooding 후보권은 유지한다. 외부 사용자 배포 직전 단계는 아니다. legacy room path P0 는 해소됐고, 남은 차이는 최신성 게이트, 배포 산출물 실행 증거, 핵심 UI/RTC 실효 커버리지, 실 기기 검증이다.
 
@@ -25,6 +25,8 @@ TooTalk 는 PyQt6 클라이언트, aiohttp signaling, aiortc DataChannel/SFU, Ma
 
 - `git log --oneline`: HEAD = cycle 169.848 (M5b idx 재번호 + 위젯 파일 삭제). 직전 169.842~847 마이그레이션 commit 누계.
 - `QT_QPA_PLATFORM=offscreen python3 -m pytest -q`: `2546 passed, 24 skipped, 317 deselected` (직전 2557 → obsolete 위젯 standalone test 2 파일 삭제분 반영, 회귀 0).
+- `QT_QPA_PLATFORM=offscreen python3 -m pytest --cov -q`: `2546 passed, 24 skipped, 317 deselected`, coverage `87.96%`.
+- `bash tools/doc-lint.sh`: PASS, 79개 markdown 위반 0건.
 - `pytest tests/app tests/server -q`: `2493 passed, 24 skipped` (마이그레이션 단위 회귀 baseline).
 - 마이그레이션 검증: reviewer-agent 게이트 M2 / M3+M4 / M5 / M6 전수 PASS (차단 0). D7 grep(`GroupChatView`/`_STACK_GROUP_CHAT`/`room_entered`/`_room_list`) 런타임 잔존 0 (주석/docstring 이력 참조만).
 - `tools/check_migration_tables.py --strict`: PASS, SQL 25개 = 문서 25개 (직전 동일).
@@ -35,8 +37,9 @@ TooTalk 는 PyQt6 클라이언트, aiohttp signaling, aiortc DataChannel/SFU, Ma
 주의점.
 
 - 샌드박스 제한 환경에서는 aiohttp test server 의 `127.0.0.1:0` bind 가 `PermissionError` 로 실패했다. 제한 없는 로컬 실행에서는 통과했다.
-- coverage 87.99% 는 `pyproject.toml` omit 범위가 넓은 조건의 수치다. UI dialog, RTC peer/file, remote capture/input, 여러 REST handler 가 측정에서 빠져 있다.
+- coverage 87.96% 는 `pyproject.toml` omit 범위가 넓은 조건의 수치다. UI dialog, RTC peer/file, remote capture/input, 여러 REST handler 가 측정에서 빠져 있다.
 - coverage 실행 후 `sqlite3.Connection` 미종료 `ResourceWarning` 이 1건 남는다.
+- Codex 재평가 중 `Structure.md` 에 삭제된 `app/ui/group_chat_view.py` 항목이 남은 drift 를 발견했고, 본 문서 갱신 cycle 에서 트리 항목을 회수했다. `room_list.py` 는 파일은 유지하되 `RoomItem` dataclass 전용으로 의미를 정정했다.
 
 ## 3. 최근 구현 진척
 
@@ -96,14 +99,19 @@ Windows native build 와 macOS build workflow 는 존재하지만, macOS PyInsta
 
 잔존 리스크: room/group 실 동작(다중 peer mesh broadcast + REST 영속화)의 사용자 visual ack 는 아직 자동 검증 범위 밖(후반 일괄 큐). 코드 경로 단일화는 완결.
 
+### 4.5 Structure.md UI tree drift — ✅ 해소 (2026-05-26 11:51 KST)
+
+Codex 재평가에서 `Structure.md` 의 `app/ui/` 트리가 M5b 파일 회수 이후 상태를 따라오지 못한 점을 발견했다. 삭제된 `group_chat_view.py` 항목을 제거했고, `room_list.py` 는 `RoomListWidget` 이 아니라 `RoomItem` dataclass 만 보존하는 파일로 설명을 바꿨다.
+
 ## 5. 즉시 작업 큐
 
 ### P0
 
 1. ✅ (해소) legacy room path 전체 마이그레이션 — cycle 169.842~848 M1~M5b 완결, reviewer 게이트 전수 PASS.
 2. ✅ (해소) `current-project-review.md` 최신 cycle marker 유지로 `check_assessment_consistency.py` PASS 복구 — 본 cycle 169.848 marker 갱신.
-3. M6 WBS `data/wbs.sqlite` row 등록 정책 — cycle 169.231 이후 600+ cycle 중단(dereliction-detector MEDIUM detect). 사용자 ack 필요(재개/backfill vs 영구 비활성).
-4. `sqlite3.Connection` 미종료 `ResourceWarning` 원인 추적 (coverage/test teardown).
+3. ✅ (해소) `Structure.md` UI tree drift — 삭제된 `group_chat_view.py` 제거 + `room_list.py` 역할을 `RoomItem` dataclass 전용으로 정정.
+4. M6 WBS `data/wbs.sqlite` row 등록 정책 — cycle 169.231 이후 600+ cycle 중단(dereliction-detector MEDIUM detect). 사용자 ack 필요(재개/backfill vs 영구 비활성).
+5. `sqlite3.Connection` 미종료 `ResourceWarning` 원인 추적 (coverage/test teardown).
 
 ### P1
 
@@ -137,9 +145,18 @@ Windows native build 와 macOS build workflow 는 존재하지만, macOS PyInsta
 3. `.venv/bin/python tools/check_assessment_consistency.py`
 4. `.venv/bin/python tools/check_migration_tables.py --strict`
 5. `.venv/bin/python -m pytest -q`
-6. P0 잔존(M6 WBS 활성 ack) 확인 → P1(coverage omit 축소 / 배포 산출물 smoke / 원격 M4 실 OS) 우선순위 진입.
+6. P0 잔존(M6 WBS 활성 ack + sqlite ResourceWarning) 확인 → P1(coverage omit 축소 / 배포 산출물 smoke / 원격 M4 실 OS) 우선순위 진입.
 
-## 8. 결론
+## 8. Claude 진입용 직접 작업 큐
+
+다음 Claude 세션은 신규 기능보다 정합성 마감부터 잡는다.
+
+1. `sqlite3.Connection` 미종료 `ResourceWarning` 재현 지점 추적: `pytest -q` 와 `pytest --cov -q` 양쪽에서 동일 connection object 경고가 난다. teardown 누락 가능성이 높은 영역은 `app/db/local_db.py`, `app/db/messages_cache.py`, UI fixture, server repository fixture 순으로 본다.
+2. M6 WBS 정책 결정: `data/wbs.sqlite` 가 gitignored local artifact 이므로, 재개/backfill 또는 영구 비활성 중 하나를 사용자에게 확인한 뒤 문서와 hook 정책을 맞춘다.
+3. coverage omit 축소 1차: `app/net/sfu_call_client.py` 와 `server/sfu_room.py` 부터 작은 단위 테스트를 추가한다. 목표는 총 coverage 숫자 상승보다 핵심 SFU 경로의 실효 커버리지 확보다.
+4. 배포 smoke 증거 확보: macOS `.app` 실행, Windows zip 실행, 업데이트 URL dead-path guard 를 release checklist 에 증거 형식으로 남긴다.
+
+## 9. 결론
 
 직전 평가의 **전체 마이그레이션** 큐는 cycle 169.842~848 에 완결됐다. GroupChatView/room_entered/RoomListWidget/server room broadcast 잔존 경로는 단계별 마이그레이션(코드 제거 + test 재설계 분리 + reviewer 게이트 전수 PASS)으로 통합 ChatView/group flow 단일 경로로 확정됐고, legacy 위젯은 물리 회수됐다.
 
