@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""``app.updater.version_check`` 의 단위 테스트 — cycle 132 skeleton.
+"""``app.updater.version_check`` 의 단위 테스트.
 
-semver compare 3 + httpx mock 2 = 5 PASS.
+cycle 132 skeleton(semver compare + httpx 200/404) + cycle 169.851 coverage
+2차 확장(prerelease 우선순위 + ValueError + httpx ImportError/non-dict/network 예외).
 """
 
 from __future__ import annotations
@@ -83,4 +84,79 @@ class TestCheckLatestVersion:
         with patch.dict("sys.modules", {"httpx": mock_httpx}):
             result = await check_latest_version("https://update.example.com")
 
+        assert result is None
+
+
+class TestVersionComparePrerelease:
+    """compare_versions 의 prerelease 우선순위 + 형식 위반 분기 검증."""
+
+    def test_release_newer_than_prerelease(self) -> None:
+        # 한글 주석: release(prerelease 부재) 가 prerelease 보다 신 — 양수
+        assert compare_versions("1.0.0", "1.0.0-beta") > 0
+
+    def test_prerelease_older_than_release(self) -> None:
+        # 한글 주석: current prerelease, latest release — latest 신, 음수
+        assert compare_versions("1.0.0-beta", "1.0.0") < 0
+
+    def test_prerelease_string_compare_less(self) -> None:
+        # 한글 주석: 둘 다 prerelease — 문자열 비교 fallback (alpha < beta)
+        assert compare_versions("1.0.0-alpha", "1.0.0-beta") < 0
+
+    def test_prerelease_string_compare_greater(self) -> None:
+        # 한글 주석: beta > alpha — 양수
+        assert compare_versions("1.0.0-beta", "1.0.0-alpha") > 0
+
+    def test_same_prerelease_returns_zero(self) -> None:
+        # 한글 주석: 동일 prerelease — 0
+        assert compare_versions("1.0.0-rc1", "1.0.0-rc1") == 0
+
+    def test_invalid_semver_raises_value_error(self) -> None:
+        # 한글 주석: semver 형식 위반 → ValueError (_parse_semver)
+        with pytest.raises(ValueError, match="semver 형식 위반"):
+            compare_versions("not-a-version", "1.0.0")
+
+
+class TestCheckLatestVersionFallback:
+    """check_latest_version 의 graceful None 경로(ImportError/형식/예외) 검증."""
+
+    @pytest.mark.asyncio
+    async def test_returns_none_on_httpx_import_error(self) -> None:
+        # 한글 주석: httpx 미설치 → import 실패 → graceful None
+        with patch.dict("sys.modules", {"httpx": None}):
+            result = await check_latest_version("https://update.example.com")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_returns_none_on_non_dict_response(self) -> None:
+        # 한글 주석: 200 OK 이나 응답이 dict 아님(list) → None
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json = MagicMock(return_value=["not", "a", "dict"])
+        mock_response.raise_for_status = MagicMock()
+
+        mock_client = MagicMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client.get = AsyncMock(return_value=mock_response)
+
+        mock_httpx = MagicMock()
+        mock_httpx.AsyncClient = MagicMock(return_value=mock_client)
+
+        with patch.dict("sys.modules", {"httpx": mock_httpx}):
+            result = await check_latest_version("https://update.example.com")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_returns_none_on_network_exception(self) -> None:
+        # 한글 주석: client.get 예외(network error 등) → graceful None
+        mock_client = MagicMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client.get = AsyncMock(side_effect=RuntimeError("network down"))
+
+        mock_httpx = MagicMock()
+        mock_httpx.AsyncClient = MagicMock(return_value=mock_client)
+
+        with patch.dict("sys.modules", {"httpx": mock_httpx}):
+            result = await check_latest_version("https://update.example.com")
         assert result is None
