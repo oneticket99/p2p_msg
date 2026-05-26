@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.852)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.852~853 미러.
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.853 미러.
+     cycle 169.853 marker 동기 — 한글 주석 상세화 페이즈 M2 진행(server repository 13/21). blast radius 역순 — friends 본보기(reviewer PASS) + peers/read_states/password_reset/file_meta/device_tokens/user_contacts/avatars/streaming_oauth_tokens/users/rooms/messages/folders. 매 batch 기능 diff 0(verify_comment_only docstring 제거 후 AST 동일) + pytest 무변경 + BPE/대명사/이중조사 0. 부정확 함수 카탈로그도 실 심볼명 정정. 주석 전용 = 코드 동작 변경 0(ValueError 런타임 string 도 미변경, diff-0 도구 검출). 잔여 repo 8 + M3~M7. 종합 7.6/10 유지.
      cycle 169.852~853 marker 동기 — avatar M1~M7 전 milestone 완결(서버 영속+picker+3 dialog+카메라+표시 전파 6 site+문서, G-final 사용자 webcam ack 잔존) + 한글 주석 상세화 페이즈 착수(사용자 directive "e2e 테스트 파일까지 모두 보강" → active + M7 test scope + verify_comment_only.py diff-0 검증 + M1 본보기 friends.py reviewer PASS + M2 batch-1 peers/read_states/password_reset). 주석 전용 트랙 = 코드 동작 변경 0(verify_comment_only 전 파일 PASS + pytest 무변경). 신규 VERIFIED 부재 — 종합 7.6/10 유지.
      cycle 169.852 marker 동기 — avatar 이미지 picker M6 완결(표시 전파 6 site). T-16 AvatarCache 싱글톤(mem+disk 2단 캐시 + AvatarFetchWorker async fetch dedup + avatar_ready signal + content-addressed 불변 키 + path traversal 방어 + negative-cache) + make_avatar_pixmap thin API → T-17 6 site(group/channel chat-list delegate · member_list · drawer header · profile/my_account · chat sender=이름 label N/A · my_profile picker). 업로드 PASS 시 seed_image 즉시 표시 + drawer 라이브 갱신. 이니셜 fallback 무손상. reviewer T-16 PASS + T-17 PASS(차단 0, MEDIUM 2 비차단). 전체 2605 passed 회귀 0. avatar M1~M6 코드 완결 — M7 문서 + G-final(실 webcam visual ack) 잔존 — 신규 VERIFIED 부재 — 종합 7.6/10 유지.
      cycle 169.852 marker 동기 — avatar 이미지 picker M5 카메라 — CameraCaptureDialog(QtMultimedia QCamera/QMediaCaptureSession/QImageCapture/QVideoWidget in-app 모달, FRONTEND §16 FramelessWindowHint+exec_modal) live preview+촬영→QImage. graceful 3분기(ImportError/카메라 부재/권한 거부→_show_unavailable 촬영 비활성). 자원 해제(feedback_objc_memory_release) — 종료 3경로(accept/reject/closeEvent) 전부 stop+setActive(False)+QObject 3종 deleteLater+참조 None. picker _on_camera 연결(camera_requested.emit 후방 호환 + exec_modal → Accepted captured_image→_apply_image). test 5 PASS(_init_camera monkeypatch unavailable — 실 webcam 미오픈) + 회귀 fix(기존 test_camera_action_emits_signal full-suite hang stub 차단). 전체 2590 passed(server 642+app 1948) 회귀 0, reviewer PASS(차단 0, OBS 3 비차단). avatar M6 표시/M7+G-final(실 webcam visual ack) 잔존 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
@@ -21,7 +22,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-27T01:30:00+09:00 (사이클 169.852~853 — avatar M1~M7 전 milestone 완결(표시 전파 6 site + 문서 + G-final 체크리스트, 사용자 webcam ack 잔존) + 한글 주석 상세화 페이즈 착수(verify_comment_only diff-0 + M1 본보기 friends.py + M2 batch-1, 코드 동작 변경 0) — 종합 7.6/10 유지) -->
+     last_verified = 2026-05-27T03:30:00+09:00 (사이클 169.853 — 한글 주석 상세화 페이즈 M2 진행 server repository 13/21(friends 본보기 + peers~folders), 매 batch 기능 diff 0(verify_comment_only AST 동일) + pytest 무변경 + 부정확 카탈로그 실 심볼명 정정, 코드 동작 변경 0 — 종합 7.6/10 유지) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -518,7 +519,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-27 01:30 KST · cycle 169.852~853 미러 동기 (avatar M1~M7 완결 — 표시 전파 6 site + 문서 + G-final 체크리스트, 사용자 webcam ack 잔존 / 한글 주석 상세화 페이즈 착수 — verify_comment_only diff-0 검증 + M1 본보기 + M2 batch-1, 코드 동작 변경 0) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
+  최신 갱신: 2026-05-27 03:30 KST · cycle 169.853 미러 동기 (한글 주석 상세화 페이즈 M2 진행 — server repository 13/21, 매 batch 기능 diff 0 verify_comment_only AST 동일 + pytest 무변경 + 부정확 카탈로그 실 심볼명 정정, 코드 동작 변경 0) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
 </footer>
 
 </body>
