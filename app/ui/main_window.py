@@ -1,44 +1,43 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""TooTalk 메인 윈도우 — QMainWindow 상속 (cycle 139 그룹 채팅 통합).
+"""TooTalk 메인 윈도우 — QMainWindow 상속 (cycle 169.848 M5b 통합 ChatView 정합).
 
-레이아웃 (cycle 139 갱신):
+레이아웃 (room broadcast → 통합 ChatView 마이그레이션 M1~M5b 완결):
 
 ```
 +--------------------------------------------------------------+
 | 메뉴바: 설정 · 계정 · 도움말                                  |
 +-------------+------------------------------------------------+
-| RoomList    | QStackedWidget                                 |
-| (sidebar)   |  ├─ [tab idx=0] 1:1 ChatView (직접 메시지)     |
-|             |  ├─ [tab idx=1] GroupChatView (현재 방)        |
-|             |  └─ [tab idx=2] MemberList (멤버 panel)        |
+| ChatList    | QStackedWidget                                 |
+| Panel       |  ├─ [idx 0] 통합 ChatView                      |
+| (sidebar)   |  │           (friend/bot/saved/room/group)     |
+|             |  ├─ [idx 1] MemberPanel (멤버 data sink)       |
+|             |  └─ [idx 2] FriendListWidget (연락처 탭)       |
 +-------------+------------------------------------------------+
 | StatusBar: 연결 상태 · peer 수                                 |
 +--------------------------------------------------------------+
 ```
 
-cycle 139 변경 요점:
+구조 요점 (cycle 169.842~848 마이그레이션 결과):
 
-- RoomListWidget 을 좌측 sidebar (QSplitter) 에 배치 + ``room_entered``
-  시그널 을 ``_on_room_entered(room_id)`` 슬롯 으로 연결.
-- 기존 ChatView (1:1) 는 QStackedWidget 의 첫 페이지 로 보존 — 사용자 가
-  "직접 메시지" 액션 으로 회귀 가능 (backward compat).
-- GroupChatView 는 ``room_entered`` 시 lazy create + StackedWidget 의
-  swap. ``message_send_requested`` 시그널 은 REST POST `/api/rooms/{id}/messages`
-  (cycle 141 ``MessagesRestClient``) + WebRTC mesh broadcast (cycle 138
-  ``GroupMessageClient.send_message``) 의 dual chain (cycle 142 의 actual
-  binding 도달).
-- ``members_panel_requested`` 시그널 은 MemberListWidget toggle 진입점.
-- RoomsClient (``app.net.rooms_client``) 의 ``list_rooms`` / ``get_room`` 의
-  의 호출 wrapper 보유 — main entry 점 에서 주입 (test 의 mock 호환).
+- 좌측 sidebar = ``ChatListPanel`` — friend/room/bot 통합 entry populate
+  (``_refresh_chat_list_panel``). 구 RoomListWidget(방번호 입력)은 M5 회수.
+- 통합 ``ChatView`` (idx 0) 가 friend/bot/saved/room/group 단일 표시·진입·송신
+  경로. ``_on_chat_selected(kind, target_id)`` 가 진입점, ``_on_send_clicked``
+  (``_chat_send_mixin``)이 송신점 — server room(kind=room)은 ``_current_room_id``
+  결선으로 REST POST `/api/rooms/{id}/messages` + WebRTC mesh broadcast
+  (``MeshManager.broadcast_payload``) dual chain.
+- 구 GroupChatView + ``room_entered`` + ``_on_room_entered`` +
+  ``_dispatch_message_chain`` (M5 물리 회수). ``MemberPanel`` (idx 1)은 멤버
+  data sink — ``_rest_post_mixin`` invite refresh 가 ``set_members`` 호출,
+  멤버 보기 자체는 in-app 모달(``_on_open_members_panel``)로 표시.
+- RoomsClient (``app.net.rooms_client``)의 ``list_rooms`` / ``get_room`` 호출
+  wrapper 보유 — main entry 점에서 주입 (test mock 호환).
 
-본 cycle 의 범위 외 (별개 cycle):
+별개 cycle 책임:
 
-- 실 WebRTC mesh peer connection 의 PeerConnection 의 setup (MeshManager)
-- 친구 목록 dropdown 의 InviteDialog 의 main_window 통합
-- 메시지 history lazy load (cycle 60 messages_client wrapper) 의 GroupChatView
-  pre-fill
-- REST POST 의 ack 대기 + retry chain (cycle 142 는 fire-and-forget background
-  task 만 — ack chain 은 별개 cycle 의 책임)
+- 실 WebRTC mesh peer connection PeerConnection setup (MeshManager).
+- 메시지 history lazy load (messages_client wrapper) group 결선.
+- REST POST ack 대기 + retry chain (현재 fire-and-forget background task).
 """
 
 from __future__ import annotations
@@ -126,25 +125,26 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     """TooTalk 최상위 윈도우.
 
     본 위젯은 ``app.core.AppState`` 인스턴스를 보유하여 현재 room/peer_id/
-    연결 상태를 추적하고, ``app.ui.chat_view.ChatView`` (1:1) · ``GroupChatView``
-    (그룹) · ``MemberListWidget`` 의 상위 컨테이너 역할을 한다.
+    연결 상태를 추적하고, 통합 ``app.ui.chat_view.ChatView``
+    (friend/bot/saved/room/group 단일 경로) · ``MemberPanel`` (멤버 data sink)
+    · ``FriendListWidget`` (연락처)의 상위 컨테이너 역할을 한다.
 
-    cycle 139 — QStackedWidget 의 3 페이지 토글 패턴 +
-    RoomListWidget sidebar (QSplitter 좌측 패널).
+    cycle 169.848 M5b — QStackedWidget 3 페이지 (통합 ChatView / MemberPanel /
+    FriendListWidget) + 좌측 ``ChatListPanel`` sidebar (QSplitter 좌측 패널).
+    구 GroupChatView/RoomListWidget 경로는 마이그레이션 M5/M5b 물리 회수.
 
     Qt slot 내부 동기 코드만 사용하며, 시그널링 IO 는 ``asyncio.create_task``
     를 통해 ``app.net.signaling_client`` 의 코루틴을 예약한다 (정본 §E).
     """
 
     # QStackedWidget index — 코드 가독성 목적 상수
-    # cycle 169.845 M5 — friend/bot/saved/room/group 전부 _STACK_DIRECT_CHAT(통합 ChatView)
-    # 단일 진입. idx 1 은 legacy GroupChatView 회수 후 빈 placeholder 로 잔존(재번호 회피).
-    # idx 완전 재번호(friend_list 3→1 + _STACK_* 정리)는 _member_list(idx 2, group-management
-    # 사용)와 조율 의무라 M5b 로 분리.
+    # cycle 169.848 M5b — friend/bot/saved/room/group 전부 _STACK_DIRECT_CHAT(통합 ChatView)
+    # 단일 진입. 구 GroupChatView(idx 1 placeholder) 제거 + idx 완전 재번호 완료.
+    # _member_list(MemberPanel) = group-management _rest_post_mixin invite refresh data
+    # sink(미표시) — 멤버 보기는 in-app 모달(_on_open_members_panel)로 분리.
     _STACK_DIRECT_CHAT: int = 0  # 통합 ChatView (friend/bot/saved/room/group)
-    _STACK_GROUP_CHAT: int = 1   # (M5 회수) 빈 placeholder — idx 안정 유지용
-    _STACK_MEMBERS: int = 2      # MemberPanel (group-management _rest_post_mixin)
-    _STACK_FRIENDS: int = 3      # FriendListWidget (연락처 탭)
+    _STACK_MEMBERS: int = 1      # MemberPanel (group-management _rest_post_mixin data sink)
+    _STACK_FRIENDS: int = 2      # FriendListWidget (연락처 탭)
 
     def __init__(
         self,
@@ -154,7 +154,6 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         auth_client: Optional[AuthClient] = None,
         rooms_client: Optional[object] = None,
         messages_client: Optional[object] = None,
-        group_message_client: Optional[object] = None,
         friends_client: Optional[object] = None,
         reactions_client: Optional[object] = None,
     ) -> None:
@@ -174,13 +173,10 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             행 만 표시 (test 격리 + 인증 미완료 단계 graceful).
         messages_client : MessagesRestClient | None
             cycle 142 신설 — ``app.net.messages_client.MessagesRestClient`` 의 주입.
-            그룹 메시지 송신 시 REST POST `/api/rooms/{room_id}/messages` 호출 +
+            room 메시지 송신 시 REST POST `/api/rooms/{room_id}/messages` 호출 +
             server 영속화 + audit log 트리거. None 또는 호출 실패 시 mesh-only
-            모드 (graceful) — UI 흐름 차단 없음.
-        group_message_client : GroupMessageClient | None
-            cycle 142 신설 — ``app.net.group_message_client.GroupMessageClient`` 의
-            주입 (WebRTC mesh broadcast fan-out). None 일 시 mesh broadcast skip
-            (UI echo 만). 정상 환경 의 main 진입점 의 의무 주입.
+            모드 (graceful) — UI 흐름 차단 없음. mesh broadcast fan-out 은
+            ``MeshManager.broadcast_payload`` (``_chat_send_mixin``) 단일 경로.
         friends_client : FriendsClient | None
             cycle 147 신설 — ``app.net.friends_client.FriendsClient`` 의 주입.
             InviteDialog dropdown populate (``list_friends(status="accepted")``)
@@ -191,7 +187,7 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         super().__init__(parent)
         # cycle 169.530 — __init__ 9 helper split (302 line CRITICAL blocker 회수)
         self._init_state(config, auth_client, rooms_client, messages_client,
-                         group_message_client, friends_client, reactions_client)
+                         friends_client, reactions_client)
         # cycle 169.809 — SFU 그룹 통화 상태 초기화 (SfuCallMixin 합성)
         self._init_sfu_call()
         self._init_window_properties()
@@ -213,7 +209,6 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         auth_client,
         rooms_client,
         messages_client,
-        group_message_client,
         friends_client,
         reactions_client,
     ) -> None:
@@ -223,7 +218,6 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._auth_client = auth_client
         self._rooms_client = rooms_client
         self._messages_client = messages_client
-        self._group_message_client = group_message_client
         self._friends_client = friends_client
         self._reactions_client = reactions_client
         self._reactions_poller = None
@@ -344,17 +338,11 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             self._chat_view.reply_to_message.connect(self._on_chat_reply_requested)  # type: ignore[attr-defined]
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("reply_to_message binding 실패 — %r", exc)
-        # 4-2) idx 1 — cycle 169.845 M5: legacy GroupChatView 회수 후 빈 spacer 로 잔존.
-        # StackedWidget idx 완전 재번호(friend_list 3→1 + _STACK_* 정리)는 _member_list(idx 2,
-        # group-management _rest_post_mixin 사용)와 조율 의무라 M5b 로 분리. 본 spacer 는
-        # idx 안정 유지용(재번호 회피) — 사용자 도달 경로 부재.
-        self._group_placeholder = QWidget(self._stacked)
-        self._stacked.addWidget(self._group_placeholder)
-        # 4-3) MemberPanel(헤더 뒤로 + MemberListWidget) idx 2 — cycle 169.819
+        # 4-2) MemberPanel idx 1 — cycle 169.848 M5b: 구 GroupChatView placeholder(idx 1)
+        # 제거 + idx 완전 재번호 완료. MemberPanel 은 group-management _rest_post_mixin
+        # invite refresh data sink(미표시) — 멤버 보기는 in-app 모달(_on_open_members_panel).
         self._member_list = MemberPanel(parent=self._stacked)
-        # 한글 주석 — 멤버 화면 "← 뒤로" → 통합 ChatView 복귀.
-        # cycle 169.845 M5 — legacy GroupChatView(idx 1) 회수로 복귀 대상을 통합 ChatView
-        # (_STACK_DIRECT_CHAT)로 변경. 이전 _STACK_GROUP_CHAT(빈 placeholder) 복귀는 무의미.
+        # 한글 주석 — 멤버 화면 "← 뒤로" → 통합 ChatView(_STACK_DIRECT_CHAT) 복귀.
         try:
             self._member_list.back_requested.connect(
                 lambda: self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
@@ -362,7 +350,7 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         except Exception as exc:  # pragma: no cover - graceful
             log.debug('member back_requested binding 실패 — %r', exc)
         self._stacked.addWidget(self._member_list)
-        # 4-4) FriendListWidget idx 3
+        # 4-3) FriendListWidget idx 2
         self._friend_list = FriendListWidget(parent=self._stacked)
         self._friend_list.set_friends([], viewer_id=0)
         try:

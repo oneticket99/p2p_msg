@@ -167,6 +167,11 @@ class ChatNavigationMixin:
         # gid)은 server room 부재 → _current_room_id 미변경(기존 의미 보존).
         if kind == "room":
             self._current_room_id = target_id
+        else:
+            # 한글 주석 — cycle 169.848 M5b 후속: room 이 아닌 진입(friend/bot/saved/group)
+            # 시 직전 room context 잔존 clear. 미clear 시 friend 송신이 직전 room 으로
+            # REST POST 오발신되는 잠재 버그 차단 (_on_send_clicked L171 _current_room_id).
+            self._current_room_id = None
         # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
         # cycle 169.159 — telegram align fallback "최근에 접속함" (actual last_seen REST = 별 cycle)
         chat_panel = getattr(self, "_chat_list_panel", None)

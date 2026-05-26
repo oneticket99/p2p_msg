@@ -77,10 +77,11 @@ class ChatSendMixin:
             self._input_bar.set_reply_to(sender, text)
 
     def _on_send_clicked(self) -> None:
-        """보내기 버튼 / Enter 키 슬롯 — 1:1 ChatView 의 의무.
+        """보내기 버튼 / Enter 키 슬롯 — 통합 ChatView 송신점.
 
-        그룹 채팅 모드 (StackedWidget idx == GROUP) 일 때는 GroupChatView 의
-        내부 입력창 의 책임 — 본 슬롯 은 echo 차단.
+        통합 ChatView(_STACK_DIRECT_CHAT)가 active 일 때만 송신한다 (friend/bot/
+        saved/room/group 단일 경로). 멤버 패널·연락처 등 다른 StackedWidget
+        페이지가 active 일 때는 echo 차단.
         """
 
         # cycle 139 — 그룹 모드 active 시 1:1 입력 차단
@@ -157,7 +158,7 @@ class ChatSendMixin:
                 pass
 
             import asyncio
-            # cycle 169.411 — saved kind 의 의 mesh skip + self DM REST POST chain
+            # cycle 169.411 — saved kind 은 mesh skip + self DM REST POST chain
             if self._active_chat_kind == "saved":
                 asyncio.ensure_future(self._send_saved_message_rest(text, payload.id))
             else:
