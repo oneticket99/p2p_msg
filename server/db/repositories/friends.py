@@ -24,8 +24,9 @@ server data 계층(repository). 호출자 = ``server/api/friends_handlers.py``(R
 --------------------
 - 모든 SQL 은 parameterized(``%s``) — SQL injection 차단(D-5 위생). 문자열 포매팅 SQL 금지.
 - FriendRow frozen dataclass — 호출자의 tuple unpacking 을 컬럼 순서 변경에 안전하게 한다.
-- 8 SQL — insert_friend + get_friend + list_by_user + list_by_friend +
-  update_status + delete_friend + search_user_by_username + set_nickname.
+- 9 공개 함수(실 심볼명 기준 카탈로그) — insert_friend + get_friend + list_by_user +
+  list_pending_requests + accept_friend + update_status + delete_friend +
+  search_users_by_username + set_nickname.
 - status ENUM 4종 (pending / accepted / blocked / removed) — DDL ENUM 정합. 위반 시 ValueError.
 - **단방향 row 모델** — "A → B 친구"는 row 1건, "B → A 친구"는 별개 row 다(대칭 보장 부재).
   양방향 mutual 관계 성립 검증은 호출자(handler) 책임이며, 본 repository 는 단방향 CRUD 만 한다.
@@ -279,7 +280,7 @@ async def accept_friend(
     user_id: int,
     friend_user_id: int,
 ) -> int:
-    """pending → accepted 전환 + accepted_at = NOW(). rowcount 반환(0 = 대상 부재).
+    """pending → accepted 전환 + accepted_at = CURRENT_TIMESTAMP. rowcount 반환(0 = 대상 부재).
 
     의도: 받은 요청 수락. SQL WHERE 에 ``status = 'pending'`` 을 포함해 이미 처리된 요청의
     재수락(중복 전환)을 방지한다 — 그 경우 rowcount 0 으로 호출자가 "대상 없음"을 안다.

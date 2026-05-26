@@ -98,6 +98,7 @@ read-only 코드 정독 (2026-05-26 — `app/rtc/peer.py` · `server/db/reposito
 - **계층 위치** — 정본 §E 계층 구조 안 어디인가 (예: "server data 계층 — repository, API handler 가 호출").
 - **의존성** — 무엇에 의존하고 무엇이 본 모듈에 의존하는가 (협력 방향).
 - **범위 한계** — 본 모듈이 하지 않는 것 (예: `friends.py` 의 "본 module 범위 외" 절). 오용 방지의 핵심.
+- **함수/SQL 카탈로그 컨벤션** — module docstring 에 공개 함수/SQL 목록을 적을 때 **실 심볼명(함수명) 기준**으로 적고, 개수를 실 함수 수와 일치시킨다. 약칭/단수복수 불일치(예: `list_by_friend` ↔ 실 `list_pending_requests`)는 미래 독자가 카탈로그로 코드 탐색 시 오도하므로 금지(reviewer T-2 HIGH 회수, cycle 169.853).
 
 ### D-2. 클래스 docstring
 
