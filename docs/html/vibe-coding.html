@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.842)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.792 미러 -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.847)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.847 미러 -->
   <!-- 한글 주석: light theme + 텍스트 #1f2937 + accent #7c3aed (Toonation 브랜드 컬러 보조) + 표 zebra stripe -->
   <!-- 한글 주석: cycle 169.785 batch refresh (점수 8.4/10 변동 부재 — process 성숙). 직전 169.779~784: (c) 원격 데스크탑 M3 완결(handshake/coord/UI accept/G2 aiortc loopback), reviewer-agent 게이트 모든 feat 의무 정책 확립(PR #10 flow), reviewer F1 회귀 회수, M6 활성+backfill, Codex 7.6/10 외부평가 환류(P0 doc-freshness 반영). 약 2490 PASS retain. -->
-  <!-- 한글 주석: cycle 169.839~842 marker 동기 — (839) group-flow isolated test 재구성(cycle169.838 "방 입장" 폐지 정합, room_entered.emit → 그룹 만들기 wizard chain 전면 교체, 통합 ChatView idx 0 canonical, 6 PASS) + (840) token-usage-30d 재산출 + (841) current-project-review 최신화(7.7/10) + (842) room broadcast → 통합 ChatView 마이그레이션 착수(Exec Plan 6 단계 + M1 재검증 inbound 결선 부재 확정 + M2 송신 echo 재배선 hide_sender=False, _dispatch_message_chain 불변). 큰 작업 M1 doc-first(planning-agent 위임) + 단계별 commit + G-final 게이트. UI 344 PASS, 회귀 0. 점수 8.4/10 변동 부재(process 성숙 — 마이그레이션 규율). -->
+  <!-- 한글 주석: cycle 169.843~847 marker 동기 — room broadcast → 통합 ChatView 마이그레이션 M3~M6 완결. (843) M3 room 적재 source-of-truth _rooms_cache 직접 cache 이전(reader 만 전환, writer 병행 안전망) + (844) M4 kind=room 진입 통합 ChatView(idx 0) 통일 — _on_room_entered early return 제거 + _current_room_id 결선(임계 전환점) + (845) M5(안전) Exec Plan §2.1 가정 정정(_member_list group-management 사용 dead 아님) 후 idx 재번호 회피, legacy GroupChatView/room_entered/RoomListWidget/_on_room_entered/_on_group_message_send/_dispatch_message_chain 물리 회수 + (846) M5 reviewer PASS(차단 0) + 인계 자료 + (847) M6 통합 room-send mesh+REST 신규 coverage(_run_send running loop+AsyncMock 으로 ensure_future 함정 우회, TestUnifiedRoomSend 4 PASS). 강점: 큰 마이그레이션 M1 doc-first→단계별 commit→각 reviewer 게이트(M2/M3+M4/M5/M6 전수 PASS) + G-final 사용자 게이트 + 위험 등급별 안전 M5/M5b 분리 + 가정 오류 즉시 정정. 전체 2504 PASS, 회귀 0. 점수 8.4/10 변동 부재(process 성숙 — 마이그레이션 규율 완주). -->
   <!-- 한글 주석: cycle 169.838 marker 동기 — 전 dialog in-app overlay 모달 변환 완성(별도 OS 윈도우 제거, 새창=원격제어 상대화면 창 1개뿐) + ConfirmDialog 정적 헬퍼(얼럿/확인) in-app 화 + "방 입장" 전수 제거 + 별도 윈도우 예외 4종 FRONTEND.md §16 명문화. reviewer-gate 2차 PASS — 사용자 dogfooding directive("얼럿창 아닌 메인 레이아웃 안 모달") 정합. 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.837 marker 동기 — startup 로그인 메뉴 토글(835) + 그룹 멤버 보기 "..." 드롭다운·room kind=group·수신음 실 파일 교체(836) + 그룹 멤버 UX 완성(멤버 모달 + 원형 아바타 행 통합 + 그룹 메뉴 미구현 stub 전수 제거, 837). UX 정합이나 신규 VERIFIED capability 부재 — 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.834 marker — dogfooding 버그 6종 배치 + i18n 5언어 친절화(11 UI) + 수신음 교체. 점수 8.4/10 변동 부재. -->
-  <!-- 한글 주석: last_verified = 2026-05-26T08:40:00+09:00 (사이클 169.842 — room broadcast 마이그레이션 M1~M2 + group-flow test 재구성 + token 재산출)<!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 -->
+  <!-- 한글 주석: last_verified = 2026-05-26T10:35:00+09:00 (사이클 169.847 — room broadcast 마이그레이션 M3~M6 완결 + 통합 ChatView 단일 경로 수렴)<!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 -->
   <style>
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:#fafafa;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.65}
