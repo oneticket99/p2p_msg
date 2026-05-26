@@ -254,6 +254,8 @@ CREATE TABLE streaming_oauth_tokens ( /* DDL 정본: server/db/migrations/0016_s
 
 > 참고: 0010_user_profile_fields.sql + 0011_user_nickname_field.sql 은 `users` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외.
 > 참고: 0017_group_roles_meta.sql 은 `peers`·`rooms` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외 — 텔레그램 그룹 관리 정합 (cycle 169.820). 변경 = `peers.role` ENUM owner/member → owner/**admin**/member 3-tier 확장 + `rooms` 에 `name`(그룹명 128자)·`description`(설명 255자)·`avatar_ref`(avatar 참조 키 255자) 3 컬럼 추가. 모델 단계 (write 경로 = 승격/강등 + 그룹 수정 REST foundation). DDL + COMMENT 5요소 정본 = `server/db/migrations/0017_group_roles_meta.sql`.
+> 참고: 0018_user_avatar_field.sql 은 `users` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외 — avatar 이미지 picker 정합 (cycle 169.852). 변경 = `users.avatar_ref`(프로필 avatar 참조 키 255자, `avatars/<sha256>.<ext>`) 1 컬럼 추가. 빈값=이니셜 fallback. DDL + COMMENT 5요소 정본 = `server/db/migrations/0018_user_avatar_field.sql`.
+> 참고: 0019_room_kind_channel.sql 은 `rooms` ALTER 마이그레이션(신규 테이블 부재)이라 본 목록 제외 — avatar/도메인 모델 정합 (cycle 169.852). 변경 = `rooms.kind` ENUM('direct','group') → ('direct','group','**channel**') 확장. 사용자 도메인 모델(folder ⊃ room(group/channel) ⊃ users peers n:n) 의 channel 을 독립 room type 으로 승격. 기존 row 무손상(허용값 추가, DEFAULT direct 불변). DDL + COMMENT 5요소 정본 = `server/db/migrations/0019_room_kind_channel.sql`.
 
 ---
 

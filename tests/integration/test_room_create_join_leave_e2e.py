@@ -96,8 +96,9 @@ class TestRoomCreate:
 
     @pytest.mark.asyncio
     async def test_create_invalid_kind_400(self, app_with_pool) -> None:
+        # 한글 주석 — cycle 169.852: channel 은 0019 로 허용값 승격 → 무효 예시는 "stream"
         req = _FakeRequest("POST", app_with_pool, user_id=10,
-                           body={"kind": "channel"})
+                           body={"kind": "stream"})
         with pytest.raises(web.HTTPBadRequest, match="kind"):
             await handle_create_room(req)
 
@@ -140,6 +141,30 @@ class TestRoomCreate:
         # insert_room 에 name/avatar_ref 전달 확인
         assert captured.get("name") == "내 그룹"
         assert captured.get("avatar_ref") == ref
+
+    @pytest.mark.asyncio
+    async def test_create_channel_201(self, app_with_pool, monkeypatch) -> None:
+        # 한글 주석 — cycle 169.852 (0019): channel kind 서버 room 생성 201 + kind 응답
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.rooms_repo.insert_room",
+            AsyncMock(return_value=55),
+        )
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.rooms_repo.insert_peer",
+            AsyncMock(return_value=1),
+        )
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.log_activity", AsyncMock(return_value=None)
+        )
+        req = _FakeRequest(
+            "POST", app_with_pool, user_id=10,
+            body={"kind": "channel", "name": "공지 채널"},
+        )
+        resp = await handle_create_room(req)
+        assert resp.status == 201
+        data = json.loads(resp.body)
+        assert data["kind"] == "channel"
+        assert data["name"] == "공지 채널"
 
     @pytest.mark.asyncio
     async def test_create_nonexistent_avatar_ref_400(

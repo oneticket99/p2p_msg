@@ -282,27 +282,125 @@ class DrawerMixin:
 
     @pyqtSlot(str, list)
     def _on_group_created(self, name: str, member_ids: list) -> None:
-        """그룹 생성 callback — ChatListEntry kind=group + chat 진입 (cycle 169.333)."""
+        """그룹 생성 callback — cycle 169.852: 서버 room 승격(POST /api/rooms + invite).
+
+        사용자 "서버 room 생성도 지금 결선" — 음수 gid client placeholder 폐지, 실 서버
+        room(kind="room") 으로 승격. avatar 선택 시 업로드 후 avatar_ref 동반 생성.
+        auth(base_url/token) 부재 시 graceful local placeholder fallback(headless test 정합).
+        """
+        avatar_image = getattr(getattr(self.sender(), "_avatar_picker", None), "selected_image", None)
+        self._create_room_with_avatar(name, member_ids, "group", "", avatar_image)
+
+    def _add_local_room_placeholder(self, name: str, member_ids: list, kind: str = "group") -> None:
+        """auth/loop 부재 시 client-side placeholder(음수 gid) — graceful fallback.
+
+        kind=group → 음수 gid, kind=channel → 음수 cid(offset 분리). 서버 미존재라
+        _current_room_id 미설정(REST 오발신 차단).
+        """
         from app.ui.chat_list_panel import ChatListEntry
         from datetime import datetime
-        gid = -abs(hash(name) % 100000) - 1
+        is_channel = kind == "channel"
+        tid = -abs(hash(name) % 100000) - (100001 if is_channel else 1)
         entry = ChatListEntry(
-            kind="group",
-            target_id=gid,
-            name=name,
-            last_message="그룹을 만들었습니다.",
-            last_ts=datetime.now(),
-            unread_count=0,
-            is_pinned=False,
-            is_online=False,
+            kind=kind, target_id=tid, name=name,
+            last_message="채널이 생성되었습니다." if is_channel else "그룹을 만들었습니다.",
+            last_ts=datetime.now(), unread_count=0, is_pinned=False, is_online=False,
         )
         clp = getattr(self, "_chat_list_panel", None)
         if clp is not None:
             entries = list(getattr(clp, "_entries", []))
             entries.insert(0, entry)
             clp.set_entries(entries)
-        log.info("[group_created] name=%s member_count=%d gid=%d", name, len(member_ids), gid)
-        self._on_chat_selected("group", gid)
+        log.info("[%s_created] local placeholder name=%s member_count=%d tid=%d", kind, name, len(member_ids), tid)
+        self._on_chat_selected(kind, tid)
+
+    def _create_room_with_avatar(self, name, member_ids, kind, description, avatar_image) -> None:
+        """avatar 선택 시 업로드(avatar_ref) 후 server room 생성, 없으면 바로 생성.
+
+        QThread 업로드 worker → finished(avatar_ref) → _create_room_chain. auth 부재 시
+        local placeholder fallback.
+        """
+        from PyQt6.QtGui import QImage
+
+        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+        token = getattr(self, "_auth_token", None)
+        if not base_url or not token:
+            # 한글 주석 — auth 부재(headless test 등) → client placeholder graceful
+            self._add_local_room_placeholder(name, member_ids, kind)
+            return
+        if isinstance(avatar_image, QImage) and not avatar_image.isNull():
+            from app.net.avatars_client import AvatarUploadWorker, qimage_to_bytes
+
+            w = AvatarUploadWorker(base_url, token, qimage_to_bytes(avatar_image), "PNG", parent=self)
+            w.finished_with_result.connect(
+                lambda ok, ref, err: self._create_room_chain(
+                    name, member_ids, kind, description, ref if ok else ""
+                )
+            )
+            w.finished_with_result.connect(lambda *_: w.deleteLater())
+            self._room_avatar_worker = w  # 한글 주석 — QThread GC 방지 retain
+            w.start()
+        else:
+            self._create_room_chain(name, member_ids, kind, description, "")
+
+    def _create_room_chain(self, name, member_ids, kind, description, avatar_ref) -> None:
+        """qasync running loop 안에서 server room 생성 + invite 코루틴 등록."""
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop is None:
+            # 한글 주석 — event loop 부재 → graceful local placeholder
+            self._add_local_room_placeholder(name, member_ids, kind)
+            return
+        asyncio.ensure_future(
+            self._create_room_async(name, member_ids, kind, description, avatar_ref),
+            loop=loop,
+        )
+
+    async def _create_room_async(self, name, member_ids, kind, description, avatar_ref) -> None:
+        """RoomsClient.create_room(avatar_ref) + 멤버 invite_user → 실 room 진입."""
+        from app.net.rooms_client import RoomsClient, RoomsClientError
+
+        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+        token = getattr(self, "_auth_token", None)
+        try:
+            async with RoomsClient(base_url, token=token) as rc:
+                room = await rc.create_room(
+                    name=name, kind=kind, avatar_ref=avatar_ref, description=description,
+                )
+                for uid in member_ids:
+                    try:
+                        await rc.invite_user(room.id, int(uid))
+                    except RoomsClientError as inv_err:
+                        log.warning("[room_created] invite 실패 uid=%s — %r", uid, inv_err)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("[room_created] 서버 생성 실패 — %r (local fallback)", exc)
+            self._add_local_room_placeholder(name, member_ids, kind)
+            return
+        log.info("[room_created] 서버 room id=%d name=%s members=%d kind=%s",
+                 room.id, name, len(member_ids), kind)
+        self._add_server_room_entry(name, room.id)
+
+    def _add_server_room_entry(self, name: str, room_id: int) -> None:
+        """실 server room(kind="room") ChatListEntry 상단 insert + 진입(REST 결선)."""
+        from app.ui.chat_list_panel import ChatListEntry
+        from datetime import datetime
+
+        entry = ChatListEntry(
+            kind="room", target_id=room_id, name=name,
+            last_message="대화방을 만들었습니다.", last_ts=datetime.now(),
+            unread_count=0, is_pinned=False, is_online=False,
+        )
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is not None:
+            entries = list(getattr(clp, "_entries", []))
+            entries.insert(0, entry)
+            clp.set_entries(entries)
+        # 한글 주석 — kind="room" 진입 → _current_room_id 결선(통합 ChatView REST 송신)
+        self._on_chat_selected("room", room_id)
 
     @pyqtSlot()
     def _on_drawer_new_channel(self) -> None:
@@ -327,27 +425,14 @@ class DrawerMixin:
 
     @pyqtSlot(str, str, list)
     def _on_channel_created(self, name: str, desc: str, subscriber_ids: list) -> None:
-        """채널 생성 callback — ChatListEntry kind=channel insert + chat focus."""
-        from app.ui.chat_list_panel import ChatListEntry
-        from datetime import datetime
-        cid = -abs(hash(name) % 100000) - 100001
-        entry = ChatListEntry(
-            kind="channel",
-            target_id=cid,
-            name=name,
-            last_message=desc or "채널이 생성되었습니다.",
-            last_ts=datetime.now(),
-            unread_count=0,
-            is_pinned=False,
-            is_online=False,
-        )
-        clp = getattr(self, "_chat_list_panel", None)
-        if clp is not None:
-            entries = list(getattr(clp, "_entries", []))
-            entries.insert(0, entry)
-            clp.set_entries(entries)
-        log.info("[channel_created] name=%s subscriber_count=%d cid=%d", name, len(subscriber_ids), cid)
-        self._on_chat_selected("channel", cid)
+        """채널 생성 callback — cycle 169.852: 서버 channel room 승격(kind="channel", 0019).
+
+        사용자 도메인 모델(room = group|channel) 정합 — 음수 cid placeholder 폐지, 실 서버
+        room(kind="channel") 으로 승격 + 구독자 invite + avatar 동반. auth 부재 시 graceful
+        local placeholder(kind=channel) fallback.
+        """
+        avatar_image = getattr(getattr(self.sender(), "_avatar_picker", None), "selected_image", None)
+        self._create_room_with_avatar(name, subscriber_ids, "channel", desc, avatar_image)
 
     @pyqtSlot()
     def _on_drawer_calls(self) -> None:

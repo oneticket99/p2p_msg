@@ -204,6 +204,17 @@ class TestGroupCreationFlow:
         assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
         assert not main_window._input_container.isHidden()
 
+    def test_on_channel_created_fallback_kind_channel(self, main_window) -> None:
+        # 한글 주석 — cycle 169.852: auth 부재 main_window → channel placeholder fallback.
+        # 서버 room 승격(kind="channel", 0019)은 auth+loop 시점, headless 는 kind=channel 음수 cid.
+        _seed_friends(main_window, [(101, "민지")])
+        main_window._on_channel_created("공지 채널", "설명", [101])
+        entries = main_window._chat_list_panel._entries
+        channel_entries = [e for e in entries if e.kind == "channel"]
+        assert len(channel_entries) == 1
+        assert channel_entries[0].name == "공지 채널"
+        assert channel_entries[0].target_id < 0  # placeholder 음수 cid
+
     def test_drawer_new_group_opens_dialog_offscreen_safe(
         self, main_window
     ) -> None:

@@ -88,17 +88,12 @@ class NewGroupDialog(QDialog):
         layout.setContentsMargins(20, 24, 20, 16)
         layout.setSpacing(16)
 
-        # camera circle row
+        # 한글 주석 — cycle 169.852 — avatar circle = AvatarPickerButton(파일/카메라/클립보드
+        # 드롭다운, 이모지 제외). 선택 이미지는 _on_create 시 sender 경유 _drawer_mixin 업로드.
         row = QHBoxLayout()
-        camera_btn = QPushButton()
-        camera_btn.setFixedSize(72, 72)
-        camera_btn.setIcon(load_icon("attach", size=32, color="#ffffff"))
-        camera_btn.setStyleSheet(
-            "QPushButton { background-color: #0066FF; border: 0; border-radius: 36px; }"
-            "QPushButton:hover { background-color: #0052cc; }"
-        )
-        camera_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        row.addWidget(camera_btn)
+        from app.ui._avatar_picker_button import AvatarPickerButton
+        self._avatar_picker = AvatarPickerButton(name="", size=72)
+        row.addWidget(self._avatar_picker)
         # name input (underline only)
         self._name_edit = QLineEdit()
         self._name_edit.setPlaceholderText("그룹명")

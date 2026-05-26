@@ -291,7 +291,7 @@ class RoomsClient:
         name : str
             그룹/채널 표기명 — 서버 rooms.name(0017) 영속.
         kind : str
-            "direct" / "group". default = group.
+            "direct" / "group" / "channel"(0019). default = group.
         avatar_ref : str
             cycle 169.852 — POST /api/avatars 업로드 회신 키(`avatars/<sha>.<ext>`).
             빈값 = avatar 없음(이니셜 fallback). 서버가 실재 검증 후 rooms.avatar_ref 영속.

@@ -146,8 +146,9 @@ async def handle_create_room(request: web.Request) -> web.Response:
     user_id = request["user_id"]
     body = await _read_json(request) if request.content_length else {}
     kind = (body.get("kind") or "group").strip()
-    if kind not in ("direct", "group"):
-        raise web.HTTPBadRequest(reason="kind = direct 또는 group 의무")
+    # 한글 주석 — cycle 169.852: channel 추가(migration 0019, 방송형 room).
+    if kind not in ("direct", "group", "channel"):
+        raise web.HTTPBadRequest(reason="kind = direct / group / channel 의무")
 
     # 한글 주석: cycle 169.852 — group/channel 생성 시 name/description/avatar_ref 수용.
     name = (body.get("name") or "").strip()[:128]
