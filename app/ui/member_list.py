@@ -60,6 +60,7 @@ class MemberItem:
     username: str
     role: str = "member"
     is_online: bool = False
+    avatar_ref: str = ""  # cycle 169.852 M6 T-17 — 서버 avatar 참조(빈값=이니셜 fallback)
 
 
 # ----------------------------------------------------------------------
@@ -100,11 +101,17 @@ else:
             # cycle 169.837 — 멤버 행 = 친구 검색/초대 행과 동일한 원형 아바타 디자인으로 통합
             # (사용자 directive: 멤버 보기·친구 초대 검색 전부 같은 아바타-행). 기존 "●" 텍스트
             # dot → make_initial_pixmap 원형 아바타(이니셜 + deterministic palette).
-            from app.ui._avatar_helper import make_initial_pixmap
+            # cycle 169.852 M6 T-17 — make_avatar_pixmap(avatar_ref 있으면 원형 이미지, 없으면 이니셜 무손상)
+            from app.ui._avatar_helper import make_avatar_pixmap
             self._avatar = QLabel(self)
             self._avatar.setFixedSize(36, 36)
-            self._avatar.setPixmap(make_initial_pixmap(member.username, size=36))
+            self._avatar.setPixmap(
+                make_avatar_pixmap(member.username, getattr(member, "avatar_ref", ""), size=36)
+            )
             self._avatar.setStyleSheet("background: transparent;")
+            # 한글 주석 — avatar async fetch 완료 시 자신의 ref 일치하면 재렌더
+            from app.ui._avatar_cache import avatar_cache
+            avatar_cache().avatar_ready.connect(self._on_avatar_ready)
 
             # username + role tag (owner 만 표시)
             display = member.username
@@ -130,6 +137,14 @@ else:
                     lambda _checked=False, uid=member.user_id: kick_callback(uid)
                 )
                 layout.addWidget(self.kick_button)
+
+        def _on_avatar_ready(self, avatar_ref: str) -> None:
+            # 한글 주석 — 자신의 멤버 avatar_ref 일치 시에만 재렌더(불필요 갱신 차단)
+            if avatar_ref and getattr(self._member, "avatar_ref", "") == avatar_ref:
+                from app.ui._avatar_helper import make_avatar_pixmap
+                self._avatar.setPixmap(
+                    make_avatar_pixmap(self._member.username, avatar_ref, size=36)
+                )
 
     class MemberListWidget(QListWidget):  # type: ignore[no-redef]
         """그룹 멤버 목록 — owner 의 추방 권한 분기.

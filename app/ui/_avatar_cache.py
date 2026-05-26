@@ -68,6 +68,7 @@ class _AvatarCache(QObject):
         self._mem: dict[str, QImage] = {}
         self._inflight: set[str] = set()
         self._workers: dict[str, object] = {}  # ref → QThread retain(GC 방지)
+        self._disk_miss: set[str] = set()  # disk 부재 확인된 ref(반복 stat 방지, reviewer MEDIUM-1)
         self._cache_dir: Optional[Path] = None
 
     # ------------------------------------------------------------------
@@ -79,6 +80,8 @@ class _AvatarCache(QObject):
 
         self._base_url = base_url or ""
         self._token = token or ""
+        # 한글 주석 — creds 변경 시 disk-miss negative 캐시 초기화(늦게 도착한 creds 로 retry 허용)
+        self._disk_miss.clear()
 
     def _dir(self) -> Path:
         """disk 캐시 디렉토리(<media_cache_dir>/avatars/) — 최초 사용 시 생성."""
@@ -118,7 +121,7 @@ class _AvatarCache(QObject):
             return make_initial_pixmap(name or "?", size=size)
 
         cached = self._mem.get(avatar_ref)
-        if cached is None:
+        if cached is None and avatar_ref not in self._disk_miss:
             cached = self._load_disk(avatar_ref)
         if cached is not None and not cached.isNull():
             return _circular_from_image(cached, size)
@@ -134,6 +137,8 @@ class _AvatarCache(QObject):
             return False
         if avatar_ref in self._mem:
             return True
+        if avatar_ref in self._disk_miss:
+            return False  # 한글 주석 — disk 부재 확인됨(반복 stat 생략)
         return self._load_disk(avatar_ref) is not None
 
     def seed_image(self, avatar_ref: str, image: QImage) -> None:
@@ -141,6 +146,7 @@ class _AvatarCache(QObject):
 
         if avatar_ref and image is not None and not image.isNull():
             self._mem[avatar_ref] = image
+            self._disk_miss.discard(avatar_ref)
             self._save_disk(avatar_ref, image)
 
     # ------------------------------------------------------------------
@@ -155,11 +161,14 @@ class _AvatarCache(QObject):
             return None
         path = self._dir() / safe
         if not path.exists():
+            self._disk_miss.add(avatar_ref)  # 한글 주석 — disk 부재 기록(반복 stat 방지)
             return None
         image = QImage(str(path))
         if image.isNull():
+            self._disk_miss.add(avatar_ref)
             return None
         self._mem[avatar_ref] = image
+        self._disk_miss.discard(avatar_ref)
         return image
 
     def _save_disk(self, avatar_ref: str, image: QImage) -> None:
@@ -199,6 +208,7 @@ class _AvatarCache(QObject):
         if not image.loadFromData(data):
             return
         self._mem[avatar_ref] = image
+        self._disk_miss.discard(avatar_ref)
         self._save_disk(avatar_ref, image)
         self.avatar_ready.emit(avatar_ref)
 

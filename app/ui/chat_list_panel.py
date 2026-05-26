@@ -44,6 +44,7 @@ class ChatListEntry:  # cycle 169.437 — frozen=True 폐기 (bump_entry FrozenI
     is_online: bool = False
     last_sender: str = ""  # cycle 169.73 — group rooms last sender prefix ("나" / 사용자명)
     folder_color: str = ""  # cycle 169.76 — folder 색상 hex (chat_list inline strip)
+    avatar_ref: str = ""  # cycle 169.852 M6 T-17 — 서버 avatar 참조(빈값=이니셜 fallback)
 
 
 class ChatListItemDelegate(QStyledItemDelegate):
@@ -104,21 +105,34 @@ class ChatListItemDelegate(QStyledItemDelegate):
             cy = avatar_rect.center().y() - icon_size // 2
             painter.drawPixmap(QRect(cx, cy, icon_size, icon_size), pix)
         else:
-            # cycle 169.249 — palette_solid hash 의 deterministic 랜덤 bg (사용자 directive image #9)
-            from app.ui.avatar_palette import palette_solid
-            from app.ui._avatar_helper import get_initials
-            bg_color = palette_solid(entry.name or "?")
-            painter.setBrush(QColor(bg_color))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawEllipse(avatar_rect)
-            # cycle 169.248 — nickname 앞 1~2 글자 (한글 2자 / 영문 2자 대문자) 사용자 directive image #7/8
-            initials = get_initials(entry.name or "?")
-            painter.setPen(QPen(QColor("#ffffff")))
-            f = QFont()
-            f.setPixelSize(20 if len(initials) >= 2 else 24)
-            f.setBold(True)
-            painter.setFont(f)
-            painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
+            # cycle 169.852 M6 T-17 — avatar_ref 캐시 hit 시 원형 이미지, 아니면 이니셜 fallback(무손상)
+            avatar_ref = getattr(entry, "avatar_ref", "")
+            from app.ui._avatar_cache import avatar_cache
+
+            cache = avatar_cache()
+            if avatar_ref and cache.has(avatar_ref):
+                painter.drawPixmap(
+                    avatar_rect, cache.pixmap(entry.name or "?", avatar_ref, self.AVATAR_SIZE)
+                )
+            else:
+                # 한글 주석 — miss/부재 → async fetch trigger(있으면) 후 이니셜 즉시 표시
+                if avatar_ref:
+                    cache.pixmap(entry.name or "?", avatar_ref, self.AVATAR_SIZE)
+                # cycle 169.249 — palette_solid hash 의 deterministic 랜덤 bg (사용자 directive image #9)
+                from app.ui.avatar_palette import palette_solid
+                from app.ui._avatar_helper import get_initials
+                bg_color = palette_solid(entry.name or "?")
+                painter.setBrush(QColor(bg_color))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawEllipse(avatar_rect)
+                # cycle 169.248 — nickname 앞 1~2 글자 (한글 2자 / 영문 2자 대문자) 사용자 directive image #7/8
+                initials = get_initials(entry.name or "?")
+                painter.setPen(QPen(QColor("#ffffff")))
+                f = QFont()
+                f.setPixelSize(20 if len(initials) >= 2 else 24)
+                f.setBold(True)
+                painter.setFont(f)
+                painter.drawText(avatar_rect, Qt.AlignmentFlag.AlignCenter, initials)
 
         # cycle 169.429 — avatar 우측 하단 녹색 dot = unread_count > 0 시점만 (사용자 directive)
         # 이전 is_online 기반 → unread_count 기반 (읽지 않은 신규 메시지 표시)
@@ -260,6 +274,10 @@ class ChatListPanel(QFrame):
         self._list.itemClicked.connect(self._on_item_clicked)  # type: ignore[arg-type]
         layout.addWidget(self._list, stretch=1)
 
+        # cycle 169.852 M6 T-17 — avatar async fetch 완료 시 viewport 재페인트(progressive)
+        from app.ui._avatar_cache import avatar_cache
+        avatar_cache().avatar_ready.connect(self._on_avatar_ready)
+
         # cycle 169.100 회수 — placeholder text 부재 (사용자 directive — 플레이스홀더 없이 전부 구현)
         self._empty_label = QLabel("")
         self._empty_label.setVisible(False)
@@ -318,6 +336,10 @@ class ChatListPanel(QFrame):
         target_id = item.data(Qt.ItemDataRole.UserRole + 1)
         if kind and target_id is not None:
             self.chat_selected.emit(kind, int(target_id))
+
+    def _on_avatar_ready(self, _avatar_ref: str) -> None:
+        # 한글 주석 — avatar fetch 완료 → list viewport 재페인트(해당 row 이미지 반영)
+        self._list.viewport().update()
 
     def bump_entry(
         self,
