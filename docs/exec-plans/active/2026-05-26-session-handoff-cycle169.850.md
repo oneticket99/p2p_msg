@@ -57,15 +57,17 @@ sfu_call_client·sfu_room / M6 WBS ack+backfill) + productization.html
 
 ## 3. 잔존 task (우선순위 순)
 
-### 3-1. codex §8-5 OBS-2 — labels.py dangling 출처 주석 (i18n 재추출 cycle)
+> cycle 169.851 회수: §3-1 i18n dangling / §3-2 token-usage 재산출 / §3-3 active-plan archive 완료. 잔존 = §3-4 배포 smoke(manual) + §3-5 보류.
+
+### 3-1. ✅ (cycle 169.851 해소) codex §8-5 OBS-2 — labels.py dangling 출처 주석
 
 - `app/i18n/labels.py:68/69/72` 출처 주석이 삭제된 `app/ui/group_chat_view.py:171/133/174` 가리킴. `labels_extract.json:170/173/182` 동일. **수동 편집 금지** — `labels.py` ↔ `labels_extract.json` desync + orphan key(`보내기`/`멤버_보기`/`메시지를_입력하세요` 가 group_chat_view 외 사용처 확인 필요) drop 위험. `tools/i18n_extract.py` 재실행 + `tools/i18n_compile.sh`(또는 `tools/i18n_compile.*`) qm 재컴파일 동반 cycle 로 분리. reviewer 게이트 의무.
 
-### 3-2. token-usage-30d 재산출
+### 3-2. ✅ (cycle 169.851 해소) token-usage-30d 재산출
 
 - `docs/operations/token-usage-30d.html` + `.json` 재산출. assessment-token Stop hook step 3(`tools/hook_assessment_token_rewrite_trigger.sh`). general-purpose agent spawn 권장(원격 `.bak` 병합 + 현 세션 누계 합산). 본 cycle 미수행분 — 사용자가 해당 .html IDE 열람 정황 = 다음 우선 후보.
 
-### 3-3. active plan 정리 (codex §8 잔여)
+### 3-3. ✅ (cycle 169.851 해소) active plan 정리 (codex §8 잔여)
 
 - `docs/exec-plans/active/` 완결분 archive 또는 status 정정 검토:
   - 완료 handoff: `2026-05-26-session-handoff-cycle169.838.md` · `845.md` · `849.md` · `2026-05-24-session-handoff-cycle169.551.md` (전부 후속 cycle 로 소비됨).

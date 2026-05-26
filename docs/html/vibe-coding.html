@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.849)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.849 미러 -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.851)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.851 미러 -->
   <!-- 한글 주석: light theme + 텍스트 #1f2937 + accent #7c3aed (Toonation 브랜드 컬러 보조) + 표 zebra stripe -->
   <!-- 한글 주석: cycle 169.785 batch refresh (점수 8.4/10 변동 부재 — process 성숙). 직전 169.779~784: (c) 원격 데스크탑 M3 완결(handshake/coord/UI accept/G2 aiortc loopback), reviewer-agent 게이트 모든 feat 의무 정책 확립(PR #10 flow), reviewer F1 회귀 회수, M6 활성+backfill, Codex 7.6/10 외부평가 환류(P0 doc-freshness 반영). 약 2490 PASS retain. -->
+  <!-- 한글 주석: cycle 169.850~851 marker 동기 — codex §8 잔여 auto-completable 전건 회수 + 평가 staleness 회수. (850) productization.html 빈 화면 사용자 지적 → HTML 주석 무결성 정적 검사(grep open/close 개수)로 근본 원인(상단 marker 주석 닫는 닫힘 누락 → 문서 전체 흡수) 즉시 진단·회수 + vibe-coding.html 동일 부류 동시 + M6 WBS ack "재개+backfill" 524 row(total 675) + server/sfu_room.py coverage 49→100%(reviewer PASS). (851) "잔존작업 진행해" → codex §8 잔여 3건 병렬 회수 — i18n labels dangling(삭제 group_chat_view 출처 주석 정리 + orphan key drop, 3중 안전 확인 extract 0건+tr 참조 0+실소스 부재) + token-usage 재산출 + active-plan archive(완료 handoff 4종, room-broadcast 는 Codex live 참조라 유지). 강점: 사용자 지적 근본 원인 정적 검사 진단 + 외부 평가 큐 종결 + 병렬 Codex doc-ledger 분담(commit Codex/push Claude) + dereliction-detector 자동 spawn 의 HIGH(평가 staleness) 즉시 회수. 전체 2521 PASS, 회귀 0. 점수 8.4/10 변동 부재(process 성숙 — 외부 평가 큐 종결 + 자가 진단 규율). -->
   <!-- 한글 주석: cycle 169.848~849 marker 동기 — 마이그레이션 M5b 마감 + codex 평가 §8 직접 작업 큐 회수. (848) M5b StackedWidget idx 완전 재번호 + group_chat_view.py/room_list.py RoomListWidget 파일 삭제 + dead attr 회수 + docstring rewrite + _current_room_id None clear, reviewer PASS. 병렬 Codex doc-sync 머지 충돌 회피. (849) codex §8 회수 — §8-1 sqlite ResourceWarning 결정적 close(local_db atexit) + §8-3 sfu_call_client 단위 test 18 PASS coverage 14→89%. 강점: 위험 등급별 M5/M5b 분리 + 외부 평가 큐 체계 회수 + M6 WBS 사용자 ack 분리 + reviewer 게이트 전수. 전체 2511 PASS, 회귀 0. 점수 8.4/10 변동 부재(process 성숙). -->
   <!-- 한글 주석: cycle 169.843~847 marker 동기 — room broadcast → 통합 ChatView 마이그레이션 M3~M6 완결. (843) M3 room 적재 source-of-truth _rooms_cache 직접 cache 이전(reader 만 전환, writer 병행 안전망) + (844) M4 kind=room 진입 통합 ChatView(idx 0) 통일 — _on_room_entered early return 제거 + _current_room_id 결선(임계 전환점) + (845) M5(안전) Exec Plan §2.1 가정 정정(_member_list group-management 사용 dead 아님) 후 idx 재번호 회피, legacy GroupChatView/room_entered/RoomListWidget/_on_room_entered/_on_group_message_send/_dispatch_message_chain 물리 회수 + (846) M5 reviewer PASS(차단 0) + 인계 자료 + (847) M6 통합 room-send mesh+REST 신규 coverage(_run_send running loop+AsyncMock 으로 ensure_future 함정 우회, TestUnifiedRoomSend 4 PASS). 강점: 큰 마이그레이션 M1 doc-first→단계별 commit→각 reviewer 게이트(M2/M3+M4/M5/M6 전수 PASS) + G-final 사용자 게이트 + 위험 등급별 안전 M5/M5b 분리 + 가정 오류 즉시 정정. 전체 2504 PASS, 회귀 0. 점수 8.4/10 변동 부재(process 성숙 — 마이그레이션 규율 완주). -->
   <!-- 한글 주석: cycle 169.838 marker 동기 — 전 dialog in-app overlay 모달 변환 완성(별도 OS 윈도우 제거, 새창=원격제어 상대화면 창 1개뿐) + ConfirmDialog 정적 헬퍼(얼럿/확인) in-app 화 + "방 입장" 전수 제거 + 별도 윈도우 예외 4종 FRONTEND.md §16 명문화. reviewer-gate 2차 PASS — 사용자 dogfooding directive("얼럿창 아닌 메인 레이아웃 안 모달") 정합. 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.837 marker 동기 — startup 로그인 메뉴 토글(835) + 그룹 멤버 보기 "..." 드롭다운·room kind=group·수신음 실 파일 교체(836) + 그룹 멤버 UX 완성(멤버 모달 + 원형 아바타 행 통합 + 그룹 메뉴 미구현 stub 전수 제거, 837). UX 정합이나 신규 VERIFIED capability 부재 — 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.834 marker — dogfooding 버그 6종 배치 + i18n 5언어 친절화(11 UI) + 수신음 교체. 점수 8.4/10 변동 부재. -->
-  <!-- 한글 주석: last_verified = 2026-05-26T12:05:00+09:00 (사이클 169.849 — 마이그레이션 M5b 마감 + codex 평가 §8 sqlite ResourceWarning/SFU coverage 회수) -->
+  <!-- 한글 주석: last_verified = 2026-05-26T17:35:00+09:00 (사이클 169.851 — codex §8 auto-completable 전건 회수: sfu_room coverage 100% + M6 backfill + i18n dangling + token-usage + active-plan archive) -->
   <!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 -->
   <style>
     *{box-sizing:border-box}
@@ -465,7 +466,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/vibe-coding.md</code> · 동행 snapshot: <a href="productization.html">productization.html</a><br>
-  최신 갱신: 2026-05-26 12:05 KST · cycle 169.849 미러 동기 · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
+  최신 갱신: 2026-05-26 17:35 KST · cycle 169.851 미러 동기 · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
   메모리 인덱스: <code>~/.claude/projects/-Users-1ticket-Documents-vscode-work-p2p-msg/memory/MEMORY.md</code>
 </footer>
 

@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.849)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.849 미러.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.851)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.851 미러.
+     cycle 169.850~851 marker 동기 — (850) server/sfu_room.py 단위 coverage 49→100%(tests/server/test_sfu_room.py 10 PASS, MediaRelay forward/재구독 close/remove_peer 양측/close 전수 mock 분기) + M6 WBS 사용자 ack "재개+backfill" 524 row(total 151→675) + productization.html 빈 화면 회귀 회수(상단 marker 주석 닫는 닫힘 누락 fix). (851) codex §8-5 i18n labels dangling 회수(삭제 group_chat_view 출처 주석 → live _chat_header_mixin.py:240/main_window.py:367 + orphan key 메시지를_입력하세요 4 dict drop, i18n test 81 PASS) + token-usage-30d 재산출(누적 $42562.61) + active-plan archive(완료 handoff 4종 completed/ 이동). reviewer 게이트 전수 PASS(차단 0). 전체 2521 PASS, 회귀 0. codex §8 auto-completable 큐 종결 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.848~849 marker 동기 — (848) 마이그레이션 M5b — StackedWidget idx 완전 재번호(_STACK_GROUP_CHAT 제거 + MEMBERS 2→1 + FRIENDS 3→2 + _group_placeholder 제거) + group_chat_view.py/room_list.py RoomListWidget 파일 삭제(RoomItem 보존) + _group_message_client dead attr 회수 + docstring rewrite + _current_room_id None clear + README §2.2 stale 정정. reviewer PASS(차단 0). 병렬 Codex doc-sync 머지(Structure.md UI tree drift 회수). (849) codex 평가 §8 회수 — §8-1 sqlite ResourceWarning 결정적 close(local_db atexit) + §8-3 sfu_call_client 단위 test 18 PASS coverage 14→89%. 전체 2511 PASS, 회귀 0. 마이그레이션 완결 + 부채 회수 + 실효 커버리지 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.843~847 marker 동기 — room broadcast → 통합 ChatView 마이그레이션 M3~M6 완결. (843) M3 room 적재 source-of-truth _rooms_cache 직접 cache 이전. (844) M4 kind=room 진입 통합 ChatView(idx 0) 통일 — _on_room_entered early return 제거 + _current_room_id 결선(임계 전환점, GroupChatView 사용자 도달 불가). (845) M5(안전) legacy GroupChatView/room_entered/RoomListWidget/_on_room_entered/_on_group_message_send/_dispatch_message_chain 물리 회수(idx 재번호 M5b 분리, _member_list group-management 보존). (846) M5 reviewer 게이트 PASS(차단 0) + 다음 session 인계 자료. (847) M6 통합 room-send mesh+REST 신규 coverage(TestUnifiedRoomSend 4 PASS — mesh broadcast_payload await + REST _post_and_resolve(room_id=42) + room hide_sender=False 버블 + 공백 early return). reviewer 게이트 M2/M3+M4/M5/M6 전수 PASS. 전체 2504 PASS, 회귀 0. 통합 ChatView 가 friend/bot/saved/room/group 단일 표시·진입·송신 경로 수렴 완료. 기능 보존 + 부채 회수 단계 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      cycle 169.839~842 marker 동기 — (839) group-flow isolated test 재구성(cycle169.838 "방 입장" 폐지 정합, room_entered.emit → 그룹 만들기 wizard chain 전면 교체, 통합 ChatView idx 0 canonical 확정, 6 PASS). (840) token-usage-30d 재산출(원격 .bak 병합, 누적 187억 토큰/$41,954). (841) current-project-review 전면평가 최신화(7.7/10 보수 조정, legacy room path 마이그레이션 P0 승격). (842) room broadcast → 통합 ChatView 마이그레이션 착수 — Exec Plan 6 단계(M1~M6 + G-final) + M1 재검증(group broadcast inbound 표시 결선 부재 확정) + M2 송신 echo 재배선(_on_group_message_send echo 를 legacy _group_chat_view.append_message → 통합 _chat_view.add_message(hide_sender=False, play_sound=False), _dispatch_message_chain REST+mesh 불변). UI 344 PASS, 회귀 0. 기능 보존 단계 — 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
@@ -16,7 +17,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-26T12:05:00+09:00 (사이클 169.849 — 마이그레이션 M5b 마감 + codex 평가 §8 sqlite ResourceWarning/SFU coverage 회수) -->
+     last_verified = 2026-05-26T17:35:00+09:00 (사이클 169.851 — codex §8 auto-completable 전건 회수: sfu_room coverage 100% + M6 backfill + i18n dangling + token-usage + active-plan archive) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -160,7 +161,7 @@
 
 <h3>2.8 QA 인프라</h3>
 <ul>
-  <li>테스트 스위트 + smoke 도구. 현 시점 전체 약 <strong>2770 PASS</strong> + tests/app/ui skip 24 + coverage 약 90% (omit 범위 광범위, current-project-review 7.6/10 기준)</li>
+  <li>테스트 스위트 + smoke 도구. 현 시점 tests/app+server 약 <strong>2521 PASS</strong> + 전체 약 2574 PASS + skip 24 + coverage 약 88% (omit 범위 광범위, current-project-review 7.6/10 기준). cycle 169.849~851 coverage omit 축소 1차 완결 — sfu_call_client 14→89%(849) + sfu_room 49→100%(850) + i18n dangling 정리(851)</li>
   <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture) + voice call + 원격 데스크탑 chain + emoji pack share + bot framework</li>
   <li>integration test + dual chain smoke + signaling e2e + remote coord transform + folder handlers + signaling protocol + dispatcher pipeline + RAG ranking + Embedder cache + dmca + obs websocket + emoji moderation + SFU forward loopback</li>
   <li>mixin isolated batch (ChatSend / FriendStatus / Invite / Tray / FriendSearch / MenuActions / ChatHeader / ChatHelper / DialogCenter / Signaling / RoomGroupChat / FriendProfile / ChatNav) — fixture hang scope 우회. dialog/e2e 실 widget 포팅 은 PyQt6 cumulative QWidget retain hang 한계 retain</li>
@@ -513,7 +514,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-26 12:05 KST · cycle 169.849 미러 동기 (마이그레이션 M5b 마감 + codex 평가 §8 sqlite ResourceWarning/SFU coverage 회수) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
+  최신 갱신: 2026-05-26 17:35 KST · cycle 169.851 미러 동기 (codex §8 auto-completable 전건 회수 — sfu_room coverage 100% + M6 backfill 675 row + i18n dangling + token-usage + active-plan archive) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
 </footer>
 
 </body>
