@@ -1,8 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """users 테이블 repository — 회원가입 + 조회 + 인증 상태 갱신.
 
-DDL 정합: ``server/db/migrations/0001_init.sql`` 의 `users` 테이블.
-모든 함수 = pool 인스턴스 dependency injection 패턴.
+역할
+----
+계정의 생명주기(가입·조회·이메일 검증·로그인 기록·비번/avatar 갱신·미검증 reclaim)를 영속한다.
+
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = ``server/auth/`` use case(register/verify/login/reset) +
+me/avatar handler. DDL 정합: ``server/db/migrations/0001_init.sql`` 의 ``users`` 테이블.
+
+invariant / 설계 결정
+--------------------
+- **email 소문자 normalize** — 저장·조회 모두 ``email.lower()``(대소문자 무관 식별). username 은 대소문자 구분.
+- **동시성 안전** — MariaDB error 1020(Record has changed) 에 retry chain(mark_email_verified/reclaim_atomic)
+  또는 graceful skip(update_last_login). race-safe reclaim = ``reclaim_unverified_user_atomic``(단일
+  transaction + SELECT FOR UPDATE), 구 ``reclaim_unverified_user`` 는 backward compat/test mock 한정.
+- **미검증 reclaim** — email_verified=0 row 는 재가입 시 user_id 보존하며 자격 정보를 덮어쓴다(FK 안전).
+- avatar_ref 는 마지막 필드 + default "" — 구 SELECT(avatar_ref 미포함) 무손상(backward compat).
+- 모든 함수 = pool dependency injection. write 류는 commit, get 류는 부작용 없음.
 """
 
 from __future__ import annotations
@@ -14,7 +30,12 @@ from typing import Any, Optional
 
 @dataclass(frozen=True, slots=True)
 class UserRow:
-    """users row dataclass — repository 도메인 객체."""
+    """users 단일 row 의 read-only 투영 — repository 도메인 객체(10 column).
+
+    불변식: frozen + 필드 순서 = 각 get_* SELECT 컬럼 순서와 1:1(``UserRow(*row)`` 정합).
+    ``email_verified`` False = OTP 미검증(로그인 차단 대상), ``avatar_ref`` "" = 이니셜 fallback.
+    ``password_hash`` 는 PBKDF2-SHA256 결과(평문 비저장) — 로그/응답 노출 금지(민감).
+    """
 
     id: int
     email: str
@@ -118,7 +139,7 @@ async def get_user_by_username_and_phone(
     - 아이디 찾기 endpoint `/api/auth/find/email` 안 신원 검증 source.
     - username AND phone 둘 일치 시점만 row return (보안 — enumeration 방어).
     - phone = '' 또는 username = '' → caller 사전 reject.
-    - cycle 169.395 의 의 0010 migration `phone VARCHAR(32)` 정합.
+    - cycle 169.395 의 0010 migration `phone VARCHAR(32)` 정합.
     """
 
     sql = (
@@ -189,7 +210,11 @@ async def get_user_by_username_excluding(
     username: str,
     exclude_user_id: int,
 ) -> Optional[UserRow]:
-    """username lookup — 특정 user_id 제외 (reclaim 의 의 self conflict 회피)."""
+    """username lookup — 특정 user_id 제외(reclaim 시 자기 자신과의 conflict 오판 회피). 부재 시 None.
+
+    의도: 미검증 reclaim 전 username 점유 충돌 검사 — 검사 대상에서 자신(exclude_user_id)을
+    빼야 "내 username 을 내가 점유 중"을 충돌로 오판하지 않는다. 부작용 없음(SELECT only).
+    """
 
     sql = (
         "SELECT id, email, username, password_hash, email_verified, status, "
