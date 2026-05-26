@@ -95,3 +95,35 @@ def make_initial_pixmap(
     painter.end()
 
     return pixmap
+
+
+def make_avatar_pixmap(
+    name: str,
+    avatar_ref: str | None = None,
+    size: int = 48,
+) -> QPixmap:
+    """표시용 avatar pixmap — avatar_ref 있으면 원형 이미지, 없으면 이니셜 fallback (M6 T-16).
+
+    표시 전파 6곳의 단일 진입점. avatar_ref(서버 content-addressed)가 캐시 hit 면 원형
+    이미지를, 아니면(부재·miss) ``make_initial_pixmap`` 이니셜을 즉시 돌려준다. 캐시 miss
+    시점에는 내부적으로 1회 async fetch 가 trigger 되며, 완료 시 ``avatar_cache().avatar_ready``
+    signal 로 위젯이 재렌더한다(progressive enhancement). 따라서 호출부는 동기로 안전하다.
+
+    Parameters
+    ----------
+    name : str
+        이니셜 fallback 용 표시명(avatar_ref 부재/미캐시 시).
+    avatar_ref : str | None
+        서버 avatar 참조 ``"avatars/<sha256>.<ext>"``. None/빈값 = 이니셜 fallback.
+    size : int
+        pixmap 한 변 길이(정원 diameter).
+
+    Returns
+    -------
+    QPixmap
+        size x size 원형 pixmap (이미지 또는 이니셜).
+    """
+    # 한글 주석 — 캐시 위임(순환 import 회피 위해 함수 로컬 import)
+    from app.ui._avatar_cache import avatar_cache
+
+    return avatar_cache().pixmap(name, avatar_ref, size)
