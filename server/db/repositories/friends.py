@@ -1,23 +1,44 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """friends 테이블 repository — 친구 관계 CRUD (cycle 144 신설).
 
-DDL 정합: ``server/db/migrations/0007_friends.sql``.
-모든 함수 = pool 인스턴스 dependency injection 패턴 + parameterized SQL.
+[본 페이즈 주석 표준 본보기 — cycle 169.853 한글 주석 상세화 §4 D-1~D-6 reference exemplar]
 
-설계 결정
----------
-- FriendRow frozen dataclass — caller 의 tuple unpacking 안전.
+역할
+----
+friends 테이블의 단순 CRUD를 캡슐화한다. 친구 요청/수락/차단/제거/검색/별명의 SQL을
+한 곳에 모아, 상위 계층(API handler)이 raw SQL을 알지 못하게 격리한다.
+
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = ``server/api/friends_handlers.py``(REST handler).
+본 repository 는 더 하위(asyncmy connection pool)에만 의존하고, 상위(handler/UI)를 모른다.
+
+의존성
+------
+- 의존 대상: asyncmy connection ``pool``(dependency injection — 모든 함수의 첫 인자).
+  pool 을 직접 import 하지 않고 주입받아 test 의 mock pool 치환을 가능하게 한다.
+- DDL 정합: ``server/db/migrations/0007_friends.sql``.
+- 본 module 에 의존: ``friends_handlers``(REST), e2e/unit test.
+
+설계 결정 (invariant)
+--------------------
+- 모든 SQL 은 parameterized(``%s``) — SQL injection 차단(D-5 위생). 문자열 포매팅 SQL 금지.
+- FriendRow frozen dataclass — 호출자의 tuple unpacking 을 컬럼 순서 변경에 안전하게 한다.
 - 8 SQL — insert_friend + get_friend + list_by_user + list_by_friend +
-  update_status + delete_friend + search_user_by_username +
-  set_nickname.
-- status ENUM 4종 (pending / accepted / blocked / removed) — DDL ENUM 정합.
-- 단방향 row 모델 — A → B 친구 의 row 1건 + B → A 친구 의 row 별개.
-  caller (api) 가 양방향 mutual 검증 의 의무. 본 repository = 단순 CRUD.
-- 자기 자신 친구 차단 의 검증 = caller (handlers) 영역.
+  update_status + delete_friend + search_user_by_username + set_nickname.
+- status ENUM 4종 (pending / accepted / blocked / removed) — DDL ENUM 정합. 위반 시 ValueError.
+- **단방향 row 모델** — "A → B 친구"는 row 1건, "B → A 친구"는 별개 row 다(대칭 보장 부재).
+  양방향 mutual 관계 성립 검증은 호출자(handler) 책임이며, 본 repository 는 단방향 CRUD 만 한다.
+- 자기 자신 친구 차단(user_id == friend_user_id) 검증 = 호출자(handler) 영역.
+
+부작용 (side effect)
+-------------------
+- write 함수(insert/accept/update/delete/set_nickname)는 ``conn.commit()`` 으로 즉시 영속한다.
+- read 함수(get/list/search)는 부작용이 없다(SELECT only).
 
 본 module 범위 외
 ----------------
-- 친구 활동 audit (FRIEND_REQUEST/ACCEPT/REMOVE) — server/api/friends_handlers.py 영역.
+- 친구 활동 audit (FRIEND_REQUEST/ACCEPT/REMOVE) — ``server/api/friends_handlers.py`` 영역.
 - 친구 추천 알고리즘 — Phase 5+ 별개.
 - 친구 group/folder 분류 — Phase 5+ 별개.
 """
@@ -34,7 +55,12 @@ from typing import Any, List, Optional
 
 @dataclass(frozen=True, slots=True)
 class FriendRow:
-    """friends row dataclass — 7 column 정합."""
+    """friends 단일 row 의 read-only 투영 — 7 column 정합.
+
+    책임: SELECT 결과 tuple 을 이름 있는 필드로 감싸 호출자의 인덱스 접근(row[3] 등)을 차단한다.
+    불변식: ``frozen=True`` 로 생성 후 변경 불가(repository 가 돌려준 스냅샷의 무결성 보장).
+    필드 순서 = ``_GET_FRIEND`` SELECT 컬럼 순서와 1:1(``FriendRow(*row)`` 언패킹 정합).
+    """
 
     id: int
     user_id: int
@@ -47,10 +73,13 @@ class FriendRow:
 
 @dataclass(frozen=True, slots=True)
 class FriendWithProfile:
-    """friends JOIN users — UI 표시 통합 row.
+    """friends JOIN users — UI 표시용 통합 row(친구 행 + peer 프로필).
 
-    friends row + peer 의 username + email_verified 합산.
-    handle_list_friends 응답 의 base.
+    책임: ``list_by_user``/``list_pending_requests`` 의 JOIN 결과를 담는다 — friends 7 column
+    + peer 의 ``friend_username``·``friend_email_verified`` 를 합산해 UI 가 추가 조회 없이
+    친구 목록 한 행을 그릴 수 있게 한다(N+1 query 회피).
+    협력: ``friends_handlers.handle_list_friends`` 응답의 base. ``FriendRow`` 와 달리 프로필 2 필드 추가.
+    불변식: 필드 순서 = ``_LIST_BY_USER``/``_LIST_BY_FRIEND`` SELECT 컬럼 순서와 1:1.
     """
 
     id: int
@@ -135,21 +164,32 @@ async def insert_friend(
 ) -> int:
     """친구 관계 row 신규 생성. status default = pending.
 
+    의도: 친구 요청 발신 시 호출 — 단방향 row 1건 삽입(역방향은 수락 시 호출자가 별도 삽입).
+
     Parameters
     ----------
     user_id : int
-        관계 owner 사용자 PK.
+        관계 owner 사용자 PK(친구 요청 발신자).
     friend_user_id : int
-        관계 peer 사용자 PK. user_id != friend_user_id (caller 검증 의무).
+        관계 peer 사용자 PK(요청 수신자). user_id != friend_user_id 는 호출자 검증 의무.
     status : str
         초기 상태 — pending / accepted / blocked. default pending.
     nickname : str | None
-        owner 의 friend 별명 (Optional).
+        owner 가 붙인 friend 별명 (Optional, NULL = username 폴백).
 
     Returns
     -------
     int
         신규 friends.id (AUTO_INCREMENT 결과).
+
+    Raises
+    ------
+    Exception
+        (user_id, friend_user_id) UNIQUE 제약 위반(중복 요청) 시 driver 가 IntegrityError 전파.
+
+    부작용
+    ------
+    friends 테이블 INSERT + ``conn.commit()`` 즉시 영속.
     """
 
     async with pool.acquire() as conn:
@@ -169,12 +209,14 @@ async def get_friend(
     user_id: int,
     friend_user_id: int,
 ) -> Optional[FriendRow]:
-    """단일 친구 관계 lookup. (user_id, friend_user_id) UNIQUE.
+    """단일 친구 관계 lookup. (user_id, friend_user_id) UNIQUE 라 0/1 건.
+
+    의도: 요청 중복/현 상태 확인 등 분기 전 단건 조회. 부작용 없음(SELECT only).
 
     Returns
     -------
     FriendRow | None
-        row 부재 시 None.
+        해당 단방향 관계 row, 부재 시 None.
     """
 
     async with pool.acquire() as conn:
@@ -190,10 +232,16 @@ async def list_by_user(
     pool: Any,
     user_id: int,
 ) -> List[FriendWithProfile]:
-    """user_id 의 친구 list — pending/accepted/blocked + peer 의 username JOIN.
+    """user_id 의 친구 list — pending/accepted/blocked + peer username JOIN.
 
-    removed status = caller 의 history 조회 시 별개 함수 의 의무 (본 list 부재).
-    pending 발신자 + accepted 양방향 + blocked 차단자 의 통합.
+    의도: 친구 목록 화면 한 번에 그리기 — friends + users JOIN 으로 프로필까지 합산(N+1 회피).
+    ``removed`` status 는 본 list 에서 제외(SQL ``status IN`` 3종) — 제거 history 조회는 별도 함수 영역.
+    포함 = pending(발신 대기) + accepted(성립) + blocked(차단). 부작용 없음(SELECT only).
+
+    Returns
+    -------
+    List[FriendWithProfile]
+        status ASC → requested_at DESC 정렬. 부재 시 빈 list.
     """
 
     async with pool.acquire() as conn:
@@ -207,7 +255,16 @@ async def list_pending_requests(
     pool: Any,
     user_id: int,
 ) -> List[FriendWithProfile]:
-    """user_id 가 수신자 인 pending 요청 list — friend_user_id = user_id 의 row."""
+    """user_id 가 수신자인 pending 요청 list — friend_user_id = user_id 인 row.
+
+    의도: "받은 친구 요청" 화면 — 내가 수락/거절할 대기 요청만. ``list_by_user`` 와 방향 반대
+    (발신자 기준이 아니라 수신자 기준). 부작용 없음(SELECT only).
+
+    Returns
+    -------
+    List[FriendWithProfile]
+        requested_at DESC(최신 요청 우선). 부재 시 빈 list.
+    """
 
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
@@ -222,10 +279,21 @@ async def accept_friend(
     user_id: int,
     friend_user_id: int,
 ) -> int:
-    """pending → accepted 전환 + accepted_at = NOW(). rowcount 반환 (0 = 부재).
+    """pending → accepted 전환 + accepted_at = NOW(). rowcount 반환(0 = 대상 부재).
 
-    user_id = 수락자 (request 의 friend_user_id) + friend_user_id = 발신자.
-    수락 시 caller 의 의무 — reverse direction row 의 별개 INSERT (accepted 상태).
+    의도: 받은 요청 수락. SQL WHERE 에 ``status = 'pending'`` 을 포함해 이미 처리된 요청의
+    재수락(중복 전환)을 방지한다 — 그 경우 rowcount 0 으로 호출자가 "대상 없음"을 안다.
+    방향: user_id = 수락자(원 요청의 friend_user_id), friend_user_id = 원 발신자.
+    수락 후 호출자 의무 — 역방향(accepted) row 의 별도 INSERT(단방향 모델이라 자동 생성 부재).
+
+    Returns
+    -------
+    int
+        전환된 row 수(0 = pending 대상 부재 — 이미 수락/존재 안 함).
+
+    부작용
+    ------
+    friends UPDATE + ``conn.commit()`` 즉시 영속.
     """
 
     async with pool.acquire() as conn:
@@ -245,9 +313,28 @@ async def update_status(
     friend_user_id: int,
     new_status: str,
 ) -> int:
-    """status 갱신 — pending/accepted/blocked/removed 의 4 ENUM. rowcount 반환."""
+    """status 갱신 — pending/accepted/blocked/removed 4 ENUM. rowcount 반환.
+
+    의도: 차단(blocked)/제거(removed, soft delete) 등 임의 상태 전환의 범용 진입점.
+    DDL ENUM 외 값은 DB 에 닿기 전 ValueError 로 조기 차단(잘못된 상태 영속 방지).
+
+    Returns
+    -------
+    int
+        갱신된 row 수(0 = 대상 부재).
+
+    Raises
+    ------
+    ValueError
+        new_status 가 4 ENUM(pending/accepted/blocked/removed) 외인 경우.
+
+    부작용
+    ------
+    friends UPDATE + ``conn.commit()`` 즉시 영속(ValueError 시 DB 미접근).
+    """
 
     if new_status not in ("pending", "accepted", "blocked", "removed"):
+        # 한글 주석 — DDL ENUM 외 값 조기 차단(DB round-trip 전 fail-fast, 잘못된 상태 영속 방지)
         raise ValueError(f"invalid status: {new_status}")
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
@@ -265,10 +352,19 @@ async def delete_friend(
     user_id: int,
     friend_user_id: int,
 ) -> int:
-    """친구 관계 row 의 hard delete. rowcount 반환 (0 = 부재).
+    """친구 관계 row 의 hard delete. rowcount 반환(0 = 대상 부재).
 
-    soft delete (status=removed) 와 별개 — production 의 caller = update_status
-    의 removed 패턴 권장 (history 보존). 본 함수 = admin/test 용 hard delete.
+    의도: row 물리 삭제. **production 권장은 soft delete**(``update_status`` 의 removed)다 —
+    history 보존 + audit 추적을 위해. 본 함수의 hard delete 는 admin/test 정리용으로 한정한다.
+
+    Returns
+    -------
+    int
+        삭제된 row 수(0 = 대상 부재).
+
+    부작용
+    ------
+    friends DELETE(복구 불가) + ``conn.commit()`` 즉시 영속.
     """
 
     async with pool.acquire() as conn:
@@ -285,10 +381,18 @@ async def search_users_by_username(
     keyword: str,
     limit: int = 20,
 ) -> List[dict]:
-    """username + display_name + nickname 의 부분 매칭 검색 (cycle 169.491 한글 확장).
+    """username + display_name + nickname 부분 매칭 검색 (cycle 169.491 한글 확장).
 
-    이전 cycle = username LIKE 만 — 한글 nickname/display_name 의 검색 부재 회수.
-    OR 3 column LIKE — 한국어 이름/닉네임 입력 시점 매칭 정합.
+    의도: 친구 추가 화면의 사용자 검색. 회귀 회수 근거 — 이전 cycle 은 username LIKE 만이라
+    한글 nickname/display_name 으로는 검색되지 않던 결함을 cycle 169.491 에서 OR 3 column LIKE 로 확장.
+    ``status = 'active'`` 만 노출(탈퇴/정지 계정 제외). 부작용 없음(SELECT only).
+
+    Parameters
+    ----------
+    keyword : str
+        검색어. 내부에서 ``%keyword%`` LIKE 패턴으로 wrap(부분 매칭).
+    limit : int
+        최대 결과 수(unbounded SELECT 차단). default 20.
 
     Returns
     -------
@@ -297,7 +401,8 @@ async def search_users_by_username(
         "email_verified": bool}`` 의 list. UI 검색 결과 base.
     """
 
-    # 한글 주석: SQL injection 차단 — LIKE 의 % 는 query 안 wrap, keyword 는 parameterized.
+    # 한글 주석 — SQL injection 차단: keyword 는 parameterized(%s) 로 바인딩하고, LIKE 의
+    # 와일드카드 % 만 코드에서 안전하게 wrap 한다(keyword 자체를 query 문자열에 넣지 않음).
     pattern = f"%{keyword}%"
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
@@ -325,7 +430,16 @@ async def set_nickname(
     friend_user_id: int,
     nickname: Optional[str],
 ) -> int:
-    """owner 의 friend 별명 갱신. NULL = 별명 제거 (username 폴백). rowcount 반환."""
+    """owner 의 friend 별명 갱신. NULL = 별명 제거(username 폴백). rowcount 반환.
+
+    의도: 친구 표시명 커스터마이즈. nickname=None 전달 시 컬럼을 NULL 로 — UI 는 별명 부재 시
+    username 으로 폴백 표시한다(별명 "삭제"의 의미). 부작용: friends UPDATE + commit 즉시 영속.
+
+    Returns
+    -------
+    int
+        갱신된 row 수(0 = 대상 부재).
+    """
 
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
