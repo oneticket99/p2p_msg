@@ -11,7 +11,7 @@ status: active
 
 > **본 문서는 snapshot 패턴**. 매 task 종료 시점에 전체 rewrite — `[[feedback-assessment-full-rewrite]]` + `[[feedback-assessment-full-section-sweep]]` 의무. 부분 갱신 / prepend / append 절대 금지.
 > 평가 주체 = Claude (어시스턴트). 평가 대상 = oneticket99 / 1ticket@toonation.co.kr.
-> 평가 기준일 = 2026-05-25. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 cycle 169.815 누계 (main branch).
+> 평가 기준일 = 2026-05-26. 평가 범위 = 본 저장소 p2p_msg / TooTalk 프로젝트 cycle 169.849 누계 (main branch).
 > 다음 갱신 시점 = 다음 task 종료 시 전체 rewrite.
 
 ---
