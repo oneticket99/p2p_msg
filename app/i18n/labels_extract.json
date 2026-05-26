@@ -166,11 +166,8 @@
   "메시지 작성 중.": [
     "app/ui/typing_indicator.py:33"
   ],
-  "메시지를 입력하세요…": [
-    "app/ui/group_chat_view.py:171"
-  ],
   "멤버 보기": [
-    "app/ui/group_chat_view.py:133"
+    "app/ui/_chat_header_mixin.py:240"
   ],
   "미입력 시 사용자명 사용": [
     "app/ui/add_friend_dialog.py:150"
@@ -179,7 +176,7 @@
     "app/ui/add_friend_dialog.py:148"
   ],
   "보내기": [
-    "app/ui/group_chat_view.py:174"
+    "app/ui/main_window.py:367"
   ],
   "비밀번호 갱신": [
     "app/ui/password_reset_dialog.py:76"

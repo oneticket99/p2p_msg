@@ -65,11 +65,10 @@ LABELS_KO: dict[str, str] = {
     "메뉴": "메뉴",  # app/ui/sidebar_rail.py:61
     "메시지_작성_중": "메시지 작성 중",  # app/ui/typing_indicator.py:46
     "메시지_작성_중_2": "메시지 작성 중.",  # app/ui/typing_indicator.py:33
-    "메시지를_입력하세요": "메시지를 입력하세요…",  # app/ui/group_chat_view.py:171
-    "멤버_보기": "멤버 보기",  # app/ui/group_chat_view.py:133
+    "멤버_보기": "멤버 보기",  # app/ui/_chat_header_mixin.py:240
     "미입력_시_사용자명_사용": "미입력 시 사용자명 사용",  # app/ui/add_friend_dialog.py:150
     "별명_선택": "별명 (선택):",  # app/ui/add_friend_dialog.py:148
-    "보내기": "보내기",  # app/ui/group_chat_view.py:174
+    "보내기": "보내기",  # app/ui/main_window.py:367
     "비밀번호_갱신": "비밀번호 갱신",  # app/ui/password_reset_dialog.py:76
     "사용자명_2자_이상": "사용자명 (2자 이상)",  # app/ui/add_friend_dialog.py:131
     "삭제": "삭제",  # app/ui/friend_list.py:165
@@ -324,7 +323,6 @@ LABELS_EN: dict[str, str] = {
     "메뉴": "Menu",
     "메시지_작성_중": "Typing",
     "메시지_작성_중_2": "Typing.",
-    "메시지를_입력하세요": "Type a message…",
     "멤버_보기": "View Members",
     "미선택": "(none)",
     "미입력_시_사용자명_사용": "Falls back to username if empty",
@@ -519,7 +517,6 @@ LABELS_ZH_CN: dict[str, str] = {
     "메뉴": "菜单",
     "메시지_작성_중": "正在输入",
     "메시지_작성_중_2": "正在输入。",
-    "메시지를_입력하세요": "输入消息…",
     "멤버_보기": "查看成员",
     "미선택": "(未选择)",
     "미입력_시_사용자명_사용": "留空时使用用户名",
@@ -771,7 +768,6 @@ LABELS_JA: dict[str, str] = {
     "메뉴": "メニュー",
     "메시지_작성_중": "入力中",
     "메시지_작성_중_2": "入力中。",
-    "메시지를_입력하세요": "メッセージを入力…",
     "멤버_보기": "メンバー表示",
     "미선택": "(未選択)",
     "미입력_시_사용자명_사용": "空欄時はユーザー名を使用",
