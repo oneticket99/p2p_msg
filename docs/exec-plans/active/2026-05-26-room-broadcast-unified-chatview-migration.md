@@ -224,7 +224,7 @@ flowchart LR
 | 의존성 | M4 + 사용자 GO/NO-GO |
 | **실행 결과 (cycle 169.845 — 안전 M5)** | GroupChatView import + `_group_chat_view` attr + `_on_room_entered` + `_on_group_message_send` + `_dispatch_message_chain` + RoomListWidget(`_room_list`) + `room_entered.connect` + header `_room_list` 토글(→ `_chat_list_panel` 전환) 물리 회수. `_group_placeholder`(idx 1) 빈 spacer 잔존 + `_member_list`(idx 2) 유지(D-8). test rework: `test_main_window_messages.py` + `test_group_message_dual_chain.py` 삭제(removed 코드 검증 obsolete) + mro/batch3/rooms 3 파일 갱신. 전체 2500 PASS. **idx 완전 재번호 + 위젯 파일 삭제 = M5b 잔존.** |
 
-### M6 — test 6 파일 재설계 마감
+### M6 — test 6 파일 재설계 마감 ✅ (cycle 169.847 완료)
 
 | 항목 | 내용 |
 | --- | --- |
@@ -234,6 +234,7 @@ flowchart LR
 | 종료 조건 | 마이그레이션 전 green 기능이 전부 새 경로 test 로 재확인됐다. |
 | 담당 | main session (개발) → reviewer → qa → observability |
 | 의존성 | M5 (또는 코드 변경과 test 정렬 — §5.2 참조) |
+| **결과** | **cycle 169.847 — `test_main_window_rooms.py` 에 `TestUnifiedRoomSend` 4 PASS 추가 (mesh `broadcast_payload` await + REST `_post_and_resolve(room_id=42)` + room `hide_sender=False` 버블 + 공백 early return). M5 삭제 obsolete legacy(`test_main_window_messages.py`·`test_group_message_dual_chain.py`)의 통합 송신 등가 coverage 재작성 완료. 전체 2504 PASS (기존 2500 + 4), 회귀 0. ACK chain 단위 검증은 `test_mesh_manager.py:181` 잔존(중복 회피).** |
 
 ### 4.1 마이그레이션 단계 의존성 그래프
 
@@ -393,4 +394,4 @@ flowchart LR
 
 ---
 
-마지막 갱신: 2026-05-26 (planning-agent 초안 작성 — room broadcast 통합 ChatView 마이그레이션 Exec Plan 신설)
+마지막 갱신: 2026-05-26 (cycle 169.847 — M6 test 재설계 완료. M1~M6 전 단계 PASS. 잔존 = M5b idx 재번호 + 위젯 파일 삭제)

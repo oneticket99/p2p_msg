@@ -21,9 +21,10 @@ QApplication fixture 의 의무.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -340,3 +341,113 @@ class TestRoomUnifiedEntry:
         # self peer (방장) 최소 1명
         assert lst.member_count() >= 1
         dlg.close()
+
+
+# ----------------------------------------------------------------------
+# TestUnifiedRoomSend — cycle 169.847 M6 (통합 room 송신 mesh + REST coverage)
+# ----------------------------------------------------------------------
+
+
+def _run_send(window, text: str) -> None:
+    """running event loop 안 `_on_send_clicked` 구동 helper.
+
+    `_on_send_clicked` 의 mesh `broadcast_payload` + REST `_post_and_resolve` 는
+    `asyncio.ensure_future` 로 schedule 된다. running loop 부재 시 첫 ensure_future
+    (mesh) 가 RuntimeError → except 점프로 뒤 REST 분기가 통째로 skip 되므로, 실
+    event loop 안에서 구동 + `sleep(0)` drain 으로 scheduled task 를 await 완료한다.
+    """
+
+    async def _drive() -> None:
+        window._input_edit.setPlainText(text)
+        window._on_send_clicked()
+        # 한글 주석 — ensure_future 로 schedule 된 mesh/REST task drain (다중 yield 안전망)
+        for _ in range(3):
+            await asyncio.sleep(0)
+
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(_drive())
+    finally:
+        loop.close()
+
+
+class TestUnifiedRoomSend:
+    """cycle 169.847 M6 — room 송신이 통합 `_on_send_clicked` 경로(mesh
+    `broadcast_payload` + REST `_post_and_resolve`)로 수렴했는지 검증.
+
+    M5 가 삭제한 obsolete legacy test(`test_main_window_messages.py` +
+    `test_group_message_dual_chain.py` — removed `_dispatch_message_chain`/
+    `_on_group_message_send` 전용)의 등가 coverage 를 통합 송신 경로로 재작성한다
+    (Exec Plan M6, DoD D7). ACK chain 단위 검증은 `test_mesh_manager.py:181` 잔존.
+    """
+
+    def _inject_send_mocks(self, main_window):
+        """mesh / messages_client / _post_and_resolve mock 주입 + mesh 반환."""
+
+        mesh = MagicMock(name="MeshManager")
+        # 한글 주석 — broadcast_payload 는 awaitable 의무 (ensure_future schedule)
+        mesh.broadcast_payload = AsyncMock(name="broadcast_payload")
+        main_window._mesh_manager = mesh
+        main_window._messages_client = MagicMock(name="MessagesClient")
+        # 한글 주석 — REST POST chain 은 bound coroutine method → AsyncMock 대체
+        main_window._post_and_resolve = AsyncMock(name="post_and_resolve")
+        return mesh
+
+    def test_room_send_broadcasts_via_mesh(self, main_window) -> None:
+        """room 진입 후 송신 → `mesh.broadcast_payload(payload)` 1회 await (payload 정합)."""
+
+        mesh = self._inject_send_mocks(main_window)
+        main_window._on_chat_selected("room", 42)
+
+        _run_send(main_window, "안녕 단톡방")
+
+        mesh.broadcast_payload.assert_awaited_once()
+        payload = mesh.broadcast_payload.await_args.args[0]
+        assert payload.text == "안녕 단톡방"
+        assert payload.sender == main_window._config.user_nickname
+
+    def test_room_send_posts_rest_with_room_id(self, main_window) -> None:
+        """room 송신 → `_post_and_resolve(msg_client, _current_room_id=42, text, uuid)` REST."""
+
+        self._inject_send_mocks(main_window)
+        main_window._on_chat_selected("room", 42)
+
+        _run_send(main_window, "REST 검증")
+
+        main_window._post_and_resolve.assert_awaited_once()
+        args = main_window._post_and_resolve.await_args.args
+        # args = (msg_client, current_room, text, client_uuid)
+        assert args[1] == 42  # current_room = _current_room_id (M4 설정)
+        assert args[2] == "REST 검증"
+        # client_uuid = mesh payload.id 와 동일 uuid (bubble mapping 계약)
+        assert isinstance(args[3], str) and args[3]
+
+    def test_room_send_renders_local_bubble_with_sender_label(
+        self, main_window
+    ) -> None:
+        """room 송신 → 통합 ChatView `add_message` (room = `hide_sender=False`, sender 라벨 유지)."""
+
+        self._inject_send_mocks(main_window)
+        main_window._on_chat_selected("room", 42)
+        # add_message spy (진입 직후 — 송신 echo 만 포착)
+        main_window._chat_view.add_message = MagicMock(name="add_message")
+
+        _run_send(main_window, "버블 렌더")
+
+        main_window._chat_view.add_message.assert_called()
+        kwargs = main_window._chat_view.add_message.call_args.kwargs
+        # room = 1:1 아님 → sender label 유지 (friend/bot/saved 만 suppress)
+        assert kwargs.get("hide_sender") is False
+        assert kwargs.get("is_self") is True
+        assert kwargs.get("text") == "버블 렌더"
+
+    def test_empty_text_no_mesh_no_rest(self, main_window) -> None:
+        """공백 입력 → mesh/REST 미호출 (early return 회귀 안전망)."""
+
+        mesh = self._inject_send_mocks(main_window)
+        main_window._on_chat_selected("room", 42)
+
+        _run_send(main_window, "   ")
+
+        mesh.broadcast_payload.assert_not_awaited()
+        main_window._post_and_resolve.assert_not_awaited()
