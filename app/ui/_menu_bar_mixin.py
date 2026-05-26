@@ -20,6 +20,7 @@ cavecrew-investigator verdict — 327 line, LOW risk (UI-only).
 """
 
 from __future__ import annotations
+from app.core.config import DEMO_FALLBACK_API_BASE
 
 import asyncio
 import logging
@@ -32,7 +33,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 from app.i18n.labels import tr as _tr
 
 # 한글 주석 — main_window 안 정의된 default URL retain
-_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8765"
+_DEFAULT_UPDATE_SERVER_URL = DEMO_FALLBACK_API_BASE
 
 log = logging.getLogger(__name__)
 

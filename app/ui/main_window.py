@@ -41,6 +41,7 @@
 """
 
 from __future__ import annotations
+from app.core.config import DEMO_FALLBACK_API_BASE
 
 import asyncio
 import logging
@@ -88,7 +89,7 @@ log = logging.getLogger(__name__)
 
 # 한글 주석: 업데이트 서버 base URL — `.env` 의 `UPDATE_SERVER_URL` override 가능.
 # 부재 시 데모 서버 (114.207.112.73:8765) 폴백 — cycle 132 server skeleton 정합.
-_DEFAULT_UPDATE_SERVER_URL = "http://114.207.112.73:8765"
+_DEFAULT_UPDATE_SERVER_URL = DEMO_FALLBACK_API_BASE
 
 
 # 한글 주석 — cycle 144 i18n production binding helper.

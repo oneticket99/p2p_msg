@@ -73,3 +73,25 @@ class TestNo443Hardcode:
         url = getattr(mod, attr)
         assert url == "http://114.207.112.73:8765", f"{attr}={url!r} — 8765 직결 기대"
         assert ":443" not in url and ":8080" not in url and not url.startswith("https://114")
+
+    def test_no_demo_ip_routing_literal_outside_config(self) -> None:
+        # 한글 주석 — cycle 169.852 codex §4.6 수렴 lock: 운영 demo IP api_base routing
+        # literal "http://114.207.112.73:8765" 은 app/core/config.py(DEMO_FALLBACK_API_BASE
+        # 단일 소스)만 허용. UI mixin/update URL 중복 literal 재발 차단(silent wrong-endpoint).
+        # settings_dialog 표시값 + net client docstring 예시(routing 아님)는 제외.
+        routing_lit = re.compile(r'"http://114\.207\.112\.73:8765"')
+        allow = {"core/config.py"}
+        offenders: list[str] = []
+        for src in _python_sources():
+            rel = str(src.relative_to(_APP_DIR))
+            if rel in allow:
+                continue
+            for lineno, line in enumerate(
+                src.read_text(encoding="utf-8").splitlines(), start=1
+            ):
+                if routing_lit.search(line):
+                    offenders.append(f"{src.relative_to(_REPO_ROOT)}:{lineno}")
+        assert offenders == [], (
+            "demo IP routing literal 잔존 — config.DEMO_FALLBACK_API_BASE 수렴 의무: "
+            + ", ".join(offenders)
+        )

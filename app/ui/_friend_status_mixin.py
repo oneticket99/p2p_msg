@@ -14,6 +14,7 @@ codex 2.5 14차 — main_window.py 책임 분리 batch.
 """
 
 from __future__ import annotations
+from app.core.config import DEMO_FALLBACK_API_BASE
 
 import logging
 
@@ -31,7 +32,7 @@ class FriendStatusMixin:
         """
         import aiohttp
         try:
-            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
+            api_base = getattr(self._config, "api_base", None) or DEMO_FALLBACK_API_BASE
             token = getattr(self, "_session_token", None) or ""
             if not token:
                 return

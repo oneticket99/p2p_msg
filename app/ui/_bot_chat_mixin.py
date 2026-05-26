@@ -19,6 +19,7 @@ TrayMixin (cycle 169.509) + FriendSearchMixin (cycle 169.511) 등가 패턴.
 """
 
 from __future__ import annotations
+from app.core.config import DEMO_FALLBACK_API_BASE
 
 import logging
 from datetime import datetime
@@ -54,7 +55,7 @@ class BotChatMixin:
             except Exception:  # pragma: no cover - graceful
                 pass
         try:
-            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
+            api_base = getattr(self._config, "api_base", None) or DEMO_FALLBACK_API_BASE
             token = getattr(self, "_session_token", None) or ""
             # cycle 169.263 — bot 401 retain root cause trace log
             log.warning(
@@ -138,7 +139,7 @@ class BotChatMixin:
             self_id = getattr(self, "_current_user_id", None) or 0
             if not token or self_id <= 0:
                 return
-            api_base = getattr(self._config, "api_base", None) or "http://114.207.112.73:8765"
+            api_base = getattr(self._config, "api_base", None) or DEMO_FALLBACK_API_BASE
             headers = {"Authorization": f"Bearer {token}"}
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector, headers=headers) as session:

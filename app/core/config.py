@@ -32,6 +32,9 @@ log = logging.getLogger(__name__)
 _DEFAULT_SIGNAL_HOST: Final[str] = "114.207.112.73"
 _DEFAULT_SIGNAL_PORT: Final[int] = 8765
 _DEFAULT_SIGNAL_SCHEME: Final[str] = "ws"
+# cycle 169.852 — demo 서버 fallback api_base 단일 소스 (codex §4.6 하드코딩 수렴).
+#   UI mixin api_base fallback + update server URL 의 "http://114.207.112.73:8765" literal 중복 회수.
+DEMO_FALLBACK_API_BASE: Final[str] = f"http://{_DEFAULT_SIGNAL_HOST}:{_DEFAULT_SIGNAL_PORT}"
 _DEFAULT_STUN_URL: Final[str] = "stun:stun.l.google.com:19302"
 _DEFAULT_USER_NICKNAME: Final[str] = "guest"
 _DEFAULT_LOG_LEVEL: Final[str] = "INFO"
