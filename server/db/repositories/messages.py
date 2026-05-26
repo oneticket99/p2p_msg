@@ -6,25 +6,33 @@ prerequisite. cleartext body INSERT 는 임시 (Phase 5 본격 cycle 의 E2EE se
 envelope chain 회수 의무 — [[project-phase2-remote-control-differentiator]] 외
 별개 directive).
 
-설계 결정
----------
-- MessageRow frozen dataclass — caller 의 row tuple unpacking 안전 보장.
-- insert_message — kind = text/file/system 통합 entry. caller 가 kind 명시.
-- get_by_id — single message detail lookup. 부재 = None.
-- list_by_room — paginated (limit + offset) + 최신순 (DESC). limit 상한 cap
-  (memory release 정합 [[feedback-chat-accumulation-memory-release-mandatory]]).
-- count_by_room — paginated UI 의 total count display 의 source.
-- delete_by_id — hard DELETE (관리자 / 강제 삭제 등 별개 권한).
-- soft_delete — body NULL 갱신 (row 보존 + content tombstone). 0001_init.sql
-  schema 의 deleted_at column 부재 → body NULL sentinel 의 임시 패턴 (Phase 5
-  E2EE cycle 의 schema migration 0009+ 의무).
-- 모든 SQL = parameterized (SQL injection 차단) + pool dependency injection.
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = messages REST handler + signaling 영속화 bridge.
+모든 함수 = pool dependency injection + parameterized SQL(injection 차단).
+
+invariant / 설계 결정
+--------------------
+- MessageRow frozen dataclass — 호출자 row tuple unpacking 을 컬럼 순서 변경에 안전하게.
+- **입력 fail-fast** — pool None / id·room_id·sender_id 비양수 / kind ENUM 위반 / kind별 body·file_id
+  조합 위반은 DB 도달 전 ValueError 로 차단(잘못된 row 영속 방지).
+- **unbounded SELECT 차단** — list_by_room(limit 1..500)·list_messages_in_range(limit 양수) 상한
+  의무 ([[feedback-chat-accumulation-memory-release-mandatory]] 정합 — 메모리 누수 차단).
+- **soft delete = body NULL tombstone** — 0001_init schema 에 deleted_at 컬럼 부재라 body 를 NULL 로
+  비우는 임시 패턴. Phase 5 E2EE migration(0009+)에서 정식 deleted_at + sealed envelope 로 회수 예정.
+- 11 공개 함수(실 심볼명 기준) — insert_message + insert_text_message + insert_file_message +
+  insert_system_message + get_by_id + list_by_room + count_by_room + delete_by_id + soft_delete +
+  list_recent + list_messages_in_range.
+
+부작용
+------
+insert/delete/soft_delete 류는 write(commit). get/list/count 류는 부작용 없음(SELECT only).
 
 본 module 범위 외
 ----------------
-- WebRTC DataChannel 실 fan-out — server/signaling.py + Phase 5 mesh manager.
-- E2EE sealed envelope encrypt/decrypt — Phase 5 본격 cycle.
-- batch INSERT 또는 message buffering — Phase 5+ 의 성능 최적화.
+- WebRTC DataChannel 실 fan-out — ``server/signaling.py`` + Phase 5 mesh manager.
+- E2EE sealed envelope encrypt/decrypt — Phase 5 본격 cycle(현 cleartext body INSERT 는 임시).
+- batch INSERT 또는 message buffering — Phase 5+ 성능 최적화.
 """
 
 from __future__ import annotations
@@ -39,7 +47,12 @@ from typing import Any, List, Optional
 
 @dataclass(frozen=True, slots=True)
 class MessageRow:
-    """messages row dataclass — 7 column 정합."""
+    """messages 단일 row 의 read-only 투영 — 7 column 정합.
+
+    불변식: frozen + 필드 순서 = messages SELECT 컬럼 1:1. ``kind`` = text/file/system,
+    ``body`` = text/system 본문(file 시 None, soft delete 시 NULL tombstone),
+    ``file_id`` = file kind 시 file_meta 참조(아니면 None).
+    """
 
     id: int
     room_id: int
@@ -282,7 +295,7 @@ async def list_by_room(
 
 
 async def count_by_room(pool: Any, room_id: int) -> int:
-    """룸 의 전체 메시지 수 — paginated UI 의 total."""
+    """룸의 전체 메시지 수 — paginated UI 의 total count. 부작용 없음(SELECT only)."""
 
     if pool is None:
         raise ValueError("pool 의무")
@@ -346,7 +359,10 @@ async def list_recent(
     room_id: int,
     limit: int = 100,
 ) -> List[MessageRow]:
-    """룸 의 최근 N건 (default 100) timeline."""
+    """룸의 최근 N건(default 100) timeline — created_at DESC. 부작용 없음(SELECT only).
+
+    의도: 방 진입 시 최신 메시지 우선 로드. 과거 페이지는 list_messages_in_range 로 lazy fetch.
+    """
 
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
@@ -363,29 +379,34 @@ async def list_messages_in_range(
     end_ts: datetime,
     limit: int = 1000,
 ) -> List[MessageRow]:
-    """룸 의 [start_ts, end_ts) 구간 timeline — ChatView lazy load 의 server-side.
+    """룸의 [start_ts, end_ts) 구간 timeline — ChatView lazy load 의 server-side (사이클 60).
 
-    사이클 60 신설 ([[feedback-chat-accumulation-memory-release-mandatory]] 정합).
-    클라이언트 의 lazy load page fetch (default 30 일 batch) 의 query 의 source.
+    의도: 클라이언트가 스크롤 시 과거 메시지를 시간 구간 단위(default 30일 batch)로 lazy fetch 할 때의
+    query source. limit 상한으로 unbounded SELECT 를 차단해 메모리 누수를 방지한다
+    ([[feedback-chat-accumulation-memory-release-mandatory]] 정합). 부작용 없음(SELECT only).
 
     Parameters
     ----------
     pool : Any
-        asyncmy pool (또는 mock).
+        asyncmy pool(또는 mock).
     room_id : int
         대상 room.
     start_ts : datetime
-        구간 시작 (inclusive). UTC 또는 KST 의 정합 = caller responsibility.
+        구간 시작(inclusive). tz(UTC/KST) 정합은 호출자 책임.
     end_ts : datetime
-        구간 끝 (exclusive).
+        구간 끝(exclusive). start_ts 초과 의무(아니면 ValueError).
     limit : int, default 1000
-        page size 상한. unbounded SELECT 차단 의무
-        ([[feedback-chat-accumulation-memory-release-mandatory]]).
+        page size 상한(unbounded 차단). 비양수 시 ValueError.
 
     Returns
     -------
     list[MessageRow]
-        created_at 의 DESC + id DESC 의 정렬 (최신 → 과거). caller 의 reverse 의무.
+        created_at DESC + id DESC 정렬(최신 → 과거). 화면 표시 순서로의 reverse 는 호출자 책임.
+
+    Raises
+    ------
+    ValueError
+        end_ts <= start_ts(역구간) 또는 limit 비양수.
     """
 
     if end_ts <= start_ts:
