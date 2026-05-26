@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Optional
 
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import (
     QDialog,
     QFrame,
@@ -32,6 +33,9 @@ class MyProfileDialog(QDialog):
     """내 프로필 — telegram align (image #4 ref)."""
 
     edit_requested = pyqtSignal()
+    # 한글 주석 — cycle 169.852 avatar picker: 사용자가 avatar 이미지 선택 시 emit.
+    # dialog 는 token/base_url 부재 — 상위(_drawer_mixin)가 업로드 + PATCH /api/me/avatar 위임.
+    avatar_changed = pyqtSignal(QImage)
 
     def __init__(
         self,
@@ -100,16 +104,15 @@ class MyProfileDialog(QDialog):
 
         # 한글 주석 — cycle 169.401 — avatar text source = nickname 우선 (사용자 directive image #168)
         avatar_text = nickname or display_name or username or "사용자"
-        # 한글 주석 — large avatar center top + nickname initials + palette_solid 랜덤 bg (cycle 169.249)
-        from app.ui._avatar_helper import make_initial_pixmap
-        avatar = QLabel()
-        avatar.setFixedSize(120, 120)
-        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # 한글 주석 — cycle 169.852 — large avatar = AvatarPickerButton(클릭 시 파일/카메라/
+        # 클립보드 드롭다운). 이미지 미설정 시 nickname 2글자 이니셜 fallback(directive).
+        from app.ui._avatar_picker_button import AvatarPickerButton
+        avatar = AvatarPickerButton(name=avatar_text, size=120)
         # cycle 169.403 — instance attribute retain (dynamic refresh chain)
         self._avatar_label = avatar
         self._name_label_ref: Optional[QLabel] = None
-        avatar.setPixmap(make_initial_pixmap(avatar_text, size=120))
-        avatar.setStyleSheet("border-radius: 60px;")
+        # 한글 주석 — 선택 이미지 → 상위 위임(업로드 + PATCH /api/me/avatar)
+        avatar.avatar_selected.connect(self.avatar_changed.emit)  # type: ignore[arg-type]
         header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         header_layout.addSpacing(12)
@@ -182,7 +185,8 @@ class MyProfileDialog(QDialog):
         """cycle 169.403 — profile field 동적 갱신 (사용자 critique image #169 즉시 reflect)."""
         avatar_text = nickname or display_name or username or "사용자"
         if hasattr(self, "_avatar_label") and self._avatar_label is not None:
-            self._avatar_label.setPixmap(make_initial_pixmap(avatar_text, size=120))
+            # 한글 주석 — AvatarPickerButton: 이미지 미설정 시 set_name 으로 이니셜 fallback 갱신
+            self._avatar_label.set_name(avatar_text)
         if hasattr(self, "_name_label_ref") and self._name_label_ref is not None:
             self._name_label_ref.setText(avatar_text)
         updates = {

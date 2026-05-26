@@ -107,7 +107,53 @@ class DrawerMixin:
         # cycle 169.403 — active profile dialog reference retain
         self._active_profile_dialog = dialog
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
+        # 한글 주석 — cycle 169.852 avatar picker: 선택 이미지 → 업로드 + PATCH /api/me/avatar
+        dialog.avatar_changed.connect(self._on_profile_avatar_changed)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
+
+    def _on_profile_avatar_changed(self, image: object) -> None:
+        """프로필 avatar 선택 → AvatarUploadWorker → AvatarPatchMeWorker chain (cycle 169.852).
+
+        dialog 가 token 미보유라 _drawer_mixin(auth 보유)이 업로드 + 영속을 orchestrate.
+        QThread worker 2 단계 — 업로드(avatar_ref 회신) → PATCH /api/me/avatar(영속).
+        """
+        from PyQt6.QtGui import QImage
+
+        if not isinstance(image, QImage) or image.isNull():
+            return
+        base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
+        token = getattr(self, "_auth_token", None)
+        if not base_url or not token:
+            log.warning("[profile avatar] base_url/token 부재 — 업로드 skip")
+            return
+        from app.net.avatars_client import (
+            AvatarPatchMeWorker,
+            AvatarUploadWorker,
+            qimage_to_bytes,
+        )
+
+        def _on_uploaded(ok: bool, avatar_ref: str, err: str) -> None:
+            # 한글 주석 — 업로드 PASS 시 PATCH /api/me/avatar 로 프로필 영속
+            if not ok or not avatar_ref:
+                log.warning("[profile avatar] 업로드 실패 — %s", err)
+                return
+            patch = AvatarPatchMeWorker(base_url, token, avatar_ref, parent=self)
+            patch.finished_with_result.connect(
+                lambda pok, ref, perr: log.info(
+                    "[profile avatar] PATCH ok=%s ref=%s", pok, ref
+                )
+            )
+            # 한글 주석 — 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
+            patch.finished_with_result.connect(lambda *_: patch.deleteLater())
+            self._avatar_patch_worker = patch  # 한글 주석 — QThread GC 방지 retain
+            patch.start()
+
+        worker = AvatarUploadWorker(base_url, token, qimage_to_bytes(image), "PNG", parent=self)
+        worker.finished_with_result.connect(_on_uploaded)
+        # 한글 주석 — 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
+        worker.finished_with_result.connect(lambda *_: worker.deleteLater())
+        self._avatar_upload_worker = worker  # 한글 주석 — QThread GC 방지 retain
+        worker.start()
 
     @pyqtSlot()
     def _on_profile_edit_requested(self) -> None:
