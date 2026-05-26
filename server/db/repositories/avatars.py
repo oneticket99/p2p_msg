@@ -11,6 +11,17 @@ bloat) / object storage(S3 인프라 미배치) 회피. content-addressed 키
 
 경로 traversal 방어: ``avatar_ref`` 는 ``^avatars/[0-9a-f]{64}\\.(png|jpg|jpeg)$``
 정규식 검증을 통과해야만 디스크 접근 — 키 형식 + 위조(``../`` 등) 동시 차단.
+
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 다른 repository 와 달리 DB pool 이 아니라 **파일시스템**을 backend 로
+쓴다(avatar_ref 문자열만 users/rooms 테이블에 저장, 실 byte 는 디스크). 호출자 = ``avatars_handlers``(REST).
+async 가 아닌 동기 함수 — 이미지 가공/검증을 마친 handler 맥락에서 호출.
+
+부작용
+------
+store_avatar 만 디스크 write(dedup 시 skip). load_avatar/avatar_exists 는 디스크 read,
+is_valid_ref/content_type_for_ref 는 디스크 미접근 순수 함수(부작용 없음).
 """
 
 from __future__ import annotations
