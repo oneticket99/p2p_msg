@@ -434,7 +434,7 @@ async def set_nickname(
     """owner 의 friend 별명 갱신. NULL = 별명 제거(username 폴백). rowcount 반환.
 
     의도: 친구 표시명 커스터마이즈. nickname=None 전달 시 컬럼을 NULL 로 — UI 는 별명 부재 시
-    username 으로 폴백 표시한다(별명 "삭제"의 의미). 부작용: friends UPDATE + commit 즉시 영속.
+    username 으로 폴백 표시한다(별명을 비우는 = 삭제). 부작용: friends UPDATE + commit 즉시 영속.
 
     Returns
     -------

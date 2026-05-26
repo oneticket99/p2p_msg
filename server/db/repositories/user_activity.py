@@ -1,24 +1,32 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""user_activity_log + user_sessions repository — Phase 4 cycle 115.
+"""user_activity_log + user_sessions repository — 활동 audit + 세션 추적 (Phase 4 cycle 115).
 
-DDL 정합: ``server/db/migrations/0003_user_activity.sql``.
-모든 함수 = pool dependency injection 패턴 + asyncmy execute.
+역할
+----
+사용자 활동 audit log(22 action)와 접속 세션(IP/접속·활동·종료 시각)을 영속한다.
+마케팅 통계·보안 audit·idle 세션 종료의 source(feedback_db_audit_timestamp_ip_activity 정합).
 
-설계 결정
----------
-- 22 action ENUM 의 type-safe ActivityAction 상수 — caller 의 string typo 차단.
-- log_activity = INSERT user_activity_log + 부수 update users.last_activity_at
-  + user_sessions.last_active_at (활성 세션 가용 시 단일 query).
-- create_session = INSERT user_sessions (login 직후) + users.last_login_ip +
-  last_login_at 갱신.
-- close_session = UPDATE disconnected_at + duration_seconds + end_reason.
-- 모든 SQL = parameterized (SQL injection 차단).
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = auth/bot handler + aiohttp activity middleware.
+DDL 정합: ``server/db/migrations/0003_user_activity.sql``. pool DI + parameterized SQL.
+
+invariant / 설계 결정
+--------------------
+- **type-safe ENUM** — ActivityAction(22종)/SessionEndReason(5종)을 str Enum 으로 강제해 caller 의
+  문자열 typo 를 차단(DDL ENUM 정합).
+- log_activity = audit INSERT + 부수로 users.last_activity_at + 활성 세션 last_active_at 동시 갱신.
+- create_session = 세션 INSERT(login 직후) + users.last_login_ip/last_login_at 갱신.
+- close_session = disconnected_at + duration_seconds + end_reason 기록(세션 수명 통계).
+
+부작용
+------
+log_activity/create_session/update_session_last_active/close_session 는 write(commit, 부수 UPDATE 동반).
 
 본 module 범위 외
 ----------------
-- aiohttp middleware 의 actual call site wiring — 별개 cycle 의무 (auth_handlers
-  + bot_handlers 등 caller 영역 hook).
-- batch INSERT 또는 활동 log buffering — Phase 5+ 의 성능 최적화.
+- aiohttp middleware 의 실 call site wiring — 별개 cycle(auth_handlers/bot_handlers 등 caller hook).
+- batch INSERT 또는 활동 log buffering — Phase 5+ 성능 최적화.
 """
 
 from __future__ import annotations

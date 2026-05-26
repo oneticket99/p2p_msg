@@ -1,18 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""emoji_packs 영속화 repository — Phase 5 Item 3 cycle 132 skeleton.
+"""emoji_packs 영속화 repository — 이모지 팩 공유 + moderation (Phase 5 Item 3 cycle 132).
 
-DDL 정합 = `server/db/migrations/0004_emoji_packs.sql`.
-모든 함수 = pool DI + asyncmy execute + parameterized SQL (injection 차단).
+역할
+----
+사용자가 등록·공유하는 이모지 팩(pack + items)과 moderation(승인/거부) 상태를 영속한다.
+텔레그램 sticker/custom emoji pack 등가 — 누구나 사용 가능한 공개 디렉토리 + 운영 검수 큐.
 
-설계 결정
----------
-- ModerationStatus + ItemModerationStatus ENUM = DDL 정합 의 enum dataclass.
-- EmojiPackRow + EmojiPackItemRow = frozen dataclass slots — 메모리 효율 + 불변.
-- 7 SQL: insert_pack / get_pack_by_slug / list_public_approved / insert_item /
-  list_items / update_moderation_status / list_pending. Phase 5 본격 cycle 의
-  actual binding (cycle 147 의 list_pending 신설 + moderation admin queue 정합).
-- skeleton 단계 — 실 SQL 정의 + repository 함수 제공. REST endpoint binding
-  은 cycle 141~150 본격 진입 시점 의 emoji_moderation_handlers 직접 호출.
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = emoji_moderation_handlers + 공개 디렉토리 handler.
+DDL 정합: ``server/db/migrations/0004_emoji_packs.sql``. pool DI + parameterized SQL.
+
+invariant / 설계 결정
+--------------------
+- ModerationStatus(4종)/ItemModerationStatus(3종) str Enum — DDL ENUM 정합(typo 차단).
+- EmojiPackRow/EmojiPackItemRow = frozen + slots(메모리 효율 + 불변).
+- **공개 노출 = approved + public 만** — list_public_approved 가 검수 통과 + 공개 팩만 노출(미검수/거부 제외).
+  list_pending 은 운영 검수 큐(admin 전용)로 분리.
+- 7 공개 함수 — insert_pack + get_pack_by_slug + list_public_approved + insert_item +
+  list_items + update_moderation_status + list_pending.
+
+부작용
+------
+insert_pack/insert_item/update_moderation_status 는 write(commit). get/list 류는 부작용 없음.
 """
 
 from __future__ import annotations
@@ -300,7 +310,7 @@ async def insert_item(
 
 
 async def list_items(pool: Any, *, pack_id: int) -> List[EmojiPackItemRow]:
-    """pack_id 기준 의 아이템 list — id ASC."""
+    """pack_id 기준 아이템 list — id ASC(등록 순). 부작용 없음(SELECT only)."""
 
     if pool is None:
         raise ValueError("pool 의무")
