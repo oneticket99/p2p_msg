@@ -14,6 +14,7 @@ migration_version table = future schema upgrade chain.
 
 from __future__ import annotations
 
+import atexit
 import logging
 import sqlite3
 from pathlib import Path
@@ -129,6 +130,14 @@ def close_connection() -> None:
         except Exception:  # noqa: BLE001
             pass
         _conn = None
+
+
+# 한글 주석 — cycle 169.849: 인터프리터 종료 시 싱글톤 결정적 close 보장.
+# app shutdown 에서 close_connection 명시 호출이 누락된 경로(특히 pytest process
+# 종료)에서 sqlite3.Connection 이 GC 의 __del__ 로 닫히며 발생하던
+# `ResourceWarning: unclosed database` (codex 평가 §8-1)를 회수. _conn 미오픈 시
+# None 가드로 no-op — 부작용 없음.
+atexit.register(close_connection)
 
 
 def get_db_path() -> Path:
