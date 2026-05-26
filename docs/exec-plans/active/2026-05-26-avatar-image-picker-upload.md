@@ -195,10 +195,10 @@ gantt
 | T-1 | M1 | `0018_user_avatar_field.sql` — users.avatar_ref + 5요소 comment | main session | — | migration apply + 기존 row DEFAULT '' 무손상 | `server/db/migrations/0018_user_avatar_field.sql` | ✅ done |
 | T-2 | M1 | `users.py` UserRow.avatar_ref + `update_avatar_ref()` | main session | T-1 | repository unit (UPDATE + SELECT round-trip) | `server/db/repositories/users.py` | ✅ |
 | T-3 | M1 | `avatars.py` 신설 — 디스크 저장 + sha256 dedup + key 산출 | main session | — | unit (tmp dir 저장 + dedup skip + key 형식) | `server/db/repositories/avatars.py` | ✅ |
-| T-4 | M2 | `avatars_handlers.py` POST(multipart 검증 chain) | main session | T-3 | e2e (jpg/png OK + 악성 byte 415 + 초과 413) | `server/api/avatars_handlers.py` | todo |
-| T-5 | M2 | GET `/api/avatars/{ref}` (path traversal 방어) | main session | T-3 | e2e (정상 200 + `../` reject 400 + 부재 404) | `server/api/avatars_handlers.py` | todo |
-| T-6 | M2 | PATCH `/api/me/avatar` + route 등록 | main session | T-2, T-4 | e2e (avatar_ref 갱신 + 빈값 제거) | `server/api/avatars_handlers.py` · `server/main.py` | todo |
-| T-7 | M2 | rooms 생성/수정 payload avatar_ref 수용 | main session | T-4 | e2e (생성 시 rooms.avatar_ref 영속) | `server/api/rooms_handlers.py` | todo |
+| T-4 | M2 | `avatars_handlers.py` POST(multipart 검증 chain) | main session | T-3 | e2e (jpg/png OK + 악성 byte 415 + 초과 413) | `server/api/avatars_handlers.py` | ✅ |
+| T-5 | M2 | GET `/api/avatars/{ref}` (path traversal 방어) | main session | T-3 | e2e (정상 200 + `../` reject 400 + 부재 404) | `server/api/avatars_handlers.py` | ✅ |
+| T-6 | M2 | PATCH `/api/me/avatar` + route 등록 | main session | T-2, T-4 | e2e (avatar_ref 갱신 + 빈값 제거) | `server/api/avatars_handlers.py` · `server/main.py` | ✅ |
+| T-7 | M2 | rooms 생성/수정 payload avatar_ref 수용 | main session | T-4 | e2e (생성 시 rooms.avatar_ref 영속) | `server/api/rooms_handlers.py` | ✅ |
 | T-8 | M3 | `AvatarPickerButton` — 원형 button + 드롭다운 3항목 + preview | main session | — | offscreen (드롭다운 3 action 존재 + signal emit) | `app/ui/_avatar_picker_button.py` | todo |
 | T-9 | M3 | 파일/클립보드 핸들러 + 정사각 다운스케일 + EXIF strip | main session | T-8 | offscreen (QFileDialog mock + clipboard.image mock) | `app/ui/_avatar_picker_button.py` | todo |
 | T-10 | M3 | `avatars_client.py` upload/fetch/patch_me | main session | T-4, T-5 | httpx mock unit | `app/net/avatars_client.py` | todo |
