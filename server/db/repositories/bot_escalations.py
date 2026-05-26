@@ -1,16 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""bot_escalations 영속화 repository — Phase 3 cycle 86 in-memory → DB 영속.
+"""bot_escalations 영속화 repository — 봇 상담 에스컬레이션 ticket (Phase 3 cycle 86).
 
-DDL 정합 = `server/db/migrations/0005_bot_escalations.sql`.
-모든 함수 = pool DI + asyncmy execute + parameterized SQL (injection 차단).
+역할
+----
+봇이 처리 못 한 문의를 사람 상담원에게 넘기는 ticket 의 생명주기(enqueue → assign → resolve/close)를
+영속한다. 이전 in-memory queue 를 DB 영속으로 격상(서버 재시작에도 ticket 보존).
 
-설계 결정
----------
-- TicketStatus + EscalationReason ENUM = `app.bot.escalation_queue` 재사용.
-- enqueue → INSERT + lastrowid 반환.
-- assign / resolve / close → UPDATE + rowcount 반환.
-- list_pending / list_by_user / list_by_agent → SELECT ORDER BY created_at_ms ASC.
-- get → SELECT WHERE id.
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = bot escalation handler + 상담원 console.
+DDL 정합: ``server/db/migrations/0005_bot_escalations.sql``. pool DI + parameterized SQL.
+
+invariant / 설계 결정
+--------------------
+- TicketStatus + EscalationReason ENUM = ``app.bot.escalation_queue`` 재사용(클라/서버 단일 정의).
+- 상태 전이 — pending → assigned → resolved → closed. assign/resolve 는 WHERE 에 직전 상태를 둬
+  부정합 전이를 차단(rowcount 0 으로 미적용 통지).
+- 시각은 epoch ms(created_at_ms/resolved_at_ms) — tz 무관 정렬·retention 계산 일관.
+- 8 공개 함수 — enqueue + assign + resolve + close_ticket + get + list_pending + list_by_user + evict_old.
+
+부작용
+------
+enqueue/assign/resolve/close/evict 는 write(commit). get/list 류는 부작용 없음(SELECT only).
 """
 
 from __future__ import annotations

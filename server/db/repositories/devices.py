@@ -1,16 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """devices 테이블 repository — multi-device sync 영속화 (Phase 2 사이클 43).
 
-사이클 42 의 `app/crypto/device_registry.py` skeleton 의 server-side
-counterpart. asyncmy pool 경유 INSERT / SELECT / UPDATE / soft-delete
-(status='revoked') 5 함수 제공.
+역할
+----
+E2EE multi-device 의 기기 등록 정보(identity/prekey public + 상태)를 영속한다.
+사이클 42 의 ``app/crypto/device_registry.py`` skeleton 의 server-side counterpart.
 
-설계 결정
----------
-- DELETE 의무 = soft-delete (status='revoked'). 외부 fan-out 송신 차단 +
-  audit trail 보존. hard-delete = 별도 cycle (30일 보관 후 cron).
-- 동일 device_id 재등록 = 차단 (UNIQUE 제약). 재설치 = 새 UUID 의무.
-- get_devices_by_user 의 status filter = 기본 active 만 (revoked 제외).
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = devices REST handler(POST/GET/DELETE /api/devices).
+asyncmy pool DI + parameterized SQL.
+
+invariant / 설계 결정
+--------------------
+- **soft-delete** — 기기 해제 = status='revoked'(hard delete 아님). 외부 fan-out 송신 차단 +
+  audit trail 보존. hard-delete 는 별도 cycle(30일 보관 후 cron).
+- 동일 device_id 재등록 = UNIQUE 제약 차단. 재설치는 새 UUID 의무(caller 가 1062 처리).
+- get_devices_by_user 의 status filter = 기본 active 만(revoked 제외).
+- prekey/identity 는 public key byte — 비밀키는 클라이언트만 보유(서버 비저장).
+
+부작용
+------
+insert/revoke/update_last_seen 은 write(commit). get 류는 부작용 없음(SELECT only).
 """
 
 from __future__ import annotations

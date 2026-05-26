@@ -1,17 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""app_versions 영속화 repository — Phase 5 cycle 132 자동 업데이트 skeleton.
+"""app_versions 영속화 repository — 자동 업데이트 버전 카탈로그 (Phase 5 cycle 132).
 
-DDL 정합 = `server/db/migrations/0006_app_versions.sql`.
-모든 함수 = pool DI + asyncmy execute + parameterized SQL (injection 차단).
+역할
+----
+플랫폼별 앱 릴리즈(버전/다운로드 URL/체크섬/최신 플래그)를 영속해 클라이언트 자동 업데이트
+version check 의 source 를 제공한다.
 
-설계 결정
----------
-- Platform = ENUM 4종 (macos-arm64 / macos-x64 / windows-x64 / linux-x64).
-- insert_version → INSERT + lastrowid 반환 (admin only caller 의무).
-- get_latest_by_platform → SELECT WHERE is_latest=1 + platform.
-- list_history → 플랫폼 별 출시 history DESC (관리자 console base).
-- mark_latest → 동일 platform 의 기존 row reset + 본 row is_latest=1
-  의 트랜잭션 1건 (UPDATE 2회 의 atomic).
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = 업데이트 version check handler + 관리자 console.
+DDL 정합: ``server/db/migrations/0006_app_versions.sql``. pool DI + parameterized SQL.
+
+invariant / 설계 결정
+--------------------
+- Platform = ENUM 4종(macos-arm64 / macos-x64 / windows-x64 / linux-x64) — str Enum, DDL enum 정합.
+- **플랫폼당 is_latest=1 단 1건** — mark_latest 가 동일 platform 의 기존 latest 를 reset 한 뒤 본 row 만
+  1 로 세팅하는 것을 단일 트랜잭션(UPDATE 2회 atomic)으로 보장(latest 중복/공백 방지).
+- insert_version 은 admin only(caller 권한 검증 의무).
+- 4 공개 함수 — insert_version + get_latest_by_platform + list_history + mark_latest.
+
+부작용
+------
+insert_version/mark_latest 는 write(commit). get_latest/list_history 는 부작용 없음(SELECT only).
 """
 
 from __future__ import annotations
