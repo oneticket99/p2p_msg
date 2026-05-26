@@ -1,7 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """email_verification 테이블 repository — OTP 발급 + 검증 + 만료 cleanup.
 
-DDL 정합: ``server/db/migrations/0001_init.sql`` 의 `email_verification` 테이블.
+역할
+----
+이메일 OTP(회원가입·비번 재설정)의 생명주기 — 발급·활성 조회·시도 카운트·소진·일괄 무효화·만료 정리.
+
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = ``server/auth/`` register/verify use case + cron cleanup.
+DDL 정합: ``server/db/migrations/0001_init.sql`` 의 ``email_verification`` 테이블.
+
+보안 / invariant
+---------------
+- **OTP 평문 비저장** — DB 에는 ``code_hash``(SHA-256)만. 평문 코드는 메일로만 전달.
+- **활성 OTP 조건** — consumed_at IS NULL AND expires_at > NOW() AND attempt_count < 5(brute-force 차단).
+- email 소문자 normalize 후 저장/조회. TTL default 180초(3분).
+- **동시성** — increment_attempt/consume_otp 는 MariaDB error 1020 retry helper(_retry_on_record_changed)로
+  감싸 InnoDB transient race(cursor/pool reuse) 를 흡수(exponential backoff 4회).
+- 6 공개 함수 — insert_otp + find_active_otp + increment_attempt + consume_otp + invalidate_pending + cleanup_expired.
+
+부작용
+------
+insert/increment/consume/invalidate/cleanup 는 write(commit). find_active_otp 는 부작용 없음.
 """
 
 from __future__ import annotations
@@ -58,7 +78,11 @@ async def _retry_on_record_changed(
 
 @dataclass(frozen=True, slots=True)
 class OtpRow:
-    """email_verification row dataclass."""
+    """email_verification 단일 row 의 read-only 투영 — 8 column.
+
+    불변식: frozen + 필드 순서 = SELECT 컬럼 1:1. ``consumed_at`` None = 미사용,
+    ``attempt_count`` = 검증 실패 누적(5 도달 시 활성 제외 — brute-force 차단). ``code_hash`` = 민감.
+    """
 
     id: int
     email: str
@@ -141,10 +165,11 @@ async def find_active_otp(
 
 
 async def increment_attempt(pool: Any, otp_id: int) -> int:
-    """검증 시도 +1 — 5회 초과 시 본 row 무효 (find_active_otp 자동 제외).
+    """검증 시도 +1 — 5회 도달 시 본 row 자동 무효(find_active_otp 의 attempt_count<5 에서 제외).
 
-    cycle 169.480 — MariaDB error 1020 retry chain 적용 (idempotent counter increment 부재 의
-    의무 안 SELECT-after-UPDATE 의 cursor 의 결과 capture).
+    의도: OTP 입력 실패 시 카운트 누적으로 brute-force 차단. UPDATE 후 같은 cursor 로 SELECT 해
+    갱신된 값을 즉시 회신한다. 그 UPDATE+SELECT 가 MariaDB error 1020 race 에 노출돼
+    _retry_on_record_changed 로 감싼다(cycle 169.480). 부작용: UPDATE + commit.
 
     Returns
     -------

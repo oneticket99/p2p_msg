@@ -1,7 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""bots + bot_tokens repository — Phase 3+ bot framework BotFather 등가 (cycle 169.420 신설).
+"""bots + bot_tokens repository — bot framework BotFather 등가 (Phase 3+, cycle 169.420 신설).
 
-DDL 정합: `server/db/migrations/0012_bots.sql`.
+역할
+----
+봇 등록·조회·공개 디렉토리와 봇 인증 토큰(발급/검증/revoke)을 영속한다. 텔레그램 BotFather 등가.
+
+계층 위치 (정본 §E)
+-------------------
+server data 계층(repository). 호출자 = bot 관리 handler + bot API 인증 미들웨어.
+DDL 정합: ``server/db/migrations/0012_bots.sql``.
+
+보안 / invariant
+---------------
+- **토큰 평문 비저장** — bot_tokens 에는 ``token_hash``(SHA-256)만. 평문은 발급 응답 1회만 노출.
+- 인증 = 평문 → SHA-256 → ``revoked_at IS NULL`` AND bot ``status='active'`` 조회(authenticate_bot_token).
+  성공 시 last_used_at 갱신(graceful — 갱신 실패해도 인증 자체는 통과).
+- revoke = soft(revoked_at 기록). 입력 검증(owner/name/username/길이) DB 도달 전 ValueError fail-fast.
+- 8 공개 함수 — generate_bot_token + insert_bot + insert_bot_token + get_bot_by_username +
+  list_public_bots + authenticate_bot_token + revoke_bot_token + list_owner_bots(+ _hash_token 내부).
+
+부작용
+------
+insert/revoke/authenticate(last_used 갱신) 는 write. get/list 는 부작용 없음. generate/_hash_token 은 순수.
 """
 
 from __future__ import annotations
@@ -15,7 +35,11 @@ from typing import Any, List, Optional
 
 @dataclass(frozen=True, slots=True)
 class BotRow:
-    """bots row dataclass."""
+    """bots 단일 row 의 read-only 투영 — 10 column.
+
+    불변식: frozen. ``status`` = active/disabled 등, ``is_public`` True 만 디렉토리 노출,
+    ``inline_enabled`` = 인라인 모드 허용. 토큰은 본 row 에 없음(bot_tokens 분리).
+    """
 
     id: int
     owner_user_id: int
@@ -99,7 +123,10 @@ async def insert_bot_token(
 
 
 async def get_bot_by_username(pool: Any, username: str) -> Optional[BotRow]:
-    """username 기준 단일 SELECT (UNIQUE)."""
+    """username(UNIQUE) 기준 봇 단건 조회. 부재 시 None. 부작용 없음(SELECT only).
+
+    의도: @username 멘션/딥링크로 봇 식별. 토큰 미포함(BotRow) — 인증은 authenticate_bot_token.
+    """
     sql = (
         "SELECT id, owner_user_id, name, username, description, webhook_url, "
         "inline_enabled, is_public, status, created_at FROM bots WHERE username = %s"
@@ -121,7 +148,16 @@ async def get_bot_by_username(pool: Any, username: str) -> Optional[BotRow]:
 async def list_public_bots(
     pool: Any, *, limit: int = 50, offset: int = 0,
 ) -> List[BotRow]:
-    """공개 + active 봇 list — 디렉토리 페이지 chain."""
+    """공개(is_public=1) + active 봇 list — 디렉토리 페이지. 부작용 없음(SELECT only).
+
+    의도: 누구나 탐색 가능한 봇 디렉토리. is_public=0/비active 봇은 제외. limit 상한(1..200)으로
+    unbounded SELECT 차단. 부재/권한은 list_owner_bots(소유자 전용, status 무관)와 분리.
+
+    Raises
+    ------
+    ValueError
+        limit 범위(1..200) 또는 offset 음수 위반.
+    """
     if limit <= 0 or limit > 200:
         raise ValueError(f"limit 1~200 의무 — {limit}")
     if offset < 0:
@@ -148,10 +184,16 @@ async def list_public_bots(
 
 
 async def authenticate_bot_token(pool: Any, plaintext: str) -> Optional[BotRow]:
-    """token plaintext → SHA-256 lookup → bot row return.
+    """token 평문 → SHA-256 lookup → 인증된 bot row 반환. 실패 시 None.
 
-    revoked_at IS NULL + bot status='active' 의 의무 chain.
-    last_used_at NOW() 갱신.
+    의도: bot API 요청의 Bearer 토큰 인증. 평문을 해시해 bot_tokens JOIN bots 조회 —
+    ``revoked_at IS NULL`` AND bot ``status='active'`` 둘 다 통과해야 인증. 성공 시 last_used_at 을
+    갱신하되 그 UPDATE 실패는 graceful(인증 결과는 보존). 부작용: last_used_at UPDATE(graceful).
+
+    Returns
+    -------
+    BotRow | None
+        인증 통과한 봇, 토큰 무효/revoke/비active/빈 평문 시 None.
     """
     if not plaintext:
         return None
@@ -188,7 +230,16 @@ async def authenticate_bot_token(pool: Any, plaintext: str) -> Optional[BotRow]:
 
 
 async def revoke_bot_token(pool: Any, *, token_id: int) -> bool:
-    """token revoke — revoked_at NOW() UPDATE. 반환값 = rowcount > 0."""
+    """token soft revoke — revoked_at NOW(). 갱신 여부 bool. 부작용: UPDATE + commit.
+
+    의도: 토큰 폐기. WHERE 의 ``revoked_at IS NULL`` 가드로 이미 revoke 된 토큰의 재revoke 를 무시
+    (멱등). 이후 authenticate_bot_token 이 해당 토큰을 거부.
+
+    Raises
+    ------
+    ValueError
+        token_id 비양수.
+    """
     if token_id <= 0:
         raise ValueError(f"token_id 양수 의무 — {token_id}")
     sql = "UPDATE bot_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE id = %s AND revoked_at IS NULL"
@@ -201,7 +252,16 @@ async def revoke_bot_token(pool: Any, *, token_id: int) -> bool:
 
 
 async def list_owner_bots(pool: Any, *, owner_user_id: int) -> List[BotRow]:
-    """owner_user_id 의 봇 list (status 무관 — owner self 영역)."""
+    """owner 의 봇 list — status 무관(소유자 자신 영역). 부작용 없음(SELECT only).
+
+    의도: "내 봇 관리" 화면 — 비공개/비active 봇도 소유자에게는 보여야 하므로 list_public_bots 와 달리
+    status/is_public 필터 없이 owner_user_id 만으로 전수 조회.
+
+    Raises
+    ------
+    ValueError
+        owner_user_id 비양수.
+    """
     if owner_user_id <= 0:
         raise ValueError(f"owner_user_id 양수 의무 — {owner_user_id}")
     sql = (
