@@ -268,9 +268,8 @@ class TestRoomCacheMigration:
 
         from types import SimpleNamespace
 
-        # 한글 주석: _room_list._rooms 는 비우고 _rooms_cache 에만 room 주입 →
-        # ChatListPanel 에 kind=room entry 가 나타나면 reader 가 cache 를 읽는 증거.
-        main_window._room_list.set_rooms([])
+        # 한글 주석: cycle 169.845 M5 — RoomListWidget(_room_list) 회수 완료. _rooms_cache 가
+        # 유일 source-of-truth. cache 에 room 주입 시 ChatListPanel 에 kind=room entry 출현.
         main_window._rooms_cache = [
             SimpleNamespace(room_id=501, name="개발팀 공지방"),
         ]
@@ -308,18 +307,15 @@ class TestRoomUnifiedEntry:
     (DoD D5/D6).
     """
 
-    def test_room_enters_unified_chat_view_not_group_chat_view(
-        self, main_window
-    ) -> None:
-        """`_on_chat_selected("room")` → idx 0 진입 + `_on_room_entered` 미호출."""
+    def test_room_enters_unified_chat_view(self, main_window) -> None:
+        """`_on_chat_selected("room")` → 통합 ChatView(idx 0) 진입 + room context 설정."""
 
-        from unittest.mock import patch as _patch
+        # 한글 주석: cycle 169.845 M5 — legacy GroupChatView 진입 핸들러(_on_room_entered)
+        # 물리 회수 확인. room 은 통합 ChatView(idx 0) 단일 경로로만 진입.
+        assert not hasattr(main_window, "_on_room_entered")
 
-        # 한글 주석: legacy GroupChatView 진입 핸들러가 호출되지 않아야 함 (통합 진입)
-        with _patch.object(main_window, "_on_room_entered") as spy:
-            main_window._on_chat_selected("room", 42)
+        main_window._on_chat_selected("room", 42)
 
-        spy.assert_not_called()
         # 통합 ChatView (idx 0) 진입 + room context 설정 + 입력 영역 visible
         assert main_window._stacked.currentIndex() == main_window._STACK_DIRECT_CHAT
         assert main_window._current_room_id == 42

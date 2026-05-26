@@ -14,7 +14,7 @@ codex 2.5 LOW 진입 11차 — main_window.py 책임 분리 batch.
 본 mixin 안 의존:
 - `self._auth_client`, `self._friends_client`, `self._rooms_client`
 - `self._session_token`, `self._current_user_id`
-- `self._friend_list`, `self._room_list`
+- `self._friend_list`, `self._rooms_cache`
 - `self._refresh_chat_list_panel()`, `self._fetch_unread_counts()`, `self._refresh_pending_badge()`
 - `self._perform_logout_and_relogin()` (TrayMixin)
 """
@@ -112,11 +112,10 @@ class AuthChainMixin:
                 if rc is not None and self._session_token:
                     try:
                         rooms = await rc.list_rooms(self._session_token)  # type: ignore[attr-defined]
-                        # cycle 169.843 M3 — room 적재 source-of-truth 를 _rooms_cache 로 이전.
-                        # _refresh_chat_list_panel 가 _room_list._rooms 대신 본 cache 를 읽는다.
+                        # cycle 169.843 M3 — room 적재 source-of-truth = _rooms_cache.
+                        # cycle 169.845 M5 — legacy _room_list.set_rooms 병행 호출 회수
+                        # (RoomListWidget 제거). _refresh_chat_list_panel 가 본 cache 를 읽는다.
                         self._rooms_cache = list(rooms)
-                        if hasattr(self, "_room_list"):
-                            self._room_list.set_rooms(rooms)
                         log.info("[post_login] rooms fetch — count=%d", len(rooms))
                     except Exception as exc:  # noqa: BLE001
                         log.warning("[post_login] rooms fetch fail — %r", exc)

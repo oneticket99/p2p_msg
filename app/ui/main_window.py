@@ -70,12 +70,10 @@ from app.net.auth_client import AuthClient
 from app.ui.add_friend_dialog import AddFriendDialog
 from app.ui.chat_view import ChatView
 from app.ui.friend_list import FriendListWidget
-from app.ui.group_chat_view import GroupChatView
 from app.ui.login_dialog import LoginDialog
 from app.ui.member_list import MemberListWidget
 from app.ui.member_panel import MemberPanel
 from app.ui.password_reset_dialog import PasswordResetDialog
-from app.ui.room_list import RoomListWidget
 from app.ui.settings_dialog import SettingsDialog
 from app.ui.signup_dialog import SignupDialog
 from app.ui.sound_player import SoundPlayer
@@ -139,10 +137,14 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
     """
 
     # QStackedWidget index — 코드 가독성 목적 상수
-    _STACK_DIRECT_CHAT: int = 0  # 1:1 ChatView
-    _STACK_GROUP_CHAT: int = 1   # GroupChatView (cycle 139 신설)
-    _STACK_MEMBERS: int = 2      # MemberListWidget (cycle 139 신설)
-    _STACK_FRIENDS: int = 3      # FriendListWidget (cycle 144 신설)
+    # cycle 169.845 M5 — friend/bot/saved/room/group 전부 _STACK_DIRECT_CHAT(통합 ChatView)
+    # 단일 진입. idx 1 은 legacy GroupChatView 회수 후 빈 placeholder 로 잔존(재번호 회피).
+    # idx 완전 재번호(friend_list 3→1 + _STACK_* 정리)는 _member_list(idx 2, group-management
+    # 사용)와 조율 의무라 M5b 로 분리.
+    _STACK_DIRECT_CHAT: int = 0  # 통합 ChatView (friend/bot/saved/room/group)
+    _STACK_GROUP_CHAT: int = 1   # (M5 회수) 빈 placeholder — idx 안정 유지용
+    _STACK_MEMBERS: int = 2      # MemberPanel (group-management _rest_post_mixin)
+    _STACK_FRIENDS: int = 3      # FriendListWidget (연락처 탭)
 
     def __init__(
         self,
@@ -230,7 +232,8 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._auth_token: Optional[str] = None
         self._active_peer_id: Optional[str] = None
         self._current_user_role: str = "member"
-        self._group_chat_view: Optional[GroupChatView] = None
+        # cycle 169.845 M5 — legacy _group_chat_view(GroupChatView) attr 회수. room/group 은
+        # 통합 ChatView(idx 0) 단일 표시. _current_room_id 만 room context 로 유지.
         self._current_room_id: Optional[int] = None
         self._last_message_id: Optional[int] = None
         # cycle 169.157 — friend/bot DM history client cache
@@ -292,16 +295,11 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         self._chat_list_panel.set_active_tab("friends")
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, lambda: self._on_chat_selected("bot", 1))
-        # cycle 169.843 M3 — room broadcast 마이그레이션: 로그인 시 room 적재의
-        # source-of-truth 를 hidden RoomListWidget(_room_list._rooms) → 직접 cache
-        # (_rooms_cache) 로 이전. _refresh_chat_list_panel 가 본 cache 를 읽는다.
-        # _room_list 자체는 M5(G-final 게이트 후) 회수까지 병행 잔존(안전망).
+        # cycle 169.843 M3 — room 적재 source-of-truth = _rooms_cache 직접 cache.
+        # cycle 169.845 M5 — legacy RoomListWidget(_room_list) + room_entered + GroupChatView
+        # 경로 회수 완료 (M4 후 사용자 도달 불가 확정). room 진입은 통합 ChatView(idx 0)
+        # _on_chat_selected("room") 단일 경로. _refresh_chat_list_panel 가 _rooms_cache 를 읽는다.
         self._rooms_cache: list = []
-        # RoomListWidget hidden sibling
-        self._room_list = RoomListWidget(parent=self)
-        self._room_list.setVisible(False)
-        self._room_list.room_entered.connect(self._on_room_entered)
-        self._room_list.set_rooms([])
 
     def _init_right_panel(self, splitter: QSplitter):
         """4) right_panel + ChatHeader + QStackedWidget 4 widget."""
@@ -346,15 +344,20 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
             self._chat_view.reply_to_message.connect(self._on_chat_reply_requested)  # type: ignore[attr-defined]
         except Exception as exc:  # pragma: no cover - graceful
             log.debug("reply_to_message binding 실패 — %r", exc)
-        # 4-2) GroupChatView placeholder idx 1
+        # 4-2) idx 1 — cycle 169.845 M5: legacy GroupChatView 회수 후 빈 spacer 로 잔존.
+        # StackedWidget idx 완전 재번호(friend_list 3→1 + _STACK_* 정리)는 _member_list(idx 2,
+        # group-management _rest_post_mixin 사용)와 조율 의무라 M5b 로 분리. 본 spacer 는
+        # idx 안정 유지용(재번호 회피) — 사용자 도달 경로 부재.
         self._group_placeholder = QWidget(self._stacked)
         self._stacked.addWidget(self._group_placeholder)
         # 4-3) MemberPanel(헤더 뒤로 + MemberListWidget) idx 2 — cycle 169.819
         self._member_list = MemberPanel(parent=self._stacked)
-        # 한글 주석 — 멤버 화면 "← 뒤로" → 직전 그룹 채팅 화면 복귀
+        # 한글 주석 — 멤버 화면 "← 뒤로" → 통합 ChatView 복귀.
+        # cycle 169.845 M5 — legacy GroupChatView(idx 1) 회수로 복귀 대상을 통합 ChatView
+        # (_STACK_DIRECT_CHAT)로 변경. 이전 _STACK_GROUP_CHAT(빈 placeholder) 복귀는 무의미.
         try:
             self._member_list.back_requested.connect(
-                lambda: self._stacked.setCurrentIndex(self._STACK_GROUP_CHAT)
+                lambda: self._stacked.setCurrentIndex(self._STACK_DIRECT_CHAT)
             )
         except Exception as exc:  # pragma: no cover - graceful
             log.debug('member back_requested binding 실패 — %r', exc)
@@ -392,8 +395,6 @@ class MainWindow(TrayMixin, FriendSearchMixin, BotChatMixin, DrawerMixin, ChatHe
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 0)
         splitter.setStretchFactor(2, 1)
-        self._room_list.setParent(self)
-        self._room_list.setVisible(False)
         self.setCentralWidget(splitter)
 
     def _init_status_and_startup_chain(self) -> None:

@@ -9,7 +9,7 @@ codex 2.5 LOW 진입 11차 — main_window.py 책임 분리 batch.
 - `_on_chat_selected(kind, target_id)` — chat 진입 chain (header/view/cache replay)
 
 본 mixin 안 의존:
-- `self._friend_list`, `self._room_list`, `self._chat_list_panel`
+- `self._friend_list`, `self._rooms_cache`, `self._chat_list_panel`
 - `self._chat_view`, `self._chat_header`, `self._input_container`, `self._stacked`
 - `self._STACK_DIRECT_CHAT`, `self._STACK_FRIENDS`, `self._sidebar_rail`
 - `self._active_chat_kind`, `self._active_chat_target_id`, `self._current_user_id`

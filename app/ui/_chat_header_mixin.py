@@ -35,9 +35,16 @@ class ChatHeaderMixin:
 
     @pyqtSlot()
     def _on_header_sidebar_toggle(self) -> None:
-        """chat header sidebar toggle button — room_list visibility toggle (cycle 169.61)."""
-        visible = self._room_list.isVisible()
-        self._room_list.setVisible(not visible)
+        """chat header sidebar toggle button — ChatListPanel visibility toggle.
+
+        cycle 169.845 M5 — legacy RoomListWidget(_room_list) 회수. 사이드바 토글 대상을
+        실 사이드바인 ChatListPanel 로 전환(이전 hidden _room_list 토글은 무의미 동작).
+        """
+        clp = getattr(self, "_chat_list_panel", None)
+        if clp is None:
+            return
+        visible = clp.isVisible()
+        clp.setVisible(not visible)
         log.info("[main_window] sidebar toggle — visible=%s", not visible)
 
     @pyqtSlot()

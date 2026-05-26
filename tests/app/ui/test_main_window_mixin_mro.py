@@ -56,14 +56,16 @@ def test_main_window_22_cross_mixin_methods_resolved() -> None:
         "_refresh_pending_badge", "_refresh_chat_list_panel",
         # BotChat → ChatSend
         "_append_dm_message",
-        # RoomGroup → DialogCenter / RestPost
-        "_exec_dialog_centered", "_dispatch_message_chain",
+        # RoomGroup → DialogCenter
+        "_exec_dialog_centered",
         # Tray → main_window startup
         "_perform_logout_and_relogin", "_setup_tray_icon",
         # MenuBar / UpdateLifecycle
         "_start_update_check_task", "_build_menu_bar",
-        # RoomGroup
-        "_on_room_entered",
+        # cycle 169.845 M5 — legacy GroupChatView 경로(_on_room_entered +
+        # _dispatch_message_chain) 회수로 cross-mixin 기대 목록에서 제거.
+        # 멤버 보기 in-app 모달 진입점 유지.
+        "_on_open_members_panel",
     }
     missing = expected - methods
     assert not missing, f"unresolved cross-mixin method: {missing}"

@@ -50,21 +50,23 @@ class TestMenuActionsMixin:
 
 
 class TestChatHeaderMixin:
+    # cycle 169.845 M5 — legacy RoomListWidget(_room_list) 회수로 sidebar 토글 대상이
+    # ChatListPanel(_chat_list_panel)로 전환. 토글 spy 대상 갱신.
     def test_on_header_sidebar_toggle_hides_when_visible(self) -> None:
         from app.ui._chat_header_mixin import ChatHeaderMixin
 
         self_mock = MagicMock()
-        self_mock._room_list.isVisible.return_value = True
+        self_mock._chat_list_panel.isVisible.return_value = True
         ChatHeaderMixin._on_header_sidebar_toggle(self_mock)
-        self_mock._room_list.setVisible.assert_called_once_with(False)
+        self_mock._chat_list_panel.setVisible.assert_called_once_with(False)
 
     def test_on_header_sidebar_toggle_shows_when_hidden(self) -> None:
         from app.ui._chat_header_mixin import ChatHeaderMixin
 
         self_mock = MagicMock()
-        self_mock._room_list.isVisible.return_value = False
+        self_mock._chat_list_panel.isVisible.return_value = False
         ChatHeaderMixin._on_header_sidebar_toggle(self_mock)
-        self_mock._room_list.setVisible.assert_called_once_with(True)
+        self_mock._chat_list_panel.setVisible.assert_called_once_with(True)
 
     def test_on_header_search_focuses_chat_list_panel(self) -> None:
         from app.ui._chat_header_mixin import ChatHeaderMixin

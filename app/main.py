@@ -344,10 +344,10 @@ def main() -> int:
                             )
                             for p in payloads
                         ]
-                        # 한글 주석 — cycle 169.843 M3 — room source-of-truth 를 _rooms_cache 로 이전.
-                        # _refresh_chat_list_panel 가 본 cache 를 읽는다 (_room_list 는 M5 회수까지 병행).
+                        # 한글 주석 — cycle 169.843 M3 — room source-of-truth = _rooms_cache.
+                        # cycle 169.845 M5 — legacy window._room_list.set_rooms 병행 호출 회수
+                        # (RoomListWidget 제거). _refresh_chat_list_panel 가 본 cache 를 읽는다.
                         window._rooms_cache = items
-                        window._room_list.set_rooms(items)
                         # 한글 주석 — cycle 169.62 회수 — ChatListPanel rooms entry inject
                         chat_entries = [
                             ChatListEntry(

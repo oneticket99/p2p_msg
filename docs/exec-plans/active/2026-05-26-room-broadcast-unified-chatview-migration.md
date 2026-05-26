@@ -222,6 +222,7 @@ flowchart LR
 | 종료 조건 | legacy 경로가 저장소에서 회수됐고 통합 ChatView 단일 경로만 남았다. |
 | 담당 | main session (개발) → reviewer → qa → observability. **G-final 사용자 GO 후 진입.** |
 | 의존성 | M4 + 사용자 GO/NO-GO |
+| **실행 결과 (cycle 169.845 — 안전 M5)** | GroupChatView import + `_group_chat_view` attr + `_on_room_entered` + `_on_group_message_send` + `_dispatch_message_chain` + RoomListWidget(`_room_list`) + `room_entered.connect` + header `_room_list` 토글(→ `_chat_list_panel` 전환) 물리 회수. `_group_placeholder`(idx 1) 빈 spacer 잔존 + `_member_list`(idx 2) 유지(D-8). test rework: `test_main_window_messages.py` + `test_group_message_dual_chain.py` 삭제(removed 코드 검증 obsolete) + mro/batch3/rooms 3 파일 갱신. 전체 2500 PASS. **idx 완전 재번호 + 위젯 파일 삭제 = M5b 잔존.** |
 
 ### M6 — test 6 파일 재설계 마감
 
@@ -354,6 +355,7 @@ flowchart LR
 | D-5 | 2026-05-26 코드 정독 | 멤버 보기는 cycle 169.837~838 에서 이미 in-app 모달 (`_exec_dialog_centered`) — StackedWidget idx 2 미의존. 근거 — `_room_group_chat_mixin.py` L259~275 | M5 의 idx 2 회수가 멤버 보기 기능에 무영향 (위험 격하) |
 | D-6 | 2026-05-26 코드 정독 | `_on_chat_selected` 의 `hide_sender = kind in ("friend","bot","saved")` 가 이미 room/group 을 sender 표시로 분기. 근거 — `_chat_navigation_mixin.py` L204 | M4 의 sender 분기 통합이 기존 분기와 자연 정합 (추가 분기 코드 최소) |
 | D-7 | 2026-05-26 M1 실행 (cycle 169.841) | group broadcast inbound 표시 결선 **부재 확정 (option b)**. 근거 — `append_message` 호출처 단 1곳 (L177 송신 echo `is_self=True`), `GroupMessageClient` outbound+ack 만, `is_self=False` inbound 핸들러 전무. baseline 11 PASS | M2 가 단일 송신 echo 재배선으로 축소. inbound 결선은 T-2 (Phase 3 mesh) 로 분리 — B-1 해소 |
+| D-8 | 2026-05-26 M5 실행 (cycle 169.845) | §2.1 가정 정정 — idx 2 `_member_list`(MemberPanel)는 dead 아님. 근거 — `_rest_post_mixin.py:196` `set_members(...)`가 group-management REST 멤버 populate 에 사용 ([2026-05-25-telegram-group-management.md](2026-05-25-telegram-group-management.md) 책임). | **안전 M5** 채택 — legacy GroupChatView 경로(GroupChatView import + `_group_chat_view` + `_on_room_entered` + `_on_group_message_send` + `_dispatch_message_chain` + RoomListWidget `_room_list` + `room_entered.connect` + header room_list 토글) 물리 회수. `_group_placeholder`(idx 1)는 빈 spacer 로 잔존(idx 재번호 회피), `_member_list`(idx 2) 유지. **StackedWidget idx 완전 재번호 + group_chat_view.py/room_list.py 파일 삭제 = M5b 분리** (member_list 조율 의무). |
 
 ---
 
