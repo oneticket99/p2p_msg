@@ -402,6 +402,20 @@ flowchart TD
 - **위임**: `wbs_tasks` row 등록(M6 directive=1행) 은 main session 에 위임 (본 에이전트 범위 외).
 - **G-final**: M5+M7 종료 후 사용자 visual ack — 실 webcam 촬영 + 3 dialog 원형 아바타 + 서버 영속 round-trip. 이 게이트만 headless 대체 불가.
 
+### 14.1 G-final 사용자 수동 검증 체크리스트 (cycle 169.852 — M1~M7 코드+문서 완결 후)
+
+M1~M7 전 milestone 코드+문서 완결(reviewer T-16/T-17 PASS, 전체 2605 passed 회귀 0). 아래는 **headless 자동 검증 불가 → 사용자 직접 GO/NO-GO** 영역이다. 실 빌드(macOS .app 또는 dev 실행) + 로그인 + 데모 서버 연결 상태에서 수행한다.
+
+1. **파일 picker** — 그룹 만들기 / 채널 만들기 / 개인 프로필 정보 3 dialog 각각 원형 아바타 클릭 → 드롭다운 3항목(파일에서 / 카메라에서 / 클립보드에서, **이모지 없음**) 확인 → "파일에서" 이미지 선택 → 원형 preview 표시.
+2. **실 webcam 촬영(M5)** — "카메라에서" → CameraCaptureDialog live preview(카메라 LED 점등) → "촬영" → 캡처 이미지가 원형 아바타로 적용 → 취소/닫기 시 카메라 LED 소등(자원 해제 확인).
+3. **클립보드** — 이미지 복사 후 "클립보드에서" → 원형 preview 표시.
+4. **서버 영속 round-trip** — 프로필 아바타 설정 → 앱 재실행(또는 다른 기기 로그인) → drawer header + 프로필에 동일 아바타 재표시(서버 영속 + fetch 확인).
+5. **표시 전파 6 site** — drawer header / 그룹·채널 chat-list row / 멤버 목록 / 프로필 dialog 에 설정 아바타 원형 이미지 표시. 아바타 미설정 상대는 2글자 이니셜 fallback 유지.
+6. **이니셜 fallback 무손상** — 아바타 없는 친구/방/멤버는 기존 palette circle + 2글자 이니셜 그대로(회귀 0).
+7. **권한 거부 graceful** — (선택) 카메라 권한 거부 시 "사용 가능한 카메라 부재" 안내 + 촬영 button 비활성(crash 없음) + 파일/클립보드 정상.
+
+> NO-GO(버그 발견) 시 → 해당 milestone 으로 회귀(② 개발). GO 시 → 본 Exec Plan `active/` → `completed/` 이동.
+
 ---
 
-마지막 갱신: 2026-05-26 (planning-agent 초안 — 아바타 이미지 picker 3곳 + 서버 영속 Exec Plan 신설)
+마지막 갱신: 2026-05-27 (cycle 169.852 — M1~M7 전 milestone 코드+문서 완결, T-1~T-18 ✅. G-final 사용자 visual ack 체크리스트 §14.1 신설. 잔존 = 사용자 직접 webcam 검증 + reviewer MEDIUM-A 백로그)
