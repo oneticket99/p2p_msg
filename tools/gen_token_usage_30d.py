@@ -217,20 +217,6 @@ def main() -> None:
                     _merged_pd.append(_e)
             _merged_pd.sort(key=lambda r: r["date"])
             out["per_day"] = _merged_pd
-            # per_model union (model key 중복 = 합산)
-            _cur_models = {e["model"]: e for e in out["per_model"]}
-            for _e in bak.get("per_model", []):
-                _m = _e.get("model")
-                if _m in _cur_models:
-                    for _k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
-                               "cache_read_input_tokens", "messages", "total_tokens"):
-                        _cur_models[_m][_k] = _cur_models[_m].get(_k, 0) + _e.get(_k, 0)
-                    _cur_models[_m]["cost_usd"] = round(
-                        _cur_models[_m].get("cost_usd", 0.0) + _e.get("cost_usd", 0.0), 4,
-                    )
-                else:
-                    _cur_models[_m] = _e
-            out["per_model"] = list(_cur_models.values())
             # per_day_model union (date+model 복합 키 중복 = current 우선)
             _cur_dm = {(e["date"], e["model"]) for e in out["per_day_model"]}
             _merged_dm = list(out["per_day_model"])
@@ -248,14 +234,29 @@ def main() -> None:
             _merged_ss.sort(key=lambda r: r.get("first_kst", ""))
             out["sessions_summary"] = _merged_ss
             out["sessions"] = len(_merged_ss)
-            # totals 합산
-            for _k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
-                       "cache_read_input_tokens", "messages", "total_tokens"):
-                out["totals"][_k] = out["totals"].get(_k, 0) + bak.get("totals", {}).get(_k, 0)
-            out["totals"]["cost_usd"] = round(
-                out["totals"].get("cost_usd", 0.0) + bak.get("totals", {}).get("cost_usd", 0.0), 4,
-            )
-            out["parsed_messages"] = out.get("parsed_messages", 0) + bak.get("parsed_messages", 0)
+            # 한글 주석 — 날짜 기준 union 뒤 totals/per_model 재계산: bak 중복 날짜로 총합이 부풀지 않도록 방어
+            _fields = ("input_tokens", "output_tokens", "cache_creation_input_tokens",
+                       "cache_read_input_tokens", "messages", "total_tokens")
+            _new_totals = {k: 0 for k in _fields}
+            _new_cost = 0.0
+            for _e in out["per_day"]:
+                for _k in _fields:
+                    _new_totals[_k] += _e.get(_k, 0)
+                _new_cost += _e.get("cost_usd", 0.0)
+            _new_totals["cost_usd"] = round(_new_cost, 4)
+            out["totals"] = _new_totals
+            _models = defaultdict(lambda: defaultdict(int))
+            for _e in out["per_day_model"]:
+                _m = _e.get("model") or "<synthetic>"
+                for _k in _fields:
+                    _models[_m][_k] += _e.get(_k, 0)
+                _models[_m]["cost_usd"] += _e.get("cost_usd", 0.0)
+            out["per_model"] = [
+                {"model": _m, **{_k: _v for _k, _v in _vals.items() if _k != "cost_usd"},
+                 "cost_usd": round(_vals.get("cost_usd", 0.0), 4)}
+                for _m, _vals in _models.items()
+            ]
+            out["parsed_messages"] = out["totals"].get("messages", 0)
             out["files_scanned"] = out.get("files_scanned", 0) + bak.get("files_scanned", 0)
             # cache_hit_rate_percent 재계산
             _ct = out["totals"].get("cache_creation_input_tokens", 0) + out["totals"].get("cache_read_input_tokens", 0)
