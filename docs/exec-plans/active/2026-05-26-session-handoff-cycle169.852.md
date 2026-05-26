@@ -1,7 +1,7 @@
 ---
 title: "session handoff — cycle 169.852 manifest (avatar 이미지 picker M3 재개)"
 owner: oneticket99
-last_verified: 2026-05-26T19:35:00+09:00
+last_verified: 2026-05-26T20:40:00+09:00
 status: active
 ---
 
@@ -22,40 +22,52 @@ status: active
 | 169.852 | **avatar Exec Plan 신설** (planning-agent, 14 섹션 M1~M7+G-final) | 5a3bc9f |
 | 169.852 | **avatar M1** — migration 0018 `users.avatar_ref` + `avatars.py` repo(디스크/sha256/traversal) + `users.py` | 3a62963 |
 | 169.852 | **avatar M2** — POST/GET/PATCH endpoint(multipart+Pillow 512 crop+EXIF strip) + rooms avatar_ref + route 등록 | 21bd680 |
-| 169.852 | 평가 sweep(avatar M1/M2 반영) | cd50dc3 |
+| 169.852 | 평가 sweep(avatar M1/M2) | cd50dc3 |
+| 169.852 | **avatar M3** — `AvatarPickerButton`(드롭다운 파일/카메라/클립보드, 이모지 제외 + 원형 preview + 이니셜/camera fallback) + `avatars_client` QThread worker 3종 + camera/image SVG. 17 PASS, reviewer PASS | 6a86ce6 |
+| 169.852 | `RoomsClient.create_room` avatar_ref/description param(서버 M2 수용 결선) | 0bead04 |
+| 169.852 | **avatar M4 서버 chain e2e** — room create avatar_ref + invite isolated e2e 보강(18 PASS, 사용자 directive) | cadfa2c |
+| 169.852 | codex §4.6 **하드코딩 수렴** — demo IP routing literal 8 파일 → `config.DEMO_FALLBACK_API_BASE` 단일 + scan gate. reviewer PASS | dc3ccc3 |
+| 169.852 | **한글 주석 보강 별도 페이즈 Exec Plan**(planning-agent, draft) | 86e3361 |
+| 169.852 | Codex 문서 batch 취합(current-project-review + token-usage 5/24~26 필터 + ledger) — dirty 해소 | 4563f47 |
 
-또한 본 session: productization.html 빈 화면 회귀 회수(cycle 849 sweep `-->` 드롭), 로컬 stale 빌드 재빌드(메뉴 토글 버그 = stale 빌드 확정, cycle 835 fix 포함), M6 WBS resume(850/851 row).
+또한 본 session: productization.html 빈 화면 회귀 회수(cycle 849 sweep `-->` 드롭), 로컬 stale 빌드 재빌드(메뉴 토글 버그 = stale 빌드 확정, cycle 835 fix), M6 WBS resume(850/851/852 row).
 
 핵심 milestone:
 
-- **avatar 이미지 picker 서버 파이프라인 종단 기능 완결 (M1+M2)**. 서버는 이미지 업로드(jpg/png ≤5MB → 정사각 512 + EXIF strip + sha256 디스크 영속) + 조회(traversal 방어) + 프로필/그룹/채널 avatar_ref 영속 지원. repo 18 + e2e 17 = 35 PASS, reviewer 게이트 2 PASS(차단 0).
-- **잔존 = 클라이언트 M3~M7 + G-final** (Exec Plan T-8~T-18). 서버 write 계약 선존하므로 클라가 바로 결선 가능.
+- **avatar M1~M3 완결 + M4 서버측 완결.** M1+M2 서버 영속(migration 0018 + avatars repo + POST/GET/PATCH endpoint), M3 클라 `AvatarPickerButton`+`avatars_client`(파일/클립보드 동작, 카메라는 `camera_requested` signal M5 연결 대기), M4 서버 room create(avatar_ref/name) + invite isolated e2e 완비. **잔존 = M4 클라 dialog 통합(T-11~T-13) + M5 카메라 + M6 표시 전파 + M7 문서 + G-final.**
+- **codex §4.6 하드코딩 수렴**(demo IP routing literal 단일 config) + scan gate CI lock. 잔여 §4.6 = stun/OAuth redirect/bot sender id(후속 분리).
+- **한글 주석 보강 별도 페이즈 Exec Plan**(`2026-05-26-korean-comment-enrichment-phase.md`, draft) — 사용자 directive, active 전환 GO 대기.
 
-main HEAD = `cd50dc3` (cycle 169.852). 점수 productization 7.6/10 · vibe-coding 8.4/10 유지.
+main HEAD = `4563f47` (cycle 169.852). 점수 productization 7.6/10 · vibe-coding 8.4/10 유지. tree clean.
 
-> **사용자 directive 2026-05-26 (다음 session 진입 지시)**: "전체 구현 하되 1번부터." → 다음 session = avatar 이미지 picker **전체 구현 완주**(M3~M7 + G-final), **1번(M3 AvatarPickerButton)부터 순차** 진행. M1+M2(서버 영속)는 commit+reviewer PASS+35 test 통과 완결분이라 **재작업 불요** — §3 순서대로 스킵/조기중단 없이 G-final 까지.
+> **사용자 directive 2026-05-26 (유효)**: avatar 이미지 picker **전체 구현 완주** + group/channel **서버 room 생성도 지금 결선**(사용자 확정 — client placeholder gid → 실 POST /api/rooms 승격). 스킵/조기중단 없이 G-final 까지.
+> **진척 업데이트**: M1~M3 + M4 서버측(create avatar_ref/invite e2e) 완결. **다음 1번 = M4 클라 dialog 통합(T-11 group → T-12 channel → T-13 profile)**. M1~M3/M4서버 재작업 불요. §3 순서대로.
 
 ---
 
 ## 2. 첫 응답 템플릿 (다음 session 진입)
 
 ```text
-이전 session handoff (cycle 169.852) 정독 완료. avatar 이미지 picker M1+M2(서버
-영속 — migration 0018 + avatars repo + POST/GET/PATCH endpoint) 완결, 클라 M3~M7
-잔존. main HEAD cd50dc3. 사용자 "GO 전체 구현" 승인 유효.
+이전 session handoff (cycle 169.852) 정독 완료. avatar 이미지 picker M1~M3 + M4
+서버측(room create avatar_ref + invite e2e) 완결. main HEAD 4563f47. 사용자 "전체
+구현 + group/channel 서버 room 생성도 지금 결선" 승인 유효.
 
-본 session 진입 우선순위 (avatar Exec Plan 순차):
-1. M3 — app/ui/_avatar_picker_button.py 신설(AvatarPickerButton — 원형 button +
-   드롭다운 파일/카메라/클립보드 3항목, 이모지 제외 + 파일/클립보드 핸들러 +
-   정사각 다운스케일 preview) + app/net/avatars_client.py(upload/fetch/patch_me).
-2. M4 — 3 dialog 통합(new_group_dialog/new_channel_dialog/my_profile_dialog camera_btn
-   → AvatarPickerButton + 생성/수정 payload avatar_ref + channel icon 오용 시정).
-3. M5 — _camera_capture_dialog.py(QtMultimedia in-app 모달 live preview+capture +
-   권한 거부 graceful + camera resource release).
-4. M6 — _avatar_helper.make_avatar_pixmap(name, avatar_ref) + 6곳 표시 전파(이니셜 fallback 무손상).
-5. M7 — 문서 동기 + 회귀 → G-final 사용자 visual ack.
+본 session 진입 우선순위 (avatar Exec Plan 순차, M4 클라부터):
+1. M4 클라 dialog 통합 (서버 room 생성 결선 포함):
+   - new_group_dialog/new_channel_dialog: camera_btn → AvatarPickerButton +
+     _drawer_mixin._on_group_created/_on_channel_created 를 음수 gid placeholder →
+     실 RoomsClient.create_room(name,kind,avatar_ref) + invite_user(멤버) 결선(qasync
+     ensure_future 패턴, _invite_mixin:81 참조). avatar 선택 시 AvatarUploadWorker →
+     avatar_ref → create_room. channel dialog icon 오용(notification) 시정.
+   - my_profile_dialog: AvatarPickerButton + AvatarUploadWorker → AvatarPatchMeWorker
+     (PATCH /api/me/avatar). 독립(서버 PATCH 경로 완비) — 병렬 가능.
+2. M5 — _camera_capture_dialog.py(QtMultimedia in-app 모달) + AvatarPickerButton
+   camera_requested signal 연결 + 권한 거부 graceful + resource release.
+3. M6 — _avatar_helper.make_avatar_pixmap(name, avatar_ref) + 6곳 표시 전파(이니셜 fallback 무손상).
+4. M7 — 문서 동기 + 회귀 → G-final 사용자 visual ack.
 
-각 마일스톤 reviewer 게이트 + 즉시 commit/push. Exec Plan T-8~T-18 정본.
+각 마일스톤 reviewer 게이트 + 즉시 commit/push. Exec Plan T-11~T-18 정본.
+부수 잔존: 한글 주석 보강 페이즈(draft, active GO 대기) / codex §4.6 잔여(stun/OAuth/bot sender).
 ```
 
 ---
@@ -64,16 +76,16 @@ main HEAD = `cd50dc3` (cycle 169.852). 점수 productization 7.6/10 · vibe-codi
 
 > 정본 = [2026-05-26-avatar-image-picker-upload.md](2026-05-26-avatar-image-picker-upload.md) §5 마일스톤 + §6 Task + §8 결정 로그.
 
-### 3-1. M3 — AvatarPickerButton 공유 컴포넌트 (T-8~T-10)
+### 3-1. ✅ M3 — AvatarPickerButton 공유 컴포넌트 (T-8~T-10, 완결 6a86ce6)
 
-- `app/ui/_avatar_picker_button.py` 신설 — QPushButton 확장. 원형 button + 클릭 시 QMenu 드롭다운 3항목(파일에서/카메라에서/클립보드에서, **이모지 제외**). 파일=`QFileDialog.getOpenFileName`(jpg/png), 클립보드=`QGuiApplication.clipboard().image()`. 선택 이미지 정사각 다운스케일 + 원형 preview. `avatar_selected(QImage)` signal.
-- `app/net/avatars_client.py` 신설 — httpx wrapper: upload(multipart POST /api/avatars) / fetch(GET) / patch_me(PATCH /api/me/avatar).
-- 검증: offscreen Qt + QFileDialog/clipboard mock + 드롭다운 3 action assert + 이모지 부재 assert.
+- `app/ui/_avatar_picker_button.py`(드롭다운 파일/카메라/클립보드, 이모지 제외 + 정사각 crop 원형 preview + 이니셜/camera fallback + `avatar_selected(QImage)`/`camera_requested()` signal + `to_bytes()`) + `app/net/avatars_client.py`(QThread worker — **httpx 아님, account_client 컨벤션** AvatarUploadWorker multipart / AvatarFetchWorker / AvatarPatchMeWorker + `qimage_to_bytes`) + camera/image SVG. 17 PASS, reviewer 차단 0.
 
-### 3-2. M4 — 3 dialog 통합 (T-11~T-13)
+### 3-2. M4 — 3 dialog 통합 + 서버 room 생성 결선 (T-11~T-13)
 
-- `new_group_dialog.py:93`·`new_channel_dialog.py:91` camera_btn(현 icon "attach"/"notification" 오용) → `AvatarPickerButton` 교체 + 선택 이미지 업로드 → avatar_ref 를 group_created/channel_created payload 또는 POST /api/rooms 에 포함. `my_profile_dialog.py` avatar picker 신설 + PATCH /api/me/avatar.
-- channel dialog icon 오용(notification) 동시 시정.
+- **서버측 ✅** (cadfa2c): `RoomsClient.create_room` avatar_ref/description param(0bead04) + room create avatar_ref + invite endpoint isolated e2e 18 PASS.
+- **클라 잔여** (다음 1번):
+  - `new_group_dialog.py:93`·`new_channel_dialog.py:91` camera_btn → `AvatarPickerButton` + `_drawer_mixin._on_group_created`/`_on_channel_created` 의 음수 gid placeholder(`gid=-abs(hash...)`) → **실 `RoomsClient.create_room(name,kind,avatar_ref)` + `invite_user(멤버)` 결선**(사용자 "서버 room 생성도 지금" 확정). qasync `asyncio.ensure_future` 패턴(`_invite_mixin.py:81` 참조). avatar 선택 시 `AvatarUploadWorker` → avatar_ref → create_room. channel dialog icon 오용(notification) 시정.
+  - `my_profile_dialog.py` AvatarPickerButton + `AvatarUploadWorker` → `AvatarPatchMeWorker`(PATCH /api/me/avatar). 서버 PATCH 경로 완비 → 독립, **group/channel 과 병렬 가능**.
 
 ### 3-3. M5 — CameraCaptureDialog (T-14~T-15, 고위험)
 
@@ -144,4 +156,4 @@ QT_QPA_PLATFORM=offscreen python3 -m pytest tests/integration/test_avatars_handl
 
 ---
 
-마지막 갱신: 2026-05-26 (cycle 169.852 — avatar 이미지 picker M1+M2 서버 영속 완결 + 클라 M3~M7 진입 manifest)
+마지막 갱신: 2026-05-26 (cycle 169.852 — avatar M1~M3 + M4 서버측 완결 + 하드코딩 수렴 + 주석 plan + Codex 취합 반영, 다음 = M4 클라 dialog 통합 manifest)

@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-26 20:40:00] cycle 169.852 — 다음 session 인계 자료 갱신(사용자 directive). handoff cycle169.852 = avatar M1~M3 + M4 서버측 완결 반영, 다음 1번 = M4 클라 dialog 통합(group/channel 서버 room 생성 결선 + profile PATCH). 하드코딩 수렴/주석 plan/Codex 취합 + 부수 잔존 정리. (docs/exec-plans/active)
 - [2026-05-26 20:25:00] cycle 169.852 — codex §4.6 하드코딩 수렴 — demo IP api_base routing literal `"http://114.207.112.73:8765"` 8 파일 중복을 `config.DEMO_FALLBACK_API_BASE` 단일 상수로 수렴 + `test_no_443_hardcode` scan gate(config 외 0 lock). 값 동일성 + 회귀 0 + reviewer 차단 0. (app/core · app/ui · tests)
 - [2026-05-26 20:30:00] cycle 169.852 — 한글 주석 보강 별도 페이즈 Exec Plan 신설(planning-agent) — `docs/exec-plans/active/2026-05-26-korean-comment-enrichment-phase.md`(M1 표준~M6 영역별 + G-final 기능 diff 0). status draft, 사용자 승인 후 active. (docs/exec-plans/active)
 - [2026-05-26 20:10:00] cycle 169.852 — token-usage 5/24~5/26 git 등록 자료만 병합. `token-usage-30d.json.bak.json` 에 2026-05-24~26 행만 추가하고, 산출기 totals/per_model 중복 합산을 날짜×모델 union 재계산으로 보정했다. 보고서 총합은 일별 합계와 일치하도록 10,266,725,019 tokens / $22,855.96 로 정규화. (docs/operations · tools)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - [2026-05-26 01:00:00] cycle 169.838 — 전 dialog in-app overlay 모달 변환(별도 OS 윈도우 → 메인 레이아웃 안 모달, 새창=원격제어 창만) + "방 입장"(Room ID) 메뉴 제거(그룹방=그룹만들기+초대) + ChatHeader stale 수정 + GroupChatView 중복 헤더 제거. `_exec_dialog_centered` test 가드 + `_modal_helper`(nested dialog parent-walk) 신설. UI 341 + integration/e2e 327 passed(hang 0). (app/ui)
 - [2026-05-26 00:40:00] cycle 169.837 — 그룹 멤버 UX 완성: 멤버 보기 → 모달 + 원형 아바타 행(친구행과 동일 디자인) + 그룹 "..." 메뉴 미구현 stub 전수 제거(알림끄기·그룹정보·그룹관리·설문·채팅정보 → working 항목만). 사용자 directive(미구현 노출 금지). UI 341 passed(hang 해소). (app/ui · tests)
 - [2026-05-26 00:10:00] cycle 169.836 — 그룹 "멤버 보기" 헤더 "..." 드롭다운 entry 이동(텔레그램 플로우) + room 진입 시 `_active_chat_kind="group"` 미설정으로 "..." 가 단순 메뉴 표시되던 버그 회수(별도 버튼 제거). + 메시지 수신음 실 파일 교체 정정 — cycle834 가 미사용 시스템 파일(tootalk_ppyong.wav)을 교체해 구버전 소리 잔존 → 실 재생 파일 `app/assets/sounds/signature.wav` 를 ding 으로 교체. UI 341 + sound 45 passed. (app/ui · app/assets)
-- [2026-05-25 23:00:00] cycle 169.835 — startup 로그인 경로 계정 메뉴 auth 토글 회수. main window 진입 후에도 회원가입/로그인 메뉴 잔존(재로그인해야 토글) — cycle831 이 `_on_open_login` 만 커버, startup(`main.py`) 경로 누락 → token 주입 직후 `apply_auth_menu_visibility` 재호출. reviewer PASS + menu isolated 4 passed. (app)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
