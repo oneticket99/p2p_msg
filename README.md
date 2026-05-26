@@ -309,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-26 21:40:00] cycle 169.852 — avatar picker **M4 완결**(T-11/T-12 group/channel 서버 room 승격). camera_btn → AvatarPickerButton 3 dialog + _drawer_mixin 음수 gid placeholder → 실 RoomsClient.create_room(kind,avatar_ref)+invite_user(qasync) + migration 0019 rooms.kind channel 추가 + channel icon 오용 시정. e2e 19 + 전체 2585 passed 회귀 0, reviewer 차단 0. M5 카메라/M6 표시/M7 잔존. (server/db · server/api · app/ui · app/net)
 - [2026-05-26 21:05:00] cycle 169.852 — avatar picker **M4 T-13** 개인 프로필 dialog 통합. my_profile_dialog avatar → AvatarPickerButton + `_drawer_mixin._on_profile_avatar_changed`(AvatarUploadWorker → AvatarPatchMeWorker PATCH /api/me/avatar). 3 PASS, 전체 2584 passed 회귀 0, reviewer 차단 0. M4 group/channel(T-11/12) 잔존. (app/ui)
 - [2026-05-26 20:40:00] cycle 169.852 — 다음 session 인계 자료 갱신(사용자 directive). handoff cycle169.852 = avatar M1~M3 + M4 서버측 완결 반영, 다음 1번 = M4 클라 dialog 통합(group/channel 서버 room 생성 결선 + profile PATCH). 하드코딩 수렴/주석 plan/Codex 취합 + 부수 잔존 정리. (docs/exec-plans/active)
 - [2026-05-26 20:25:00] cycle 169.852 — codex §4.6 하드코딩 수렴 — demo IP api_base routing literal `"http://114.207.112.73:8765"` 8 파일 중복을 `config.DEMO_FALLBACK_API_BASE` 단일 상수로 수렴 + `test_no_443_hardcode` scan gate(config 외 0 lock). 값 동일성 + 회귀 0 + reviewer 차단 0. (app/core · app/ui · tests)
@@ -338,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - [2026-05-26 08:15:00] cycle 169.840 — token-usage-30d 재산출(사용자 directive — 원격 git `.bak` 이어서). `gen_token_usage_30d.py` 가 원격 pull `token-usage-30d.json.bak.json`(sessions 4·msgs 17954·$20342) 병합 + 현 세션 합산. parsed_messages 24364→37197, 누적 토큰 122.5억→187.4억, cost $26,104→$41,954, cache hit 97.27%→96.79%, sessions 5. json+html mirror rewrite. (docs/operations)
 - [2026-05-26 08:10:00] cycle 169.839 — group-flow isolated test 재구성(인계 task 3-1). cycle838 "방 입장"(Room ID) 제거 정합 — `test_main_window_rooms.py` 구 `room_entered.emit(N)`(GroupChatView idx 1) → 그룹 만들기 wizard chain 전면 교체. 사용자 결정=통합 ChatView(idx 0) canonical, 구 GroupChatView+room_entered=legacy 폐기(코드 무변경, test 만). 신 6 PASS(ChatListPanel default·NewGroupDialog 2-step·group_created emit·`_on_group_created` kind=group insert·`_on_drawer_new_group` offscreen 가드·전 wizard chain). UI 342 passed(5→6, 회귀 0) + BPE PASS. (tests)
 - [2026-05-26 01:00:00] cycle 169.838 — 전 dialog in-app overlay 모달 변환(별도 OS 윈도우 → 메인 레이아웃 안 모달, 새창=원격제어 창만) + "방 입장"(Room ID) 메뉴 제거(그룹방=그룹만들기+초대) + ChatHeader stale 수정 + GroupChatView 중복 헤더 제거. `_exec_dialog_centered` test 가드 + `_modal_helper`(nested dialog parent-walk) 신설. UI 341 + integration/e2e 327 passed(hang 0). (app/ui)
-- [2026-05-26 00:40:00] cycle 169.837 — 그룹 멤버 UX 완성: 멤버 보기 → 모달 + 원형 아바타 행(친구행과 동일 디자인) + 그룹 "..." 메뉴 미구현 stub 전수 제거(알림끄기·그룹정보·그룹관리·설문·채팅정보 → working 항목만). 사용자 directive(미구현 노출 금지). UI 341 passed(hang 해소). (app/ui · tests)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
