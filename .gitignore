@@ -69,3 +69,6 @@ deploy/postfix/dkim/
 .claude/dereliction_last_fire.txt
 .claude/dereliction_disabled.flag
 .claude/settings.local.json
+
+# 한글 주석 — avatar 이미지 byte 디스크 영속(cycle 169.852, 0018). 실 byte 는 git 추적 외.
+server/_avatar_store/

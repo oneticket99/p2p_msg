@@ -25,6 +25,9 @@ class UserRow:
     created_at: datetime
     updated_at: datetime
     last_login_at: Optional[datetime]
+    # 한글 주석 — cycle 169.852 avatar 이미지 영속 (0018). 빈값 = 이니셜 fallback.
+    # 마지막 필드 + default "" — avatar_ref 미포함 구 SELECT 도 무손상(backward compat).
+    avatar_ref: str = ""
 
 
 async def insert_user(
@@ -76,7 +79,7 @@ async def get_user_by_email(pool: Any, email: str) -> Optional[UserRow]:
 
     sql = (
         "SELECT id, email, username, password_hash, email_verified, status, "
-        "       created_at, updated_at, last_login_at "
+        "       created_at, updated_at, last_login_at, avatar_ref "
         "FROM users WHERE email = %s"
     )
     async with pool.acquire() as conn:
@@ -93,7 +96,7 @@ async def get_user_by_username(pool: Any, username: str) -> Optional[UserRow]:
 
     sql = (
         "SELECT id, email, username, password_hash, email_verified, status, "
-        "       created_at, updated_at, last_login_at "
+        "       created_at, updated_at, last_login_at, avatar_ref "
         "FROM users WHERE username = %s"
     )
     async with pool.acquire() as conn:
@@ -120,7 +123,7 @@ async def get_user_by_username_and_phone(
 
     sql = (
         "SELECT id, email, username, password_hash, email_verified, status, "
-        "       created_at, updated_at, last_login_at "
+        "       created_at, updated_at, last_login_at, avatar_ref "
         "FROM users WHERE username = %s AND phone = %s"
     )
     async with pool.acquire() as conn:
@@ -190,7 +193,7 @@ async def get_user_by_username_excluding(
 
     sql = (
         "SELECT id, email, username, password_hash, email_verified, status, "
-        "       created_at, updated_at, last_login_at "
+        "       created_at, updated_at, last_login_at, avatar_ref "
         "FROM users WHERE username = %s AND id != %s"
     )
     async with pool.acquire() as conn:
@@ -376,3 +379,40 @@ async def update_password(pool: Any, user_id: int, new_hash: str) -> None:
         async with conn.cursor() as cur:
             await cur.execute(sql, (new_hash, user_id))
         await conn.commit()
+
+
+async def update_avatar_ref(pool: Any, user_id: int, avatar_ref: str) -> None:
+    """프로필 avatar 갱신 — users.avatar_ref UPDATE (cycle 169.852, 0018).
+
+    Parameters
+    ----------
+    avatar_ref : str
+        `POST /api/avatars` 회신 키 (`avatars/<sha256>.<ext>`). 빈 문자열 =
+        avatar 제거(이니셜 fallback 복귀). caller(`PATCH /api/me/avatar`)가
+        실재 파일 검증 후 호출 의무.
+    """
+
+    sql = "UPDATE users SET avatar_ref = %s WHERE id = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (avatar_ref, user_id))
+        await conn.commit()
+
+
+async def get_avatar_ref(pool: Any, user_id: int) -> Optional[str]:
+    """user_id 의 현재 avatar_ref 조회 (프로필 표시 + PATCH 검증용).
+
+    Returns
+    -------
+    str | None
+        row 부재 시 None, avatar 미설정 시 빈 문자열.
+    """
+
+    sql = "SELECT avatar_ref FROM users WHERE id = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(sql, (user_id,))
+            row = await cur.fetchone()
+    if row is None:
+        return None
+    return str(row[0])
