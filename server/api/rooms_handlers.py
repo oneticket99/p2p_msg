@@ -35,6 +35,7 @@ from typing import Any, Optional
 
 from aiohttp import web
 
+from server.db.repositories import avatars as _avatars_repo
 from server.db.repositories import rooms as rooms_repo
 from server.db.repositories.user_activity import ActivityAction, log_activity
 from server.middleware.activity import extract_client_ip
@@ -148,6 +149,14 @@ async def handle_create_room(request: web.Request) -> web.Response:
     if kind not in ("direct", "group"):
         raise web.HTTPBadRequest(reason="kind = direct 또는 group 의무")
 
+    # 한글 주석: cycle 169.852 — group/channel 생성 시 name/description/avatar_ref 수용.
+    name = (body.get("name") or "").strip()[:128]
+    description = (body.get("description") or "").strip()[:255]
+    avatar_ref = (body.get("avatar_ref") or "").strip()
+    # avatar_ref 비빈값 시 실재 검증 (위조/미실재 키 차단)
+    if avatar_ref and not _avatars_repo.avatar_exists(avatar_ref):
+        raise web.HTTPBadRequest(reason="avatar_ref 미실재")
+
     pool = request.app["db_pool"]
     if pool is None:
         raise web.HTTPInternalServerError(reason="db_pool 미활성")
@@ -157,7 +166,8 @@ async def handle_create_room(request: web.Request) -> web.Response:
 
     try:
         room_id = await rooms_repo.insert_room(
-            pool, room_code=room_code, owner_id=user_id, kind=kind
+            pool, room_code=room_code, owner_id=user_id, kind=kind,
+            name=name, description=description, avatar_ref=avatar_ref,
         )
     except Exception as exc:  # noqa: BLE001
         log.exception(
@@ -193,6 +203,8 @@ async def handle_create_room(request: web.Request) -> web.Response:
             "room_code": room_code,
             "kind": kind,
             "owner_id": user_id,
+            "name": name,
+            "avatar_ref": avatar_ref,
         },
         status=201,
     )

@@ -60,8 +60,8 @@ class PeerRow:
 # ─── rooms 의 SQL ───────────────────────────────────────────────────────────
 
 _INSERT_ROOM = (
-    "INSERT INTO rooms (room_code, owner_id, kind, status) "
-    "VALUES (%s, %s, %s, 'active')"
+    "INSERT INTO rooms (room_code, owner_id, kind, name, description, avatar_ref, status) "
+    "VALUES (%s, %s, %s, %s, %s, %s, 'active')"
 )
 
 _GET_ROOM_BY_ID = (
@@ -135,12 +135,23 @@ async def insert_room(
     room_code: str,
     owner_id: int,
     kind: str = "direct",
+    name: str = "",
+    description: str = "",
+    avatar_ref: str = "",
 ) -> int:
-    """룸 신규 생성. kind = direct (1:1) / group (다자)."""
+    """룸 신규 생성. kind = direct (1:1) / group (다자).
+
+    cycle 169.852 — group/channel 생성 시 name/description/avatar_ref 동시 영속
+    (0017 컬럼). direct kind = 빈값 의미. avatar_ref = `avatars/<sha256>.<ext>`
+    (caller 가 실재 검증 후 전달, 빈값=이니셜 fallback).
+    """
 
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(_INSERT_ROOM, (room_code, owner_id, kind))
+            await cur.execute(
+                _INSERT_ROOM,
+                (room_code, owner_id, kind, name, description, avatar_ref),
+            )
             new_id = cur.lastrowid
         await conn.commit()
     return int(new_id)

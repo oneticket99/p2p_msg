@@ -195,6 +195,16 @@ async def build_app(config: Optional[Config] = None) -> web.Application:
     # messages REST endpoint 등록 (Phase 3 사이클 60 ChatView lazy load)
     register_messages_routes(app)
 
+    # avatar REST endpoint 등록 (cycle 169.852 — 이미지 업로드/조회 + 프로필 avatar)
+    try:
+        from .api.avatars_handlers import register_avatars_routes
+        register_avatars_routes(app)
+        logging.getLogger(__name__).info("[api] avatars 3 endpoint 등록 완료 (cycle 169.852)")
+    except Exception as exc:  # pragma: no cover - graceful
+        logging.getLogger(__name__).warning(
+            "[avatars] route 등록 실패 graceful — %r", exc,
+        )
+
     # reactions REST endpoint 등록 (cycle 155 신설 — emoji + count + UNIQUE constraint)
     try:
         from .api.reactions_handlers import register_reactions_routes
