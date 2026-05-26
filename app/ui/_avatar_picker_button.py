@@ -105,7 +105,7 @@ class AvatarPickerButton(QPushButton):
         act_file = menu.addAction(load_icon("image", size=18), "파일에서")
         act_file.triggered.connect(self._on_pick_file)
         act_camera = menu.addAction(load_icon("camera", size=18), "카메라에서")
-        act_camera.triggered.connect(self.camera_requested.emit)
+        act_camera.triggered.connect(self._on_camera)
         act_clip = menu.addAction(load_icon("image", size=18), "클립보드에서")
         act_clip.triggered.connect(self._on_pick_clipboard)
         return menu
@@ -130,6 +130,20 @@ class AvatarPickerButton(QPushButton):
         if image is None or image.isNull():
             return  # 한글 주석 — 클립보드 이미지 부재 graceful skip
         self._apply_image(image)
+
+    def _on_camera(self) -> None:
+        """카메라에서 — CameraCaptureDialog(QtMultimedia in-app 모달) 촬영 → 적용 (M5)."""
+
+        # 한글 주석 — 외부 listener 호환 유지 + 직접 카메라 모달 진입
+        self.camera_requested.emit()
+        from app.ui._camera_capture_dialog import CameraCaptureDialog
+        from app.ui._modal_helper import exec_modal
+
+        dlg = CameraCaptureDialog(parent=self)
+        if exec_modal(dlg, self) == dlg.DialogCode.Accepted:
+            image = dlg.captured_image
+            if image is not None and not image.isNull():
+                self._apply_image(image)
 
     # ------------------------------------------------------------------
     # 이미지 처리 + 렌더

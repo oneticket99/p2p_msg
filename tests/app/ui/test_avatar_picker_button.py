@@ -107,13 +107,31 @@ def test_pick_clipboard_empty_skip(picker, monkeypatch) -> None:
     assert picker.selected_image is None
 
 
-def test_camera_action_emits_signal(picker) -> None:
-    # 한글 주석 — "카메라에서" → camera_requested signal (M5 가 연결)
+def test_camera_action_emits_signal(picker, monkeypatch) -> None:
+    # 한글 주석 — "카메라에서" → camera_requested signal emit (후방 호환) +
+    # M5 핸들러는 실 카메라/blocking 모달 진입 → headless 에선 stub 로 차단:
+    #   _init_camera 무력화(실 webcam 미오픈) + exec_modal 즉시 Rejected(미block).
+    import app.ui._camera_capture_dialog as cam_mod
+    import app.ui._modal_helper as modal_mod
+
+    monkeypatch.setattr(
+        cam_mod.CameraCaptureDialog,
+        "_init_camera",
+        lambda self: self._show_unavailable("test stub — 카메라 미오픈"),
+    )
+    monkeypatch.setattr(
+        modal_mod,
+        "exec_modal",
+        lambda dlg, opener: dlg.DialogCode.Rejected,
+    )
+
     fired = []
     picker.camera_requested.connect(lambda: fired.append(True))
     cam_action = next(a for a in picker.menu().actions() if a.text() == "카메라에서")
     cam_action.trigger()
     assert fired == [True]
+    # 한글 주석 — Rejected 경로라 이미지 미적용(부수효과 없음 확인)
+    assert picker.selected_image is None
 
 
 def test_set_image_external(picker) -> None:

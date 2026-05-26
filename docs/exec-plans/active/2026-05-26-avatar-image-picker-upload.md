@@ -205,8 +205,8 @@ gantt
 | T-11 | M4 | `new_group_dialog` camera_btn → AvatarPickerButton + payload | main session | T-8, T-10 | offscreen (group_created signal avatar_ref 포함) | `app/ui/new_group_dialog.py` | ✅ |
 | T-12 | M4 | `new_channel_dialog` 교체 + icon 오용(notification) 시정 | main session | T-8, T-10 | offscreen (channel_created avatar_ref + icon 정상) | `app/ui/new_channel_dialog.py` | ✅ |
 | T-13 | M4 | `my_profile_dialog` avatar picker + PATCH /api/me/avatar | main session | T-6, T-8, T-10 | offscreen (picker 진입 + refresh 갱신) | `app/ui/my_profile_dialog.py` | ✅ |
-| T-14 | M5 | `CameraCaptureDialog` — QtMultimedia live preview + capture | main session | T-8 | offscreen (QCamera mock frame capture → QImage) | `app/ui/_camera_capture_dialog.py` | todo |
-| T-15 | M5 | 드롭다운 "카메라에서" 연결 + 권한 거부 graceful + resource release | main session | T-14 | offscreen (권한 거부 시 toast + release 호출 assert) | `app/ui/_avatar_picker_button.py` · `_camera_capture_dialog.py` | todo |
+| T-14 | M5 | `CameraCaptureDialog` — QtMultimedia live preview + capture | main session | T-8 | offscreen (QCamera mock frame capture → QImage) | `app/ui/_camera_capture_dialog.py` | ✅ |
+| T-15 | M5 | 드롭다운 "카메라에서" 연결 + 권한 거부 graceful + resource release | main session | T-14 | offscreen (권한 거부 시 toast + release 호출 assert) | `app/ui/_avatar_picker_button.py` · `_camera_capture_dialog.py` | ✅ |
 | T-16 | M6 | `_avatar_helper.make_avatar_pixmap(name, avatar_ref, size)` 신설 | main session | T-5 | unit (avatar_ref present → image / absent → 이니셜) | `app/ui/_avatar_helper.py` | todo |
 | T-17 | M6 | 6곳 표시 전파(chat sender/drawer header/profile/group/channel/member_list) | main session | T-16 | offscreen (6곳 image load + fallback 무손상) | `app/ui/*.py` (6 파일) | todo |
 | T-18 | M7 | 문서 동기 + HTML mirror + 회귀 전량 + 인계 | main session | T-1~T-17 | doc lint + markdown lint + pytest 전량 GREEN | `Structure.md` · `FRONTEND.md` · `ARCHITECTURE.md` · `CheckList.md` · 평가 2 + HTML 2 | todo |
