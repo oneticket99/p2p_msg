@@ -1,7 +1,7 @@
 ---
 title: "아바타 이미지 picker — 그룹/채널 만들기 + 개인 프로필 3곳 + 서버 영속 (텔레그램 정합)"
 owner: oneticket99
-status: draft
+status: active
 created: 2026-05-26
 last_verified: 2026-05-26
 target_completion: 2026-06-23
@@ -192,9 +192,9 @@ gantt
 
 | id | M | 작업 | 담당 | 의존성 | 종료 조건 / 검증 | 산출물 경로 | 상태 |
 |---|---|---|---|---|---|---|---|
-| T-1 | M1 | `0018_user_avatar_field.sql` — users.avatar_ref + 5요소 comment | main session | — | migration apply + 기존 row DEFAULT '' 무손상 | `server/db/migrations/0018_user_avatar_field.sql` | todo |
-| T-2 | M1 | `users.py` UserRow.avatar_ref + `update_avatar_ref()` | main session | T-1 | repository unit (UPDATE + SELECT round-trip) | `server/db/repositories/users.py` | todo |
-| T-3 | M1 | `avatars.py` 신설 — 디스크 저장 + sha256 dedup + key 산출 | main session | — | unit (tmp dir 저장 + dedup skip + key 형식) | `server/db/repositories/avatars.py` | todo |
+| T-1 | M1 | `0018_user_avatar_field.sql` — users.avatar_ref + 5요소 comment | main session | — | migration apply + 기존 row DEFAULT '' 무손상 | `server/db/migrations/0018_user_avatar_field.sql` | ✅ done |
+| T-2 | M1 | `users.py` UserRow.avatar_ref + `update_avatar_ref()` | main session | T-1 | repository unit (UPDATE + SELECT round-trip) | `server/db/repositories/users.py` | ✅ |
+| T-3 | M1 | `avatars.py` 신설 — 디스크 저장 + sha256 dedup + key 산출 | main session | — | unit (tmp dir 저장 + dedup skip + key 형식) | `server/db/repositories/avatars.py` | ✅ |
 | T-4 | M2 | `avatars_handlers.py` POST(multipart 검증 chain) | main session | T-3 | e2e (jpg/png OK + 악성 byte 415 + 초과 413) | `server/api/avatars_handlers.py` | todo |
 | T-5 | M2 | GET `/api/avatars/{ref}` (path traversal 방어) | main session | T-3 | e2e (정상 200 + `../` reject 400 + 부재 404) | `server/api/avatars_handlers.py` | todo |
 | T-6 | M2 | PATCH `/api/me/avatar` + route 등록 | main session | T-2, T-4 | e2e (avatar_ref 갱신 + 빈값 제거) | `server/api/avatars_handlers.py` · `server/main.py` | todo |
