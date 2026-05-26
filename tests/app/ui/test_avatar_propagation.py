@@ -61,3 +61,26 @@ def test_member_row_avatar_ready_rerender_on_match(qapp) -> None:
     row._on_avatar_ready(_REF)  # 일치 → 재렌더
     row._on_avatar_ready("avatars/" + ("c" * 64) + ".png")  # 불일치 → no-op
     assert not row._avatar.pixmap().isNull()
+
+
+def test_drawer_header_avatar_ref_and_update(qapp) -> None:
+    # 한글 주석 — drawer header set_avatar_ref → seed 이미지 원형 표시(무crash)
+    from app.ui.hamburger_drawer import HamburgerDrawer
+
+    avatar_cache().seed_image(_REF, QImage(64, 64, QImage.Format.Format_RGB32))
+    drawer = HamburgerDrawer(username="user", nickname="홍원표")
+    assert drawer._avatar_ref == ""  # 초기 빈값(이니셜 fallback)
+    assert not drawer._avatar_label.pixmap().isNull()
+    drawer.set_avatar_ref(_REF)  # 내 avatar 설정 → 원형 이미지
+    assert drawer._avatar_ref == _REF
+    assert not drawer._avatar_label.pixmap().isNull()
+    drawer.update_user_info("새이름")  # avatar_ref 유지 + 무crash(latent NameError 회수)
+    assert drawer._username == "새이름"
+
+
+def test_my_account_dialog_accepts_avatar_ref(qapp) -> None:
+    # 한글 주석 — MyAccountDialog avatar_ref param 수용(렌더 무crash, 이니셜/이미지)
+    from app.ui.my_account_dialog import MyAccountDialog
+
+    dlg = MyAccountDialog(username="user", nickname="이름", avatar_ref="")
+    assert dlg is not None  # avatar_ref 부재 → 이니셜 fallback 무손상

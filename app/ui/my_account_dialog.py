@@ -36,6 +36,7 @@ class MyAccountDialog(QDialog):
         birthdate: str = "",
         display_name: str = "",
         nickname: str = "",
+        avatar_ref: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -81,9 +82,10 @@ class MyAccountDialog(QDialog):
         avatar = QLabel()
         avatar.setFixedSize(120, 120)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        from app.ui._avatar_helper import make_initial_pixmap
+        # cycle 169.852 M6 T-17 — make_avatar_pixmap(avatar_ref 있으면 원형 이미지, 없으면 이니셜)
+        from app.ui._avatar_helper import make_avatar_pixmap
         avatar_text = nickname or display_name or username or "사용자"
-        avatar.setPixmap(make_initial_pixmap(avatar_text, size=120))
+        avatar.setPixmap(make_avatar_pixmap(avatar_text, avatar_ref, size=120))
         avatar.setStyleSheet("border-radius: 60px;")
         c_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 

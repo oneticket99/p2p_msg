@@ -73,14 +73,16 @@ class HamburgerDrawer(QFrame):
         h_layout.setContentsMargins(20, 20, 20, 12)
         h_layout.setSpacing(4)
         # cycle 169.254 — avatar 좌측 정렬 + name avatar 기준 center (사용자 directive image #14)
-        from app.ui._avatar_helper import make_initial_pixmap
+        # cycle 169.852 M6 T-17 — make_avatar_pixmap(내 avatar_ref 있으면 원형 이미지, 없으면 이니셜)
+        from app.ui._avatar_helper import make_avatar_pixmap
         avatar = QLabel()
         avatar.setFixedSize(48, 48)
         # cycle 169.403~404 — instance attribute retain + avatar source = nickname 우선 (사용자 critique image #175)
         self._avatar_label = avatar
         avatar_text = nickname or username or "사용자"
         self._username = avatar_text
-        avatar.setPixmap(make_initial_pixmap(avatar_text, size=48))
+        self._avatar_ref = ""  # cycle 169.852 M6 T-17 — 내 프로필 avatar 참조(설정 시 갱신)
+        avatar.setPixmap(make_avatar_pixmap(avatar_text, self._avatar_ref, size=48))
         avatar.setStyleSheet("border-radius: 24px;")
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         h_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignLeft)
@@ -244,7 +246,24 @@ class HamburgerDrawer(QFrame):
         if hasattr(self, "_name_label") and self._name_label is not None:
             self._name_label.setText(nickname)
         if hasattr(self, "_avatar_label") and self._avatar_label is not None:
-            self._avatar_label.setPixmap(make_initial_pixmap(nickname, size=48))
+            # cycle 169.852 M6 T-17 — 내 avatar_ref 반영(없으면 이니셜 fallback)
+            from app.ui._avatar_helper import make_avatar_pixmap
+            self._avatar_label.setPixmap(
+                make_avatar_pixmap(nickname, getattr(self, "_avatar_ref", ""), size=48)
+            )
+
+    def set_avatar_ref(self, avatar_ref: str) -> None:
+        """내 프로필 avatar_ref 갱신 → drawer header avatar 재렌더 (cycle 169.852 M6 T-17).
+
+        프로필 avatar 변경(업로드 PASS) 시 _drawer_mixin 이 호출. 캐시 seed 후 ref 전달이면
+        즉시 원형 이미지 표시(round-trip 없이).
+        """
+        self._avatar_ref = avatar_ref or ""
+        if hasattr(self, "_avatar_label") and self._avatar_label is not None:
+            from app.ui._avatar_helper import make_avatar_pixmap
+            self._avatar_label.setPixmap(
+                make_avatar_pixmap(self._username, self._avatar_ref, size=48)
+            )
 
     def _build_menu_entry(self, icon_name: str, label: str) -> QPushButton:
         """단일 menu row button — icon + label."""

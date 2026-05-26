@@ -61,6 +61,10 @@ class DrawerMixin:
             self._active_drawer = None
             return
         drawer = HamburgerDrawer(username=username, nickname=nickname, parent=self)
+        # cycle 169.852 M6 T-17 — 직전 설정한 내 avatar_ref 있으면 header 에 원형 이미지 표시
+        my_ref = getattr(self, "_my_avatar_ref", "")
+        if my_ref and hasattr(drawer, "set_avatar_ref"):
+            drawer.set_avatar_ref(my_ref)
         drawer.profile_clicked.connect(self._on_drawer_profile)  # type: ignore[arg-type]
         drawer.settings_clicked.connect(self._on_drawer_settings)  # type: ignore[arg-type]
         # cycle 169.320 — drawer 5 signal 전 connect
@@ -137,6 +141,15 @@ class DrawerMixin:
             if not ok or not avatar_ref:
                 log.warning("[profile avatar] 업로드 실패 — %s", err)
                 return
+            # cycle 169.852 M6 T-17 — 내 avatar 표시 전파: cache seed(round-trip 없이 즉시 표시)
+            # + my avatar_ref retain + 열린 drawer header 재렌더
+            from app.ui._avatar_cache import avatar_cache
+
+            avatar_cache().seed_image(avatar_ref, image)
+            self._my_avatar_ref = avatar_ref
+            drawer = getattr(self, "_active_drawer", None)
+            if drawer is not None and hasattr(drawer, "set_avatar_ref"):
+                drawer.set_avatar_ref(avatar_ref)
             patch = AvatarPatchMeWorker(base_url, token, avatar_ref, parent=self)
             patch.finished_with_result.connect(
                 lambda pok, ref, perr: log.info(
@@ -170,7 +183,9 @@ class DrawerMixin:
         dialog = MyAccountDialog(
             username=username, display_name=display_name, nickname=nickname,
             email=email, phone=phone, bio=bio,
-            birthdate=birthdate, parent=self,
+            birthdate=birthdate,
+            avatar_ref=getattr(self, "_my_avatar_ref", ""),  # cycle 169.852 M6 T-17 — 내 avatar
+            parent=self,
         )
 
         def _on_save(payload: dict) -> None:
