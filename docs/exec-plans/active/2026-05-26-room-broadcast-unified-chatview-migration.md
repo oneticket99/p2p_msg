@@ -223,6 +223,7 @@ flowchart LR
 | 담당 | main session (개발) → reviewer → qa → observability. **G-final 사용자 GO 후 진입.** |
 | 의존성 | M4 + 사용자 GO/NO-GO |
 | **실행 결과 (cycle 169.845 — 안전 M5)** | GroupChatView import + `_group_chat_view` attr + `_on_room_entered` + `_on_group_message_send` + `_dispatch_message_chain` + RoomListWidget(`_room_list`) + `room_entered.connect` + header `_room_list` 토글(→ `_chat_list_panel` 전환) 물리 회수. `_group_placeholder`(idx 1) 빈 spacer 잔존 + `_member_list`(idx 2) 유지(D-8). test rework: `test_main_window_messages.py` + `test_group_message_dual_chain.py` 삭제(removed 코드 검증 obsolete) + mro/batch3/rooms 3 파일 갱신. 전체 2500 PASS. **idx 완전 재번호 + 위젯 파일 삭제 = M5b 잔존.** |
+| **M5b 실행 결과 (cycle 169.848 — 사용자 "잔존이슈 전부 진행" GO)** ✅ | idx 완전 재번호: `_STACK_GROUP_CHAT` 상수 제거 + `_STACK_MEMBERS` 2→1 + `_STACK_FRIENDS` 3→2, `_group_placeholder` 빈 spacer 제거 → `_member_list` idx 1·`_friend_list` idx 2. 위젯 파일 회수: `group_chat_view.py` 삭제 + `room_list.py` RoomListWidget 삭제(`RoomItem` dataclass 보존, `app/main.py` 사용) + obsolete test 2(`test_group_chat_ui.py`·`test_group_chat_broadcast.py`) 삭제. dead attr `_group_message_client`(reviewer LOW-1, 호출처 0) + `__init__`/`_init_state` param + docstring 회수. docstring rewrite: `main_window` 모듈/클래스(통합 ChatView 3-page 구조) + `_chat_send_mixin._on_send_clicked`(stale GROUP/GroupChatView) + `의 의` 중복 정정(OBSERVATION). 후속: `_on_chat_selected` kind≠room 시 `_current_room_id` None clear(room→friend/group REST 오발신 차단) + README §2.2 "방 입장" stale 정정. 전체 2493 PASS(2504→2493, 삭제 obsolete 제거분, 회귀 0). **D7 grep 잔존 0(런타임) 달성 — 마이그레이션 M1~M5b 전 단계 완결.** |
 
 ### M6 — test 6 파일 재설계 마감 ✅ (cycle 169.847 완료)
 
@@ -394,4 +395,4 @@ flowchart LR
 
 ---
 
-마지막 갱신: 2026-05-26 (cycle 169.847 — M6 test 재설계 완료. M1~M6 전 단계 PASS. 잔존 = M5b idx 재번호 + 위젯 파일 삭제)
+마지막 갱신: 2026-05-26 (cycle 169.848 — M5b idx 재번호 + 위젯 파일 삭제 완료. **M1~M5b 전 단계 완결** — 통합 ChatView 단일 경로 수렴 + legacy 위젯 물리 회수. 잔존 = 사용자 visual ack + M6 WBS 활성 ack)

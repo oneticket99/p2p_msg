@@ -7,7 +7,9 @@ status: active
 
 # Session Handoff — cycle 169.839~845 (2026-05-26 신설)
 
-> 본 doc = 본 session 종료 시점 다음 session 진입 첫 액션 manifest. room broadcast → 통합 ChatView 마이그레이션 M1~M5 진척 + 잔존 M5b/M6 직접 진입 명령 정의. 직전 handoff [2026-05-26-session-handoff-cycle169.838.md](2026-05-26-session-handoff-cycle169.838.md) 후속.
+> **[2026-05-26 11:15 갱신 — 본 handoff 의 잔존 M6/M5b 는 cycle 169.847~848 에 완결됨]** room broadcast → 통합 ChatView 마이그레이션 **M1~M5b 전 단계 완결**. M6(847 통합 room-send mesh+REST coverage, reviewer PASS) + M5b(848 idx 재번호 `_STACK_*` 정리 + `group_chat_view.py`/`room_list.py` RoomListWidget 삭제 + `_group_message_client` dead attr 회수 + docstring/`의 의` 정정 + `_current_room_id` clear + README §2.2 stale 정정). codex `current-project-review.md` P0(legacy room path) 해소 반영. 전체 2546 PASS. 잔존 = 사용자 visual ack(후반 일괄) + M6 WBS 활성 ack(dereliction MEDIUM).
+>
+> 본 doc = (원본) 다음 session 진입 첫 액션 manifest. room broadcast → 통합 ChatView 마이그레이션 M1~M5 진척 + 잔존 M5b/M6 직접 진입 명령 정의. 직전 handoff [2026-05-26-session-handoff-cycle169.838.md](2026-05-26-session-handoff-cycle169.838.md) 후속.
 
 ---
 

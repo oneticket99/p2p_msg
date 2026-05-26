@@ -46,8 +46,9 @@ python -m app.main
 ```
 
 윈도우 타이틀 "TooTalk" 가 노출되고, StatusBar 가 `DISCONNECTED · peers: 0`
-상태로 시작한다. 메뉴바 "방 → 입장" 다이얼로그에서 `room id` + `peer_id`
-입력 후 JOIN.
+상태로 시작한다. 좌측 ChatListPanel 에서 친구·방·봇 대화를 선택해 진입하며,
+그룹방은 "그룹 만들기" wizard + 멤버 초대로 생성한다 (cycle 169.838 "방 입장"
+방번호 직접 입력 폐지 정합).
 
 > 시그널링 클라이언트는 WebSocket 연결 + 비정상 drop 시 지수 backoff 자동 재연결 +
 > 마지막 JOIN 식별자 기반 reJOIN 복구를 수행한다 (cycle 169.775, `app/net/signaling_client.py`).
@@ -308,6 +309,7 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 > 본 시점 = 30행 상한 회전 완료 (2026-05-21 — release-agent cycle 169.189 M2 53 entry batch prepend + dereliction-detector HIGH 회수 정합).
 > 상세 History.md 전체 보존.
 
+- [2026-05-26 11:10:00] cycle 169.848 — room broadcast 마이그레이션 **M5b — StackedWidget idx 완전 재번호 + 위젯 파일 삭제**. idx 재번호: `_STACK_GROUP_CHAT` 제거 + `_STACK_MEMBERS` 2→1 + `_STACK_FRIENDS` 3→2, `_group_placeholder`(빈 spacer) 제거 → `_member_list` idx 1·`_friend_list` idx 2. 파일 회수: `group_chat_view.py` 삭제 + `room_list.py` RoomListWidget 삭제(RoomItem dataclass 보존, app/main.py 사용) + obsolete test 2 삭제. dead attr `_group_message_client`(호출처 0) + `__init__`/`_init_state` param + docstring 회수 + main_window 모듈/클래스 docstring 통합 ChatView rewrite + `_chat_send_mixin` docstring stale + `의 의` 정정. 후속: `_on_chat_selected` kind≠room 시 `_current_room_id` None clear(room→friend REST 오발신 차단) + README §2.2 "방 입장" stale 정정. 전체 2493 passed(2504→2493, 삭제 obsolete 제거분, 회귀 0) + BPE PASS. **마이그레이션 M1~M5b 전 단계 완결.** (app/ui · README)
 - [2026-05-26 10:30:00] cycle 169.847 — room broadcast 마이그레이션 **M6 — 통합 room-send mesh+REST 신규 coverage**. `test_main_window_rooms.py` 에 `TestUnifiedRoomSend` 4 PASS 추가: room 진입(`_on_chat_selected("room",42)`) 후 `_on_send_clicked` → mesh `broadcast_payload(payload)` 1회 await(payload.text/sender 정합) + REST `_post_and_resolve(msg_client, _current_room_id=42, text, uuid)` + room `hide_sender=False` 버블 렌더 + 공백 early return. M5 삭제 obsolete legacy(`test_main_window_messages.py`·`test_group_message_dual_chain.py`) 통합 송신 등가 재작성. running loop+AsyncMock(ensure_future schedule 정합) `_run_send` 헬퍼. 전체 2504 passed(2500→2504, 회귀 0) + BPE PASS. Exec Plan M1~M6 완료, 잔존 M5b. (tests · docs/exec-plans/active)
 - [2026-05-26 10:10:00] cycle 169.846 — M5 reviewer 게이트 PASS(차단 0, LOW 1+OBSERVATION 3, 송신 경로 수렴 기능 등가+import 무결성 핵심 PASS) + 다음 session 인계 자료 작성. `docs/exec-plans/active/2026-05-26-session-handoff-cycle169.845.md` 신설(cycle 839~845 + 잔존 M6 통합 room-send coverage/M5b idx 재번호+위젯 파일 삭제+dead attr). room broadcast 마이그레이션 M1~M5 완료 — 통합 ChatView 단일 경로 수렴. (docs/exec-plans/active)
 - [2026-05-26 09:55:00] cycle 169.845 — room broadcast 마이그레이션 M5(안전): legacy GroupChatView 경로 물리 회수 + M3+M4 reviewer PASS. 회수: GroupChatView import/`_group_chat_view`/RoomListWidget(`_room_list`)/`room_entered`/`_on_room_entered`/`_on_group_message_send`/`_dispatch_message_chain`/header room_list 토글. 유지: `_group_placeholder`(idx 1 빈 spacer, idx 재번호 회피)·`_member_list`(idx 2, group-management)·멤버 보기 in-app 모달. test 2 삭제(obsolete) + 3 갱신. 전체 2500 passed + BPE PASS. idx 완전 재번호 + 위젯 파일 삭제 = M5b. (app/ui · app · tests · docs)
@@ -337,7 +339,6 @@ GPL 의무 영향 + CI 비용 + 외부 fork 의 GPL 권한 영구 유지 분석.
 - [2026-05-25 20:45:00] cycle 169.812 — Codex P0 "과거 표현 sweep" 안전 부분 진행. Specification.md(17) + CheckList.md(4) 의 "작성 예정 — 운영 N/8" stale marker 21건 정정(Structure.md/History.md/README.md/CheckList.md 모두 실재 → "작성 완료"). "작성 예정" 잔존 0. 코드 경로 "(예정)" 열은 per-file 감사 필요 → 후속 위임. doc-lint EXIT=0 (Specification · CheckList)
 - [2026-05-25 20:30:00] cycle 169.811 — Codex 전면평가(current-project-review.md) 정독 + 수정반영. check_assessment_consistency FAIL(HEAD cycle 810 marker 부재) 회수: 검토 기준 cycle 797→810 + §3.6 "음성·영상 SFU 그룹 통화" 신설(server/client/UI/배선 종단 IMPLEMENTED, PR#12/#13) + §4.1 회수 2건 추가(Structure ERD drift 794 회수 + mesh≤8 부정확 정정). checker [PASS] 복귀. Codex P0 잔여 = Specification/CheckList 과거 "예정" 표현 sweep(후속) (docs/assessments)
 - [2026-05-25 20:00:00] cycle 169.810 — 음성·영상 SFU 그룹 통화 **종단 코드 완결 + PR #13 main merge**. cycle 809 MainWindow 합성(SfuCallMixin bases + _init_sfu_call + "그룹 통화 시작"(Ctrl+Shift+G) 메뉴 entry + _sfu_call_mixin attr 정렬 self._signaling→_signaling_client[807 broken 사전 회수, app/main.py:397 실 attr]) 반영. PR #13(M4a SfuCallClient 804 + M4b-1 dispatch/send 805 + M4b-2a GroupCallDialog 806 + M4b-2b SfuCallMixin 807 + 합성 809) CI 10/10 GREEN merge(60348d2). server(PR#12)+client net+UI+배선+entry 종단 완결. 잔여=visual ack 후반 일괄 (app/ui · README/History)
-- [2026-05-25 19:30:00] cycle 169.808 — 평가 2종 staleness refresh (hook_assessment_freshness — 802 이후 6 commit) — 음성·영상 SFU 그룹 통화 전 경로 코드 완결 반영. server(M3a/b/c PR#12 merge) + client net(M4a SfuCallClient 804, M4b-1 SignalingClient SFU dispatch/send 805) + UI(M4b-2a GroupCallDialog 806) + 배선(M4b-2b SfuCallMixin 807, PR#13). reviewer-gate 9 feat 전수 PASS. 잔존=MainWindow 합성+visual ack 큐. 점수 7.6/8.4 변동 부재 (docs/assessments · docs/html)
 ---
 
 **문서 상태**: `active` · 최초 작성 2026-05-17 · M2 변경 이력 30행 캐시
