@@ -101,6 +101,62 @@ class TestRoomCreate:
         with pytest.raises(web.HTTPBadRequest, match="kind"):
             await handle_create_room(req)
 
+    @pytest.mark.asyncio
+    async def test_create_with_avatar_ref_and_name_201(
+        self, app_with_pool, monkeypatch
+    ) -> None:
+        # 한글 주석 — cycle 169.852 M4: group/channel 서버 room 생성 시 name+avatar_ref
+        # 영속 + 응답 반환. avatar_exists(sync 디스크 gate)는 실재 True 로 mock.
+        captured = {}
+
+        async def _insert_room(pool, **kwargs):
+            captured.update(kwargs)
+            return 91
+
+        ref = "avatars/" + ("a" * 64) + ".png"
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.rooms_repo.insert_room", _insert_room
+        )
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.rooms_repo.insert_peer",
+            AsyncMock(return_value=1),
+        )
+        monkeypatch.setattr(
+            "server.api.rooms_handlers.log_activity", AsyncMock(return_value=None)
+        )
+        monkeypatch.setattr(
+            "server.api.rooms_handlers._avatars_repo.avatar_exists",
+            MagicMock(return_value=True),
+        )
+        req = _FakeRequest(
+            "POST", app_with_pool, user_id=10,
+            body={"kind": "group", "name": "내 그룹", "avatar_ref": ref},
+        )
+        resp = await handle_create_room(req)
+        assert resp.status == 201
+        data = json.loads(resp.body)
+        assert data["avatar_ref"] == ref
+        assert data["name"] == "내 그룹"
+        # insert_room 에 name/avatar_ref 전달 확인
+        assert captured.get("name") == "내 그룹"
+        assert captured.get("avatar_ref") == ref
+
+    @pytest.mark.asyncio
+    async def test_create_nonexistent_avatar_ref_400(
+        self, app_with_pool, monkeypatch
+    ) -> None:
+        # 한글 주석 — avatar_ref 미실재(위조/삭제) → 400 (avatar_exists False)
+        monkeypatch.setattr(
+            "server.api.rooms_handlers._avatars_repo.avatar_exists",
+            MagicMock(return_value=False),
+        )
+        req = _FakeRequest(
+            "POST", app_with_pool, user_id=10,
+            body={"kind": "group", "avatar_ref": "avatars/" + ("b" * 64) + ".png"},
+        )
+        with pytest.raises(web.HTTPBadRequest, match="avatar_ref 미실재"):
+            await handle_create_room(req)
+
 
 class TestRoomJoin:
     @pytest.mark.asyncio
