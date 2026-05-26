@@ -7,7 +7,7 @@ status: active
 
 # Session Handoff — cycle 169.488~551 (2026-05-24 신설)
 
-> 본 doc = 본 session 종료 시점 다음 session 진입 첫 액션 manifest. main handoff [2026-05-17-session-handoff.md](2026-05-17-session-handoff.md) §8.80 + §8.81 + §8.82 본문 압축 발췌 + 직접 진입 명령 정의.
+> 본 doc = 본 session 종료 시점 다음 session 진입 첫 액션 manifest. main handoff [2026-05-17-session-handoff.md](../active/2026-05-17-session-handoff.md) §8.80 + §8.81 + §8.82 본문 압축 발췌 + 직접 진입 명령 정의.
 
 ---
 

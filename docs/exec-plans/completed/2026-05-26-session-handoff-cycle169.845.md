@@ -116,10 +116,10 @@ QT_QPA_PLATFORM=offscreen python3 -m pytest tests/app tests/server -q
 
 ## 6. 참조
 
-- room migration Exec Plan: [2026-05-26-room-broadcast-unified-chatview-migration.md](2026-05-26-room-broadcast-unified-chatview-migration.md) — M1~M6 단계 + G-final + 결정 로그 D-1~D-8 + 위험/롤백 + DoD 10
+- room migration Exec Plan: [2026-05-26-room-broadcast-unified-chatview-migration.md](../active/2026-05-26-room-broadcast-unified-chatview-migration.md) — M1~M6 단계 + G-final + 결정 로그 D-1~D-8 + 위험/롤백 + DoD 10
 - 직전 handoff: [2026-05-26-session-handoff-cycle169.838.md](2026-05-26-session-handoff-cycle169.838.md)
 - 평가 snapshot: [productization](../../assessments/productization.md) 7.6/10 · [vibe-coding](../../assessments/vibe-coding.md) 8.4/10 (cycle 169.842 동기)
-- 관련 Exec Plan: [2026-05-25-telegram-group-management.md](2026-05-25-telegram-group-management.md) (`_member_list` group-management — M5b idx 재번호 조율 대상)
+- 관련 Exec Plan: [2026-05-25-telegram-group-management.md](../active/2026-05-25-telegram-group-management.md) (`_member_list` group-management — M5b idx 재번호 조율 대상)
 - 가드레일 인덱스: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md`
 
 ---

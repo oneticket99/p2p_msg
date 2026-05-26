@@ -52,19 +52,23 @@ main HEAD = `3b1a6dd` (PR #26 squash merge).
 ## 3. 잔존 task (우선순위 순)
 
 ### 3-1. group-flow e2e/isolated test 재설계 (최우선, 본 session 미착수)
+
 - **현 상태**: 서버측 create/join/invite/kick 는 integration test 존재 (`tests/integration/test_room_create_join_leave_e2e.py` · `test_room_invite_kick_e2e.py`).
 - **요청 directive**: "e2e isolated test 방식 = 방장이 그룹만들기로 그룹 추가 → 참가자 추가 → 초대를 통해 진입하는 방식". 즉 방번호 입력(`_on_open_room_dialog` 폐지)이 아닌 client UI 전 flow.
 - **착수점**: `tests/app/ui/test_main_window_rooms.py` 의 `room_entered.emit(N)` 직접 trigger 방식을 "그룹 만들기 wizard(`_on_drawer_new_group`) → `group_created` signal → 멤버 초대" 체인으로 재구성. NewGroupDialog + 초대 flow 검증.
 - **주의**: offscreen 가드(`_exec_dialog_centered` non-blocking) 정합 유지.
 
 ### 3-2. 사용자 dogfooding ack — cycle838 빌드
+
 - `open dist/TooTalk.app` (로컬 빌드, 198M). in-app 모달 시각 확인: 멤버 보기·연락처·설정·프로필·통화·얼럿(ConfirmDialog) 전부 메인 레이아웃 안 overlay 인지.
 - "방 입장" 메뉴 제거 확인. 새창 = 원격제어 상대화면 창만.
 
 ### 3-3. manual visual ack 일괄 시연 (후반, 비차단)
+
 - feedback_visual_ack_batched_later — 실 OS / 다중 화면 / 원격 M4(G3) / SFU G4(다중 미디어 캡처). dev 증분 비차단, 후반 일괄.
 
 ### 3-4. (보류) streaming
+
 - project_streaming_deprioritized — chzzk/kick/twitch + oauth + receive_loop 가장 후순위. youtube_client 삭제 완료. 당장 불필요.
 
 ---
@@ -84,15 +88,19 @@ main HEAD = `3b1a6dd` (PR #26 squash merge).
 
 ```bash
 # 현 위치 확인
+
 cd /Users/1ticket/Documents/vscode_work/p2p_msg && git log --oneline -3
 
 # group-flow test 재설계 착수 — 현 rooms test + 그룹 만들기 flow 파악
+
 grep -n 'room_entered.emit\|_on_drawer_new_group\|group_created' tests/app/ui/test_main_window_rooms.py app/ui/_drawer_mixin.py
 
 # in-app 모달 정본 정독
+
 sed -n '/## 16. 다이얼로그 모달 정책/,/## 17/p' FRONTEND.md
 
 # 빌드 dogfooding
+
 open dist/TooTalk.app
 ```
 
@@ -101,6 +109,6 @@ open dist/TooTalk.app
 ## 6. 참조
 
 - [FRONTEND.md §16](../../../FRONTEND.md) — 다이얼로그 모달 정책 (in-app overlay + 별도 윈도우 예외 4종)
-- [main handoff 2026-05-17](2026-05-17-session-handoff.md) — 누계 manifest 정본
+- [main handoff 2026-05-17](../active/2026-05-17-session-handoff.md) — 누계 manifest 정본
 - [productization snapshot](../../assessments/productization.md) · [vibe-coding snapshot](../../assessments/vibe-coding.md) — cycle 838 동기
 - 가드레일 인덱스: `~/.claude/projects/-Users-1ticket-Documents-vscode-work-p2p-msg/memory/MEMORY.md`

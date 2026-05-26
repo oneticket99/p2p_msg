@@ -7,7 +7,7 @@ status: active
 
 # Session Handoff — cycle 169.850 (2026-05-26)
 
-> 본 doc = 본 session 종료 시점 다음 session 진입 첫 액션 manifest. codex 평가 §8 직접 작업 큐 **auto-completable 전건 회수 완결**(§8-1 ResourceWarning + §8-3 SFU coverage sfu_call_client·sfu_room + M6 WBS ack/backfill) + productization.html 빈 화면 회귀 회수. 직전 handoff [2026-05-26-session-handoff-cycle169.849.md](2026-05-26-session-handoff-cycle169.849.md) 후속(M6 WBS ack + sfu_room coverage 완결로 소비됨).
+> 본 doc = 본 session 종료 시점 다음 session 진입 첫 액션 manifest. codex 평가 §8 직접 작업 큐 **auto-completable 전건 회수 완결**(§8-1 ResourceWarning + §8-3 SFU coverage sfu_call_client·sfu_room + M6 WBS ack/backfill) + productization.html 빈 화면 회귀 회수. 직전 handoff [2026-05-26-session-handoff-cycle169.849.md](../completed/2026-05-26-session-handoff-cycle169.849.md) 후속(M6 WBS ack + sfu_room coverage 완결로 소비됨).
 
 ---
 
@@ -122,7 +122,7 @@ QT_QPA_PLATFORM=offscreen python3 -m pytest tests/app tests/server -q
 
 - codex 평가: [current-project-review.md](../../assessments/current-project-review.md) — §8 Claude 직접 작업 큐 (다음 우선순위 정본, cycle 850 동기)
 - room migration Exec Plan: [2026-05-26-room-broadcast-unified-chatview-migration.md](2026-05-26-room-broadcast-unified-chatview-migration.md) — M1~M5b 완결(archive 후보)
-- 직전 handoff: [2026-05-26-session-handoff-cycle169.849.md](2026-05-26-session-handoff-cycle169.849.md)
+- 직전 handoff: [2026-05-26-session-handoff-cycle169.849.md](../completed/2026-05-26-session-handoff-cycle169.849.md)
 - 평가 snapshot: [productization](../../assessments/productization.md) 7.6/10 · [vibe-coding](../../assessments/vibe-coding.md) 8.4/10 (cycle 169.850 동기)
 - SFU 단위 test 패턴: `tests/server/test_sfu_room.py`(sfu_room) · `tests/app/net/test_sfu_call_client.py`(sfu_call_client)
 - 가드레일 인덱스: `~/.claude/projects/-Users-oneticket-toonation-Documents-vscode-work-p2p-msg/memory/MEMORY.md`

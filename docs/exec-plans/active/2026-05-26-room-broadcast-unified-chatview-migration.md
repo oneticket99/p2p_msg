@@ -12,7 +12,7 @@ related_code: ["app/ui/main_window.py", "app/ui/_room_group_chat_mixin.py", "app
 
 > 정본 정합: [CLAUDE_HARNESS_IMPORTANT.md §B 5단계 워크플로우](../../../CLAUDE_HARNESS_IMPORTANT.md) · [§C 7역할](../../../CLAUDE_HARNESS_IMPORTANT.md) · [§D Exec Plans](../../../CLAUDE_HARNESS_IMPORTANT.md) · [§A M1~M7](../../../CLAUDE_HARNESS_IMPORTANT.md)
 > 운영: [CLAUDE.md §2 워크플로우](../../../CLAUDE.md) · 저장소 맵: [AGENTS.md](../../../AGENTS.md)
-> handoff 출처: [2026-05-26-session-handoff-cycle169.838.md](2026-05-26-session-handoff-cycle169.838.md)
+> handoff 출처: [2026-05-26-session-handoff-cycle169.838.md](../completed/2026-05-26-session-handoff-cycle169.838.md)
 > 본 문서는 실행/검증/결정 기록 문서다. TODO 목록이 아니다. ② 개발 단계는 main session 이 후속 수행하며, 본 planning 산출물은 코드보다 먼저 존재한다 (M1).
 > directive 출처: 사용자 "legacy room broadcast path → unified ChatView/group flow migration 으로 scope 확정 (dead code 제거가 아님)".
 
@@ -397,7 +397,7 @@ flowchart LR
 - 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) §A M1~M7 · §B 5단계 워크플로우 · §C 7역할 · §D Exec Plans
 - 운영: [CLAUDE.md](../../../CLAUDE.md) §2 워크플로우 · §3 7 프로세스 에이전트 · §5 spawn 프롬프트 표준
 - 저장소 맵: [AGENTS.md](../../../AGENTS.md) §3 문서 맵 · §4 워크플로우
-- handoff: [2026-05-26-session-handoff-cycle169.838.md](2026-05-26-session-handoff-cycle169.838.md)
+- handoff: [2026-05-26-session-handoff-cycle169.838.md](../completed/2026-05-26-session-handoff-cycle169.838.md)
 - 관련 Exec Plan: [2026-05-25-telegram-group-management.md](2026-05-25-telegram-group-management.md) (그룹 멤버 관리 — 본 계획과 멤버 보기 진입점 공유, 책임 분리)
 - test 참조 모델: `tests/app/ui/test_main_window_rooms.py` (cycle 169.839 wizard chain 재작성 — 본 마이그레이션 목표 패턴)
 - 정책: [docs/policies/](../../policies/) execution-harness · doc-gardening · adoption-roadmap

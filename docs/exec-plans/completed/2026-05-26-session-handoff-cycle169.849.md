@@ -116,7 +116,7 @@ QT_QPA_PLATFORM=offscreen python3 -m pytest tests/app tests/server -q
 
 ## 6. 참조
 
-- room migration Exec Plan: [2026-05-26-room-broadcast-unified-chatview-migration.md](2026-05-26-room-broadcast-unified-chatview-migration.md) — M1~M5b 완결 + §0.0 재진입 메모
+- room migration Exec Plan: [2026-05-26-room-broadcast-unified-chatview-migration.md](../active/2026-05-26-room-broadcast-unified-chatview-migration.md) — M1~M5b 완결 + §0.0 재진입 메모
 - codex 평가: [current-project-review.md](../../assessments/current-project-review.md) — §8 Claude 직접 작업 큐 (다음 우선순위 정본)
 - 직전 handoff: [2026-05-26-session-handoff-cycle169.845.md](2026-05-26-session-handoff-cycle169.845.md)
 - 평가 snapshot: [productization](../../assessments/productization.md) 7.6/10 · [vibe-coding](../../assessments/vibe-coding.md) 8.4/10 (cycle 169.849 동기)
