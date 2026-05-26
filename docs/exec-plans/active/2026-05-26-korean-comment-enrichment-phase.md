@@ -1,11 +1,11 @@
 ---
 title: "한글 주석 상세화 페이즈 — 소스코드 docstring + inline 주석 의도/제약/부작용/참조 보강 (주석 전용 트랙)"
 owner: oneticket99
-status: draft
+status: active
 created: 2026-05-26
-last_verified: 2026-05-26
+last_verified: 2026-05-27
 target_completion: 2026-06-30
-related_code: ["server/db/repositories/*.py", "server/api/*_handlers.py", "app/net/*_client.py", "app/rtc/*.py", "app/ui/_*_mixin.py", "app/ui/*_dialog.py"]
+related_code: ["server/db/repositories/*.py", "server/api/*_handlers.py", "app/net/*_client.py", "app/rtc/*.py", "app/ui/_*_mixin.py", "app/ui/*_dialog.py", "tests/**/*.py"]
 ---
 
 # 한글 주석 상세화 페이즈 — docstring + inline 주석 의도/제약/부작용/참조 보강
@@ -68,6 +68,7 @@ read-only 코드 정독 (2026-05-26 — `app/rtc/peer.py` · `server/db/reposito
 - **app/net client 주석 보강 (M4)** — `app/net/*_client.py` (16 파일). REST 계약·재시도/타임아웃 정책·SSL 우회(_ssl_util) 의도 명시.
 - **app/rtc 주석 보강 (M5)** — `app/rtc/*.py` (peer/file_sender/file_receiver/mesh_manager/protocol/image_processor). WebRTC 상태 머신 전이·DataChannel 메시지 계약·메모리 release 의도(feedback_objc_memory_release_mandatory 정합) 명시.
 - **app/ui mixin + dialog 주석 보강 (M6)** — `app/ui/_*_mixin.py` (22 파일) + `app/ui/*_dialog.py`. filler `한글 주석 —` 패턴을 의도 기반 주석으로 전환. signal/slot 계약·`self.*` 의존 출처·QWidget 생명주기 부작용 명시.
+- **test 코드 주석 보강 (M7 — 사용자 directive 2026-05-27 "e2e 테스트 파일까지 모두 보강")** — `tests/app/**`·`tests/server/**`·`tests/e2e/**` 전량. module docstring 에 test 대상·전략(offscreen/mock/fixture) 명시 + test 함수 docstring/inline 에 **무엇을 왜 검증하는가**(회귀 회수 근거·edge case 의도·oracle). assert/fixture/parametrize 동작 라인 불변(기능 diff 0).
 - **주석 표준 문서 정착 (전 영역)** — §4 주석 표준을 `docs/policies/` 하위 또는 본 Exec Plan §4 에 정본화. (루트 신규 마크다운 금지 — docs/ 하위만.)
 - **검증 안전망 (전 영역)** — 영역별 `git diff` 의 비주석 라인 0 확인 + `pytest tests/` 전량 무변경 PASS + BPE/대명사 hook PASS + `@reviewer-agent` 주석↔코드 정합.
 
@@ -81,8 +82,7 @@ read-only 코드 정독 (2026-05-26 — `app/rtc/peer.py` · `server/db/reposito
 - **과잉 주석(over-commenting) 금지** — 자명한 코드의 1:1 설명(`i += 1  # i 를 1 증가`)은 금지. 주석은 "왜" 가 비자명할 때만. filler `한글 주석` 을 또 다른 filler 로 치환하는 것은 위반.
 - **기능/동작 변경 절대 금지** — statement/expression/제어흐름 일절 불변. 본 페이즈는 주석·docstring·공백 라인만 touch. 동작 변경은 별도 directive.
 - **리팩터링 동반 금지** — "주석 달다 보니 코드도 정리" 패턴 금지. 코드 구조 변경은 본 페이즈 게이트(기능 diff 0)를 깨므로 별도 directive.
-- **test 코드 주석 보강 (1차 범위 외)** — `tests/` 하위 주석은 본 페이즈 후순위. 1차는 production 소스(app/ + server/) 한정.
-- **신규 test 추가 금지** — 본 페이즈는 주석 전용. 기존 test 무변경 PASS 가 oracle 이지 신규 test 작성은 부재(기능 변경 부재이므로 검증할 신규 동작 없음).
+- **신규 test 추가 금지** — 본 페이즈는 주석 전용. 기존 test 무변경 PASS 가 oracle 이지 신규 test 작성은 부재(기능 변경 부재이므로 검증할 신규 동작 없음). test 파일도 **주석/docstring 만** 보강하며 assert/fixture/parametrize 등 동작 라인은 일절 불변.
 - **markdownlint / doc-lint 적용 범위 외** — 본 작업 산출물은 코드 주석(`.py`)이지 마크다운 문서가 아니다. lint 게이트는 본 Exec Plan 문서 자체에만 적용(M2/M3 정합), 코드 주석은 BPE/대명사/AST hook 만 적용.
 - **자동 docstring 생성 도구(LLM bulk) 일괄 적용 금지** — bulk 생성은 오기술 위험이 크다. 영역별 수동 + reviewer 정합 게이트가 의무. 도구 보조는 초안까지만, 정합 검증은 사람/reviewer 책임.
 
@@ -145,7 +145,8 @@ blast radius 역순 분해. 각 마일스톤 종료 시 `@reviewer-agent` 주석
 | **M4** | `app/net/*_client.py` 전량 | 16 | 저 | 의무 — REST 계약·SSL 우회 의도 정합 | pytest 전량 무변경 PASS + diff 비주석 0 |
 | **M5** | `app/rtc/*.py` 전량 | 6 | 중 (상태 머신·메모리 release 의도) | 의무 — 상태 전이·release 의도 정합 | pytest 전량 무변경 PASS + diff 비주석 0 |
 | **M6** | `app/ui/_*_mixin.py` (22) + `app/ui/*_dialog.py` | 22+ | 중 (filler `한글 주석` 355회 전환) | 의무 — filler 전환 + signal 계약 정합 + diff 주석만 | offscreen pytest 전량 무변경 PASS + diff 비주석 0 |
-| **G-final** | 전 영역 통합 | 전체 | — | 사용자 게이트 | `git diff` 누계 비주석 0 + pytest 전량 무변경 + 사용자 GO/NO-GO (표준 정합 sample 육안 확인) |
+| **M7** | `tests/app/**` + `tests/server/**` + `tests/e2e/**` 전량 (사용자 directive 2026-05-27) | 전체 test | 중 (assert/fixture 오변경 시 회귀) | 의무 — test 의도/oracle 주석 정합 + diff 주석만 | pytest 전량 무변경 PASS + diff 비주석 0 (assert/fixture 불변) |
+| **G-final** | 전 영역 통합(production + test) | 전체 | — | 사용자 게이트 | `git diff` 누계 비주석 0 + pytest 전량 무변경 + 사용자 GO/NO-GO (표준 정합 sample 육안 확인) |
 
 ### 5.1 Gantt (mermaid)
 
@@ -187,7 +188,9 @@ gantt
 | T-6 | M5 | `app/rtc/*.py` 상태 머신 전이·DataChannel 계약·메모리 release 의도 주석 | main session | T-5 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `app/rtc/*.py` (6) | todo |
 | T-7 | M6 | `app/ui/_*_mixin.py` filler `한글 주석` 패턴 → 의도 기반 전환 + signal/slot 계약 | main session | T-6 | offscreen pytest 무변경 + filler 카운트 감소 + diff 주석만 | `app/ui/_*_mixin.py` (22) | todo |
 | T-8 | M6 | `app/ui/*_dialog.py` 동일 전환 + QWidget 생명주기 부작용 주석 | main session | T-7 | offscreen pytest 무변경 + diff 주석만 | `app/ui/*_dialog.py` | todo |
-| T-9 | G-final | 전 영역 누계 diff 비주석 0 검증 + pytest 전량 무변경 PASS + 사용자 ack | main session | T-1~T-8 | CI 3종 GREEN + diff 검증 스크립트 PASS | (검증 산출 — 코드 무변경) | todo |
+| T-10 | M7 | `tests/server/**` + `tests/e2e/**` module/함수 docstring(대상·전략·oracle·회귀 근거) | main session | T-4 | pytest 전량 무변경 + diff 비주석 0 (assert/fixture 불변) | `tests/server/**` · `tests/e2e/**` | todo |
+| T-11 | M7 | `tests/app/**` module/함수 docstring(offscreen 전략·mock·회귀 의도) | main session | T-8 | offscreen pytest 무변경 + diff 비주석 0 | `tests/app/**` | todo |
+| T-9 | G-final | 전 영역 누계 diff 비주석 0 검증 + pytest 전량 무변경 PASS + 사용자 ack | main session | T-1~T-8, T-10, T-11 | CI 3종 GREEN + diff 검증 스크립트 PASS | (검증 산출 — 코드 무변경) | todo |
 
 > 담당 = main session 직접 작업 (본 저장소에 `@backend-agent`/`@frontend-agent` 미존재 — CLAUDE.md §2). 각 영역(파일군) 완료 직후 `@reviewer-agent` → `@qa-agent` → `@observability-agent` 직렬 게이트 + 즉시 commit/push (M5 가드레일). 1 파일군 = 1 commit 권장(M5 per-file 정합, 단 주석 전용이라 동일 영역 묶음 허용).
 
@@ -223,7 +226,9 @@ gantt
 | D-5 | blast radius 차등 + 정본 §E 계층 | 영역 순서 = server repository → server api → app/net → app/rtc → app/ui. 깊은 계층(오기술 blast 大) 먼저 | 고위험 영역을 초반 reviewer 집중 구간에 배치. ui filler(355회) 는 후반 |
 | D-6 | 과잉 주석 위험 + 영문 식별자 한글화 금지(directive 비목표) | 자명 코드 1:1 설명 금지(D5) + 식별자 rename 0(D8). 주석은 "왜" 비자명할 때만 | filler 를 또 다른 filler 로 치환하는 것은 위반. 식별자 변경 = 별도 directive |
 
-> 본 로그는 작성자(planning-agent) 또는 사용자 명시 승인 없이 임의 수정 금지. 추가 결정은 D-7 이후 append.
+| D-7 | 사용자 2026-05-27 "한글 주석 보강을 하는데 e2e 테스트 파일까지 모두 보강해" | (1) draft → **active** 전이(GO). (2) test 코드(`tests/app`·`tests/server`·**`tests/e2e`**)를 범위 외 → **M7 in-scope** 편입(TD-1 해소). test 도 주석/docstring 만 — assert/fixture 동작 라인 불변(기능 diff 0 동일 적용) | M7(T-10/T-11) 신설. G-final 범위 = production + test 통합 누계 diff 비주석 0 |
+
+> 본 로그는 작성자(planning-agent) 또는 사용자 명시 승인 없이 임의 수정 금지. 추가 결정은 D-8 이후 append.
 
 ---
 
@@ -233,7 +238,7 @@ gantt
 
 | id | 부채 | 사유 | 해소 시점 |
 |---|---|---|---|
-| TD-1 | `tests/` 하위 주석 미보강 | 1차 범위 = production 소스(app/+server/) 한정 | 본 페이즈 M6 종료 후 후속 directive (test 주석 보강 2차 트랙) |
+| TD-1 | ~~`tests/` 하위 주석 미보강~~ **해소** | 사용자 directive 2026-05-27 "e2e 테스트 파일까지 모두 보강" → M7 로 본 페이즈 in-scope 편입 | 본 페이즈 M7(T-10/T-11) 에서 처리 — 별도 트랙 부재 |
 | TD-2 | 주석↔코드 정합의 지속(stale) 보장 부재 | 본 페이즈는 1회성 보강. 이후 코드 변경 시 주석 drift 가능 | doc-gardener-agent 주 1회 sweep 에 "코드 주석 stale 표본 점검" 항목 추가 검토 (feedback_doc_consistency_mandatory 정합) |
 | TD-3 | 주석 표준의 자동 lint 강제 부재 | docstring 4 계층 충족을 CI 가 기계 검증하지 못함(현재 reviewer 수동) | flake8-docstrings / pydocstyle 도입 검토 directive (M1 표준 정착 후) |
 | TD-4 | filler `한글 주석` 패턴 재발 방지 hook 부재 | M4(주석 1줄 의무) 충족용 filler 가 재생산될 여지 | feedback_bpe_script_trigger_warning 패턴 등가 — filler 검출 PreToolUse hook 검토(다음 filler 대량 발견 시) |
@@ -353,4 +358,4 @@ flowchart TD
 
 ---
 
-마지막 갱신: 2026-05-26 (planning-agent 초안 — 한글 주석 상세화 페이즈 Exec Plan 신설, 주석 전용 트랙)
+마지막 갱신: 2026-05-27 (사용자 GO directive — status active 전이 + test(e2e 포함) M7 in-scope 편입(D-7/TD-1 해소) + T-10/T-11 신설. blast radius 역순 M1~M6 production → M7 test → G-final)
