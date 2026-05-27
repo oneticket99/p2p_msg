@@ -1,10 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiortc RTCPeerConnection + DataChannel actual binding skeleton (cycle 167 신설).
 
-mesh_manager (cycle 138 skeleton + cycle 158 broadcast_payload) 의 placeholder
-peer 본격 actual chain.
+역할 — 단일 peer 의 RTCPeerConnection + DataChannel 수명(offer/answer/ICE/연결/
+close)을 wrapping 한다. mesh_manager 의 placeholder peer 를 본격 binding 으로 대체.
 
-설계:
+계층 위치 — app/rtc 계층(정본 §E). MeshManager 가 peer 당 1개 생성하고, SDP/ICE
+교환은 signaling WS(app/net)를 경유한다. onmessage → mesh_manager.dispatch_incoming.
+
+의존성 — `aiortc`(RTCPeerConnection/RTCDataChannel/RTCConfiguration, 미설치 graceful
+None bind + _AIORTC_AVAILABLE) + asyncio. UI 직접 의존 부재.
+
+범위 한계 — 단일 peer 연결 + DataChannel 송수신만. mesh fan-out 은 MeshManager,
+미디어 track 은 call/sfu client 책임. close 가 연결 자원 release(누수 차단).
+
+설계 / DataChannel 계약:
 - WebRTC offer/answer SDP signaling = signaling WS 경유
 - DataChannel = reliable ordered (TCP-like) message channel
 - ICE = STUN/TURN 기반 NAT traversal
@@ -22,7 +31,7 @@ from typing import Callable, Optional
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — aiortc graceful import (headless / test 환경)
+# aiortc graceful import (headless / test 환경)
 try:
     from aiortc import RTCConfiguration, RTCDataChannel, RTCIceServer, RTCPeerConnection
     from aiortc.contrib.signaling import object_from_string, object_to_string

@@ -1,11 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """WebRTC full-mesh manager — ≤ 8 peer fan-out (cycle 138 skeleton).
 
-cycle 138 skeleton — Phase 5 본격 cycle 에서 aiortc RTCPeerConnection
-실 binding 수행. 본 모듈은 mesh cap 검증 + peer dict 관리 + fan-out
-broadcast chain 만 제공.
+역할 — 그룹 룸의 full-mesh peer DataChannel 을 관리한다. cap 검증 후 peer 등록 →
+PeerConnectionWrapper 결선 → fan-out broadcast → 수신 dispatch → peer cleanup.
 
-9 peer 초과 시 MAX_MESH_PEERS 가드 → SFU 의무 (Phase 5 마무리).
+계층 위치 — app/rtc 계층(정본 §E). app/net signaling_client(SDP/ICE 교환)와 UI
+mixin 사이의 mesh 상태 보유자. `peer_connection.PeerConnectionWrapper` 를 협력 객체로 둔다.
+
+의존성 — `peer_connection`(lazy import, aiortc graceful) + `message_protocol`
+(payload 직렬화). aiortc 실 binding 은 Phase 5 본격 cycle — 본 모듈은 cap/dict/
+broadcast/dispatch 골격.
+
+범위 한계 — peer dict + fan-out + cap 검증만. 9 peer 초과는 MAX_MESH_PEERS 가드로
+거부(SFU 전환 의무, Phase 5 마무리). remove_peer 가 DataChannel + RTCPeerConnection
+close 로 자원 release 책임(누수 차단).
 """
 from __future__ import annotations
 
@@ -16,13 +24,17 @@ from typing import Callable, Optional
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — full-mesh 상한. 9 peer 초과 시 SFU 전환 의무 (Phase 5 마무리)
+# full-mesh 상한 — 초과 시 SFU 전환 의무(Phase 5 마무리). mesh 연결 수 = N(N-1)/2 폭증 방지
 MAX_MESH_PEERS = 8
 
 
 @dataclass(slots=True)
 class MeshPeer:
-    """한글 주석 — N-peer mesh 안 단일 peer connection 상태 보관."""
+    """N-peer mesh 안 단일 peer connection 상태.
+
+    불변식 — connected=True + data_channel not None 이어야 broadcast 대상.
+    rtc_peer_connection/data_channel 은 aiortc binding(Phase 5) 전까지 None.
+    """
 
     peer_id: str
     user_id: int
@@ -32,21 +44,25 @@ class MeshPeer:
 
 
 class MeshManager:
-    """한글 주석 — full-mesh N peer DataChannel + fan-out broadcast manager."""
+    """full-mesh N peer DataChannel + fan-out broadcast manager.
+
+    불변식 — peers 수 ≤ MAX_MESH_PEERS(add_peer cap 가드). 협력 — peer 당
+    PeerConnectionWrapper(DataChannel 송수신) + message_protocol(payload 직렬화).
+    """
 
     def __init__(self, room_id: int, self_peer_id: str) -> None:
-        # 한글 주석 — room_id + 자신 peer_id 보관 + peer dict 초기화
+        # room_id + 자신 peer_id 보관 + peer dict 초기화
         self.room_id = room_id
         self.self_peer_id = self_peer_id
         self.peers: dict[str, MeshPeer] = {}
         self._on_message: Optional[Callable[[str, dict], None]] = None
 
     def set_message_handler(self, handler: Callable[[str, dict], None]) -> None:
-        # 한글 주석 — 수신 DataChannel message handler 등록
+        # 수신 DataChannel message handler 등록
         self._on_message = handler
 
     async def add_peer(self, peer_id: str, user_id: int) -> bool:
-        # 한글 주석 — mesh cap 검증 후 신규 peer 등록. 초과/중복 시 False
+        # mesh cap 검증 후 신규 peer 등록. 초과/중복 시 False
         if len(self.peers) >= MAX_MESH_PEERS:
             log.warning("[mesh] MAX_MESH_PEERS 도달 — SFU 의무 (Phase 5)")
             return False
@@ -82,7 +98,7 @@ class MeshManager:
                 config=pc_config,  # type: ignore[arg-type]
                 on_message=lambda pid, raw: self.dispatch_incoming(raw),
             )
-            # 한글 주석 — MeshPeer 안 rtc_peer_connection + data_channel 직접 보관
+            # MeshPeer 안 rtc_peer_connection + data_channel 직접 보관
             self.peers[peer_id].rtc_peer_connection = wrapper
             # data_channel attribute = wrapper.send 등가 — broadcast_payload chain 정합
             self.peers[peer_id].data_channel = wrapper
@@ -92,7 +108,7 @@ class MeshManager:
             return None
 
     async def remove_peer(self, peer_id: str) -> None:
-        # 한글 주석 — peer cleanup + DataChannel + RTCPeerConnection close
+        # peer cleanup + DataChannel + RTCPeerConnection close
         peer = self.peers.pop(peer_id, None)
         if peer is None:
             return
@@ -108,7 +124,7 @@ class MeshManager:
                 pass
 
     async def broadcast(self, message: dict) -> int:
-        # 한글 주석 — 모든 connected peer 대상 DataChannel fan-out + 성공 count 반환
+        # 모든 connected peer 대상 DataChannel fan-out + 성공 count 반환
         import json
 
         payload = json.dumps(message, ensure_ascii=False)
@@ -158,16 +174,16 @@ class MeshManager:
         try:
             from app.net.message_protocol import MessagePayload
             payload = MessagePayload.from_json(raw_json)
-            # 한글 주석 — handler signature = (sender_peer_id, payload_or_dict)
+            # handler signature = (sender_peer_id, payload_or_dict)
             # 기존 호환 = dict, cycle 158 안 MessagePayload object 전달
             self._on_message(payload.sender, payload)  # type: ignore[arg-type]
         except Exception as exc:  # noqa: BLE001
             log.warning("[mesh] dispatch 실패 — %r", exc)
 
     def peer_count(self) -> int:
-        # 한글 주석 — 등록된 전체 peer 수 반환
+        # 등록된 전체 peer 수 반환
         return len(self.peers)
 
     def connected_count(self) -> int:
-        # 한글 주석 — connected=True 인 peer 만 count
+        # connected=True 인 peer 만 count
         return sum(1 for p in self.peers.values() if p.connected)
