@@ -52,7 +52,7 @@ def _mock_pool(*, lastrowid: int = 42, rowcount: int = 1) -> Any:
 
 class TestActivityAction:
     def test_29_actions_defined(self) -> None:
-        # 한글 주석 — cycle 169.586: cycle 144 ENUM 28 → 29 추가 (cycle 169.x 신규 1건 정합).
+        # cycle 169.586: cycle 144 ENUM 28 → 29 추가 (cycle 169.x 신규 1건 정합).
         actions = [a.value for a in ActivityAction]
         assert len(actions) == 29, f"ENUM count = {len(actions)}, expect 29"
         assert "signup" in actions
@@ -110,7 +110,7 @@ class TestLogActivityExecution:
             ip_address="1.2.3.4",
         )
         assert new_id == 101
-        # 한글 주석: 첫 호출 = INSERT user_activity_log
+        # 첫 호출 = INSERT user_activity_log
         first_call = cursor.execute.call_args_list[0]
         sql, params = first_call.args
         assert "INSERT INTO user_activity_log" in sql

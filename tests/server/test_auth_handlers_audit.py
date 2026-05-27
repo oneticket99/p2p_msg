@@ -83,7 +83,7 @@ class TestAuditPoolAbsent:
     @pytest.mark.asyncio
     async def test_audit_pool_none_skips(self) -> None:
         req = _FakeRequest(db_pool=None)
-        # 한글 주석: pool 부재 — raise 부재 + 정상 return
+        # pool 부재 — raise 부재 + 정상 return
         await _audit(req, user_id=1, action=ActivityAction.LOGIN)
 
     @pytest.mark.asyncio
@@ -100,7 +100,7 @@ class TestAuditPoolPresent:
         pool, cursor = _mock_pool()
         req = _FakeRequest(db_pool=pool, xff="203.0.113.5", ua="TooTalk/0.4.0")
         await _audit(req, user_id=42, action=ActivityAction.SIGNUP)
-        # 한글 주석: 첫 호출 = INSERT user_activity_log
+        # 첫 호출 = INSERT user_activity_log
         first_sql, params = cursor.execute.call_args_list[0].args
         assert "INSERT INTO user_activity_log" in first_sql
         assert params[0] == 42  # user_id
@@ -147,7 +147,7 @@ class TestAuditPoolPresent:
             metadata={"provider": "anthropic", "tokens": 128},
         )
         params = cursor.execute.call_args_list[0].args[1]
-        # 한글 주석: metadata_json (idx 5) JSON serialize
+        # metadata_json (idx 5) JSON serialize
         import json
 
         assert json.loads(params[5]) == {"provider": "anthropic", "tokens": 128}
@@ -165,9 +165,9 @@ class TestCreateSessionRow:
         first_sql, params = cursor.execute.call_args_list[0].args
         assert "INSERT INTO user_sessions" in first_sql
         assert params[0] == 42  # user_id
-        # 한글 주석: token_hash = SHA-256 hex 64자
+        # token_hash = SHA-256 hex 64자
         assert len(params[1]) == 64
-        # 한글 주석: 실 값 = SHA-256("my-secret-token-abc")
+        # 실 값 = SHA-256("my-secret-token-abc")
         import hashlib
 
         expected = hashlib.sha256(b"my-secret-token-abc").hexdigest()
@@ -198,7 +198,7 @@ class TestAuditGracefulException:
 
         pool.acquire = lambda: bad_acquire()
         req = _FakeRequest(db_pool=pool)
-        # 한글 주석: raise 부재 의무
+        # raise 부재 의무
         await _audit(req, user_id=1, action=ActivityAction.LOGIN)
 
 
@@ -211,7 +211,7 @@ class TestLogoutEndpoint:
 
         req = _FakeRequest(db_pool=None)
         req._app["session_store"] = {"test-token-xyz": 42}
-        # 한글 주석: aiohttp 의 request scope dict-like
+        # aiohttp 의 request scope dict-like
         req._user_id = 42
         req._token = "test-token-xyz"
         # __getitem__ + get
@@ -244,7 +244,7 @@ class TestLogoutEndpoint:
 
         req.get = get_attr  # type: ignore[attr-defined]
         await handle_logout(req)  # type: ignore[arg-type]
-        # 한글 주석: close_session UPDATE + log_activity INSERT 호출 검증
+        # close_session UPDATE + log_activity INSERT 호출 검증
         sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
         assert any("UPDATE user_sessions" in s and "end_reason" in s for s in sql_calls)
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
@@ -283,7 +283,7 @@ class TestLogoutEndpoint:
 
         req.json = _json  # type: ignore[attr-defined]
         response = await handle_profile_update(req)  # type: ignore[arg-type]
-        # 한글 주석 — cycle 169.587: cycle 169.395 actual UPDATE SQL chain swap fallout.
+        # cycle 169.587: cycle 169.395 actual UPDATE SQL chain swap fallout.
         # call_args_list[0] = UPDATE users, [1+] = INSERT user_activity_log (audit). 위치 search swap.
         sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
