@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 messages REST API client — Phase 3 사이클 62 + cycle 142 확장.
 
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `messages_handlers` counterpart.
+ChatView/main_window 가 호출. 두 client 동거(aiohttp lazy load + httpx CRUD).
+
 본 module 의 2 client 동거:
 
 1. ``MessagesClient`` (aiohttp) — cycle 60 의 lazy load client.
    ``GET /api/messages?room_id&start_ts_ms&end_ts_ms&limit`` 만 wrapping. ChatView
-   pre-fill / 구간 lazy load 의 의무.
+   pre-fill / 구간 lazy load 담당.
 
-2. ``MessagesRestClient`` (httpx) — cycle 142 신설 의 persistence + CRUD wrapper.
+2. ``MessagesRestClient`` (httpx) — cycle 142 신설 persistence + CRUD wrapper.
    cycle 141 의 server endpoint 4종 binding — POST / GET (paginated) / GET single /
-   DELETE. main_window 의 message_send_requested handler 의 의무 의존성.
+   DELETE. main_window 의 message_send_requested handler 가 의존.
 
 httpx 부재 graceful — ``MessagesRestClient`` 인스턴스화 시점 RuntimeError. module
 import 자체 는 차단 부재 (test collection 호환).
@@ -38,7 +41,7 @@ from typing import Any, Dict, List, Optional
 
 import aiohttp
 
-# 한글 주석 — httpx graceful: 미설치 환경 (test collection 등) 의 import 시점 차단 회피.
+# httpx graceful — 미설치 환경(test collection 등)에서 import 시점 차단 회피.
 try:
     import httpx  # type: ignore[import-not-found]
 

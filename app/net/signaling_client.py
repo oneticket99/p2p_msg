@@ -1,4 +1,15 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """SignalingClient — aiohttp WebSocket 기반 시그널링 클라이언트.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E)의 핵심. WebRTC peer 연결의 SDP/ICE
+교환 backbone 으로, UI(MainWindow/Call/Mesh mixin)가 본 client 의 signal 에 결선한다.
+다른 net client(REST)와 달리 본 client 는 상시 연결(WebSocket) + 자동 재연결 담당.
+
+의존성 — `aiohttp`(WebSocket) + PyQt6 `QObject`/`pyqtSignal` + `AppState`/`Config`.
+와이어 ``from``↔내부 ``from_`` 변환은 본 모듈 내장(server.protocol 미import 격리).
+
+범위 한계 — signaling envelope 송수신 + 연결 수명(재연결/reJOIN)만. 실 미디어/
+DataChannel 은 rtc 계층 책임. 본 client 는 슬롯으로 rtc 와 결합된다.
 
 시그널링 프로토콜은 ``server/protocol.py`` 와 ``server/README.md §3`` 의
 명세를 그대로 따른다.
