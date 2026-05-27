@@ -1,4 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """E2E 테스트 전용 픽스처 — Playwright 기반.
+
+테스트 전략 — Playwright 브라우저 자동화 픽스처 제공(이벤트 루프·시그널링 서버·page context).
+PyQt6 위젯 자동화는 본 영역 외(pytest-qt QTest). 본 conftest 는 e2e 디렉토리 공용 fixture 정의.
 
 DESIGN.md §10.6 정합 — Playwright 의 다음 3 영역 적용:
 
@@ -64,7 +68,7 @@ def live_signaling_server_url() -> Generator[str, None, None]:
             await app_runner.setup()
             site = web.TCPSite(app_runner, "127.0.0.1", 0)
             await site.start()
-            # 한글 주석: port=0 으로 OS 가 배정한 실제 포트를 읽어 Playwright 에 전달한다.
+            # port=0 으로 OS 가 배정한 실제 포트를 읽어 Playwright 에 전달한다.
             sockets = site._server.sockets if site._server is not None else []  # type: ignore[attr-defined]
             if not sockets:
                 raise RuntimeError("E2E signaling server socket 생성 실패")
