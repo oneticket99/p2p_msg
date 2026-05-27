@@ -1,7 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """client push token register chain (cycle 169.448 신설).
 
-사용자 directive — FCM 실시간 push 의무. client startup 시점 device token register.
+역할 — 클라이언트 startup 시점에 자신의 FCM device token 을 서버 push 경로에
+등록/해지한다. 동기 `urllib`(blocking) 호출 — net client 중 비동기 미적용 분.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `push_handlers.py` 의
+counterpart. 호출자는 Bearer auth_token + base_url 주입.
+
+의존성 — 표준 `urllib`(외부 의존 부재) + SSL context(demo self-signed 정합으로
+verify OFF). 실 FCM token 발급은 본 module 범위 외.
 
 본 module 범위:
 - ``register_device_token(base_url, auth_token, fcm_token, platform, label)`` — POST /api/push/register
@@ -9,7 +16,7 @@
 
 본 cycle 의 범위 외 (별 cycle):
 - FCM token 실 발급 chain — firebase-messaging Python client 부재. macOS APNs / Windows WNS native bridge 의무
-- 본 cycle = 사용자 manual paste 또는 placeholder token 의 의 register chain only
+- 본 cycle = 사용자 manual paste 또는 placeholder token 의 register chain only
 """
 
 from __future__ import annotations
@@ -55,6 +62,7 @@ def register_device_token(
         method="POST",
     )
     try:
+        # demo self-signed cert 정합 — TLS 검증 OFF(실서비스 전환 시 verify 의무, _ssl_util 참조)
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
@@ -87,6 +95,7 @@ def unregister_device_token(
         method="DELETE",
     )
     try:
+        # demo self-signed cert 정합 — TLS 검증 OFF(실서비스 전환 시 verify 의무, _ssl_util 참조)
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
