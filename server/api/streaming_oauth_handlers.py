@@ -1,6 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — 4 platform OAuth2 token chain (Phase 5 cycle 169.486).
 
+역할 — 방송 도우미 봇이 쓰는 4 플랫폼(twitch/youtube/chzzk/kick) OAuth2
+authorization code flow 를 중개한다. authorize URL 발급 → callback code 교환 →
+refresh → 상태 조회 → 삭제까지의 토큰 수명을 관리한다.
+
+계층 위치 — server API handler 계층(정본 §E). start/refresh/status/delete 는
+Bearer 의무, callback 은 브라우저 redirect 着地점(state token 으로 CSRF 방어).
+토큰 영속은 `streaming_oauth_tokens` repository 에 위임한다.
+
+의존성 — aiohttp `web` + httpx async client(code/refresh 교환) + state in-memory
+store(5분 TTL, 분산 시 Redis 의무) + `streaming_oauth_tokens` repository.
+client_id/secret/redirect_uri 는 env 주입(미설정 시 503 NOT_CONFIGURED).
+
+범위 한계 — OAuth 토큰 수명 관리만. 실 chat 송수신(IRC/EventSub/WebSocket)·토큰
+사용 방송 기능은 별개 bot runtime 경로. state store 는 단일 프로세스 가정.
+
+엔드포인트 카탈로그(실 함수 5 + helper 7 + register):
+- `handle_oauth_start`     POST   /api/streaming/oauth/start      — authorize URL.
+- `handle_oauth_callback`  GET    /api/streaming/oauth/callback   — code 교환.
+- `handle_oauth_refresh`   POST   /api/streaming/oauth/refresh    — access 갱신.
+- `handle_oauth_status`    GET    /api/streaming/oauth/status     — 보유 조회.
+- `handle_oauth_delete`    DELETE /api/streaming/oauth/{platform} — 삭제.
+- helper: `_purge_expired_states`/`_get_platform_config`/`_redirect_uri`/
+  `_exchange_code_for_token`/`_refresh_access_token`/`_html_response` + register.
+
 엔드포인트:
 - ``POST /api/streaming/oauth/start`` — OAuth URL 생성 + state token persist
 - ``GET /api/streaming/oauth/callback`` — code → tokens exchange + DB persist
@@ -41,14 +65,14 @@ from server.db.repositories import streaming_oauth_tokens as _tok_repo
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — state token 의 in-memory store (5분 TTL). 분산 환경 시 Redis 의무.
+# state token 의 in-memory store (5분 TTL). 분산 환경 시 Redis 의무.
 # state = CSRF 방지 + user_id binding 의 짝. {state: (user_id, platform, ts)}.
 _STATE_STORE: dict[str, tuple[int, str, float]] = {}
 _STATE_TTL_SECONDS = 300
 
 _DEFAULT_REDIRECT = "https://114.207.112.73:8443/api/streaming/oauth/callback"
 
-# 한글 주석 — platform 별 OAuth2 endpoint 정의
+# platform 별 OAuth2 endpoint 정의
 _PLATFORM_CONFIG = {
     "twitch": {
         "authorize_url": "https://id.twitch.tv/oauth2/authorize",
@@ -148,7 +172,7 @@ async def handle_oauth_start(request: web.Request) -> web.Response:
         "state": state,
     }
     if platform == "youtube":
-        # 한글 주석 — Google OAuth2 안 offline access + consent prompt 의무 (refresh_token 발급)
+        # Google OAuth2 안 offline access + consent prompt 의무 (refresh_token 발급)
         params["access_type"] = "offline"
         params["prompt"] = "consent"
 
@@ -207,7 +231,7 @@ async def handle_oauth_callback(request: web.Request) -> web.Response:
             status=503,
         )
 
-    # 한글 주석 — code → token exchange POST request (httpx async client)
+    # code → token exchange POST request (httpx async client)
     try:
         token_data = await _exchange_code_for_token(
             cfg=cfg, code=code, client_id=client_id, client_secret=client_secret,
@@ -426,7 +450,7 @@ async def _refresh_access_token(
 
 
 def _html_response(body: str, *, status: int = 200) -> web.Response:
-    """callback chain 안 HTML 응답 helper (브라우저 의 의무 visible)."""
+    """callback chain 의 HTML 응답 helper (브라우저에 바로 보이는 페이지)."""
     html = (
         "<!DOCTYPE html><html><head>"
         "<meta charset='utf-8'>"

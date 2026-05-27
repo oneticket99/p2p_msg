@@ -1,9 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — Bot LLM proxy (Phase 3 사이클 74).
 
+역할 — 클라이언트의 BotMessage chain 을 서버측 LLM provider 로 forward 하고
+ASSISTANT reply 를 돌려준다. API key 는 서버에만 두어 클라이언트 노출을 막고,
+jailbreak 스캔 + per-user rate limit + escalation 큐를 함께 건다.
+
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과 후
+진입하며, provider/rate gate 는 `request.app` 에 DI 주입(테스트 mock 가능),
+escalation 영속은 `bot_escalations` repository 에 위임한다.
+
+의존성 — aiohttp `web` + `app.bot`(anthropic_client/jailbreak_detector/llm_proxy/
+escalation_queue) + `bot_escalations`/`user_activity` repository +
+`activity` 미들웨어. provider/rate gate 는 `APP_KEY_PROVIDER`/`APP_KEY_RATE_GATE`.
+
+범위 한계 — 단일 turn chat proxy 만. streaming(SSE)·대화 history 영속·advanced
+prompt injection 차단·비용 추적은 별개 cycle.
+
+엔드포인트 카탈로그(실 함수 1 + helper 5 + register):
+- `handle_bot_chat`  POST /api/bot/chat — LLM forward + jailbreak/rate/escalation.
+- `_scan_jailbreak`/`_parse_role`/`_parse_messages`/`_reply_to_wire` + register.
+
 엔드포인트:
-- POST /api/bot/chat — 클라이언트 의 BotMessage chain → 서버 의 AnthropicProvider
-  의 forward → 클라이언트 의 ASSISTANT reply 반환
+- POST /api/bot/chat — 클라이언트 BotMessage chain → 서버 LLM provider
+  forward → ASSISTANT reply 반환
 
 설계 결정
 ---------
@@ -12,7 +31,7 @@
   의 server-side LLM proxy 패턴 정합).
 - auth_middleware 의 Bearer 검증 의무 (PUBLIC_PATHS 외 — TooTalk 사용자 의무).
 - RateLimitGate 의 per-user_id token bucket — abuse 차단 (memory M7 의 정합).
-- AnthropicProvider 의 app context 의 의 직접 주입 (테스트 의 mock provider 가능).
+- AnthropicProvider 를 app context 에 직접 DI 주입 (테스트 시 mock provider 교체 가능).
 - 요청 schema = {messages: [{role, content, timestamp_ms}, ...]}.
 - 응답 schema = {reply: {role: "assistant", content: ..., timestamp_ms: ...}}.
 
@@ -210,6 +229,10 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
     - 502 → Anthropic 5xx + 재시도 소진 (server-side 의 외부 의존 실패)
     - 503 → Anthropic 429 + 재시도 소진 (upstream rate limit)
     - 500 → 그 외 AnthropicError 또는 unexpected
+
+    부작용 — jailbreak 스캔(차단 시 escalation 큐 + bot_escalations INSERT) +
+    per-user rate gate 소비 + LLM 외부 호출(IO) + BOT_CHAT audit + (DB 연동 시)
+    봇 reply message INSERT. provider 미등록 시 503.
     """
 
     user_id = request.get("user_id")
@@ -275,7 +298,7 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
                 log.warning("BOT_ESCALATE audit 실패 user_id=%d: %s", user_id, e)
         raise exc
 
-    # provider lookup — app context 의 의 등록 의무
+    # provider lookup — app context 에 사전 등록돼 있어야 함(startup DI)
     provider: Optional[LLMProvider] = request.app.get(APP_KEY_PROVIDER)
     if provider is None:
         raise web.HTTPServiceUnavailable(
@@ -366,7 +389,7 @@ async def handle_bot_chat(request: web.Request) -> web.Response:
                     pool, room_id=bot_room_id, sender_id=user_id, body=last_user.content,
                 )
             # bot reply INSERT (sender_id = 시스템 bot prefix 1_000_000+user_id retain)
-            # 한글 주석 — bot sender_id = 1 (고객센터 봇 hardcoded — bots table 부재 시점 fallback)
+            # bot sender_id = 1 — 고객센터 봇 hardcoded(bots table 미연동 시점 fallback)
             bot_msg_id = await insert_text_message(
                 pool, room_id=bot_room_id, sender_id=1, body=reply.content,
             )
