@@ -16,7 +16,7 @@ from asyncmy.errors import OperationalError
 
 @pytest.fixture(autouse=True)
 def _fast_sleep(monkeypatch):
-    # 한글 주석 — exponential backoff sleep 제거 (test 가속)
+    # exponential backoff sleep 제거 (test 가속)
     import server.db.repositories.email_verification as ev
 
     async def _no_sleep(_):
@@ -40,7 +40,7 @@ class TestRetryOnRecordChanged:
 
         result = await _retry_on_record_changed("test_op", _op)
         assert result == "ok"
-        assert state["n"] == 2  # 한글 주석 — 1회 retry 후 성공
+        assert state["n"] == 2  # 1회 retry 후 성공
 
     @pytest.mark.asyncio
     async def test_non_1020_raises_immediately(self) -> None:
@@ -50,7 +50,7 @@ class TestRetryOnRecordChanged:
 
         async def _op():
             calls["n"] += 1
-            raise OperationalError(1213, "Deadlock")  # 한글 주석 — 1020 아님
+            raise OperationalError(1213, "Deadlock")  # 1020 아님
 
         with pytest.raises(OperationalError):
             await _retry_on_record_changed("test_op", _op)
@@ -68,4 +68,4 @@ class TestRetryOnRecordChanged:
 
         with pytest.raises(OperationalError):
             await _retry_on_record_changed("test_op", _op, max_attempts=3)
-        assert calls["n"] == 3  # 한글 주석 — max_attempts 만큼 시도 후 re-raise
+        assert calls["n"] == 3  # max_attempts 만큼 시도 후 re-raise

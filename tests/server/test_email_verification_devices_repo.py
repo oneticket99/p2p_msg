@@ -14,7 +14,7 @@ import pytest
 
 
 def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, execute_return=None) -> MagicMock:
-    # 한글 주석 — execute_return = invalidate/revoke 등 affected rowcount 반환 SQL 지원
+    # execute_return = invalidate/revoke 등 affected rowcount 반환 SQL 지원
     pool = MagicMock()
     cur = MagicMock()
     cur.execute = AsyncMock(return_value=execute_return)
@@ -35,9 +35,9 @@ def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, execute_return=Non
 
 
 _TS = datetime(2026, 5, 24, tzinfo=timezone.utc)
-# 한글 주석 — email_verification OtpRow 8-tuple
+# email_verification OtpRow 8-tuple
 _OTP_ROW = (4, "a@b.com", "signup", "h" * 64, _TS, None, 0, _TS)
-# 한글 주석 — devices DeviceRow 11-tuple (identity/prekey = bytes)
+# devices DeviceRow 11-tuple (identity/prekey = bytes)
 _DEV_ROW = (
     1, "dev-uuid", 10, "iPhone", b"idpub", b"spk", b"otpk",
     _TS, _TS, None, "active",

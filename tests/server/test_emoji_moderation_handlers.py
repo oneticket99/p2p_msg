@@ -41,7 +41,7 @@ def _mock_pool_capture_update(
         SELECT fetchall 의 return 값 (None = 빈 list).
     """
 
-    # 한글 주석: cursor mock — execute call capture + fetchall row 주입
+    # cursor mock — execute call capture + fetchall row 주입
     cursor = MagicMock()
     cursor.execute = AsyncMock()
     cursor.lastrowid = 0
@@ -82,7 +82,7 @@ class TestQueueAuth:
     async def test_queue_returns_401_when_bearer_absent(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: EMOJI_MODERATION_ADMIN_TOKEN env 정합 + Bearer 부재 → 401
+        # EMOJI_MODERATION_ADMIN_TOKEN env 정합 + Bearer 부재 → 401
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, _ = _mock_pool_capture_update()
@@ -108,10 +108,10 @@ class TestQueueListPending:
     async def test_queue_returns_200_with_pending_rows(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: pending row 2건 주입 → 200 + queue list 2건 JSON 검증
+        # pending row 2건 주입 → 200 + queue list 2건 JSON 검증
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
-        # 한글 주석: fetchall row = (id, slug, name, owner_user_id, created_at)
+        # fetchall row = (id, slug, name, owner_user_id, created_at)
         rows = [
             (1, "pack-alpha", "Alpha Pack", 10, "2026-05-19T10:00:00"),
             (2, "pack-beta", "Beta Pack", 20, "2026-05-19T11:00:00"),
@@ -144,7 +144,7 @@ class TestQueueListPending:
     async def test_queue_invokes_list_pending_select_sql(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: SELECT SQL 의 moderation_status = 'pending' WHERE 검증
+        # SELECT SQL 의 moderation_status = 'pending' WHERE 검증
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, cursor = _mock_pool_capture_update(fetchall_rows=[])
@@ -160,7 +160,7 @@ class TestQueueListPending:
             )
             assert resp.status == 200
 
-            # 한글 주석: cursor.execute 의 SQL 본문 + params tuple 검증
+            # cursor.execute 의 SQL 본문 + params tuple 검증
             assert cursor.execute.await_count >= 1
             call_args = cursor.execute.await_args
             sql = call_args.args[0]
@@ -179,7 +179,7 @@ class TestQueuePagination:
     async def test_queue_passes_limit_offset_to_repository(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: ?limit=10&offset=20 → SELECT params=(10, 20) 의무
+        # ?limit=10&offset=20 → SELECT params=(10, 20) 의무
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, cursor = _mock_pool_capture_update(fetchall_rows=[])
@@ -198,7 +198,7 @@ class TestQueuePagination:
             assert body["limit"] == 10
             assert body["offset"] == 20
 
-            # 한글 주석: SELECT params 의 (limit, offset) 정합 검증
+            # SELECT params 의 (limit, offset) 정합 검증
             call_args = cursor.execute.await_args
             params = call_args.args[1]
             assert params[0] == 10
@@ -210,7 +210,7 @@ class TestQueuePagination:
     async def test_queue_returns_400_when_limit_invalid(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: limit=0 → 400 + reason "limit 1~200"
+        # limit=0 → 400 + reason "limit 1~200"
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, _ = _mock_pool_capture_update(fetchall_rows=[])
@@ -238,7 +238,7 @@ class TestApproveAuth:
     async def test_approve_returns_401_when_token_mismatch(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: env 정합 + 잘못된 Bearer → 401 + reason=token mismatch
+        # env 정합 + 잘못된 Bearer → 401 + reason=token mismatch
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, _ = _mock_pool_capture_update()
@@ -268,7 +268,7 @@ class TestApproveSuccess:
     async def test_approve_returns_200_when_token_matches(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: env + Bearer + pack_id 의무 → 200 + rowcount=1
+        # env + Bearer + pack_id 의무 → 200 + rowcount=1
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, _cursor = _mock_pool_capture_update()
@@ -300,7 +300,7 @@ class TestRejectUpdateSQL:
     async def test_reject_invokes_update_with_correct_enum(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: reject endpoint → UPDATE 의 params=('rejected', pack_id) 의무
+        # reject endpoint → UPDATE 의 params=('rejected', pack_id) 의무
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, cursor = _mock_pool_capture_update()
@@ -319,7 +319,7 @@ class TestRejectUpdateSQL:
             body = await resp.json()
             assert body["moderation_status"] == "rejected"
 
-            # 한글 주석: cursor.execute 의 last call SQL + params tuple 검증
+            # cursor.execute 의 last call SQL + params tuple 검증
             assert cursor.execute.await_count >= 1
             call_args = cursor.execute.await_args
             sql = call_args.args[0]
@@ -341,7 +341,7 @@ class TestDmcaInvalidBody:
     async def test_dmca_returns_400_when_pack_id_missing(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석: pack_id 부재 body → 400 reason="pack_id 양수 정수 의무"
+        # pack_id 부재 body → 400 reason="pack_id 양수 정수 의무"
         monkeypatch.setenv("EMOJI_MODERATION_ADMIN_TOKEN", "secret-emoji-admin")
 
         pool, _ = _mock_pool_capture_update()
