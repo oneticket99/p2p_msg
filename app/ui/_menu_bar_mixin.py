@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """MenuBarMixin — menubar 구성 + admin emoji moderation chain (cycle 169.520 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+상단 메뉴바(설정/계정/도움말/관리자) 구성 + auth 가시성 토글 + admin emoji moderation dialog 결선.
+
 codex 2.5 HIGH 진입 6차 — main_window.py 책임 분리.
 cavecrew-investigator verdict — 327 line, LOW risk (UI-only).
 
@@ -32,7 +35,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 
 from app.i18n.labels import tr as _tr
 
-# 한글 주석 — main_window 안 정의된 default URL retain
+# main_window 안 정의된 default URL retain
 _DEFAULT_UPDATE_SERVER_URL = DEMO_FALLBACK_API_BASE
 
 log = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ class MenuBarMixin:
         """상단 메뉴바 구성 — "설정" + "계정" + "도움말" + "관리자" 4 진입점."""
         menubar = self.menuBar()
 
-        # 한글 주석 — "설정" .ts entry tr() (5 locale)
+        # "설정" .ts entry tr() (5 locale)
         menu_settings = menubar.addMenu(_tr("설정"))
 
         # cycle 169.838 — "방 입장…" 메뉴 + _on_open_room_dialog 핸들러 전수 제거
@@ -63,7 +66,7 @@ class MenuBarMixin:
         act_group_call.triggered.connect(self._on_start_group_call)
         menu_settings.addAction(act_group_call)
 
-        # 한글 주석 — "환경" + "설정" .ts entry 결합
+        # "환경" + "설정" .ts entry 결합
         act_pref = QAction(f"환경{_tr('설정')}…", self)
         act_pref.setShortcut(QKeySequence("Ctrl+,"))
         act_pref.triggered.connect(self._on_open_settings_dialog)
@@ -144,7 +147,7 @@ class MenuBarMixin:
         사용자 발견 버그(로그인 후 회원가입/로그인 메뉴 잔존) 회수.
         """
         logged_in = getattr(self, "_session_token", None) is not None
-        # 한글 주석 — 로그아웃 전용 (로그인 시 숨김)
+        # 로그아웃 전용 (로그인 시 숨김)
         for act in (
             getattr(self, "_act_signup", None),
             getattr(self, "_act_login", None),
@@ -152,7 +155,7 @@ class MenuBarMixin:
         ):
             if act is not None:
                 act.setVisible(not logged_in)
-        # 한글 주석 — 로그인 전용 (로그아웃 시 숨김)
+        # 로그인 전용 (로그아웃 시 숨김)
         for act in (
             getattr(self, "_act_logout", None),
             getattr(self, "_act_friend_list", None),
@@ -275,7 +278,7 @@ class MenuBarMixin:
             log.warning(
                 "[main_window] emoji moderation queue fetch FAIL — graceful (%r)", exc,
             )
-            # 한글 주석 — cycle 169.834 — 친절 안내 문구 i18n 바인딩 (dev jargon 제거)
+            # cycle 169.834 — 친절 안내 문구 i18n 바인딩 (dev jargon 제거)
             self._status_bar.showMessage(_tr("msg_moderation_queue_failed"), 4000)
 
     @pyqtSlot(int, str)

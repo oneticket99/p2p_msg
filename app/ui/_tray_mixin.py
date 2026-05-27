@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TrayMixin — system tray icon + logout/quit + LoginDialog re-spawn chain (cycle 169.509 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+QSystemTrayIcon 메뉴(열기/로그아웃/종료) + close→hide+tray retain + 세션 폐기→재로그인 chain 결선.
+
 codex review 2.5 verdict 정합 — `app/ui/main_window.py` 4000줄 책임 분리 의 1차 진입.
 본 mixin 안 6 method retain — MainWindow 의 multiple inheritance pattern.
 
@@ -47,7 +50,7 @@ class TrayMixin:
             if not QSystemTrayIcon.isSystemTrayAvailable():
                 log.warning("[tray] system tray 미가용 — skip")
                 return
-            # 한글 주석 — TooTalk symbol PNG icon (이미 bundle 안 retain)
+            # TooTalk symbol PNG icon (이미 bundle 안 retain)
             ROOT = Path(__file__).resolve().parent.parent
             icon_path = ROOT / "assets" / "branding" / "tootalk_symbol.png"
             if icon_path.exists():
@@ -70,10 +73,10 @@ class TrayMixin:
             act_quit = menu.addAction("TooTalk 종료")
             act_quit.triggered.connect(self._on_tray_quit)  # type: ignore[arg-type]
             self._tray_icon.setContextMenu(menu)
-            # 한글 주석 — LMB double-click = restore window (사용자 직관 정합)
+            # LMB double-click = restore window (사용자 직관 정합)
             self._tray_icon.activated.connect(self._on_tray_activated)  # type: ignore[arg-type]
             self._tray_icon.show()
-            # 한글 주석 — close → quit 차단 (tray retain). _on_tray_quit 만 quit trigger
+            # close → quit 차단 (tray retain). _on_tray_quit 만 quit trigger
             QApplication.instance().setQuitOnLastWindowClosed(False)
             log.info("[tray] icon ready — path=%s", icon_path)
         except Exception as exc:  # noqa: BLE001 - graceful
@@ -117,7 +120,7 @@ class TrayMixin:
 
         cycle 169.498 origin — tray logout + menu logout 공통 chain.
         """
-        # 한글 주석 — 1) session 폐기
+        # 1) session 폐기
         self._session_token = None
         self._current_user_id = None
         self._auth_token = None
@@ -128,7 +131,7 @@ class TrayMixin:
         try:
             fc = getattr(self, "_friends_client", None)
             if fc is not None:
-                # 한글 주석 — 내부 client + token 의 reset (다음 _ensure_client 시점 신규 instantiate)
+                # 내부 client + token 의 reset (다음 _ensure_client 시점 신규 instantiate)
                 try:
                     import asyncio as _aio
                     _aio.ensure_future(fc.close())
@@ -138,12 +141,12 @@ class TrayMixin:
                 fc._client = None  # type: ignore[attr-defined]
         except Exception:
             pass
-        # 한글 주석 — 2) UI lock — chat_view + status bar feedback
+        # 2) UI lock — chat_view + status bar feedback
         try:
             self._status_bar.set_connection_state("DISCONNECTED")
         except Exception:
             pass
-        # 한글 주석 — 3) LoginDialog modal re-spawn
+        # 3) LoginDialog modal re-spawn
         # cycle 169.838 scope-out — 재인증(로그아웃 후) chain 은 in-app overlay 모달 directive
         # 예외다. (1) startup auth bootstrap(app/main.py)과 동일한 재인증 단계이고,
         # (2) login↔signup 전환을 위해 custom done() code(res==2/3)를 사용하는데
@@ -186,7 +189,7 @@ class TrayMixin:
                     self._session_token = sdlg.token
                     self._current_user_id = sdlg.user_id
                     authenticated = True
-            # 한글 주석 — 4) friends_client token swap (cycle 169.494 정합)
+            # 4) friends_client token swap (cycle 169.494 정합)
             try:
                 fc = getattr(self, "_friends_client", None)
                 if fc is not None and self._session_token:
@@ -194,7 +197,7 @@ class TrayMixin:
                     fc._client = None  # type: ignore[attr-defined]
             except Exception:
                 pass
-            # 한글 주석 — 5) status bar + post_login refresh
+            # 5) status bar + post_login refresh
             try:
                 self._status_bar.set_connection_state("CONNECTED")
             except Exception:

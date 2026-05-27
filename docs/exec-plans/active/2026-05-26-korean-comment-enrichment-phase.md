@@ -187,7 +187,7 @@ gantt
 | T-4 | M3 | `server/api/*_handlers.py` endpoint docstring(인증/검증 순서/오류 코드/부작용) | main session | T-3 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `server/api/*_handlers.py` (실 19) | ✅ **완료** 19/19 (b1~b8, 전수 diff-0 + server pytest 무변경, 카탈로그 정정 rooms 7·friends 8·auth 15·folder 5·read 3) |
 | T-5 | M4 | `app/net/*_client.py` REST 계약·재시도/타임아웃·SSL 우회 의도 주석 | main session | T-4 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `app/net/*_client.py` (16) | ✅ **완료** 16/16 (b1~b6, 전수 diff-0 + app pytest 무변경, signaling SPDX 추가) |
 | T-6 | M5 | `app/rtc/*.py` 상태 머신 전이·DataChannel 계약·메모리 release 의도 주석 | main session | T-5 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `app/rtc/*.py` (8) | ✅ **완료** 8/8 (b1~b3, 전수 diff-0 + app rtc 135 무변경, file 메모리 release 의도 명시) |
-| T-7 | M6 | `app/ui/_*_mixin.py` filler `한글 주석` 패턴 → 의도 기반 전환 + signal/slot 계약 | main session | T-6 | offscreen pytest 무변경 + filler 카운트 감소 + diff 주석만 | `app/ui/_*_mixin.py` (22) | 🔄 mixin 18/22 (b1~b6, +chat_navigation·dialog_center·friend_search) |
+| T-7 | M6 | `app/ui/_*_mixin.py` filler `한글 주석` 패턴 → 의도 기반 전환 + signal/slot 계약 | main session | T-6 | offscreen pytest 무변경 + filler 카운트 감소 + diff 주석만 | `app/ui/_*_mixin.py` (22) | 🔄 mixin 21/22 (b1~b7, +menu_bar·tray·chat_send, 잔여 drawer) |
 | T-8 | M6 | `app/ui/*_dialog.py` 동일 전환 + QWidget 생명주기 부작용 주석 | main session | T-7 | offscreen pytest 무변경 + diff 주석만 | `app/ui/*_dialog.py` | todo |
 | T-10 | M7 | `tests/server/**` + `tests/e2e/**` module/함수 docstring(대상·전략·oracle·회귀 근거) | main session | T-4 | pytest 전량 무변경 + diff 비주석 0 (assert/fixture 불변) | `tests/server/**` · `tests/e2e/**` | todo |
 | T-11 | M7 | `tests/app/**` module/함수 docstring(offscreen 전략·mock·회귀 의도) | main session | T-8 | offscreen pytest 무변경 + diff 비주석 0 | `tests/app/**` | todo |

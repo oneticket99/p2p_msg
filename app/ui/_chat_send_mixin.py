@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ChatSendMixin — 1:1 채팅 송신 + DM cache 5 method (cycle 169.527 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+통합 ChatView 송신점 + InputBar slot + DM cache(local SQLite write-through) + mesh broadcast + REST POST 결선.
+
 codex 2.5 MED 진입 12차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 153.7/154.2/154.3/169.160/169.411 origin):
@@ -39,7 +42,7 @@ class ChatSendMixin:
     @pyqtSlot(str)
     def _on_input_message_sent(self, text: str) -> None:
         """InputBar message_sent → 기존 _on_send_clicked chain dispatch."""
-        # 한글 주석 — InputBar 의 QTextEdit 안 text 이미 clear 됨. 기존 logic 호환 의무
+        # InputBar 의 QTextEdit 안 text 이미 clear 됨. 기존 logic 호환 의무
         if hasattr(self, "_input_edit"):
             self._input_edit.setPlainText(text)
         self._on_send_clicked()
@@ -50,11 +53,11 @@ class ChatSendMixin:
     def _on_input_file_attached(self, paths: list) -> None:
         """InputBar file_attached → DataChannel chunk transfer chain (cycle 154.2 actual)."""
         log.info("input file attached — %d file", len(paths))
-        # 한글 주석 — cycle 154.2 file_sender 의존 graceful binding
+        # cycle 154.2 file_sender 의존 graceful binding
         try:
             file_sender = getattr(self, "_file_sender", None)
             if file_sender is None:
-                # 한글 주석 — placeholder ChatView 안 system message render
+                # placeholder ChatView 안 system message render
                 for path in paths:
                     self._chat_view.add_message(
                         sender="system",
@@ -63,7 +66,7 @@ class ChatSendMixin:
                         is_self=True,
                     )
                 return
-            # 한글 주석 — file_sender.send(path) async coroutine chain (cycle 119+ FileSender 정합)
+            # file_sender.send(path) async coroutine chain (cycle 119+ FileSender 정합)
             import asyncio
             for path in paths:
                 asyncio.ensure_future(file_sender.send(path))
@@ -88,7 +91,7 @@ class ChatSendMixin:
         if self._stacked.currentIndex() != self._STACK_DIRECT_CHAT:
             return
 
-        # 한글 주석 — cycle 153.7 InputBar 마이그레이션 — QTextEdit `toPlainText()` 우선
+        # cycle 153.7 InputBar 마이그레이션 — QTextEdit `toPlainText()` 우선
         # legacy QLineEdit `text()` fallback graceful
         try:
             text = self._input_edit.toPlainText().strip()
@@ -102,7 +105,7 @@ class ChatSendMixin:
         if hasattr(self, "_input_bar"):
             ctx = self._input_bar.reply_context()
             if ctx is not None:
-                # 한글 주석 — ReplyContext dataclass (message_bubble) 의 instance 생성
+                # ReplyContext dataclass (message_bubble) 의 instance 생성
                 from app.ui.message_bubble import ReplyContext
                 reply_ctx = ReplyContext(original_sender=ctx[0], original_text=ctx[1])
             self._input_bar.clear_reply_to()
@@ -162,7 +165,7 @@ class ChatSendMixin:
             if self._active_chat_kind == "saved":
                 asyncio.ensure_future(self._send_saved_message_rest(text, payload.id))
             else:
-                # 한글 주석 — mesh broadcast (DataChannel fan-out, ≤ 8 peer)
+                # mesh broadcast (DataChannel fan-out, ≤ 8 peer)
                 mesh = getattr(self, "_mesh_manager", None)
                 if mesh is not None:
                     asyncio.ensure_future(mesh.broadcast_payload(payload))
@@ -199,10 +202,10 @@ class ChatSendMixin:
         # 본 cycle = client-only insert (msg_id 부재 시점 0 — uuid-only retain)
         try:
             from app.db import messages_cache as _mc
-            # 한글 주석 — room_id derive: bot=1*10+kind_offset, friend=target_id*100, saved=self_id*100
+            # room_id derive: bot=1*10+kind_offset, friend=target_id*100, saved=self_id*100
             self_id = getattr(self, "_current_user_id", None) or 0
             sender_id = self_id if is_self else target_id
-            # 한글 주석 — cycle 169.497 — _kind_room_local helper 사용 (공식 통일).
+            # cycle 169.497 — _kind_room_local helper 사용 (공식 통일).
             # 이전 cycle 169.440 의 bot 공식 = target_id * 10 + 2 → cycle 169.444 안 self_id * 10 + 2 swap.
             # _load_local_history 와 read 공식 불일치 회수.
             room_id_local = self._kind_room_local(kind, target_id)
