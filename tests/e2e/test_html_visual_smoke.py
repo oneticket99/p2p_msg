@@ -1,4 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """HTML 등가 문서 의 시각 회귀 smoke 테스트 (Playwright).
+
+테스트 전략 — `docs/html/` 6 미러 HTML 을 file:// 로 로드 후 swatch/mermaid 등 구조 요소 존재를 검증.
+실 screenshot diff 는 Phase 2 도입(본 cycle = 구조 smoke). `@pytest.mark.e2e` 라 기본 실행 제외(수동).
 
 DESIGN.md §10.6 정합. 사용자 directive 2026-05-17.
 
@@ -28,7 +32,7 @@ def test_frontend_html_loads_swatch_visible(
     page.goto(f"{html_docs_base}/FRONTEND.html")
     page.wait_for_load_state("domcontentloaded")
 
-    # 한글 주석 — cycle 169.640: FRONTEND.html 안 swatch palette 확장 (cycle 169.x). 실제 30 = 15 hex 변수 × 라이트+다크.
+    # cycle 169.640: FRONTEND.html 안 swatch palette 확장 (cycle 169.x). 실제 30 = 15 hex 변수 × 라이트+다크.
     swatches = page.locator(".swatch")
     assert swatches.count() >= 18, (
         f"FRONTEND.html .swatch 누계 18 이상 기대 — 실제 {swatches.count()}"
@@ -74,7 +78,7 @@ def test_mermaid_diagrams_render_in_frontend(
     # mermaid.js CDN 의 비동기 로딩 + 렌더 대기
     page.wait_for_selector("pre.mermaid svg", timeout=10000)
 
-    # 한글 주석 — cycle 169.640: FRONTEND.html 안 mermaid 축약 (cycle 169.x), SVG 1+ 가능 retain.
+    # cycle 169.640: FRONTEND.html 안 mermaid 축약 (cycle 169.x), SVG 1+ 가능 retain.
     rendered_svgs = page.locator("pre.mermaid svg")
     assert rendered_svgs.count() >= 1, (
         f"FRONTEND.html mermaid SVG 1개 이상 기대 — 실제 {rendered_svgs.count()}"
