@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""MyAccountDialog — telegram desktop 내 계정 정보 modal (cycle 169.56 신설)."""
+"""MyAccountDialog — telegram desktop 내 계정 정보 modal (cycle 169.56 신설).
+
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin 이 instantiate(계정 정보 편집) +
+save_requested signal 로 payload 회신. PUT /api/auth/profile REST 는 caller(DrawerMixin) 책임.
+"""
 
 from __future__ import annotations
 
@@ -69,7 +73,7 @@ class MyAccountDialog(QDialog):
         h_layout.addWidget(close_btn)
         outer.addWidget(header)
 
-        # 한글 주석 — scroll area (content)
+        # scroll area (content)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: none; background-color: #131C30; }")

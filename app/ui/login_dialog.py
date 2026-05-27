@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """LoginDialog — email + password 세션 토큰 발급 (cycle 153 phase 2 redesign).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — app/main.py startup + AuthChainMixin/TrayMixin 이
+instantiate(로그인 + login↔signup 전환 done() code). AuthClient(net) 로 토큰 발급, 결과는 token/user_id 노출.
+
 Toonation BI 통합 — logo icon top + primary CTA + 한글 글꼴 통합 + brand 색상.
 정합 = FRONTEND.md §15 + telegram-ui-survey.md §2 + toonation-brand-integration-plan §4.2.
 """
@@ -63,7 +66,7 @@ class LoginDialog(QDialog):
         self._client = auth_client
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
-        # cycle 169.279 — email retain (MyProfileDialog 의 의 사용자 directive image #51)
+        # cycle 169.279 — email retain (MyProfileDialog 표시용, 사용자 directive image #51)
         self._email: Optional[str] = None
         # cycle 169.484 — double-click guard (로그인 button race 차단)
         self._login_in_flight: bool = False
@@ -77,7 +80,7 @@ class LoginDialog(QDialog):
         outer.setSpacing(16)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16)
+        # symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16)
         logo_row = QHBoxLayout()
         logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo_row.setSpacing(0)
@@ -112,7 +115,7 @@ class LoginDialog(QDialog):
         logo_row.addWidget(talk_label)
         outer.addLayout(logo_row)
 
-        # 한글 주석 — "투턱 로그인" title (사용자 directive cycle 169.12 — TooTalk → 투턱)
+        # "투턱 로그인" title (사용자 directive cycle 169.12 — TooTalk → 투턱)
         title = QLabel(_tr("투턱 로그인"))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("background: transparent; color: #e5e7eb; font-size: 22px; font-weight: 700;")
@@ -125,7 +128,7 @@ class LoginDialog(QDialog):
 
         outer.addSpacing(16)
 
-        # 한글 주석 — email + password input — Toonation 통합 style
+        # email + password input — Toonation 통합 style
         self._email_edit = QLineEdit()
         self._email_edit.setPlaceholderText("user@example.com")
         self._email_edit.setMinimumHeight(44)
@@ -139,7 +142,7 @@ class LoginDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — 로그인 button (primary) + cancel (secondary)
+        # 로그인 button (primary) + cancel (secondary)
         btn_login = QPushButton(_tr("로그인"))
         btn_login.setProperty("variant", "primary")
         btn_login.setMinimumHeight(44)
@@ -184,7 +187,7 @@ class LoginDialog(QDialog):
         find_row.addWidget(btn_reset_pw)
         outer.addLayout(find_row)
 
-        # 한글 주석 — Enter key 시 login trigger
+        # Enter key 시 login trigger
         self._password_edit.returnPressed.connect(self._on_login_clicked)  # type: ignore[arg-type]
 
     @property
@@ -211,7 +214,7 @@ class LoginDialog(QDialog):
         password = self._password_edit.text()
         from app.ui.confirm_dialog import ConfirmDialog
         if not email or not password:
-            # 한글 주석 — cycle 169.834 — 친절 안내 문구 i18n 키 직접 lookup (5언어)
+            # cycle 169.834 — 친절 안내 문구 i18n 키 직접 lookup (5언어)
             ConfirmDialog.show_warning(
                 self, "TooTalk", _i18n_labels.tr("msg_login_input_required")
             )

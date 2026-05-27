@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """MyProfileDialog — telegram desktop 내 프로필 modal (cycle 169.243 telegram align rewrite).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin 이 instantiate(내 프로필 표시) +
+edit_requested/avatar_changed signal 로 회신. 표시 전용 — 편집/avatar 업로드는 caller(DrawerMixin) 책임.
+
 사용자 critique 회수 (cycle 169.243):
 - image #4 텔레그램 ref ↔ image #5 TooTalk 현 mismatch
 - header zone (큰 dark zone) — large avatar center top + name + 온라인 status + edit/close icon top-right
@@ -33,7 +36,7 @@ class MyProfileDialog(QDialog):
     """내 프로필 — telegram align (image #4 ref)."""
 
     edit_requested = pyqtSignal()
-    # 한글 주석 — cycle 169.852 avatar picker: 사용자가 avatar 이미지 선택 시 emit.
+    # cycle 169.852 avatar picker: 사용자가 avatar 이미지 선택 시 emit.
     # dialog 는 token/base_url 부재 — 상위(_drawer_mixin)가 업로드 + PATCH /api/me/avatar 위임.
     avatar_changed = pyqtSignal(QImage)
 
@@ -48,7 +51,7 @@ class MyProfileDialog(QDialog):
         bio: str = "",
         parent: Optional[QWidget] = None,
     ) -> None:
-        # 한글 주석 — cycle 169.279 email retain (사용자 critique image #51 — login email)
+        # cycle 169.279 email retain (사용자 critique image #51 — login email)
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 내 프로필")
         self.setModal(True)
@@ -58,7 +61,7 @@ class MyProfileDialog(QDialog):
         )
         self.setFixedSize(420, 600)
         # cycle 169.277 — 사용자 directive image #38/50 회수 — outer QFrame wrap + border (설정 modal 통일)
-        # QDialog stylesheet border 의 child widget retain 안 의 의 visual retain 부재 — outer QFrame wrap chain.
+        # QDialog stylesheet border 는 child widget 안에서 visual retain 이 안 되므로 — outer QFrame wrap chain.
         self.setStyleSheet("QDialog { background-color: transparent; }")
 
         outer = QVBoxLayout(self)
@@ -75,7 +78,7 @@ class MyProfileDialog(QDialog):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # 한글 주석 — header zone (large avatar + name + 온라인 + edit/close 우측 상단)
+        # header zone (large avatar + name + 온라인 + edit/close 우측 상단)
         header = QFrame()
         header.setStyleSheet("background-color: #1F2937;")
         header.setFixedHeight(260)
@@ -83,7 +86,7 @@ class MyProfileDialog(QDialog):
         header_layout.setContentsMargins(0, 0, 0, 0)
         header_layout.setSpacing(0)
 
-        # 한글 주석 — top icon row (edit pencil + close X 우측 상단)
+        # top icon row (edit pencil + close X 우측 상단)
         top_row = QHBoxLayout()
         top_row.setContentsMargins(8, 8, 8, 0)
         top_row.setSpacing(4)
@@ -102,29 +105,29 @@ class MyProfileDialog(QDialog):
         top_row.addWidget(close_btn)
         header_layout.addLayout(top_row)
 
-        # 한글 주석 — cycle 169.401 — avatar text source = nickname 우선 (사용자 directive image #168)
+        # cycle 169.401 — avatar text source = nickname 우선 (사용자 directive image #168)
         avatar_text = nickname or display_name or username or "사용자"
-        # 한글 주석 — cycle 169.852 — large avatar = AvatarPickerButton(클릭 시 파일/카메라/
+        # cycle 169.852 — large avatar = AvatarPickerButton(클릭 시 파일/카메라/
         # 클립보드 드롭다운). 이미지 미설정 시 nickname 2글자 이니셜 fallback(directive).
         from app.ui._avatar_picker_button import AvatarPickerButton
         avatar = AvatarPickerButton(name=avatar_text, size=120)
         # cycle 169.403 — instance attribute retain (dynamic refresh chain)
         self._avatar_label = avatar
         self._name_label_ref: Optional[QLabel] = None
-        # 한글 주석 — 선택 이미지 → 상위 위임(업로드 + PATCH /api/me/avatar)
+        # 선택 이미지 → 상위 위임(업로드 + PATCH /api/me/avatar)
         avatar.avatar_selected.connect(self.avatar_changed.emit)  # type: ignore[arg-type]
         header_layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
         header_layout.addSpacing(12)
 
-        # 한글 주석 — name (h1 bold center)
+        # name (h1 bold center)
         name_label = QLabel(avatar_text)
         self._name_label_ref = name_label  # cycle 169.403 — refresh chain entry
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
         header_layout.addWidget(name_label)
 
-        # 한글 주석 — 온라인 status (Toonation BI #0066FF)
+        # 온라인 status (Toonation BI #0066FF)
         status_label = QLabel("온라인")
         status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         status_label.setStyleSheet("color: #0066FF; font-size: 13px;")
@@ -133,7 +136,7 @@ class MyProfileDialog(QDialog):
         header_layout.addStretch(1)
         outer.addWidget(header)
 
-        # 한글 주석 — body zone (info rows — value bold + label subtitle)
+        # body zone (info rows — value bold + label subtitle)
         body = QFrame()
         body.setStyleSheet("background-color: #131C30;")
         b_layout = QVBoxLayout(body)
@@ -185,7 +188,7 @@ class MyProfileDialog(QDialog):
         """cycle 169.403 — profile field 동적 갱신 (사용자 critique image #169 즉시 reflect)."""
         avatar_text = nickname or display_name or username or "사용자"
         if hasattr(self, "_avatar_label") and self._avatar_label is not None:
-            # 한글 주석 — AvatarPickerButton: 이미지 미설정 시 set_name 으로 이니셜 fallback 갱신
+            # AvatarPickerButton: 이미지 미설정 시 set_name 으로 이니셜 fallback 갱신
             self._avatar_label.set_name(avatar_text)
         if hasattr(self, "_name_label_ref") and self._name_label_ref is not None:
             self._name_label_ref.setText(avatar_text)
