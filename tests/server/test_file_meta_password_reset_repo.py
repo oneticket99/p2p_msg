@@ -14,7 +14,7 @@ import pytest
 
 
 def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> MagicMock:
-    # 한글 주석 — asyncmy pool.acquire() → conn.cursor() 2단 async context 모킹
+    # asyncmy pool.acquire() → conn.cursor() 2단 async context 모킹
     pool = MagicMock()
     cur = MagicMock()
     cur.execute = AsyncMock(return_value=None)
@@ -35,14 +35,14 @@ def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> Mag
     return pool
 
 
-# 한글 주석 — file_meta SELECT 컬럼 순서 정합 12-tuple
+# file_meta SELECT 컬럼 순서 정합 12-tuple
 _FILE_ROW = (
     7, "a" * 32, 100, 10, "photo.png", 2048, "image/png",
     "b" * 64, "completed", None,
     datetime(2026, 5, 24, tzinfo=timezone.utc), None,
 )
 
-# 한글 주석 — password_reset SELECT 컬럼 순서 정합 6-tuple
+# password_reset SELECT 컬럼 순서 정합 6-tuple
 _RESET_ROW = (
     3, 10, "c" * 64,
     datetime(2026, 5, 24, 1, 0, tzinfo=timezone.utc), None,

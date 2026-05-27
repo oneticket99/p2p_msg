@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 
-# 한글 주석: migration SQL 파일 경로 — 저장소 root 기준
+# migration SQL 파일 경로 — 저장소 root 기준
 _MIGRATION_PATH = (
     Path(__file__).resolve().parent.parent.parent
     / "server" / "db" / "migrations" / "0004_emoji_packs.sql"
