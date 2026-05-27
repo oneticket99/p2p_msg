@@ -1,8 +1,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Phase 4 cycle 124 — health + readiness endpoint.
 
-Docker healthcheck + nginx /healthz + Kubernetes liveness/readiness probe
-정합. 인증 부재 (public path) + 빠른 응답 + 외부 의존성 부재 default.
+역할 — 컨테이너 오케스트레이터/리버스 프록시가 서버 생존(liveness)과 가용
+(readiness)을 판정하는 무인증 probe 2종을 제공한다. Docker HEALTHCHECK + nginx
+/healthz + Kubernetes liveness/readiness probe 정합.
+
+계층 위치 — server API handler 계층(정본 §E). aiohttp 라우터에 직접 등록되며,
+auth_middleware 의 `_PUBLIC_PATHS` bypass 대상이라 Bearer 인증을 거치지 않는다.
+
+의존성 — aiohttp `web` + `request.app` 의 dependency(db_pool / bot provider /
+activity tracker / config) 만 읽는다(쓰기 부재). 외부 IO/DB 쿼리 미수행이라
+probe 자체가 장애 표면을 만들지 않는다.
+
+범위 한계 — liveness(`/healthz`)는 의존성을 검증하지 않는다(process 생존 만).
+readiness(`/readyz`)도 dependency 객체의 존재 여부(not None)만 보며, 실 DB
+ping/외부 provider 왕복은 하지 않는다 — 빠른 응답 우선.
+
+엔드포인트 카탈로그(실 함수 2 + register 1):
+- `handle_healthz`   GET /healthz  — liveness, 항상 200 ok.
+- `handle_readyz`    GET /readyz   — readiness, dependency 존재 점검.
+- `register_health_routes` — server.main 등록 entry.
 
 설계 결정
 ---------
@@ -52,7 +69,10 @@ async def handle_readyz(request: web.Request) -> web.Response:
 
     HTTP code:
     - 200 = ok + degraded (degraded = 일부 optional 항목 부재, 운영 가능).
-    - 503 = down (필수 항목 부재 — 본 cycle = 모든 항목 optional 의 의 down 부재).
+    - 503 = down (필수 항목 부재 — 본 cycle 은 모든 항목이 optional 이라 down 미발생).
+
+    부작용 — 부재(읽기 전용 probe). DB 쿼리/외부 IO 미수행, app dependency 의
+    존재 여부(not None)만 조회한다.
     """
 
     checks: Dict[str, str] = {}
