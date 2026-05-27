@@ -9,15 +9,16 @@ last_verified: 2026-05-27
 # 다음 세션 인계 — cycle 169.853
 
 > 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) · 운영: [CLAUDE.md](../../../CLAUDE.md) · 맵: [AGENTS.md](../../../AGENTS.md)
-> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `d416d81`.
+> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `39c6a01`.
 
 ---
 
 ## 1. TL;DR (현 상태)
 
-- **HEAD = `d416d81`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0.
+- **HEAD = `39c6a01`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0.
 - **avatar 이미지 picker — M1~M7 코드+문서 완결** (`fb13fed` 시점). 잔존 = **G-final 사용자 실 webcam visual ack**(headless 대체 불가, 사용자 직접 — 체크리스트 [avatar Exec Plan §14.1](2026-05-26-avatar-image-picker-upload.md)).
 - **한글 주석 상세화 페이즈 — M2 server repository 21/21 완료** (`d416d81`). 진행 중 품질 트랙(기능 diff 0).
+- **평가 staleness sweep + dereliction 회수 완료** (`160a5ec`·`39c6a01`) — 평가 2종 md+html + current-review HEAD 마커 + token-usage-30d 재산출(staleness hook 해소) + dereliction MEDIUM 2건 회수(평가 §5/§6/§8 full-section sweep + WBS 169.853 16 row backfill). 점수 7.6/8.4 무변동(diff 0).
 - 부수 도구: `tools/verify_comment_only.py`(주석 전용 게이트 — docstring 재귀 제거 후 ast.dump 비교).
 
 ---
@@ -59,9 +60,9 @@ last_verified: 2026-05-27
 1. **함수/SQL 카탈로그 컨벤션 (§4 D-1)** — module docstring 의 함수 목록은 **실 심볼명** + 개수 일치. 약칭/단수복수 불일치 금지(reviewer T-2 HIGH). rooms("10 SQL"→실 15 함수)·bot_escalations(부재 list_by_agent 제거) 전례.
 2. **ValueError 등 런타임 문자열은 docstring 아님 — 절대 미변경** — error message 를 "다듬으면" AST Constant 변경 = 기능 diff 0 위반. `verify_comment_only.py` 가 검출·차단(streaming_oauth_tokens 전례). 주석/docstring 만 touch.
 3. **과잉 주석 금지** — 이미 모범 docstring 보유 파일(avatars/users/reclaim_atomic 등)은 표준 gap(계층 §E + invariant)만 보강. 자명 코드 1:1 재진술 금지.
-4. **평가 freshness sweep cadence** — commit 5건마다 `hook_assessment_freshness.sh`(임계 5)가 Stop block. 본 페이즈는 기능 diff 0 라 점수 무변동이나 sweep 카운터 리셋 의무 — productization/vibe-coding md+html 4 + last_verified 갱신(부분 sweep 으로 §3.1 진척 row + header log prepind).
-5. **HTML mirror 동시성** — 평가 md 편집 시 html 동반(PostToolUse hook 차단). 평가 2 pair = last_verified + 사이클 N fingerprint 정합.
-6. **dereliction auto-spawn** — 작업 완료 보고 직후 dereliction-detector spawn(WBS row + Exec Plan status drift 점검). WBS = `data/wbs.sqlite`(gitignore, 로컬) cycle row 등록.
+4. **평가 staleness sweep — 2 경로 + full-section 의무** — (a) commit 5건마다 `hook_assessment_freshness.sh`(임계 5), (b) `hook_assessment_token_rewrite_trigger.sh` 가 **12h staleness**(cap 6h) 도 Stop block(본 세션 `160a5ec` 가 (b)로 발화). 기능 diff 0 라 점수 무변동이나 sweep 의무. **가드레일 `feedback_assessment_full_section_sweep` = §1+§2+§3+§5+§6+§8 6 영역 전면 sweep**(2회차 비판 회수, 다음 위반 시 Stop hook 강제) — §1 row + §2 prepend 만 = 위반. dereliction-detector 가 §5/§6/§8 미터치를 MEDIUM 검출하므로 무변동이라도 "cycle N 무변동 근거" 1줄 sweep 노트 필수(`39c6a01` 전례). PASS 수치 drift(2770/2521 같은 stale)도 sweep 시 단일 값 정합 의무.
+5. **HTML mirror 동시성** — 평가 md 편집 시 html 동반(PostToolUse `hook_html_mirror_consistency.sh` 차단, **md 단독 편집마다 fire**). 평가 2 pair = last_verified + 사이클 N fingerprint 정합. md 전부 편집 후 html 일괄 동기 → 최종 commit 에서 dirty-together 통과.
+6. **dereliction auto-spawn + 회수** — 작업 완료 보고 직후 dereliction-detector spawn(`run_in_background`). WBS = `data/wbs.sqlite`(gitignore, 로컬) **directive 1건 = 1 row** — M2 batch 누적 시 row 누락 detect 빈발(본 세션 12 row backfill, 16/16 done). post-commit 후 PENDING row 의 commit_sha 갱신 의무.
 
 ---
 
@@ -88,7 +89,10 @@ last_verified: 2026-05-27
 | `93d77b9` | 주석 페이즈 active + e2e scope + `verify_comment_only.py` |
 | `428f85a`·`4d42059` | M1 본보기 friends.py + reviewer HIGH 회수 |
 | `525f7ff`~`d416d81` | M2 server repository 21/21 (batch 1~9) |
+| `3c2efcc` | 다음 세션 인계 자료 (본 문서) |
+| `160a5ec` | 평가 2종+current-review+token-usage staleness sweep (M2 21/21 반영) |
+| `39c6a01` | 평가 §5/§6/§8 full-section sweep — dereliction MEDIUM-2 회수 + WBS 16 row backfill |
 
 ---
 
-마지막 갱신: 2026-05-27 (cycle 169.853 — avatar M1~M7 완결 + 주석 페이즈 M2 21/21 완료 인계. 다음 = M3 server API handler 19)
+마지막 갱신: 2026-05-27 16:20 KST (cycle 169.853 — avatar M1~M7 완결 + 주석 M2 21/21 완료 + 평가 staleness sweep + dereliction MEDIUM 2 회수(§5/§6/§8 full-sweep + WBS 16 backfill) 인계. HEAD `39c6a01`. 다음 = M3 server API handler 19)
