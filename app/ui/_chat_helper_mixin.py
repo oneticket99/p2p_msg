@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ChatHelperMixin — chat history + cache + lazy load + unread fetch chain (cycle 169.519 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+local SQLite replay + scroll-up lazy load + unread batch + friend DM history 의 server 결선.
+
 codex 2.5 HIGH 진입 5차 — main_window.py 책임 분리.
 TrayMixin (509) + FriendSearchMixin (511) + BotChatMixin (513) + DrawerMixin (514) 등가 패턴.
 
@@ -87,7 +90,7 @@ class ChatHelperMixin:
             # cycle 169.466 — incremental prepend (clear+replay 폐기)
             kind = self._active_chat_kind or "saved"
             hide_sender = kind in ("friend", "bot", "saved")
-            # 한글 주석 — DESC fetch 결과 그대로 iterate — insertWidget(0) 시점 reverse 효과
+            # DESC fetch 결과 그대로 iterate — prepend insertWidget(0) 가 reverse 효과 부여
             for r in rows:
                 is_self_flag = bool(r["is_self"])
                 if kind == "saved":

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BotChatMixin — 투네이션 고객센터 bot chat 송신 + history fetch chain (cycle 169.513 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+POST /api/bot/chat LLM 호출 + GET history fetch + 로컬 SQLite cache 병합을 묶는 배선.
+
 codex 2.5 HIGH 진입 3차 — main_window.py 책임 분리.
 TrayMixin (cycle 169.509) + FriendSearchMixin (cycle 169.511) 등가 패턴.
 
@@ -48,7 +51,7 @@ class BotChatMixin:
         typing = TypingIndicator(parent=self._chat_view._content)
         if self._active_chat_kind == "bot":
             try:
-                # 한글 주석 — stretch slot 직전 insertWidget (chat_view layout 정합)
+                # stretch slot 직전 insertWidget — chat_view 끝 stretch 보존 위해 count-1 위치 삽입
                 insert_at = max(0, self._chat_view._messages_layout.count() - 1)
                 self._chat_view._messages_layout.insertWidget(insert_at, typing)
                 self._chat_view._scroll_to_bottom_once()
@@ -162,7 +165,7 @@ class BotChatMixin:
                     page = await resp.json()
                     raw_messages = page.get("messages", [])
             if self._active_chat_kind == "bot":
-                # 한글 주석 — cycle 169.497 — cached + server merge (bot reply 사라짐 회수)
+                # cycle 169.497 — cached + server merge (bot reply 사라짐 회귀 회수)
                 from app.db import messages_cache as _mc
                 room_id_local = self._kind_room_local("bot", 1)
                 # cycle 169.461 — server DESC fetch → ASC iteration (사용자 critique image #24)
@@ -194,7 +197,7 @@ class BotChatMixin:
                             )
                         except Exception:
                             pass
-                # 한글 주석 — cycle 169.497 — server full row truth + cached fallback
+                # cycle 169.497 — server full row 우선 + cached fallback 병합 (full replay)
                 if new_entries or not self._dm_history.get(key):
                     self._chat_view.clear_messages()
                     merged: list = []

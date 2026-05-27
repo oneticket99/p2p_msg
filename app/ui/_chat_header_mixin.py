@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ChatHeaderMixin — ChatHeader 8 slot chain (cycle 169.525 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+ChatHeader 버튼(사이드바 토글/검색/통화/원격/메뉴) → CallDialog/RemoteCallDialog/QMenu 결선.
+
 codex 2.5 HIGH 진입 10차 — main_window.py 책임 분리.
 잔존 큰 group (378 line) — header + remote dropdown chain isolated.
 
@@ -206,7 +209,7 @@ class ChatHeaderMixin:
 
             role = SessionRole.HOST if role_name == "host" else SessionRole.CONTROLLER
             chan = getattr(self, "_remote_data_channel", None)
-            # 한글 주석 — 채널 확립 시 send 결선, 미확립 시 graceful no-op (M4 binding 지점)
+            # 채널 확립 시 send 결선, 미확립 시 graceful no-op (M4 binding 지점)
             send = (lambda b: chan.send(b)) if chan is not None else (lambda b: None)
             runner = RemoteSessionRunner(role, send_frame=send, send_input=send)
             self._remote_runner = runner
