@@ -54,13 +54,13 @@ class TestKSTFormatter:
     def test_request_id_dash_when_no_context(self) -> None:
         formatter = KSTFormatter()
         out = formatter.format(_make_record())
-        # 한글 주석: middleware 외 → request_id = "-"
+        # middleware 외 → request_id = "-"
         assert "[-]" in out
 
     def test_timestamp_format_iso_like(self) -> None:
         formatter = KSTFormatter()
         out = formatter.format(_make_record())
-        # 한글 주석: [YYYY-mm-dd HH:MM:SS.mmm KST] prefix 검증
+        # [YYYY-mm-dd HH:MM:SS.mmm KST] prefix 검증
         assert re.search(r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} KST\]", out)
 
 
@@ -155,7 +155,7 @@ class TestRedactSensitive:
 
     def test_email_partial_mask_domain_preserved(self) -> None:
         out = redact_sensitive("user@example.com")
-        # 한글 주석: local part 의 첫 3자 + ***  + 도메인 보존
+        # local part 의 첫 3자 + ***  + 도메인 보존
         assert "@example.com" in out
         assert "use***@example.com" in out
 
@@ -196,7 +196,7 @@ class TestRedactingFilter:
         assert "sk-***" in record.token
 
     def test_filter_returns_true(self) -> None:
-        # 한글 주석: filter 의 return True 의무 (record propagate)
+        # filter 의 return True 의무 (record propagate)
         record = _make_record(msg="hello")
         assert RedactingFilter().filter(record) is True
 
@@ -235,7 +235,7 @@ class TestConfigureLogging:
         configure_logging(level="INFO", log_format="text")
         configure_logging(level="INFO", log_format="json")
         root = logging.getLogger()
-        # 한글 주석: 2 회 호출 의 1 handler 만 유지
+        # 2 회 호출 의 1 handler 만 유지
         assert len(root.handlers) == 1
 
     def test_aiohttp_access_capped_to_warning(self) -> None:
@@ -252,7 +252,7 @@ class TestEndToEndLogging:
         logger = logging.getLogger("test.e2e")
         logger.info("user login api_key=sk-ant-api01-abcdef123456789012345xyz")
         captured = capsys.readouterr()
-        # 한글 주석: JSON line 의 parse + redact 검증
+        # JSON line 의 parse + redact 검증
         line = captured.out.strip().split("\n")[-1]
         payload = json.loads(line)
         assert "sk-ant-api01" not in payload["message"]

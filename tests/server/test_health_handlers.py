@@ -46,7 +46,7 @@ class TestHealthz:
 
     @pytest.mark.asyncio
     async def test_no_dependency_check(self) -> None:
-        # 한글 주석: liveness = DB / 외부 의존성 검증 부재. 빈 app 도 200 OK.
+        # liveness = DB / 외부 의존성 검증 부재. 빈 app 도 200 OK.
         app = web.Application()
         register_health_routes(app)
         client = await _make_client(app)

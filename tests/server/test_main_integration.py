@@ -44,7 +44,7 @@ class TestBuildAppBotEnabled:
     async def test_openai_key_absent_raises(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석 — cycle 169.611: OpenAI strict — OPENAI_API_KEY 부재 시점 RuntimeError raise 정합.
+        # cycle 169.611: OpenAI strict — OPENAI_API_KEY 부재 시점 RuntimeError raise 정합.
         monkeypatch.setenv("BOT_ENABLED", "1")
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         monkeypatch.setenv("DB_ENABLED", "0")
@@ -55,7 +55,7 @@ class TestBuildAppBotEnabled:
     async def test_openai_provider_with_key(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석 — cycle 169.611: OPENAI_API_KEY 활성 시 OpenAIProvider 등록 + route 활성.
+        # cycle 169.611: OPENAI_API_KEY 활성 시 OpenAIProvider 등록 + route 활성.
         monkeypatch.setenv("BOT_ENABLED", "1")
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
         monkeypatch.setenv("DB_ENABLED", "0")
@@ -76,7 +76,7 @@ class TestBuildAppBotEnabled:
     async def test_custom_rate_cap_honored(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석 — cycle 169.611: BOT_RATE_PER_MINUTE env 의 gate cap propagate.
+        # cycle 169.611: BOT_RATE_PER_MINUTE env 의 gate cap propagate.
         monkeypatch.setenv("BOT_ENABLED", "1")
         monkeypatch.setenv("BOT_RATE_PER_MINUTE", "5")
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
@@ -103,7 +103,7 @@ class TestEndpointWithTestClient:
     async def test_unauthorized_without_bearer(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석 — cycle 169.611: OpenAI strict env inject + auth_middleware Bearer 부재 401.
+        # cycle 169.611: OpenAI strict env inject + auth_middleware Bearer 부재 401.
         monkeypatch.setenv("BOT_ENABLED", "1")
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-openai")
         monkeypatch.setenv("DB_ENABLED", "0")
@@ -128,7 +128,7 @@ class TestEndpointWithTestClient:
     async def test_bot_disabled_returns_404(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # 한글 주석 — cycle 169.611: BOT_ENABLED 비활성 — 라우트 미등록 / 404 검증.
+        # cycle 169.611: BOT_ENABLED 비활성 — 라우트 미등록 / 404 검증.
         monkeypatch.delenv("BOT_ENABLED", raising=False)
         monkeypatch.setenv("DB_ENABLED", "0")
         app = await build_app()
