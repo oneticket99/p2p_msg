@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """CallsDialog — 전화 history modal (cycle 169.318).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin 이 instantiate(통화 history list 표시).
+순수 표시 UI — 통화 data 는 caller 가 주입(본 dialog 는 영속/네트워크 책임 없음).
+
 사용자 directive image #84 — drawer 의 "전화" click → 본 dialog (통화 history list).
 """
 
@@ -31,7 +34,7 @@ class CallsDialog(QDialog):
     call_initiated = pyqtSignal(str)  # (peer_id)
 
     def __init__(self, calls: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle(_tr("tootalk_전화"))
         self.setModal(True)
@@ -53,7 +56,7 @@ class CallsDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header
+        # header
         header_row = QHBoxLayout()
         title = QLabel("전화")
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
@@ -64,7 +67,7 @@ class CallsDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 최근 통화 list
+        # 최근 통화 list
         recent_label = QLabel("최근 통화")
         recent_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(recent_label)
@@ -81,7 +84,7 @@ class CallsDialog(QDialog):
         self._populate(calls or [])
 
     def _populate(self, calls: list[dict]) -> None:
-        # 한글 주석 — 통화 history 주입
+        # 통화 history 주입
         for c in calls:
             peer = c.get("peer_name", "?")
             ts = c.get("timestamp", "")
@@ -95,7 +98,7 @@ class CallsDialog(QDialog):
             self._list.addItem(empty)
 
     def _on_item_double_clicked(self, item: QListWidgetItem) -> None:
-        # 한글 주석 — 통화 재개 signal emit
+        # 통화 재개 signal emit
         peer_id = item.data(Qt.ItemDataRole.UserRole)
         if peer_id:
             self.call_initiated.emit(peer_id)

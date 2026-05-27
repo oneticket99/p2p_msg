@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """AddFriendByUsernameDialog — telegram align 사용자명 입력 친구 추가 (cycle 169.457 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — MainWindow mixin/handler 가 instantiate +
+signal(친구 요청 payload)로 결과를 회신한다. 서버 호출은 caller 책임(본 dialog 는 입력 수집 UI).
+
 사용자 directive — telegram 친구 추가 2 mode 중 username 입력 path.
 - 사용자 사용자명 입력 → server /api/friends/by-username/{username} resolve → friends INSERT.
 """

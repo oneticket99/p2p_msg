@@ -143,7 +143,7 @@ else:
             root.addLayout(search_row)
 
             # ── 검색 결과 list ────────────────────────────
-            # 한글 주석 — cycle 169.495 — chat list 패턴 visual 동기 (사용자 directive image #13).
+            # cycle 169.495 — chat list 패턴 visual 동기 (사용자 directive image #13).
             # ChatListItemDelegate 재사용 — avatar circle + name (14px bold) + subtitle (12px gray) + ts row.
             self._result_list = QListWidget(self)
             self._result_list.setSelectionMode(
@@ -197,7 +197,7 @@ else:
                 self._result_list.addItem(placeholder)
                 return
 
-            # 한글 주석 — cycle 169.495 — ChatListEntry 변환 + UserRole + 2 set (delegate paint source).
+            # cycle 169.495 — ChatListEntry 변환 + UserRole + 2 set (delegate paint source).
             # name = nickname > display_name > username 우선. subtitle = @username (verify ✓ 보조).
             from app.ui.chat_list_panel import ChatListEntry
             for result in self._results:
@@ -275,7 +275,7 @@ else:
 
             target_id = self.selected_user_id()
             if target_id is None:
-                # 한글 주석 — 선택 부재 시점 silent return (alert 폐기). log 만 retain.
+                # 선택 부재 시점 silent return (alert 폐기). log 만 retain.
                 log.info("[add_friend] click ignored — selection 부재")
                 return
             nickname = self.nickname()
