@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.854)</title>
-<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.854 미러.
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.855)</title>
+<!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.855 미러.
+     cycle 169.855 marker 동기 — 한글 주석 상세화 페이즈 M4 app/net 9/16 진행 + 다음 세션 인계 자료 재작성. M4 client net 계층(b1~b3, 9 파일) module 5요소 + QThread worker 생명주기·signal 계약·SSL 우회·async httpx vs urllib 변이 명시 + filler 전환 + 카탈로그 정정(folder 4→5) + sfu self-지칭 대명사 2곳 정정. 잔여 6 = avatars·call·rooms·friends·messages·signaling. 전수 diff-0(verify_comment_only AST 동일) + app pytest 무변경. §1 종합/§3.1/§5/§6/§8 동시 sweep. 신규 VERIFIED 부재 — 종합 7.6/10 유지. 다음 M4 잔여 6 → M5 rtc.
      cycle 169.854 marker 동기 — 한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료. blast radius 역순 M3 전수(b1~b8 8 batch, health~auth). module docstring 5요소 + endpoint 인증/검증/오류 코드/부작용 + filler 전환. 카탈로그 컨벤션 정정 다수(rooms 6→7·friends 6→8·auth 5→15·folder 4→5·read 2→3). 전수 기능 diff 0(verify_comment_only AST 동일) + server 642 pytest 전량 무변경 + BPE/대명사/이중조사 0. 런타임 string(streaming HTML·auth register log) 미변경 보존(diff-0 규율, 별도 기능 cycle 백로그). §1 종합/§3.1/§5/§6/§8 동시 sweep. 신규 VERIFIED 부재 — 종합 7.6/10 유지. 다음 M4 net 13.
      cycle 169.853 marker 동기 — 한글 주석 상세화 페이즈 M2 server repository 21/21 완료 + 다음 세션 인계 자료. blast radius 역순 M2 전수 완료(13/21 → 21/21) — friends 본보기 + 잔여 20 repo. module/class/함수 docstring(§4 D-1~D-6) + 카탈로그 컨벤션(실 심볼명+개수 일치, rooms/friends/bot_escalations 정정) + inline "왜". 전수 기능 diff 0(verify_comment_only AST 동일) + server 642 pytest 무변경 + BPE/대명사/이중조사 0. 인계 자료 = 다음 M3 server API handler 19. §5/§6/§8 full-section sweep 동반(액션/중기/리스크 cycle 169.853 무변동 근거 1줄 갱신 — 주석 트랙 비영향). 신규 VERIFIED 부재(가독성 품질) — 종합 7.6/10 유지.
      cycle 169.853 marker 동기 — 한글 주석 상세화 페이즈 M2 진행(server repository 13/21). blast radius 역순 — friends 본보기(reviewer PASS) + peers/read_states/password_reset/file_meta/device_tokens/user_contacts/avatars/streaming_oauth_tokens/users/rooms/messages/folders. 매 batch 기능 diff 0(verify_comment_only docstring 제거 후 AST 동일) + pytest 무변경 + BPE/대명사/이중조사 0. 부정확 함수 카탈로그도 실 심볼명 정정. 주석 전용 = 코드 동작 변경 0(ValueError 런타임 string 도 미변경, diff-0 도구 검출). 잔여 repo 8 + M3~M7. 종합 7.6/10 유지.
@@ -24,7 +25,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-27T20:55:00+09:00 (사이클 169.854 — 한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료, 전수 기능 diff 0(verify_comment_only AST 동일) + server 642 pytest 무변경 + 카탈로그 컨벤션 정정 다수(rooms 7·friends 8·auth 15·folder 5·read 3), 런타임 string 미변경 보존, 코드 동작 변경 0, 다음 M4 net 13 — 종합 7.6/10 유지) -->
+     last_verified = 2026-05-27T22:35:00+09:00 (사이클 169.855 — 한글 주석 상세화 페이즈 M4 app/net 9/16 진행 + 인계 자료 재작성, M4 client net module 5요소 + worker 생명주기·signal·SSL·httpx vs urllib 변이 명시(9 파일, 잔여 6), 전수 diff-0 + app pytest 무변경, 코드 동작 변경 0, 다음 M4 잔여 6 → M5 rtc — 종합 7.6/10 유지) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -521,7 +522,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-27 20:55 KST · cycle 169.854 미러 동기 (한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료 — 전수 기능 diff 0 verify_comment_only AST 동일 + server 642 pytest 무변경 + 카탈로그 컨벤션 정정 다수(rooms 7·friends 8·auth 15·folder 5·read 3) + 런타임 string 미변경 보존, 코드 동작 변경 0, 다음 M4 net 13) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
+  최신 갱신: 2026-05-27 22:35 KST · cycle 169.855 미러 동기 (한글 주석 상세화 페이즈 M4 app/net 9/16 진행 + 인계 자료 재작성 — M4 client net module 5요소 + worker 생명주기·signal·SSL·httpx vs urllib 변이 명시(9 파일, 잔여 6), 전수 diff-0 + app pytest 무변경, 코드 동작 변경 0, 다음 M4 잔여 6 → M5 rtc) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
 </footer>
 
 </body>

@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.854)</title>
-  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.854 미러 -->
+  <title>사용자 바이브 코딩 능력 평가 — Snapshot (사이클 169.855)</title>
+  <!-- 한글 주석: 본 HTML 은 docs/assessments/vibe-coding.md cycle 169.855 미러 -->
+  <!-- 한글 주석: cycle 169.855 marker 동기(M4 9/16 진행) — 한글 주석 상세화 페이즈 M4 app/net 9/16(b1~b3, 9 파일) + 인계 자료 재작성. 강점: 계층 경계 인지(server→client 동일 표준 + net 변이 명시 — QThread+urllib vs async httpx 두 패턴 module docstring 의존성 차이 기록) + 카탈로그 정정 지속(folder 4→5) + SSL 우회 _ssl_util 단일 source 추적 + 선존 self-지칭 대명사 hook 차단 즉시 회수 + 인계 종합 재작성(M2+M3+M4 9/16 단일점, 잔여 6). 코드 동작 변경 0(verify_comment_only 전수 PASS + app pytest 무변경). 점수 8.4/10 변동 부재(process 성숙 — 계층 경계 + 패턴 변이 인지). 다음 M4 잔여 6 → M5 rtc. -->
   <!-- 한글 주석: cycle 169.854 marker 동기(M3 19/19 완료) — 한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료(b1~b8 8 batch, health~auth). 강점: 품질 트랙 도구 게이트(verify_comment_only AST 동일) 19 handler 전수 일관(매 batch diff-0 + server 642 무변경) + 카탈로그 컨벤션 정정 다수(rooms 6→7·friends 6→8·auth 5→15·folder 4→5·read 2→3, module docstring endpoint 개수를 실 handler 수에 일치) + 런타임 string diff-0 보존 판단(streaming HTML·auth register log 어색 한국어도 AST Constant 라 미변경, 별개 기능 cycle 백로그) + filler 전환 + 이중조사 정정 + M2 batch cadence 8 batch 일관 유지. 점수 8.4/10 변동 부재(process 성숙 — 품질 트랙 도구 게이트 전수 완주 + 카탈로그 정합 규율). 다음 M4 net 13. -->
   <!-- 한글 주석: cycle 169.853 marker 동기(M2 완료 + 인계) — 한글 주석 상세화 페이즈 M2 server repository 21/21 완료(13/21 → 21/21) + 다음 세션 인계 자료. 강점: 품질 트랙 도구 게이트(verify_comment_only AST 동일)를 21 파일 전수 일관 적용 + 부정확 함수 카탈로그(rooms/friends/bot_escalations 약칭·개수·부재 식별자) 실 심볼명 전수 정정 + ValueError 런타임 string 무심 변경 diff-0 검출·차단 + "의 의" 이중조사·대명사 정정 + 인계 자료 작성(M3 server API handler 19 첫 응답 지시). 코드 동작 변경 0(server 642 pytest 무변경). §5/§6/§8 full-section sweep 동반(코칭/비교 anchor/트리거 cycle 169.853 무변동 근거 1줄 갱신). 점수 8.4/10 변동 부재(process 성숙 — 품질 트랙 도구 게이트 전수 완주 + 표준 검증 전파). -->
   <!-- 한글 주석: cycle 169.853 marker 동기(M2 진행) — 한글 주석 상세화 페이즈 server repository 13/21 보강. friends 본보기(reviewer PASS) + peers~folders 누계. 강점: 매 batch 기능 diff 0 도구(verify_comment_only AST) 게이트 일관 적용 + 부정확 함수 카탈로그(rooms/friends 약칭·개수 불일치) 실 심볼명 정정 + ValueError 런타임 string 무심 변경을 diff-0 도구가 검출·차단(주석 전용 규율 기계 강제) + "의 의" 이중조사·대명사 정정. 코드 동작 변경 0(pytest 무변경). 점수 8.4/10 변동 부재(process 성숙 — 품질 트랙 도구 게이트 일관). -->
@@ -20,7 +21,7 @@
   <!-- 한글 주석: cycle 169.838 marker 동기 — 전 dialog in-app overlay 모달 변환 완성(별도 OS 윈도우 제거, 새창=원격제어 상대화면 창 1개뿐) + ConfirmDialog 정적 헬퍼(얼럿/확인) in-app 화 + "방 입장" 전수 제거 + 별도 윈도우 예외 4종 FRONTEND.md §16 명문화. reviewer-gate 2차 PASS — 사용자 dogfooding directive("얼럿창 아닌 메인 레이아웃 안 모달") 정합. 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.837 marker 동기 — startup 로그인 메뉴 토글(835) + 그룹 멤버 보기 "..." 드롭다운·room kind=group·수신음 실 파일 교체(836) + 그룹 멤버 UX 완성(멤버 모달 + 원형 아바타 행 통합 + 그룹 메뉴 미구현 stub 전수 제거, 837). UX 정합이나 신규 VERIFIED capability 부재 — 점수 8.4/10 변동 부재. -->
   <!-- 한글 주석: cycle 169.834 marker — dogfooding 버그 6종 배치 + i18n 5언어 친절화(11 UI) + 수신음 교체. 점수 8.4/10 변동 부재. -->
-  <!-- 한글 주석: last_verified = 2026-05-27T20:55:00+09:00 (사이클 169.854 — 한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료: 품질 트랙 도구 게이트 19 handler 전수 일관 + 카탈로그 컨벤션 정정 다수(rooms 7·friends 8·auth 15·folder 5·read 3) + 런타임 string diff-0 보존, 코드 동작 변경 0, 점수 8.4/10 변동 부재) -->
+  <!-- 한글 주석: last_verified = 2026-05-27T22:35:00+09:00 (사이클 169.855 — 한글 주석 상세화 페이즈 M4 app/net 9/16 진행 + 인계 자료 재작성: 계층 경계 인지(server→client 동일 표준 + QThread urllib vs async httpx 변이 명시) + 카탈로그 정정 + self-지칭 대명사 hook 회수, 코드 동작 변경 0, 점수 8.4/10 변동 부재) -->
   <!-- 한글 주석: quote 영역 사용자 발언 인용 시 BPE 손상 토큰 literal 사용 금지 — HTML entity &#xCE21; 표기 사용 -->
   <style>
     *{box-sizing:border-box}
@@ -473,7 +474,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/vibe-coding.md</code> · 동행 snapshot: <a href="productization.html">productization.html</a><br>
-  최신 갱신: 2026-05-27 20:55 KST · cycle 169.854 미러 동기 (한글 주석 상세화 페이즈 M3 server API handler 19/19 전수 완료 — 품질 트랙 도구 게이트 19 handler 전수 일관 + 카탈로그 컨벤션 정정 다수(rooms 7·friends 8·auth 15·folder 5·read 3) + 런타임 string diff-0 보존, 코드 동작 변경 0, 다음 M4 net 13) · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
+  최신 갱신: 2026-05-27 22:35 KST · cycle 169.855 미러 동기 (한글 주석 상세화 페이즈 M4 app/net 9/16 진행 + 인계 자료 재작성 — 계층 경계 인지(server→client 동일 표준 + QThread urllib vs async httpx 변이 명시) + 카탈로그 정정 지속 + SSL 우회 _ssl_util 단일 source + self-지칭 대명사 hook 회수, 코드 동작 변경 0, 다음 M4 잔여 6 → M5 rtc) · 엄격 기준 L5 포함 명시 · 공식 순위가 아닌 행동 패턴 보수 추정으로 기록.<br>
   메모리 인덱스: <code>~/.claude/projects/-Users-1ticket-Documents-vscode-work-p2p-msg/memory/MEMORY.md</code>
 </footer>
 

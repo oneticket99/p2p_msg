@@ -1,13 +1,13 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-27T20:55:00+09:00
+last_verified: 2026-05-27T22:35:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
-> HEAD 동기 (Claude, 2026-05-27 20:55 KST): main HEAD **cycle 169.854**. 본 Codex 전면평가(아래 본문, cycle 169.852 기준) 이후 진행 = avatar M1~M7 완결(G-final webcam ack 만 잔존) + 한글 주석 상세화 페이즈 M2 `server/db/repositories/*.py` 21/21 + **M3 `server/api/*_handlers.py` 19/19 전수 완료**(주석 전용 트랙 — 기능 diff 0, verify_comment_only AST 동일 전수 PASS + server 642 pytest 무변경, 카탈로그 컨벤션 정정 다수 rooms 7·friends 8·auth 15·folder 5·read 3). 신규 VERIFIED capability 부재 → readiness 7.6 / 데모 8.4 유지. 다음 = M4 `app/net/*_client.py` 13. 본문 분석은 Codex 정본 그대로 보존.
+> HEAD 동기 (Claude, 2026-05-27 22:35 KST): main HEAD **cycle 169.855**. 본 Codex 전면평가(아래 본문, cycle 169.852 기준) 이후 진행 = avatar M1~M7 완결(G-final webcam ack 만 잔존) + 한글 주석 상세화 페이즈 M2 repo 21/21 + M3 server API handler 19/19 완료 + **M4 `app/net/*.py` 9/16 진행**(주석 전용 트랙 — 기능 diff 0, verify_comment_only AST 동일 전수 PASS + server 642/app pytest 무변경, 카탈로그 정정 다수 rooms 7·friends 8·auth 15·folder worker 5). M4 잔여 6 = avatars·call·rooms·friends·messages·signaling. 신규 VERIFIED capability 부재 → readiness 7.6 / 데모 8.4 유지. 다음 = M4 잔여 6 → M5 rtc. 본문 분석은 Codex 정본 그대로 보존.
 >
 > 검토 기준: 2026-05-26 19:50 KST main branch HEAD `ac54cf8` cycle 169.852 + avatar 이미지 picker M1/M2 서버 영속 완료 + 다음 session 인계 자료 작성 이후 Codex 전면평가 보정. room broadcast → 통합 ChatView 마이그레이션 M1~M5b 완결, Codex 평가 §8 직접 작업 큐 회수(§8-1 sqlite ResourceWarning 해소 + §8-3 SFU coverage sfu_call_client 14→89% + sfu_room 49→100% + M6 WBS 사용자 ack "재개+backfill" 수령·524 row backfill), avatar 서버 영속 foundation/endpoint 구현, 하드코딩 잔존 개선 큐, 그리고 사용자 직접 빌드 산출물 검증 기반의 **실사용 데모 readiness** 산정 기준을 함께 반영한다.
 > 목적: 다음 작업 세션에서 곧바로 우선순위를 잡을 수 있는 협업용 평가 snapshot.
