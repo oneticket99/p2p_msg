@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """InviteDialog — 친구 목록 dropdown 으로 그룹 방 초대 송신.
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — RestPostMixin/RoomGroupChatMixin 이 instantiate
+(그룹 방 친구 초대) + invite_requested signal 로 회신. FriendsClient 조회는 본 dialog, invite REST 는 caller.
+
 본 cycle 147 갱신 — cycle 136 skeleton 의 placeholder dropdown 을 cycle 144
 FriendsClient REST chain 으로 교체. ``FriendsClient.list_friends(status="accepted")``
 호출 + 응답 의 ``FriendProfilePayload`` list → dropdown populate. 사용자 선택 +
@@ -25,7 +28,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
 from app.i18n import labels as _i18n_labels
 
 # PyQt6 graceful — headless 환경 의 ImportError 차단
@@ -78,7 +81,7 @@ def _friends_to_options(friends: List[Any]) -> List[FriendOption]:
         if isinstance(friend, FriendOption):
             options.append(friend)
             continue
-        # 한글 주석: FriendProfilePayload duck typing — friend_user_id + friend_username.
+        # FriendProfilePayload duck typing — friend_user_id + friend_username 우선 추출.
         uid = getattr(friend, "friend_user_id", None)
         if uid is None:
             uid = getattr(friend, "user_id", None)
@@ -144,7 +147,7 @@ else:
             friends_client : FriendsClient | None
                 cycle 147 신설 — ``app.net.friends_client.FriendsClient`` 의 주입.
                 ``populate_friends_async`` 호출 시 의 ``list_friends`` source.
-                None = manual ``set_friends`` 의 의무 (test 격리 mock 호환).
+                None = manual ``set_friends`` 호출 의무 (test 격리 mock 호환).
             room_title : str
                 헤더 표기 — 부재 시 "Room #<id>" 폴백.
             """
@@ -212,8 +215,8 @@ else:
             """dropdown 의 friends list 갱신 — caller 의 외부 fetch 의무 entry.
 
             ``FriendOption`` 또는 ``FriendProfilePayload`` 호환 (duck typing).
-            cycle 147 의 main_window 통합 = ``FriendsClient.list_friends`` 응답
-            그대로 본 메서드 의 인자 주입 의 의무.
+            cycle 147 의 main_window 통합 = ``FriendsClient.list_friends`` 응답을
+            그대로 본 메서드 인자로 주입한다.
             """
 
             self._friends = _friends_to_options(friends)

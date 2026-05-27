@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """GroupCallDialog — SFU 그룹 음성·영상 통화 화면 (cycle 169.806 M4b-2).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — SfuCallMixin 이 instantiate(그룹 통화 타일 그리드).
+SfuCallClient(net) 와 협력하되 미디어 협상 무관(UI 전용) — add_remote_track 콜백으로만 결합.
+
 9 peer 이상의 그룹 통화에서 각 producer 의 forward 미디어를 타일 그리드로
 표시한다. producer 1명당 ``QLabel`` 타일 + ``VideoRenderer`` (aiortc track →
 QImage 30fps) 1개를 매핑하고, 합류·이탈에 따라 타일을 동적 추가/제거한다.
@@ -80,7 +83,7 @@ class GroupCallDialog(QDialog):
             renderer = VideoRenderer(label, track)
             renderer.start()
         except Exception as exc:  # noqa: BLE001
-            # 한글 주석 — event loop 부재(headless)·track 무효 시 타일만 유지
+            # event loop 부재(headless)·track 무효 시 타일만 유지
             log.warning("[GroupCallDialog] VideoRenderer 시작 skip producer=%s — %r", producer_id, exc)
 
         self._tiles[producer_id] = (label, renderer)

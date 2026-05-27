@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """GroupInfoDialog — 그룹 정보 보기 (cycle 169.334 image #103 telegram align).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — ChatHeaderMixin/RoomGroupChatMixin 이 instantiate
+(그룹 메타 + 참가자 표시). 그룹 data 는 caller 주입 + action(관리/나가기)은 signal 회신.
+
 레이아웃:
 - 상단 close X (우측 상단)
 - 그룹 avatar (큰 원형) + 그룹명 + 참가자 N 명
@@ -47,7 +50,7 @@ class GroupInfoDialog(QDialog):
         members: Optional[list[dict]] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle(_tr("tootalk_그룹_정보"))
         self.setModal(True)
@@ -72,7 +75,7 @@ class GroupInfoDialog(QDialog):
         body.setContentsMargins(0, 0, 0, 0)
         body.setSpacing(0)
 
-        # 한글 주석 — 상단 close row
+        # 상단 close row
         top = QHBoxLayout()
         top.setContentsMargins(16, 12, 16, 0)
         top.addStretch(1)
@@ -80,7 +83,7 @@ class GroupInfoDialog(QDialog):
         top.addWidget(close_btn)
         body.addLayout(top)
 
-        # 한글 주석 — avatar + name + count
+        # avatar + name + count
         head = QVBoxLayout()
         head.setContentsMargins(20, 0, 20, 12)
         head.setSpacing(8)
@@ -100,7 +103,7 @@ class GroupInfoDialog(QDialog):
         head.addWidget(count_label)
         body.addLayout(head)
 
-        # 한글 주석 — 4 action button row (음소거 / 관리 / 나가기 / 더 보기)
+        # 4 action button row (음소거 / 관리 / 나가기 / 더 보기)
         actions = QHBoxLayout()
         actions.setContentsMargins(16, 0, 16, 16)
         actions.setSpacing(8)
@@ -113,13 +116,13 @@ class GroupInfoDialog(QDialog):
             actions.addWidget(self._build_action(icon_name, label, signal_name), stretch=1)
         body.addLayout(actions)
 
-        # 한글 주석 — separator line
+        # separator line
         sep = QFrame()
         sep.setFixedHeight(1)
         sep.setStyleSheet("background-color: #1f2937;")
         body.addWidget(sep)
 
-        # 한글 주석 — 참가자 row
+        # 참가자 row
         members_head = QHBoxLayout()
         members_head.setContentsMargins(20, 12, 20, 6)
         people_icon = QLabel()
@@ -141,7 +144,7 @@ class GroupInfoDialog(QDialog):
         members_head.addWidget(add_btn)
         body.addLayout(members_head)
 
-        # 한글 주석 — member list
+        # member list
         self._list = QListWidget()
         self._list.setStyleSheet(
             "QListWidget { color: #f3f4f6; background-color: transparent; border: 0; }"
@@ -152,7 +155,7 @@ class GroupInfoDialog(QDialog):
         body.addWidget(self._list, stretch=1)
 
     def _make_avatar(self, name: str, size: int) -> QPixmap:
-        # 한글 주석 — chat_list entry 등가 (palette_solid bg + initials)
+        # chat_list entry 등가 (palette_solid bg + initials)
         pix = QPixmap(size, size)
         pix.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pix)
@@ -171,7 +174,7 @@ class GroupInfoDialog(QDialog):
         return pix
 
     def _build_action(self, icon_name: str, label: str, signal_name: Optional[str]) -> QWidget:
-        # 한글 주석 — 4 action button (icon + label vertical)
+        # 4 action button (icon + label vertical)
         w = QFrame()
         w.setStyleSheet("QFrame { background-color: #1F2937; border-radius: 8px; }")
         v = QVBoxLayout(w)
@@ -191,7 +194,7 @@ class GroupInfoDialog(QDialog):
         return w
 
     def _populate_members(self) -> None:
-        # 한글 주석 — member list 주입 (avatar + name + status + 소유자 chip)
+        # member list 주입 (avatar + name + status + 소유자 chip)
         for m in self._members:
             name = m.get("name", "?")
             status = m.get("status", "최근에 접속함")
