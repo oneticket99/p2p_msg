@@ -1,9 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """CallClient — WebRTC SDP + ICE + MediaStreamTrack scaffolding (cycle 169.57 신설).
 
-aiortc RTCPeerConnection + audio/video track 추가 + offer/answer chain.
-signaling server 안 candidate exchange = `signaling_client.send_call_*` chain 의무.
-actual MediaStream device capture = OS-specific (별도 cycle).
+역할 — 1:1 음성/영상 통화의 aiortc RTCPeerConnection 수명(offer/answer/ICE/hangup)
++ OS 미디어 캡처 + mute/video toggle 을 담당한다(SFU 그룹 통화는 sfu_call_client 별개).
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). CallMixin(UI)이 본 client 를 생성하고,
+SDP/ICE 교환은 주입된 `signaling_client.send_offer/answer/ice` 에 위임한다.
+
+의존성 — `aiortc`(RTCPeerConnection/MediaPlayer, 미설치 시 AIORTC_AVAILABLE=False
+graceful) + 주입된 signaling_client + STUN/TURN env(TOOTALK_STUN_URL/TURN_*). UI/Qt
+직접 의존 부재.
+
+범위 한계 — peer connection + track 수명만. 실 미디어 device 선택은 OS-specific
+(_build_media_player), 타일 렌더는 UI 책임. aiortc 부재 환경은 None 반환 graceful.
+
+카탈로그(공개 async 5 + toggle 2 + helper 3):
+- `create_offer`/`accept_offer`/`apply_answer`/`hangup` + `toggle_mute`/`toggle_video`.
+- `_build_media_player`/`_build_ice_servers`/`_notify`(상태 콜백).
 """
 
 from __future__ import annotations
@@ -38,7 +51,7 @@ class CallClient:
         turn_username: str = "",
         turn_credential: str = "",
     ) -> None:
-        # cycle 169.81 회수 — TURN credential 의 의 env override (production binding)
+        # TURN credential 을 env override 로 주입(production binding, cycle 169.81 회수)
         # TOOTALK_TURN_URL / TOOTALK_TURN_USERNAME / TOOTALK_TURN_CREDENTIAL
         self._stun_url = os.environ.get("TOOTALK_STUN_URL", stun_url)
         self._turn_url = os.environ.get("TOOTALK_TURN_URL", turn_url)
@@ -46,7 +59,7 @@ class CallClient:
         self._turn_credential = os.environ.get("TOOTALK_TURN_CREDENTIAL", turn_credential)
         self._on_state_change = on_state_change
         self._signaling = signaling_client
-        self._peer_id = peer_id  # 한글 주석 — 상대 peer signaling id
+        self._peer_id = peer_id  # 상대 peer 의 signaling id
         self._pc: Optional[Any] = None
         self._remote_track: Optional[Any] = None
         self._video_enabled = False
@@ -54,8 +67,8 @@ class CallClient:
     def _build_media_player(self, system: str, video: bool = False):  # type: ignore[no-untyped-def]
         """OS-specific MediaPlayer 신설 (cycle 169.60 video capture 회수).
 
-        Darwin avfoundation video device 의 의 `default:default` (camera + mic).
-        Linux v4l2 + pulse. Windows dshow audio-only (cycle 부재 graceful).
+        Darwin avfoundation video device 는 `default:default`(camera + mic).
+        Linux v4l2 + pulse. Windows dshow audio-only (미지원 시 graceful).
         """
         if not AIORTC_AVAILABLE:
             return None
@@ -121,7 +134,7 @@ class CallClient:
             log.info("[CallClient] remote track 수신 kind=%s", track.kind)
             self._remote_track = track
 
-        # 한글 주석 — cycle 169.60 회수 — MediaPlayer audio + video device capture
+        # MediaPlayer 로 audio + video device capture (cycle 169.60 회수)
         try:
             import platform
             self._media_player = self._build_media_player(platform.system(), video=video)
@@ -153,7 +166,7 @@ class CallClient:
         offer = await self._pc.createOffer()
         await self._pc.setLocalDescription(offer)
 
-        # 한글 주석 — signaling 의 SDP offer 전송 (peer_id + signaling_client inject 시점)
+        # signaling 으로 SDP offer 전송 (peer_id + signaling_client 주입 시점만)
         if self._signaling is not None and self._peer_id:
             try:
                 await self._signaling.send_offer(self._peer_id, self._pc.localDescription.sdp)
@@ -174,7 +187,7 @@ class CallClient:
         answer = await self._pc.createAnswer()
         await self._pc.setLocalDescription(answer)
 
-        # 한글 주석 — signaling answer 전송
+        # signaling 으로 answer 전송
         if self._signaling is not None and self._peer_id:
             try:
                 await self._signaling.send_answer(self._peer_id, self._pc.localDescription.sdp)

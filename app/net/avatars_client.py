@@ -1,16 +1,26 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """avatars REST binding — cycle 169.852 M3 (Exec Plan T-10).
 
-server avatar endpoint(M2) 클라 호출 — QThread + sync urllib worker 패턴
-(account_client 정합, GUI 스레드 non-block). httpx 미사용(코드베이스 컨벤션).
+역할 — avatar 업로드/조회/프로필 갱신 REST 를 QThread background worker 로 호출하고,
+picker 가 고른 QImage 를 업로드 byte 로 직렬화한다(GUI 스레드 non-block).
 
-worker 3종:
-- AvatarUploadWorker  — POST /api/avatars (multipart, 수동 boundary 인코딩) → avatar_ref.
-- AvatarFetchWorker   — GET /api/avatars/{filename} → 이미지 byte.
-- AvatarPatchMeWorker — PATCH /api/me/avatar → 프로필 avatar_ref 갱신(빈값=제거).
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `avatars_handlers.py`
+counterpart. picker(UI)가 worker 를 생성·connect 하고, fetch 결과는 AvatarCache 표시
+전파 source 가 된다.
 
-이미지 byte ↔ QImage 변환 헬퍼(qimage_to_bytes)도 제공 — picker 가 고른
-QImage 를 업로드 byte 로 직렬화한다(PNG default, 알파 보존).
+의존성 — PyQt6 `QThread`/`pyqtSignal`/`QImage`/`QBuffer` + 동기 `urllib`(worker
+스레드 blocking) + `_ssl_util.build_ssl_context`(TLS 우회 정책 단일 source). httpx
+미사용(net 컨벤션). multipart boundary 는 수동 인코딩.
+
+범위 한계 — REST 호출 + QImage↔byte 변환 + signal emit 만. worker 객체 수명
+(deleteLater/참조)은 호출자 책임. 재시도 루프 부재(1회). upload 20s / fetch 15s /
+patch 10s timeout.
+
+카탈로그(worker 3 + helper 2):
+- `AvatarUploadWorker`   POST  /api/avatars         (multipart) → avatar_ref (20s).
+- `AvatarFetchWorker`    GET   /api/avatars/{file}   → 이미지 byte (15s, 표시 source).
+- `AvatarPatchMeWorker`  PATCH /api/me/avatar        → 프로필 ref 갱신(빈값=제거, 10s).
+- `qimage_to_bytes`(직렬화 PNG 알파 보존)/`_content_type`(fmt→MIME).
 """
 
 from __future__ import annotations
@@ -49,7 +59,7 @@ def _content_type(fmt: str) -> str:
 class AvatarUploadWorker(QThread):
     """POST /api/avatars multipart 업로드 worker → avatar_ref 회신."""
 
-    # 한글 주석 — (ok, avatar_ref, error_message)
+    # signal payload = (ok, avatar_ref, error_message) — 메인 스레드 connect
     finished_with_result = pyqtSignal(bool, str, str)
 
     def __init__(
@@ -123,7 +133,7 @@ class AvatarUploadWorker(QThread):
 class AvatarFetchWorker(QThread):
     """GET /api/avatars/{filename} → 이미지 byte worker (표시 전파 source)."""
 
-    # 한글 주석 — (ok, avatar_ref, image_bytes)
+    # signal payload = (ok, avatar_ref, image_bytes) — AvatarCache 가 수신·캐시
     finished_with_result = pyqtSignal(bool, str, bytes)
 
     def __init__(
@@ -134,7 +144,7 @@ class AvatarFetchWorker(QThread):
         parent: Optional[object] = None,
     ) -> None:
         super().__init__(parent)
-        # 한글 주석 — avatar_ref = "avatars/<sha>.<ext>" → GET /api/{avatar_ref}
+        # avatar_ref = "avatars/<sha>.<ext>" 형식 → GET /api/{avatar_ref} 로 매핑
         self._url = f"{base_url.rstrip('/')}/api/{avatar_ref.lstrip('/')}"
         self._token = token
         self._ref = avatar_ref
@@ -160,7 +170,7 @@ class AvatarFetchWorker(QThread):
 class AvatarPatchMeWorker(QThread):
     """PATCH /api/me/avatar → 내 프로필 avatar_ref 갱신(빈값=제거) worker."""
 
-    # 한글 주석 — (ok, avatar_ref, error_message)
+    # signal payload = (ok, avatar_ref, error_message)
     finished_with_result = pyqtSignal(bool, str, str)
 
     def __init__(
