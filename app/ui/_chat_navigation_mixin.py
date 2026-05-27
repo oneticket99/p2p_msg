@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ChatNavigationMixin — chat_list panel populate + sidebar tab + chat select 3 method (cycle 169.526 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+friend/room/bot 통합 ChatListEntry populate + SidebarRail tab 라우팅 + chat 진입 chain 배선.
+
 codex 2.5 LOW 진입 11차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 169.106/136/62 origin):
@@ -43,7 +46,7 @@ class ChatNavigationMixin:
 
         entries: list[ChatListEntry] = []
 
-        # 한글 주석 — 투네이션 고객센터 봇 default (pinned + online)
+        # 투네이션 고객센터 봇 default (pinned + online)
         entries.append(
             ChatListEntry(
                 kind="bot",
@@ -57,7 +60,7 @@ class ChatNavigationMixin:
             )
         )
 
-        # 한글 주석 — friend_list 안 friends → ChatListEntry kind=friend 변환
+        # friend_list 안 friends → ChatListEntry kind=friend 변환
         friends = getattr(self._friend_list, "_friends", [])
         for fr in friends:
             uid = getattr(fr, "user_id", None) or getattr(fr, "id", None) or 0
@@ -76,7 +79,7 @@ class ChatNavigationMixin:
                 )
             )
 
-        # 한글 주석 — cycle 169.843 M3 — room source-of-truth 를 _rooms_cache 로 전환.
+        # cycle 169.843 M3 — room source-of-truth 를 _rooms_cache 로 전환.
         # 이전 _room_list._rooms 직접 의존 해소 (RoomListWidget 은 M5 회수까지 병행 잔존).
         rooms = getattr(self, "_rooms_cache", [])
         for rm in rooms:
@@ -168,11 +171,11 @@ class ChatNavigationMixin:
         if kind == "room":
             self._current_room_id = target_id
         else:
-            # 한글 주석 — cycle 169.848 M5b 후속: room 이 아닌 진입(friend/bot/saved/group)
+            # cycle 169.848 M5b 후속: room 이 아닌 진입(friend/bot/saved/group)
             # 시 직전 room context 잔존 clear. 미clear 시 friend 송신이 직전 room 으로
             # REST POST 오발신되는 잠재 버그 차단 (_on_send_clicked L171 _current_room_id).
             self._current_room_id = None
-        # 한글 주석 — cycle 169.107 회수 — entry 안 name + status lookup chain
+        # cycle 169.107 회수 — entry 안 name + status lookup chain
         # cycle 169.159 — telegram align fallback "최근에 접속함" (actual last_seen REST = 별 cycle)
         chat_panel = getattr(self, "_chat_list_panel", None)
         name = f"{kind}:{target_id}"
@@ -186,7 +189,7 @@ class ChatNavigationMixin:
         self._chat_header.set_chat(name, status=status)
         # cycle 169.221 — friend kind 시점 last_seen REST fetch (cycle 169.216 endpoint 연동)
         # cycle 169.225 — DM history fetch (cycle 169.222 DM room resolve + list_messages)
-        # 한글 주석 — cycle 169.572: asyncio.ensure_future graceful guard (python 3.13 안 running loop 부재 시 DeprecationWarning + fail)
+        # cycle 169.572: asyncio.ensure_future graceful guard (python 3.13 안 running loop 부재 시 DeprecationWarning + fail)
         # test setup (qasync 부재 환경) 안 fail 회수. running loop 시점 만 schedule.
         import asyncio
         try:
@@ -225,7 +228,7 @@ class ChatNavigationMixin:
                         play_sound=False,
                     )
             else:
-                # 한글 주석 — in-memory cache miss → local SQLite history replay (사용자 directive 영속)
+                # in-memory cache miss → local SQLite history replay (사용자 directive 영속)
                 self._load_local_history(kind, target_id)
             # cycle 169.444 — chat_view active room_id 갱신 (lazy load cursor base)
             self._chat_view.set_active_room(self._kind_room_local(kind, target_id))

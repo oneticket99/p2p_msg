@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FriendSearchMixin — 친구 검색 + 요청 + pending list + badge chain (cycle 169.511 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+AddFriendDialog/PendingRequestsDialog + FriendsClient(search/request/list_pending) 결선 + badge 갱신.
+
 codex 2.5 HIGH 진입 2차 — `app/ui/main_window.py` 책임 분리 의 2차.
 TrayMixin (cycle 169.509) 등가 패턴.
 
@@ -24,7 +27,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
 from app.i18n import labels as _i18n_labels
 
 if TYPE_CHECKING:
@@ -48,7 +51,7 @@ class FriendSearchMixin:
             return
 
         dlg = AddFriendDialog(parent=self)
-        # 한글 주석 — cycle 169.489 — search_requested wire fix
+        # cycle 169.489 — search_requested wire fix
         self._add_friend_dlg_ref = dlg
         dlg.search_requested.connect(self._on_friend_search_requested)
         dlg.friend_requested.connect(self._on_friend_requested)
@@ -136,7 +139,7 @@ class FriendSearchMixin:
                 log.info("[friend_request] 이미 친구 또는 pending 상태")
                 if dlg is not None:
                     dlg.accept()
-                # 한글 주석 — 사용자 directive 2026-05-22 — 이미 요청된 상대 안내
+                # 사용자 directive 2026-05-22 — 이미 요청된 상대 안내
                 ConfirmDialog.show_info(
                     self,
                     "친구 추가",

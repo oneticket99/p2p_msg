@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """DialogCenterMixin — child overlay + backdrop + manual modal event loop (cycle 169.528 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+모든 dialog 의 별도 OS 윈도우 → 메인 레이아웃 안 in-app overlay 변환 공용 헬퍼(backdrop dim + 중앙 배치).
+
 codex 2.5 잔존 big block 진입 13차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 169.267~351 origin):
@@ -104,7 +107,7 @@ class DialogCenterMixin:
             accepted_sig.connect(_on_accepted)
         if rejected_sig is not None and hasattr(rejected_sig, "connect"):
             rejected_sig.connect(_on_rejected)
-        # 한글 주석 — QDialog fallback (signal 부재 시 method override)
+        # QDialog fallback (signal 부재 시 method override)
         if accepted_sig is None:
             orig_accept = dialog.accept
             def _accept():
@@ -205,7 +208,7 @@ class DialogCenterMixin:
         from PyQt6.QtCore import Qt as _Qt
         from PyQt6.QtWidgets import QFrame, QWidget
 
-        # 한글 주석 — backdrop dim layer (다른 모달과 동일한 어둡게 처리)
+        # backdrop dim layer (다른 모달과 동일한 어둡게 처리)
         backdrop = QFrame(self)
         backdrop.setObjectName("dialogBackdrop")
         backdrop.setAutoFillBackground(True)
@@ -215,10 +218,10 @@ class DialogCenterMixin:
         backdrop.setGeometry(self.rect())
         backdrop.show()
         backdrop.raise_()
-        # 한글 주석 — backdrop 참조 보관 (dialog close 시 함께 정리)
+        # backdrop 참조 보관 (dialog close 시 함께 정리)
         dialog._embed_backdrop = backdrop
 
-        # 한글 주석 — dialog 를 main_window child widget 으로 재부모화 (별도 윈도우 차단)
+        # dialog 를 main_window child widget 으로 재부모화 (별도 윈도우 차단)
         dialog.hide()
         dialog.setParent(self)
         dialog.setWindowFlags(_Qt.WindowType.Widget)
