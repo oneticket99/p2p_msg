@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """RemoteRequestDialog / RemoteConnectDialog — 원격 데스크탑 제어 (cycle 169.331).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — ChatHeaderMixin 이 instantiate(원격 제어 dropdown).
+PermissionRequest/Grant 신호 + RemoteSession 기동은 caller/remote 계층 책임, 본 dialog 는 요청/수락 UI.
+
 사용자 directive image #93 — chat_header 의 원격 제어 icon → dropdown 2 entry:
 - 원격 요청 → RemoteRequestDialog (PermissionRequest send)
 - 원격 연결 → RemoteConnectDialog (PermissionGrant accept + RemoteSession start)
@@ -48,7 +51,7 @@ class RemoteRequestDialog(QDialog):
     request_sent = pyqtSignal(object)  # PermissionRequest
 
     def __init__(self, friends: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 원격 요청")
         self.setModal(True)
@@ -70,7 +73,7 @@ class RemoteRequestDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header
+        # header
         header_row = QHBoxLayout()
         title = QLabel("원격 요청")
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
@@ -80,7 +83,7 @@ class RemoteRequestDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 대상 친구 선택
+        # 대상 친구 선택
         target_label = QLabel("대상 사용자")
         target_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(target_label)
@@ -97,7 +100,7 @@ class RemoteRequestDialog(QDialog):
             self._target_combo.addItem("등록된 친구 부재", 0)
         body.addWidget(self._target_combo)
 
-        # 한글 주석 — mode 선택 (HELP / CONTROL)
+        # mode 선택 (HELP / CONTROL)
         mode_label = QLabel("권한 mode")
         mode_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(mode_label)
@@ -110,7 +113,7 @@ class RemoteRequestDialog(QDialog):
         )
         body.addWidget(self._mode_combo)
 
-        # 한글 주석 — duration 초
+        # duration 초
         dur_label = QLabel("유효 시간 (초)")
         dur_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(dur_label)
@@ -123,7 +126,7 @@ class RemoteRequestDialog(QDialog):
         )
         body.addWidget(self._dur_spin)
 
-        # 한글 주석 — reason input
+        # reason input
         reason_label = QLabel("요청 사유")
         reason_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(reason_label)
@@ -135,7 +138,7 @@ class RemoteRequestDialog(QDialog):
         )
         body.addWidget(self._reason_edit, stretch=1)
 
-        # 한글 주석 — send button
+        # send button
         send_btn = QPushButton("요청 보내기")
         send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         send_btn.setStyleSheet(
@@ -147,7 +150,7 @@ class RemoteRequestDialog(QDialog):
         body.addWidget(send_btn)
 
     def _on_send(self) -> None:
-        # 한글 주석 — PermissionRequest 생성 + emit (transport binding = 추후 cycle)
+        # PermissionRequest 생성 + emit (transport binding = 추후 cycle)
         from app.remote.permission import PermissionRequest, PermissionMode
         target_id = self._target_combo.currentData() or 0
         if target_id <= 0:
@@ -181,7 +184,7 @@ class RemoteConnectDialog(QDialog):
     request_rejected = pyqtSignal(object)  # PermissionRequest
 
     def __init__(self, pending: Optional[list] = None, parent: Optional[QWidget] = None) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle("TooTalk · 원격 연결")
         self.setModal(True)
@@ -203,7 +206,7 @@ class RemoteConnectDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header
+        # header
         header_row = QHBoxLayout()
         title = QLabel("원격 연결")
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
@@ -213,7 +216,7 @@ class RemoteConnectDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 대기 요청 list
+        # 대기 요청 list
         pending_label = QLabel("대기 중 원격 요청")
         pending_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         body.addWidget(pending_label)
@@ -226,7 +229,7 @@ class RemoteConnectDialog(QDialog):
         )
         body.addWidget(self._list, stretch=1)
 
-        # 한글 주석 — accept + reject button row
+        # accept + reject button row
         btn_row = QHBoxLayout()
         accept_btn = QPushButton("승인")
         accept_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -252,7 +255,7 @@ class RemoteConnectDialog(QDialog):
         self._populate()
 
     def _populate(self) -> None:
-        # 한글 주석 — pending PermissionRequest list 표시
+        # pending PermissionRequest list 표시
         self._list.clear()
         for req in self._pending:
             requester = getattr(req, "requester_user_id", "?")
@@ -269,7 +272,7 @@ class RemoteConnectDialog(QDialog):
             self._list.addItem(empty)
 
     def _on_accept(self) -> None:
-        # 한글 주석 — PermissionGrant 생성 + emit + RemoteSession start
+        # PermissionGrant 생성 + emit + RemoteSession start
         from app.remote.permission import PermissionGrant, derive_revoke_token
         item = self._list.currentItem()
         if item is None:
@@ -294,7 +297,7 @@ class RemoteConnectDialog(QDialog):
         self.accept()
 
     def _on_reject(self) -> None:
-        # 한글 주석 — 요청 거절 emit
+        # 요청 거절 emit
         item = self._list.currentItem()
         if item is None:
             self.reject()

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """SignupDialog — email + username + password + OTP 검증 (cycle 153 phase 2 redesign).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — app/main.py startup + AuthChainMixin/LoginDialog 가
+instantiate(회원가입 + login↔signup 전환 done() code). AuthClient 가입 호출 후 OTPDialog nested exec_modal 로 검증.
+
 Toonation BI 통합 — logo icon top + Toonation primary CTA + brand 색상.
 정합 = FRONTEND.md §15 + telegram-ui-survey.md §2 + OTPDialog (cycle 153 phase 2).
 
@@ -59,7 +62,7 @@ class SignupDialog(QDialog):
         self.setModal(True)
         self._client = auth_client
         self._email: Optional[str] = None
-        # 한글 주석 — cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
+        # cycle 169.54 회수 — OTP PASS 직후 session token + user_id propagate
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
         # cycle 169.482 — double-click guard (가입 button 의 race 차단 — server IntegrityError 의 EMAIL_DUPLICATE 응답 차단)
@@ -74,7 +77,7 @@ class SignupDialog(QDialog):
         outer.setSpacing(14)
         outer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16)
+        # symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16)
         logo_row = QHBoxLayout()
         logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo_row.setSpacing(0)
@@ -160,7 +163,7 @@ class SignupDialog(QDialog):
         btn_login_link = QPushButton(_tr("로그인"))
         btn_login_link.setProperty("variant", "ghost")
         btn_login_link.setFlat(True)
-        # 한글 주석 — cycle 169.53 회수 — login link click → done(3) (signup → login switch intent)
+        # cycle 169.53 회수 — login link click → done(3) (signup → login switch intent)
         # main.py 안 reject 의 어플 종료 차단 + login_dialog 진입 chain 의무
         btn_login_link.clicked.connect(lambda: self.done(3))  # type: ignore[arg-type]
 
@@ -239,7 +242,7 @@ class SignupDialog(QDialog):
         log.info("[회원가입] finished ok=%s code=%s", ok, error_code)
         email = getattr(self, "_signup_email", "")
         if ok:
-            # 한글 주석 — register PASS → OTP dialog 진입 (modal block + cancel 시 signup 잔존)
+            # register PASS → OTP dialog 진입 (modal block + cancel 시 signup 잔존)
             from app.ui.otp_dialog import OTPDialog
             from app.ui._modal_helper import exec_modal
             otp = OTPDialog(auth_client=self._client, email=email, parent=self)
@@ -247,12 +250,12 @@ class SignupDialog(QDialog):
             # SignupDialog 가 MainWindow overlay 안서 열린 경우 parent 체인 walk 로
             # _exec_dialog_centered 위임, startup bootstrap(부모 부재) 시 .exec() 폴백.
             if exec_modal(otp, self) == otp.DialogCode.Accepted:
-                # 한글 주석 — cycle 169.54 회수 — OTP PASS 의 자동 발급 token + user_id propagate
+                # cycle 169.54 회수 — OTP PASS 의 자동 발급 token + user_id propagate
                 self._email = email
                 self._token = otp._token
                 self._user_id = otp._user_id
                 self.accept()
-            # 한글 주석 — OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
+            # OTP 미인증 시 signup dialog 잔존 (재 register / 재 OTP 진입 가능)
             return
         err_map = {
             "EMAIL_DUPLICATE": "이미 가입된 이메일 — 로그인 진입 의무",

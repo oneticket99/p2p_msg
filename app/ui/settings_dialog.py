@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """설정 다이얼로그 — 사용자 환경 control 통합 UI.
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin/MenuBarMixin 이 instantiate(환경 설정).
+SoundPlayer 등 런타임 객체에 직접 반영하는 control 통합 패널(추후 테마/알림/백업 section 누적).
+
 Phase 2 사이클 40 진입 — 사이클 38~39 의 signature sound layer follow-up.
 음소거 toggle + 볼륨 slider 0~100 → ``SoundPlayer.set_enabled`` /
 ``set_volume`` 즉시 반영. 추후 Phase 2~3 의 다른 설정 (테마 / 알림 /
@@ -14,7 +17,7 @@ Phase 2 사이클 40 진입 — 사이클 38~39 의 signature sound layer follow
   helper ``percent_to_volume`` / ``volume_to_percent`` 의 분리.
 - ``apply_to_player`` = SettingsState → SoundPlayer 매핑 의무. dialog
   accept() 시 1회 호출 + 즉시 player 상태 반영.
-- 영속 저장 = Phase 3 의 user_settings table 의 의무 (본 cycle 의 의무
+- 영속 저장 = Phase 3 user_settings table 의 몫 (본 cycle 범위
   외 — env-only 폴백, dialog close 시 메모리 상태만 유지).
 """
 
@@ -51,7 +54,7 @@ except ImportError:  # pragma: no cover - PyQt6 미설치 환경 폴백
     _QT_AVAILABLE = False
 
 
-# 한글 주석 — cycle 144 i18n production binding helper. PyQt6 부재 환경 의
+# cycle 144 i18n production binding helper. PyQt6 부재 환경 의
 # graceful fallback (raw source 반환).
 def _tr(src: str) -> str:
     """MainWindow context 의 QCoreApplication.translate wrap."""
@@ -132,7 +135,7 @@ def apply_to_player(state: SettingsState, player: Optional[SoundPlayer]) -> bool
     Parameters
     ----------
     state : SettingsState
-        다이얼로그 의 의 입력 스냅샷.
+        다이얼로그 입력 스냅샷.
     player : SoundPlayer | None
         반영 대상. None = no-op (graceful 폴백).
 
@@ -173,7 +176,7 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
     """
 
     from PyQt6.QtCore import pyqtSignal as _pyqtSignal
-    # 한글 주석 — close/cancel/save 의 signal emit chain (_exec_dialog_centered 안 connect)
+    # close/cancel/save 의 signal emit chain (_exec_dialog_centered 안 connect)
     accepted = _pyqtSignal()
     rejected = _pyqtSignal()
 
@@ -201,7 +204,7 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
             raise RuntimeError("PyQt6 부재 — SettingsDialog 생성 불가")
         super().__init__(parent)
         self._sound_player = sound_player
-        # 한글 주석 — "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
+        # "설정" .ts entry tr() (5 locale: Settings/設定/设置/設定/設定).
         self.setWindowTitle(f"TooTalk · {_tr('설정')}")
         # cycle 169.57 — modal 강제
         self.setModal(True)
@@ -489,20 +492,20 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
         outer.setContentsMargins(24, 24, 24, 24)
         outer.setSpacing(16)
 
-        # 한글 주석 — avatar (telegram align — center top of account tab)
+        # avatar (telegram align — center top of account tab)
         avatar_label = QLabel()
         avatar_label.setPixmap(make_initial_pixmap("guest", size=96))
         avatar_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         outer.addWidget(avatar_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — info rows (value bold + label subtitle)
+        # info rows (value bold + label subtitle)
         for label_text, value_widget in [
             (_tr("이메일"), QLabel("user@example.com")),
             (_tr("username"), QLabel("@username")),
         ]:
             self._build_setting_row(outer, label_text, value_widget)
 
-        # 한글 주석 — bio textarea (separate row)
+        # bio textarea (separate row)
         bio_label = QLabel(_tr("bio"))
         bio_label.setStyleSheet("color: #9ca3af; font-size: 12px;")
         outer.addWidget(bio_label)
@@ -552,7 +555,7 @@ class SettingsDialog(QWidget):  # type: ignore[misc, valid-type]
         form = QFormLayout(w)
         form.setContentsMargins(20, 20, 20, 20)
 
-        # 한글 주석 — 기존 sound binding 보존 — enabled_check + volume_slider 인스턴스 attribute
+        # 기존 sound binding 보존 — enabled_check + volume_slider 인스턴스 attribute
         self._enabled_check = QCheckBox(f"{_tr('메시지')} 수신 시 재생")
         self._enabled_check.setChecked(initial.sound_enabled)
         form.addRow(_tr("signature sound"), self._enabled_check)

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """auto-update UI dialog — PyQt6 새 버전 알림 + progress bar + 사용자 GO (cycle 133).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — UpdateLifecycleMixin 이 instantiate(신 버전 검출 시).
+app/updater(version_check/downloader/applier) 의 가시 UI layer — 실 download chain 은 caller/updater 책임.
+
 Phase 4 cycle 132 의 ``app/updater/`` skeleton (version_check / downloader /
 applier) follow-up — 사용자 가시 (visible) UI layer. 새 버전 검출 시 dialog
 표시 + release notes + 사용자 명시 GO 버튼 + progress bar + relaunch chain
@@ -64,7 +67,7 @@ def clamp_progress_percent(ratio: float) -> int:
         0~100 정수 (QProgressBar.setValue 직접 주입 가능).
     """
 
-    # 한글 주석: 범위 외 값 안전 clamp — UI freeze 방지
+    # 범위 외 값 안전 clamp — UI freeze 방지
     if ratio < 0.0:
         return 0
     if ratio > 1.0:
@@ -86,7 +89,7 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
         parent: Any = None,
         on_user_go: Optional[Callable[[dict], None]] = None,
     ) -> None:
-        # 한글 주석: PyQt6 부재 환경 의 graceful skip (CI Linux runner 정합)
+        # PyQt6 부재 환경 의 graceful skip (CI Linux runner 정합)
         if not _PYQT_AVAILABLE:
             log.warning("[update-dialog] PyQt6 부재 — graceful skip")
             self.current_version = current_version
@@ -104,7 +107,7 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
         self._setup_ui()
 
     def _setup_ui(self) -> None:
-        # 한글 주석: 새 버전 안내 label + release notes + 사용자 GO 버튼 row
+        # 새 버전 안내 label + release notes + 사용자 GO 버튼 row
         self.setWindowTitle("TooTalk 업데이트")
         layout = QVBoxLayout()
         latest_version = self.latest_info.get("version", "(unknown)")
@@ -112,12 +115,12 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
         layout.addWidget(QLabel(f"현재 버전: {self.current_version}"))
         notes = self.latest_info.get("release_notes", "변경사항 없음")
         layout.addWidget(QLabel(f"변경사항:\n{notes}"))
-        # 한글 주석: progress bar — 사용자 GO 직후 visible 전환
+        # progress bar — 사용자 GO 직후 visible 전환
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setVisible(False)
         layout.addWidget(self.progress)
-        # 한글 주석: 사용자 GO / 연기 버튼 row
+        # 사용자 GO / 연기 버튼 row
         btn_layout = QHBoxLayout()
         self.btn_update = QPushButton("업데이트")
         self.btn_later = QPushButton("나중에")
@@ -129,14 +132,14 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
         self.setLayout(layout)
 
     def _on_update(self) -> None:
-        # 한글 주석: 사용자 GO 직후 progress bar 표시 + 버튼 비활성 + callback
+        # 사용자 GO 직후 progress bar 표시 + 버튼 비활성 + callback
         if not _PYQT_AVAILABLE:
             return
         self.progress.setVisible(True)
         self.btn_update.setEnabled(False)
         self.btn_later.setEnabled(False)
         log.info("[update-dialog] 사용자 GO — download chain trigger")
-        # 한글 주석: 실 download chain = Phase 5 본격 cycle 위탁 callback
+        # 실 download chain = Phase 5 본격 cycle 위탁 callback
         if self.on_user_go is not None:
             try:
                 self.on_user_go(self.latest_info)
@@ -144,7 +147,7 @@ class UpdateDialog(QDialog):  # type: ignore[misc, valid-type]
                 log.warning("[update-dialog] on_user_go callback 실패 — %r", exc)
 
     def update_progress(self, ratio: float) -> None:
-        # 한글 주석: downloader progress callback → 0~100 정수 변환 후 setValue
+        # downloader progress callback → 0~100 정수 변환 후 setValue
         if not _PYQT_AVAILABLE or self.progress is None:
             return
         self.progress.setValue(clamp_progress_percent(ratio))

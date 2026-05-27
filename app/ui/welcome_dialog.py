@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """WelcomeDialog — TooTalk 첫 실행 진입 화면 (cycle 153 phase 2).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — app/main.py 첫 실행 onboarding(FR-09)에서 instantiate.
+locale 선택 + 로그인/회원가입 진입 CTA 회신 — 인증 흐름은 caller(LoginDialog/SignupDialog) 책임.
+
 텔레그램 desktop intro 등가 layout — banner + logo + sub + CTA + locale switch.
 정합 = FRONTEND.md §15 BI + telegram-ui-survey.md §1 + toonation-brand-integration-plan §4.2.
 
@@ -36,12 +39,12 @@ from app.i18n import labels as _i18n_labels
 
 
 def _tr(src: str) -> str:
-    # 한글 주석 — labels key slug 추출 chain (한글 src → key generation)
+    # labels key slug 추출 chain (한글 src → key generation)
     import re as _re
     slug = _re.sub(r"[^가-힣A-Za-z0-9]+", "_", src)[:40].strip("_").lower()
     return _i18n_labels.tr(slug) if _i18n_labels.tr(slug) != slug else QCoreApplication.translate("MainWindow", src)
 
-# 한글 주석 — branding asset path
+# branding asset path
 _LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "tootalk_symbol.png"
 _MASCOT_PATH = Path(__file__).resolve().parent.parent / "assets" / "branding" / "toona_sakamoto.png"
 
@@ -70,7 +73,7 @@ class WelcomeDialog(QDialog):
         banner_layout = QVBoxLayout(banner)
         banner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16 — composite PNG 폐기)
+        # symbol + Talk QHBoxLayout 합성 복원 (cycle 169.16 — composite PNG 폐기)
         logo_row = QHBoxLayout()
         logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo_row.setSpacing(0)
@@ -114,7 +117,7 @@ class WelcomeDialog(QDialog):
         content_layout.setSpacing(20)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — TooTalk title 텍스트 → mascot 이미지 (toona_sakamoto.png) 대체
+        # TooTalk title 텍스트 → mascot 이미지 (toona_sakamoto.png) 대체
         # 사용자 directive 2026-05-20 cycle 169.9
         mascot_label = QLabel()
         mascot_label.setStyleSheet("background: transparent;")
@@ -126,7 +129,7 @@ class WelcomeDialog(QDialog):
             mascot_label.setPixmap(mascot_scaled)
         content_layout.addWidget(mascot_label)
 
-        # 한글 주석 — mascot 직하 "투턱" 텍스트 (사용자 directive 2026-05-20 cycle 169.10)
+        # mascot 직하 "투턱" 텍스트 (사용자 directive 2026-05-20 cycle 169.10)
         mascot_name = QLabel("투턱")
         mascot_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         mascot_name.setStyleSheet(
@@ -150,7 +153,7 @@ class WelcomeDialog(QDialog):
 
         content_layout.addSpacing(40)
 
-        # 한글 주석 — 시작하기 CTA — Toonation primary
+        # 시작하기 CTA — Toonation primary
         btn_start = QPushButton(_tr("시작하기"))
         btn_start.setProperty("variant", "primary")
         btn_start.setMinimumHeight(48)
@@ -164,7 +167,7 @@ class WelcomeDialog(QDialog):
 
         content_layout.addSpacing(16)
 
-        # 한글 주석 — 4 locale switch row (text-only ghost button)
+        # 4 locale switch row (text-only ghost button)
         locale_row = QHBoxLayout()
         locale_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         locale_row.setSpacing(20)
