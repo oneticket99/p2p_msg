@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 friends REST API client — `/api/friends` 8 method wrapper (cycle 147).
 
-본 module 은 cycle 144 의 ``server/api/friends_handlers`` (GET/POST/ACCEPT/REJECT/
-BLOCK/REMOVE/PENDING/SEARCH 8 endpoint) 의 client-side wrapper. cycle 147 의
-invite_dialog FriendList dropdown populate + main_window 통합 chain 의 의무
-의존성. RoomsClient + MessagesRestClient 의 동일 graceful 패턴 의무.
+계층 위치 — app/net 클라이언트 계층(정본 §E). cycle 144 의 ``server/api/
+friends_handlers`` (GET/POST/ACCEPT/REJECT/BLOCK/REMOVE/PENDING/SEARCH) 의
+client-side wrapper. UI 주 호출자 = invite_dialog FriendList dropdown populate +
+main_window 통합 chain. RoomsClient + MessagesRestClient 와 동일 async httpx graceful 패턴.
 
 본 module 의 범위
 -----------------
@@ -28,7 +28,7 @@ graceful 의무 — httpx ImportError 환경 (테스트 collection / headless) �
 - ``block_friend(user_id: int) -> None``
 - ``remove_friend(user_id: int) -> None``
 
-본 module 은 wire layer 의 의무. UI binding (FriendListWidget / InviteDialog) 은
+본 module 은 wire layer 책임만 진다. UI binding(FriendListWidget / InviteDialog)은
 별개 cycle. cycle 147 의 invite_dialog 통합 = ``list_friends(status="accepted")``
 호출 + dropdown populate 의 main_window 책임.
 """
@@ -203,7 +203,7 @@ class FriendsClient:
     -----
     - httpx 미설치 환경 인스턴스화 시 ``RuntimeError`` — graceful 의무.
     - 모든 method 는 async. ``async with FriendsClient(...) as c:`` 패턴 권장.
-    - HTTP status → 7 분기 exception 매핑 의 의무 (401/400/403/404/409/5xx/network).
+    - HTTP status → 7 분기 exception 매핑(401/400/403/404/409/5xx/network) 의무.
     """
 
     def __init__(
@@ -253,8 +253,8 @@ class FriendsClient:
         """
 
         if self._client is None:
-            # 한글 주석 — TOOTALK_TLS_VERIFY=0 시점 verify=False (self-signed cert 정합).
-            # default "0" — 다른 client (_ssl_util.build_ssl_context) 동기. production = TOOTALK_TLS_VERIFY=1 명시 의무.
+            # TOOTALK_TLS_VERIFY=0 시 verify=False (self-signed cert 정합).
+            # default "0" — _ssl_util.build_ssl_context 와 동일 정책. production = TOOTALK_TLS_VERIFY=1 명시 의무.
             import os
             tls_verify = os.environ.get("TOOTALK_TLS_VERIFY", "0") != "0"
             self._client = httpx.AsyncClient(

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 rooms REST API client — `/api/rooms` 7 method wrapper (cycle 139).
 
-본 module 은 cycle 135 의 ``server/api/rooms_handlers`` (POST/GET/JOIN/LEAVE/
-INVITE/KICK 7 endpoint) 의 client-side wrapper. cycle 139 의 main_window 통합
-시점 의 의무 의존성 — RoomList sidebar 의 list_rooms / GroupChatView 의
-WebRTC mesh 진입 의 join_room / 헤더 추방 의 kick_user 등.
+계층 위치 — app/net 클라이언트 계층(정본 §E). cycle 135 의 ``server/api/
+rooms_handlers`` (POST/GET/JOIN/LEAVE/INVITE/KICK) 의 client-side wrapper. UI 쪽
+주 호출자 = RoomList sidebar(list_rooms) · 그룹 mesh 진입(join_room) · 헤더 추방
+(kick_user). async httpx 패턴(folder/auth 의 QThread urllib 과 다름 — qasync loop).
 
 본 module 의 범위
 -----------------
@@ -27,7 +27,7 @@ graceful 의무 — httpx ImportError 환경 (테스트 collection / headless) �
 - ``invite_user(room_id: int, user_id: int) -> int``  # 신규 peer_id
 - ``kick_user(room_id: int, user_id: int) -> None``
 
-본 module 은 wire layer 의 의무. UI binding (MainWindow / RoomList) 은
+본 module 은 wire layer 책임만 진다. UI binding(MainWindow / RoomList)은
 별개 cycle.
 """
 
@@ -119,7 +119,7 @@ class RoomPayload:
 
     @classmethod
     def from_wire(cls, wire: dict) -> "RoomPayload":
-        """server JSON dict → RoomPayload — 한글 주석: 필수 key 누락 시 KeyError."""
+        """server JSON dict → RoomPayload (필수 key 누락 시 KeyError)."""
 
         return cls(
             id=int(wire["id"]),
@@ -177,7 +177,7 @@ class RoomsClient:
     -----
     - httpx 미설치 환경 인스턴스화 시 ``RuntimeError`` — graceful 의무.
     - 모든 method 는 async. ``async with RoomsClient(...) as c:`` 패턴 권장.
-    - HTTP status → 7 분기 exception 매핑 의 의무 (401/400/403/404/409/5xx/network).
+    - HTTP status → 7 분기 exception 매핑(401/400/403/404/409/5xx/network) 의무.
     """
 
     def __init__(
