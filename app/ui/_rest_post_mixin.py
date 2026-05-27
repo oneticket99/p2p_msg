@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """RestPostMixin — REST POST chain 5 method (cycle 169.522 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+message POST/읽음표시/초대 의 server REST 호출을 MainWindow 안으로 묶는 배선 단위.
+
 codex 2.5 HIGH 진입 8차 — main_window.py 책임 분리.
 cavecrew-investigator verdict — 9 REST method 中 5 retain (3 이미 별 mixin 분리:
 _dispatch_message_chain → RoomGroupChatMixin / _on_send_clicked = chat send core retain).

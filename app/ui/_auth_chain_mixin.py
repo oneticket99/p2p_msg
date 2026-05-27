@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """AuthChainMixin — 회원가입/로그인/비번재설정/로그아웃 6 method chain (cycle 169.526 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+AuthClient(net) + dialog 3종(Signup/Login/PasswordReset) 결선 + 세션 토큰 보관 진입점.
+
 codex 2.5 LOW 진입 11차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 144 origin):
@@ -30,7 +33,7 @@ from app.net.auth_client import AuthClient
 from app.ui.login_dialog import LoginDialog
 from app.ui.password_reset_dialog import PasswordResetDialog
 from app.ui.signup_dialog import SignupDialog
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (labels.tr 5언어 dict 조회)
 from app.i18n import labels as _i18n_labels
 
 log = logging.getLogger(__name__)
@@ -150,5 +153,5 @@ class AuthChainMixin:
         if self._session_token is None:
             ConfirmDialog.show_info(self, "TooTalk", _i18n_labels.tr("msg_not_logged_in"))
             return
-        # 한글 주석 — tray menu logout chain 동일 활용
+        # tray menu logout 과 동일 chain 호출 (TrayMixin._perform_logout_and_relogin 단일화)
         self._perform_logout_and_relogin()

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FolderMixin — folder CRUD chain (cycle 169.523 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+folder 선택/생성/편집/삭제 → FolderEditDialog + ChatPickerDialog + FolderClient REST 결선.
+
 codex 2.5 HIGH 진입 9차 — main_window.py 책임 분리.
 잔존 method group 中 isolated scope (160 line).
 
