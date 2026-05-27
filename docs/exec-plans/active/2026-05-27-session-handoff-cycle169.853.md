@@ -25,10 +25,11 @@ last_verified: 2026-05-27
 
 ## 2. 다음 세션 첫 응답 (바로 이것부터)
 
-**한글 주석 상세화 페이즈 M4 — `app/net/*_client.py` (13 파일) 주석 보강** 부터 이어간다.
+**한글 주석 상세화 페이즈 M4 — `app/net/*_client.py` 잔여 6 파일 주석 보강** 부터 이어간다(M4 9/16 진행 중, cycle 169.855 b1~b3).
 
-- blast radius 역순 순서(§5 [comment Exec Plan](2026-05-26-korean-comment-enrichment-phase.md)): M2(완료) → M3 handler(완료) → **M4 net** → M5 rtc → M6 ui → M7 test(e2e) → G-final.
-- M4 의 핵심 = client REST/WS 계약 docstring 에 **재시도/타임아웃/SSL 우회 의도 / QThread worker 생명주기 / signal emit 부작용** 명시(T-5).
+- 잔여 6 = `avatars_client`(203) · `call_client`(217) · `rooms_client`(407) · `friends_client`(444) · `messages_client`(496) · `signaling_client`(525). 완료 9 = _ssl_util·group_message·push·folder·message_protocol·reactions·auth·account·sfu_call (+ __init__ 양호 무변경).
+- blast radius 역순 순서: M2(완료) → M3 handler(완료) → **M4 net(9/16)** → M5 rtc → M6 ui → M7 test(e2e) → G-final.
+- M4 의 핵심 = client REST/WS 계약 docstring 에 **재시도/타임아웃/SSL 우회 의도 / QThread worker 생명주기 / signal emit 부작용** 명시(T-5). 패턴: module 5요소(역할/계층 §E/의존성/범위/카탈로그) + filler `한글 주석` prefix sed 전환 + 선존 self-지칭 대명사 정정(PostToolUse hook 차단 — 자기/자신 으로). batch당 verify_comment_only diff-0 + app pytest 무변경 + commit/push + README/History/Exec Plan/WBS.
 - M2 에서 정착시킨 동일 패턴을 그대로 적용:
   1. 영역 batch(2~3 파일) 단위로 module/class/함수 docstring(의도/Parameters/Returns/Raises/부작용) + inline "왜" 보강.
   2. **기능 diff 0 게이트** — `python3 tools/verify_comment_only.py HEAD <파일들>` PASS 의무(주석/docstring 외 동작 라인 변경 0).
@@ -46,7 +47,7 @@ last_verified: 2026-05-27
 | M1 | 주석 표준 §4 D-1~D-6 + 본보기 friends.py | 1 + 표준 | ✅ (reviewer PASS, HIGH 회수) |
 | M2 | `server/db/repositories/*.py` | 21 | ✅ **완료** (전수 diff-0 + server 642 무변경) |
 | M3 | `server/api/*_handlers.py` | 19 | ✅ **완료** (b1~b8, 전수 diff-0 + server 642 무변경, 카탈로그 정정 다수) |
-| **M4** | `app/net/*_client.py` | **13** | **다음** |
+| **M4** | `app/net/*.py` | **16** | 🔄 **9/16** (b1~b3, 잔여 avatars·call·rooms·friends·messages·signaling) |
 | M5 | `app/rtc/*.py` | 7 | 큐 |
 | M6 | `app/ui/_*_mixin.py`(22) + `*_dialog.py`(29) | 51 | 큐 (filler `한글 주석` 74 파일 — 의도 기반 전환) |
 | M7 | `tests/app`(155) + `tests/server`(48) + `tests/e2e`(9) | 256 | 큐 (사용자 directive — e2e 포함) |
@@ -96,4 +97,4 @@ last_verified: 2026-05-27
 
 ---
 
-마지막 갱신: 2026-05-27 20:45 KST (cycle 169.854 — 주석 페이즈 M3 server API handler 19/19 전수 완료(b1~b8). avatar M1~M7 완결 + 주석 M2 21/21 + M3 19/19. HEAD `09b2f78`. 다음 = M4 app/net 13)
+마지막 갱신: 2026-05-27 22:20 KST (cycle 169.855 — 주석 페이즈 M4 app/net 9/16 진행(b1~b3). M2 21/21 + M3 19/19 완료 + M4 9/16. HEAD `9bb6455`. 다음 = M4 잔여 6 파일(avatars·call·rooms·friends·messages·signaling) → M5 rtc)
