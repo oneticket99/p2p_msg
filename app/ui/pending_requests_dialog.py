@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """PendingRequestsDialog — 받은 친구 요청 list + 수락/거절 (cycle 169.499 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — FriendSearchMixin/DrawerMixin 이 instantiate
+(받은 친구 요청 목록). FriendsClient 로 accept/reject 호출 + request_resolved signal 로 회신.
+
 사용자 directive 2026-05-22 — 친구 추가와 친구 요청 수락 로직 본격 binding.
 
 흐름
@@ -78,7 +81,7 @@ class PendingRequestsDialog(QDialog):
         root.addWidget(hint)
 
         # list — 각 row = QListWidgetItem + setItemWidget(row widget)
-        # 한글 주석 — cycle 169.501 — placeholder = QLabel overlay (center 정렬, 사용자 directive image #28)
+        # cycle 169.501 — placeholder = QLabel overlay (center 정렬, 사용자 directive image #28)
         list_container = QFrame()
         list_container.setStyleSheet(
             "QFrame { background-color: #131C30; border: 1px solid #1f2937;"
@@ -92,7 +95,7 @@ class PendingRequestsDialog(QDialog):
             "QListWidget { background-color: transparent; border: 0; color: #e5e7eb; }"
         )
         container_layout.addWidget(self._list)
-        # 한글 주석 — center placeholder overlay (parent = list_container)
+        # center placeholder overlay (parent = list_container)
         self._empty_label = QLabel("로딩 중...", list_container)
         self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._empty_label.setStyleSheet(
@@ -112,7 +115,7 @@ class PendingRequestsDialog(QDialog):
         if not payloads:
             self._show_placeholder("받은 요청이 없습니다.")
             return
-        # 한글 주석 — cycle 169.501 — empty overlay hide + list show
+        # cycle 169.501 — empty overlay hide + list show
         self._empty_label.hide()
         self._list.show()
         for p in payloads:
@@ -127,7 +130,7 @@ class PendingRequestsDialog(QDialog):
         self._list.clear()
         self._list.hide()
         self._empty_label.setText(text)
-        # 한글 주석 — list_container 의 rect 안 center 정렬
+        # list_container 의 rect 안 center 정렬
         self._empty_label.setGeometry(0, 0, self._list_container.width(), self._list_container.height())
         self._empty_label.show()
         self._empty_label.raise_()
@@ -143,14 +146,14 @@ class PendingRequestsDialog(QDialog):
         from app.ui._avatar_helper import get_initials
         from datetime import datetime
 
-        # 한글 주석 — FriendProfilePayload getattr fallback (테스트 mock 호환)
+        # FriendProfilePayload getattr fallback (테스트 mock 호환)
         user_id = int(getattr(payload, "friend_user_id", 0) or getattr(payload, "user_id", 0))
         username = str(getattr(payload, "friend_username", "")
                        or getattr(payload, "username", "")
                        or f"user#{user_id}")
         nickname = str(getattr(payload, "nickname", "") or "")
         display = nickname or username
-        # 한글 주석 — 요청 시각 = requested_at_iso fallback (사용자 directive)
+        # 요청 시각 = requested_at_iso fallback (사용자 directive)
         req_iso = str(getattr(payload, "requested_at_iso", "") or "")
         ts_text = ""
         if req_iso:
@@ -171,7 +174,7 @@ class PendingRequestsDialog(QDialog):
         row.setContentsMargins(12, 8, 12, 8)
         row.setSpacing(12)
 
-        # 한글 주석 — avatar circle (chat_list_panel ChatListItemDelegate 등가 visual)
+        # avatar circle (chat_list_panel ChatListItemDelegate 등가 visual)
         avatar_size = 54
         bg_color = palette_solid(display or username)
         initials = get_initials(display or username)

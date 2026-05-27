@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """OTPDialog — 회원가입 직후 6 digit email OTP 검증 (cycle 153 phase 2).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — SignupDialog 가 nested exec_modal 로 instantiate
+(가입 직후 이메일 OTP 검증). AuthClient 로 verify/resend 호출, 성공 시 accept()로 caller 에 신호.
+
 텔레그램 desktop OTP 등가 — 6 box auto-advance + paste 지원 + 재 송신 link.
 정합 = telegram-ui-survey.md §3 + project_auth_email_otp_required + cycle 129 SMTP.
 
@@ -58,7 +61,7 @@ class OtpBox(QLineEdit):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        # cycle 169.472 — setModal mis-call 회수 (OtpBox = QLineEdit 의 의 setModal 부재)
+        # cycle 169.472 — setModal mis-call 회수 (OtpBox 는 QLineEdit 라 setModal 미보유)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setFixedSize(48, 56)
@@ -79,7 +82,7 @@ class OtpBox(QLineEdit):
         self._on_paste: "callable[[str], None]" = lambda _text: None
 
     def keyPressEvent(self, event: Optional[QKeyEvent]) -> None:
-        """Backspace 시점 직전 box 의 의 focus + 6 digit paste 지원."""
+        """Backspace 시점 직전 box 로 focus 이동 + 6 digit paste 지원."""
         if event is None:
             return
         # cycle 169.477 — Ctrl/Cmd+V paste detect → clipboard 안 6 digit 전 box 분산
@@ -87,7 +90,7 @@ class OtpBox(QLineEdit):
         if event.matches(QKeySequence.StandardKey.Paste):
             self.paste()
             return
-        # 한글 주석 — Backspace 시점 의 직전 box focus 이동 callback
+        # Backspace 시점 의 직전 box focus 이동 callback
         if event.key() == Qt.Key.Key_Backspace and not self.text():
             self._on_back()
             return
@@ -122,7 +125,7 @@ class OTPDialog(QDialog):
         self._client = auth_client
         self._email = email
         self._resend_remaining = RESEND_CAP
-        # 한글 주석 — cycle 169.54 회수 — verify PASS 응답 안 session token + user_id 보관
+        # cycle 169.54 회수 — verify PASS 응답 안 session token + user_id 보관
         self._token: Optional[str] = None
         self._user_id: Optional[int] = None
         # cycle 169.480 — double-fire guard (paste 의 textChanged + _on_last_box_filled + explicit verify 의 race 차단)
@@ -137,7 +140,7 @@ class OTPDialog(QDialog):
         outer.setContentsMargins(32, 32, 32, 32)
         outer.setSpacing(16)
 
-        # 한글 주석 — email 표기 + edit pencil (cycle 154 entry 시 점 enable)
+        # email 표기 + edit pencil (cycle 154 entry 시 점 enable)
         email_label = QLabel(self._email)
         email_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         email_label.setStyleSheet("color: #67E8F9; font-size: 14px; font-weight: 600;")
@@ -148,7 +151,7 @@ class OTPDialog(QDialog):
         info.setStyleSheet("color: #9ca3af; font-size: 13px;")
         outer.addWidget(info)
 
-        # 한글 주석 — 유효시간 countdown label (mm:ss decrement)
+        # 유효시간 countdown label (mm:ss decrement)
         self._remaining_seconds: int = OTP_VALID_SECONDS
         self._countdown_label = QLabel()
         self._countdown_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -158,7 +161,7 @@ class OTPDialog(QDialog):
         )
         outer.addWidget(self._countdown_label)
 
-        # 한글 주석 — 1초 tick QTimer + countdown decrement chain
+        # 1초 tick QTimer + countdown decrement chain
         self._countdown_timer = QTimer(self)
         self._countdown_timer.setInterval(1000)
         self._countdown_timer.timeout.connect(self._on_countdown_tick)  # type: ignore[arg-type]
@@ -167,7 +170,7 @@ class OTPDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — 6 box row + auto-advance binding
+        # 6 box row + auto-advance binding
         box_row = QHBoxLayout()
         box_row.setSpacing(8)
         box_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -178,7 +181,7 @@ class OTPDialog(QDialog):
             box_row.addWidget(box)
         outer.addLayout(box_row)
 
-        # 한글 주석 — auto-advance + back nav + paste 분산 binding
+        # auto-advance + back nav + paste 분산 binding
         for i, box in enumerate(self._boxes):
             if i < OTP_LENGTH - 1:
                 next_box = self._boxes[i + 1]
@@ -188,7 +191,7 @@ class OTPDialog(QDialog):
             if i > 0:
                 prev_box = self._boxes[i - 1]
                 box._on_back = lambda prev=prev_box: prev.setFocus()  # type: ignore[assignment]
-            # 한글 주석 — 마지막 box text 입력 시 자동 검증 trigger
+            # 마지막 box text 입력 시 자동 검증 trigger
             if i == OTP_LENGTH - 1:
                 box.textChanged.connect(self._on_last_box_filled)  # type: ignore[arg-type]
             # cycle 169.477 — paste callback bind (사용자 directive — 메일 복사 OTP 단일 paste)
@@ -196,7 +199,7 @@ class OTPDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — 재 송신 text link (cycle 169.47 회수 — login_dialog 회원가입 link pattern 정합)
+        # 재 송신 text link (cycle 169.47 회수 — login_dialog 회원가입 link pattern 정합)
         # 사용자 directive verbatim: "재송신은 버튼이 아니라 하단의 로그인, 취소처럼 텍스트 링크로".
         link_row = QHBoxLayout()
         link_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -223,7 +226,7 @@ class OTPDialog(QDialog):
         link_row.addWidget(self._resend_btn)
         outer.addLayout(link_row)
 
-        # 한글 주석 — 검증 + 취소 button row
+        # 검증 + 취소 button row
         btn_row = QHBoxLayout()
         btn_cancel = QPushButton(_tr("취소"))
         btn_cancel.setProperty("variant", "secondary")
@@ -250,11 +253,11 @@ class OTPDialog(QDialog):
         log.info("[OTP paste] digits=%d → box 분산", len(digits))
         for i, box in enumerate(self._boxes):
             box.setText(digits[i] if i < len(digits) else "")
-        # 한글 주석 — 마지막 box focus 이동 (auto-advance 정합)
+        # 마지막 box focus 이동 (auto-advance 정합)
         last_filled = min(len(digits), OTP_LENGTH) - 1
         if last_filled >= 0:
             self._boxes[last_filled].setFocus()
-        # 한글 주석 — 6 digit 충족 시점 자동 검증 trigger
+        # 6 digit 충족 시점 자동 검증 trigger
         if len(digits) == OTP_LENGTH:
             self._on_verify_clicked()
 
@@ -266,7 +269,7 @@ class OTPDialog(QDialog):
         """remaining_seconds 의 mm:ss 변환 + 색상 갱신 (30s 이하 red)."""
         m, s = divmod(max(self._remaining_seconds, 0), 60)
         self._countdown_label.setText(f"{m}:{s:02d}")
-        # 한글 주석 — 30초 이하 시 red, expired (0) = gray
+        # 30초 이하 시 red, expired (0) = gray
         if self._remaining_seconds <= 0:
             self._countdown_label.setStyleSheet(
                 "color: #6b7280; font-size: 20px; font-weight: 700;"
@@ -289,7 +292,7 @@ class OTPDialog(QDialog):
         self._update_countdown_display()
         if self._remaining_seconds <= 0:
             self._countdown_timer.stop()
-            # 한글 주석 — expired 시 box disable + 재 송신 prompt
+            # expired 시 box disable + 재 송신 prompt
             for box in self._boxes:
                 box.setEnabled(False)
             self._countdown_label.setText(_tr("만료 — 재 송신 의무"))
@@ -302,8 +305,8 @@ class OTPDialog(QDialog):
     def _on_verify_clicked(self) -> None:
         """cycle 169.49 회수 — QThread + sync urllib worker.
 
-        cycle 169.480 — double-fire guard (paste 의 자동 verify + textChanged 의 last_box_filled
-        의 의 race 차단). _verify_in_flight=True 시점 즉시 return.
+        cycle 169.480 — double-fire guard (paste 자동 verify + textChanged last_box_filled
+        사이 race 차단). _verify_in_flight=True 시점 즉시 return.
         """
         if self._verify_in_flight:
             log.info("[OTP verify] double-fire 차단 — _verify_in_flight retain")
@@ -365,7 +368,7 @@ class OTPDialog(QDialog):
             return
         self._resend_in_flight = True
 
-        # 한글 주석 — UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
+        # UI 즉시 feedback (사용자 직관 — click → 즉시 cap 차감 + countdown reset)
         self._resend_remaining -= 1
         self._resend_btn.setText(f"{_tr('재 송신')} ({self._resend_remaining}/{RESEND_CAP})")
         self._remaining_seconds = OTP_VALID_SECONDS
@@ -377,7 +380,7 @@ class OTPDialog(QDialog):
         if not self._countdown_timer.isActive():
             self._countdown_timer.start()
 
-        # 한글 주석 — QThread background worker fire (sync urllib + TLS verify off)
+        # QThread background worker fire (sync urllib + TLS verify off)
         base_url = getattr(self._client, "_base_url", "")
         if not base_url:
             log.warning("[OTP resend] base_url 부재")

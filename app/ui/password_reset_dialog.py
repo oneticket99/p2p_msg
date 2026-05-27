@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""비밀번호 재설정 다이얼로그 — email → OTP → 신규 비번 갱신."""
+"""비밀번호 재설정 다이얼로그 — email → OTP → 신규 비번 갱신.
+
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — AuthChainMixin/LoginDialog 가 instantiate
+(비밀번호 찾기). AuthClient 로 OTP 발송/검증 + 신규 비번 PATCH 호출(단계별 chain).
+"""
 
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ from PyQt6.QtWidgets import (
 
 from app.net.auth_client import AuthClient
 from app.ui.confirm_dialog import ConfirmDialog as _ConfirmDialog
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
 from app.i18n.labels import tr as _tr
 
 log = logging.getLogger(__name__)
