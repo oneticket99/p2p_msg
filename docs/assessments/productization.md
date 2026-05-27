@@ -332,6 +332,8 @@ MainWindow 21 mixin + 9 init helper 구조 안 qtbot fixture hang 잔존. qtbot.
 
 ## 5. 단기 (3개월) 제품화 액션
 
+> cycle 169.853 sweep: 액션 큐 우선순위 무변동. 한글 주석 페이즈(M2 21/21 완료)는 가독성 품질 트랙 — 제품화 액션 항목(Toonation API / OBS / SFU visual ack / 원격 M4 / coturn / mobile)에 영향 0. 사용자 직접 게이트 항목(🔴) 그대로 retain.
+
 | 우선순위 | 액션 | 상태 |
 |---|---|---|
 | 0 | Phase 1~5 actual binding 완성 | ✅ |
@@ -363,6 +365,8 @@ MainWindow 21 mixin + 9 init helper 구조 안 qtbot fixture hang 잔존. qtbot.
 ---
 
 ## 6. 중기 (6~12개월) 액션
+
+> cycle 169.853 sweep: 중기 액션 무변동. Phase 5 마무리 + dogfooding + SFU/원격 실 OS 검증 + mobile 본격 진입 우선순위 그대로. 주석 페이즈는 코드 동작 변경 0 라 중기 로드맵 비영향.
 
 | 우선순위 | 액션 | 가치 |
 |---|---|---|
@@ -410,6 +414,8 @@ MainWindow 21 mixin + 9 init helper 구조 안 qtbot fixture hang 잔존. qtbot.
 ---
 
 ## 8. 핵심 리스크
+
+> cycle 169.853 sweep: 리스크 프로파일 무변동. 신규 리스크 부재 — 주석 페이즈는 기능 diff 0(verify_comment_only AST 게이트 + server 642 pytest 무변경)라 회귀/장애 표면 증가 0. fixture hang / 실 OS visual ack 미검증 / 외부 dogfooding 부재 리스크 그대로 retain.
 
 | 리스크 | 확률 | 영향 | 회피 |
 |---|---|---|---|

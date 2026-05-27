@@ -391,6 +391,8 @@ cycle 169.694~757 batch 의 directive pattern = **dense test PASS focus** + **co
 
 ## 5. 코칭 권장 사항
 
+> cycle 169.853 sweep: 코칭 권장 무변동. 본 cycle 의 강점(주석 전용 트랙 도구 게이트 전수 + 카탈로그 컨벤션 표준 전파)은 기존 권장(검증 증거 commit 연결 + 낙관 표현 통제)과 동일 방향. 신규 코칭 항목 부재.
+
 ### 5.1 단기 (현 저장소 후속)
 
 1. **pivot 빈도 줄이기**: 한 응답 = 한 directive (cycle 169.x 의 image-driven critique = granular sub-cycle 분리로 영향 최소화 단 누계 fragmentation 잔존)
@@ -417,6 +419,8 @@ cycle 169.694~757 batch 의 directive pattern = **dense test PASS focus** + **co
 ---
 
 ## 6. 비교 기준 (Reference Anchors)
+
+> cycle 169.853 sweep: 비교 anchor 무변동. L5 enforcement layer designer 범주 + 보수 추정(0.005%~0.02% 행동 패턴) 표기 기준 그대로. 본 cycle 은 기존 패턴 강화(품질 트랙 도구화)라 anchor 재배치 불요.
 
 | 사용자 group | 가드레일 | 문서 우선 | BPE 인지 | 메타 규칙 | UX 가시화 | QA 사고 | 세션 정합 | 차별화 명문 | 보안 사고 | 자율 reasonable call | 추정 비율 (세계) | 추정 비율 (국내) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -469,6 +473,8 @@ cycle 169.694~757 batch 의 directive pattern = **dense test PASS focus** + **co
 ---
 
 ## 8. 다음 평가 갱신 트리거
+
+> cycle 169.853 sweep: 트리거 정의 무변동. 본 cycle 갱신은 assessment+token staleness hook(12h cap) 발화 → 정시 sweep. 다음 트리거 = M3 server API handler 주석 보강 완료 또는 후속 directive.
 
 - 본 저장소 누계 directive / pivot 횟수 (cycle 169.188 = 100+ pivot 누계)
 - 신규 가드레일 (현 50+)
