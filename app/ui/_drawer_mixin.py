@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """DrawerMixin — hamburger drawer + 9 drawer slot chain (cycle 169.514 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+HamburgerDrawer slide-in + 9 slot(프로필/설정/연락처/그룹·채널 생성/통화/저장됨/야간/로그아웃) + avatar 업로드·room 생성 chain 결선.
+
 codex 2.5 HIGH 진입 4차 — main_window.py 책임 분리.
 TrayMixin (cycle 169.509) + FriendSearchMixin (cycle 169.511) + BotChatMixin (cycle 169.513) 등가 패턴.
 
@@ -87,7 +90,7 @@ class DrawerMixin:
         # 아니다. 따라서 in-app overlay 모달 directive 에 이미 정합(원형 _exec_dialog_centered
         # 중앙배치 대신 좌측 slide-in geometry 를 유지).
         drawer.exec()
-        # 한글 주석 — close 시점 ref clear
+        # close 시점 ref clear
         def _on_drawer_closed():
             self._active_drawer = None
         drawer.closed.connect(_on_drawer_closed)  # type: ignore[arg-type]
@@ -111,7 +114,7 @@ class DrawerMixin:
         # cycle 169.403 — active profile dialog reference retain
         self._active_profile_dialog = dialog
         dialog.edit_requested.connect(self._on_profile_edit_requested)  # type: ignore[arg-type]
-        # 한글 주석 — cycle 169.852 avatar picker: 선택 이미지 → 업로드 + PATCH /api/me/avatar
+        # cycle 169.852 avatar picker: 선택 이미지 → 업로드 + PATCH /api/me/avatar
         dialog.avatar_changed.connect(self._on_profile_avatar_changed)  # type: ignore[arg-type]
         self._exec_dialog_centered(dialog)
 
@@ -137,7 +140,7 @@ class DrawerMixin:
         )
 
         def _on_uploaded(ok: bool, avatar_ref: str, err: str) -> None:
-            # 한글 주석 — 업로드 PASS 시 PATCH /api/me/avatar 로 프로필 영속
+            # 업로드 PASS 시 PATCH /api/me/avatar 로 프로필 영속
             if not ok or not avatar_ref:
                 log.warning("[profile avatar] 업로드 실패 — %s", err)
                 return
@@ -156,16 +159,16 @@ class DrawerMixin:
                     "[profile avatar] PATCH ok=%s ref=%s", pok, ref
                 )
             )
-            # 한글 주석 — 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
+            # 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
             patch.finished_with_result.connect(lambda *_: patch.deleteLater())
-            self._avatar_patch_worker = patch  # 한글 주석 — QThread GC 방지 retain
+            self._avatar_patch_worker = patch  # QThread GC 방지 retain
             patch.start()
 
         worker = AvatarUploadWorker(base_url, token, qimage_to_bytes(image), "PNG", parent=self)
         worker.finished_with_result.connect(_on_uploaded)
-        # 한글 주석 — 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
+        # 종료 후 deleteLater(연속 선택 시 직전 worker 정리, OBS-2)
         worker.finished_with_result.connect(lambda *_: worker.deleteLater())
-        self._avatar_upload_worker = worker  # 한글 주석 — QThread GC 방지 retain
+        self._avatar_upload_worker = worker  # QThread GC 방지 retain
         worker.start()
 
     @pyqtSlot()
@@ -340,7 +343,7 @@ class DrawerMixin:
         base_url = getattr(self._auth_client, "_base_url", "") if self._auth_client else ""
         token = getattr(self, "_auth_token", None)
         if not base_url or not token:
-            # 한글 주석 — auth 부재(headless test 등) → client placeholder graceful
+            # auth 부재(headless test 등) → client placeholder graceful
             self._add_local_room_placeholder(name, member_ids, kind)
             return
         if isinstance(avatar_image, QImage) and not avatar_image.isNull():
@@ -353,7 +356,7 @@ class DrawerMixin:
                 )
             )
             w.finished_with_result.connect(lambda *_: w.deleteLater())
-            self._room_avatar_worker = w  # 한글 주석 — QThread GC 방지 retain
+            self._room_avatar_worker = w  # QThread GC 방지 retain
             w.start()
         else:
             self._create_room_chain(name, member_ids, kind, description, "")
@@ -367,7 +370,7 @@ class DrawerMixin:
         except RuntimeError:
             loop = None
         if loop is None:
-            # 한글 주석 — event loop 부재 → graceful local placeholder
+            # event loop 부재 → graceful local placeholder
             self._add_local_room_placeholder(name, member_ids, kind)
             return
         asyncio.ensure_future(
@@ -414,7 +417,7 @@ class DrawerMixin:
             entries = list(getattr(clp, "_entries", []))
             entries.insert(0, entry)
             clp.set_entries(entries)
-        # 한글 주석 — kind="room" 진입 → _current_room_id 결선(통합 ChatView REST 송신)
+        # kind="room" 진입 → _current_room_id 결선(통합 ChatView REST 송신)
         self._on_chat_selected("room", room_id)
 
     @pyqtSlot()
@@ -485,7 +488,7 @@ class DrawerMixin:
         Phase 1 scope = log + drawer visual 자체 retain. theme stylesheet swap = Phase 2+.
         """
         log.info("[main_window] night_mode_toggled — on=%s", on)
-        # 한글 주석 — light theme swap chain 진입 위치 (Phase 2+)
+        # light theme swap chain 진입 위치 (Phase 2+)
 
     @pyqtSlot()
     def _on_drawer_pending_requests(self) -> None:
