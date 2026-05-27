@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """NewChannelDialog — 채널 만들기 2 step wizard (cycle 169.348 rewrite).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin 이 instantiate(채널 생성 wizard) +
+channel_created signal(name, desc, subscriber_ids) 회신. 서버 room(kind=channel) 승격은 caller 책임.
+
 사용자 directive image #97~101 telegram align 등가:
 - Step 1: 카메라 + 채널명 + 설명 + 다음
 - Step 2: 구독자 추가 (검색 + 친구 list + 만들기)
@@ -37,7 +40,7 @@ class NewChannelDialog(QDialog):
     channel_created = pyqtSignal(str, str, list)  # (name, desc, subscriber_ids)
 
     def __init__(self, friends: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict + 2 step QStackedWidget
+        # telegram align outer wrap + 420x600 strict + 2 step QStackedWidget
         super().__init__(parent)
         self.setWindowTitle(_tr("tootalk_채널_만들기"))
         self.setModal(True)
@@ -62,7 +65,7 @@ class NewChannelDialog(QDialog):
         body.setContentsMargins(0, 0, 0, 0)
         body.setSpacing(0)
 
-        # 한글 주석 — common header
+        # common header
         header_row = QHBoxLayout()
         header_row.setContentsMargins(20, 16, 20, 0)
         self._title = QLabel("채널 만들기")
@@ -81,13 +84,13 @@ class NewChannelDialog(QDialog):
         self._stack.setCurrentIndex(0)
 
     def _build_step1(self) -> None:
-        # 한글 주석 — Step 1: 카메라 + 채널명 + 설명 + 취소/다음
+        # Step 1: 카메라 + 채널명 + 설명 + 취소/다음
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(20, 24, 20, 16)
         layout.setSpacing(16)
 
-        # 한글 주석 — cycle 169.852 — avatar circle = AvatarPickerButton(파일/카메라/클립보드,
+        # cycle 169.852 — avatar circle = AvatarPickerButton(파일/카메라/클립보드,
         # 이모지 제외). 기존 icon "notification" 오용 동시 시정. 선택 이미지는 _on_create sender 경유.
         row = QHBoxLayout()
         from app.ui._avatar_picker_button import AvatarPickerButton
@@ -143,7 +146,7 @@ class NewChannelDialog(QDialog):
         self._stack.addWidget(page)
 
     def _build_step2(self) -> None:
-        # 한글 주석 — Step 2: 구독자 추가
+        # Step 2: 구독자 추가
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(20, 16, 20, 16)

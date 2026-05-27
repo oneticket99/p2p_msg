@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """NewContactDialog — telegram align 신규 연락처 추가 dialog (cycle 169.450 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — ContactsDialog 가 instantiate(연락처 추가 입력) +
+contact_submitted signal 로 회신. 입력 수집(성/이름/전화번호 mask) 전용 — 등록 로직은 caller 책임.
+
 사용자 directive — telegram 연락처 추가 rule 정합:
 - 성 (Last Name) input
 - 이름 (First Name) input
@@ -67,7 +70,7 @@ class NewContactDialog(QDialog):
         body.setContentsMargins(28, 24, 28, 24)
         body.setSpacing(20)
 
-        # 한글 주석 — header row (title + close)
+        # header row (title + close)
         header_row = QHBoxLayout()
         title = QLabel(_tr("새로운_연락처"))
         title.setStyleSheet("color: #e5e7eb; font-size: 20px; font-weight: 700;")
@@ -77,27 +80,27 @@ class NewContactDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 성 row (icon + label + input)
+        # 성 row (icon + label + input)
         self._last_name_edit = self._build_input_row(
             body, icon_name=None, label=_tr("성"), placeholder="",
         )
 
-        # 한글 주석 — 이름 row (icon = account)
+        # 이름 row (icon = account)
         self._first_name_edit = self._build_input_row(
             body, icon_name="account", label=_tr("이름"), placeholder="",
         )
 
-        # 한글 주석 — 전화번호 row (icon = phone + setInputMask telegram align)
+        # 전화번호 row (icon = phone + setInputMask telegram align)
         self._phone_edit = self._build_input_row(
             body, icon_name="phone", label=_tr("전화번호"), placeholder="+82",
         )
-        # 한글 주석 — telegram align mask "+82 __ ____ ____" (한국 휴대폰 010 prefix → +82 10)
+        # telegram align mask "+82 __ ____ ____" (한국 휴대폰 010 prefix → +82 10)
         # InputMask placeholder = "_". cap = 11 digit (+82 prefix retain — 10 digit input)
         self._phone_edit.setInputMask("+82 99 9999 9999;_")
 
         body.addStretch(1)
 
-        # 한글 주석 — action row (취소 + 등록)
+        # action row (취소 + 등록)
         action_row = QHBoxLayout()
         action_row.addStretch(1)
         cancel_btn = QPushButton(_tr("취소"))
@@ -124,7 +127,7 @@ class NewContactDialog(QDialog):
         action_row.addWidget(submit_btn)
         body.addLayout(action_row)
 
-        # 한글 주석 — Enter key 시 submit (전화번호 input retain)
+        # Enter key 시 submit (전화번호 input retain)
         self._phone_edit.returnPressed.connect(self._on_submit)  # type: ignore[arg-type]
 
     def _build_input_row(
@@ -135,7 +138,7 @@ class NewContactDialog(QDialog):
         label: str,
         placeholder: str = "",
     ) -> QLineEdit:
-        """row = icon + (label + line edit) 의 의 horizontal layout helper."""
+        """row = icon + (label + line edit) horizontal layout helper."""
         row = QHBoxLayout()
         row.setContentsMargins(0, 0, 0, 0)
         row.setSpacing(16)
@@ -172,7 +175,7 @@ class NewContactDialog(QDialog):
         """등록 button click — payload 검증 + signal emit."""
         last_name = self._last_name_edit.text().strip()
         first_name = self._first_name_edit.text().strip()
-        # 한글 주석 — phone 의 mask placeholder ('_') 제거 후 검증
+        # phone 의 mask placeholder ('_') 제거 후 검증
         phone_raw = self._phone_edit.text().replace("_", "").strip()
         # 최소 = "+82" 만 = mask placeholder 전수 미입력
         digits_only = "".join(c for c in phone_raw if c.isdigit())
