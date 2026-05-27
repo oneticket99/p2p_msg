@@ -16,7 +16,7 @@ related_code: ["tests/server/**/*.py", "tests/app/**/*.py", "tests/e2e/**/*.py"]
 
 ## 1. TL;DR — 어디까지 왔나
 
-**한글 주석 상세화 페이즈(기능 diff 0 주석 전용 트랙)** 진행 중. HEAD = `ff85fb6`.
+**한글 주석 상세화 페이즈(기능 diff 0 주석 전용 트랙)** 진행 중. HEAD = `2cfdf8e`(s1 직후 평가 sweep 완료).
 
 | 마일스톤 | 범위 | 상태 |
 | --- | --- | --- |
@@ -99,7 +99,7 @@ test_version_handlers · test_version_handlers_admin · __init__
 ### 3.4 평가 freshness sweep — 5 commit threshold
 
 - `tools/hook_assessment_freshness.sh` = productization.md/vibe-coding.md 마지막 갱신 후 **5 commit 누적 시 Stop hook block(exit 2)**.
-- **현재 freshness = 4/5** (마지막 sweep `80e0f40`). **다음 commit(s2)에서 5 도달 → 평가 sweep 동반 의무**.
+- **현재 freshness = 0/5** (마지막 sweep `2cfdf8e` — s1 직후 갱신 완료). 다음 5 commit 누적 시 sweep 재발화.
 - sweep 대상: productization.md(§1 종합/§3.1/§8 marker + footer) + vibe-coding.md(marker + §8) + **HTML mirror 2종 동시**(hook_html_mirror_consistency 가 .md 단독 갱신 차단). 점수 무변동(diff-0 트랙 — productization 7.6/10, vibe-coding 8.4/10).
 - sweep commit = freshness counter reset.
 
@@ -143,7 +143,7 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python3 -m pytest tests/app -q   # 1963 pass
 #   - 별도 수동 grep 불필요 (hook 통과 = 위생 PASS)
 
 # freshness count (5 도달 시 평가 sweep)
-git rev-list --count 80e0f40..HEAD
+git rev-list --count 2cfdf8e..HEAD
 
 # push
 SKIP_PREPUSH=1 git push origin main
@@ -163,10 +163,11 @@ SKIP_PREPUSH=1 git push origin main
 - M5 rtc 완료: `fc9aa33`/`ccba466`/`d010639`
 - M6 mixin b1~b8: `24fe2f2`~`bc58cd3` (drawer = 22/22 완료)
 - M6 dialog d1~d9: `beea2cc`~`ca14f78` (29/29 완료)
-- 평가 sweep 3회: `efdc582`(직전세션) / `f30dc94` / `7b7876b` / `80e0f40`
+- 평가 sweep: `efdc582`(직전세션) / `f30dc94` / `7b7876b` / `80e0f40` / `2cfdf8e`(s1 직후)
 - M7 e2e e1~e2: `47c070b`/`e41616d` (9/9 완료)
 - M7 server s1: `ff85fb6` (3/48)
+- 인계 자료 + sweep: `0da36b4`/`2cfdf8e`
 
 ---
 
-마지막 갱신: 2026-05-28 (cycle 169.855 — M7 server s1 직후, HEAD `ff85fb6`)
+마지막 갱신: 2026-05-28 (cycle 169.855 — M7 server s1 + 평가 sweep 직후, HEAD `2cfdf8e`)
