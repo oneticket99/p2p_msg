@@ -4,6 +4,15 @@
 본 모듈은 ``app.rtc.file_sender`` 와 ``app.rtc.file_receiver`` 가 공유하는
 순수 데이터 모델 + 변환 함수만 정의한다. 외부 IO 는 일절 수행하지 않는다.
 
+계층 위치 — app/rtc 계층(정본 §E)의 wire contract. file_sender(직렬화) ↔
+file_receiver(역직렬화) 양쪽이 5종 메시지(FILE_META/CHUNK/ACK/END/DONE)를 거친다.
+DataChannel 위 파일 전송 상태 머신의 메시지 정의.
+
+의존성 — 표준 라이브러리만(외부 의존 부재). aiortc/UI 무관.
+
+범위 한계 — 메시지 모델 + 직렬화/역직렬화만. 실 상태 전이·backpressure·chunk
+누적은 file_sender/file_receiver 책임.
+
 프로토콜 개요 (송수신 양방향, DataChannel binary + text 혼합):
 
 ```

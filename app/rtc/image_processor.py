@@ -16,6 +16,14 @@
 본 모듈의 모든 함수는 입력이 유효하지 않으면 ``ValueError`` 를 던지고,
 Pillow 가 디코딩 실패 시 원인 예외를 그대로 propagate 한다 — 호출자가
 try/except 로 감싸 UI 에 적절한 안내 메시지를 표시한다.
+
+계층 위치 — app/rtc 계층(정본 §E)의 CPU-bound helper. file_sender 가 FILE_META
+구성 시 호출한다. UI/네트워크 직접 의존 부재(순수 변환 + to_thread).
+
+의존성 — Pillow(`PIL`) + 표준 base64/io/mimetypes. 외부 네트워크 IO 부재.
+
+범위 한계 — 썸네일 byte/base64 생성만. 원본 파일 전송은 file_sender, 표시는 UI
+책임. CPU-bound 라 반드시 to_thread 경유(이벤트 루프 블로킹 차단).
 """
 
 from __future__ import annotations
