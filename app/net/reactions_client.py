@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 reactions REST API client — `/api/messages/{id}/reactions` 3 method wrapper (cycle 156 신설).
 
-server/api/reactions_handlers.py (cycle 155 신설) 의 client-side wrapper.
-MessageBubble.add_reaction (cycle 153.6 신설) 의 server persist binding chain.
+역할 — 메시지 emoji 반응의 추가/조회/제거를 async httpx 로 호출하고, 결과를
+view model(ReactionEntry)/예외로 변환한다.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `reactions_handlers.py`
+counterpart. UI(MessageBubble)가 본 client 를 호출한다.
+
+의존성 — `httpx`(async, 부재 시 graceful RuntimeError) + dataclass. folder/auth
+의 QThread+urllib 와 달리 본 client 는 async httpx(qasync loop 정합).
+
+범위 한계 — REST 호출 + 예외 분류만. 낙관적 UI 갱신/롤백은 호출자 책임. httpx
+AsyncClient 는 lazy 생성 + `close()` 명시 호출 의무(미close 시 연결 누수).
 
 호출 형식 (모두 async):
     add_reaction(message_id, emoji) -> int (total_count)

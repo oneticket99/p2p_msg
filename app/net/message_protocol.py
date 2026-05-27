@@ -1,7 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """DataChannel message payload schema — cycle 156 신설.
 
-WebRTC DataChannel + signaling fallback 양쪽 의 json payload schema 통합.
+역할 — WebRTC DataChannel(P2P 직결)과 signaling fallback 양쪽이 공유하는 단일
+JSON payload schema 와 직렬화/역직렬화 + 안전 생성 helper 를 제공한다.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E)의 wire 모델. rtc(DataChannel send/
+recv) + UI(MessageBubble) 양쪽이 본 schema 를 거친다. 서버 영속 스키마와 별개의
+전송용 계약(wire contract).
+
+의존성 — 표준 `dataclasses`/`json`/`uuid`/`datetime`(외부 의존 부재). frozen
+dataclass 라 불변 — 보정은 `__post_init__` 의 `object.__setattr__`.
+
+범위 한계 — 직렬화/역직렬화 + 기본값 보정만. 암복호·전송·순서 보장은 호출자(rtc)
+책임. 미지원 type 은 text 로 graceful 폴백(crash 차단).
+
 reply_to + reactions field 포함 (cycle 153.6 MessageBubble + cycle 155 reactions
 REST endpoint 정합).
 
@@ -64,7 +76,7 @@ class MessagePayload:
 
     def __post_init__(self) -> None:
         if self.ts == 0:
-            # 한글 주석 — frozen dataclass 안 ts default = epoch millis 강제 보정
+            # ts 미지정 시 현재 epoch millis 로 보정 — frozen 이라 object.__setattr__ 우회
             object.__setattr__(self, "ts", int(datetime.now(timezone.utc).timestamp() * 1000))
         if self.type not in VALID_TYPES:
             log.warning("[protocol] type=%r 무효 — text 폴백", self.type)
