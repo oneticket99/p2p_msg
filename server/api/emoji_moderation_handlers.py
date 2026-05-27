@@ -1,9 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """emoji pack moderation admin endpoint — Phase 5 Item 3 cycle 144 + 147.
 
+역할 — emoji 팩 moderation 큐 조회 + 승인/거부/DMCA takedown 결정을 처리한다.
+`emoji_handlers.py` 의 후속 admin 전용 경로다.
+
+계층 위치 — server API handler 계층(정본 §E). 전 endpoint admin 전용 —
+auth_middleware 와 무관하게 자체 admin Bearer(env token strict 일치)로 보호한다.
+영속화는 `emoji_packs` repository(`list_pending`/`update_moderation_status`)에 위임.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `emoji_packs` repository
+(`ModerationStatus` ENUM 포함). admin 토큰은 env ``EMOJI_MODERATION_ADMIN_TOKEN``
+주입(version_handlers VERSION_ADMIN_TOKEN 패턴 정합).
+
+범위 한계 — moderation 결정 + 큐 조회만. audit DB 영속·bulk batch·cursor
+pagination·DMCA notice 발신은 별개 cycle(148+).
+
+엔드포인트 카탈로그(실 함수 4 + helper 4 + register):
+- `handle_queue`    GET  /api/emoji/moderation/queue    — pending 목록(admin).
+- `handle_approve`  POST /api/emoji/moderation/approve  — 승인(admin).
+- `handle_reject`   POST /api/emoji/moderation/reject   — 거부(admin).
+- `handle_dmca`     POST /api/emoji/moderation/dmca     — DMCA takedown(admin).
+- `_check_admin_bearer`/`_parse_pack_id`/`_parse_pagination`/`_handle_decision`.
+
 cycle 132 의 `emoji_handlers.py` 5 endpoint 의 후속 — admin moderation
 4 endpoint 신설 (cycle 144) + cycle 147 의 list_pending actual binding.
-owner role (admin Bearer token) 만 access 의 의무.
+owner role(admin Bearer token)만 access 가능.
 
 엔드포인트 4종 (cycle 147 — queue 의 실 list_pending 연결 완료):
 - GET  /api/emoji/moderation/queue    — pending 팩 list (admin only, pagination)
@@ -43,7 +64,7 @@ from server.db.repositories.emoji_packs import (
 
 log = logging.getLogger(__name__)
 
-# 한글 주석: admin Bearer 토큰 env 키 — version_handlers VERSION_ADMIN_TOKEN 정합
+# admin Bearer 토큰 env 키 — version_handlers VERSION_ADMIN_TOKEN 정합
 _ENV_ADMIN_TOKEN = "EMOJI_MODERATION_ADMIN_TOKEN"
 
 
@@ -61,7 +82,7 @@ def _check_admin_bearer(req: web.Request) -> Optional[web.Response]:
         None = 통과, web.Response = 401 즉시 반환.
     """
 
-    # 한글 주석: env token 부재 시 401 fallback — skeleton 안전 default
+    # env token 부재 시 401 fallback — skeleton 안전 default
     admin_token = os.environ.get(_ENV_ADMIN_TOKEN, "").strip()
     if not admin_token:
         return web.json_response(
@@ -103,7 +124,7 @@ async def _parse_pack_id(req: web.Request) -> tuple[Optional[int], Optional[web.
         return None, web.json_response({"error": "body object 의무"}, status=400)
 
     pack_id = body.get("pack_id")
-    # 한글 주석: pack_id 정수 + 양수 의무 — type 검증 strict
+    # pack_id 정수 + 양수 의무 — type 검증 strict
     if not isinstance(pack_id, int) or pack_id <= 0:
         return None, web.json_response(
             {"error": "pack_id 양수 정수 의무"}, status=400
@@ -125,7 +146,7 @@ def _parse_pagination(req: web.Request) -> tuple[int, int, Optional[web.Response
     - offset default 0 / 음수 차단.
     """
 
-    # 한글 주석: query string default — limit 50 + offset 0 + cap 200
+    # query string default — limit 50 + offset 0 + cap 200
     try:
         limit = int(req.query.get("limit", "50"))
         offset = int(req.query.get("offset", "0"))
@@ -165,23 +186,23 @@ async def handle_queue(req: web.Request) -> web.Response:
         500: {"error": "internal"} — repository 예외
     """
 
-    # 한글 주석: admin Bearer 검증 — 실패 시 즉시 401
+    # admin Bearer 검증 — 실패 시 즉시 401
     auth_err = _check_admin_bearer(req)
     if auth_err is not None:
         return auth_err
 
-    # 한글 주석: pagination query 추출 + 검증
+    # pagination query 추출 + 검증
     limit, offset, pag_err = _parse_pagination(req)
     if pag_err is not None:
         return pag_err
 
     pool = req.app.get("db_pool")
     if pool is None:
-        # 한글 주석: dev 환경 의 DB_ENABLED=0 graceful 503
+        # dev 환경 의 DB_ENABLED=0 graceful 503
         return web.json_response({"error": "db unavailable"}, status=503)
 
     try:
-        # 한글 주석: cycle 147 — list_pending repository 의 직접 binding
+        # cycle 147 — list_pending repository 의 직접 binding
         rows = await list_pending(pool, limit=limit, offset=offset)
     except ValueError as exc:
         return web.json_response({"error": str(exc)}, status=400)
@@ -189,7 +210,7 @@ async def handle_queue(req: web.Request) -> web.Response:
         log.warning("[emoji-moderation] GET /queue 실패 — %r", exc)
         return web.json_response({"error": "internal"}, status=500)
 
-    # 한글 주석: PendingPackRow → JSON dict 변환 (admin UI populate 의 의무 5 field)
+    # PendingPackRow → JSON dict 변환 (admin UI populate 용 5 field)
     queue_payload = [
         {
             "pack_id": r.id,
@@ -237,7 +258,7 @@ async def _handle_decision(
         200 / 400 / 401 / 503 / 500.
     """
 
-    # 한글 주석: admin Bearer 검증 — 실패 시 즉시 401
+    # admin Bearer 검증 — 실패 시 즉시 401
     auth_err = _check_admin_bearer(req)
     if auth_err is not None:
         return auth_err
@@ -251,7 +272,7 @@ async def _handle_decision(
         return web.json_response({"error": "db unavailable"}, status=503)
 
     try:
-        # 한글 주석: repository 의 update_moderation_status 의 직접 binding
+        # repository 의 update_moderation_status 의 직접 binding
         rowcount = await update_moderation_status(
             pool, pack_id=pack_id, moderation_status=new_status
         )
@@ -266,7 +287,7 @@ async def _handle_decision(
         )
         return web.json_response({"error": "internal"}, status=500)
 
-    # 한글 주석: audit log — admin 결정 의 단일 line (별개 cycle 의 DB audit)
+    # audit log — admin 결정 의 단일 line (별개 cycle 의 DB audit)
     log.info(
         "[emoji-moderation] %s pack_id=%d new=%s rowcount=%d",
         log_label,

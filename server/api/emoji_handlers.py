@@ -1,6 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — Phase 5 Item 3 emoji pack share (cycle 132 skeleton).
 
+역할 — 공개 emoji 팩 디렉토리(조회)와 팩/아이템 생성·moderation 갱신을 처리한다.
+공개+approved 팩만 디렉토리에 노출되며, moderation 은 admin 전용이다.
+
+계층 위치 — server API handler 계층(정본 §E). GET 2종 public, POST 3종 Bearer
+(moderation 은 추가 admin 검증). 영속화는 `emoji_packs` repository 에 위임한다.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `emoji_packs` repository
+(+ `EmojiPackRow`/`EmojiPackItemRow`/moderation status ENUM). slug 정규식은 모듈
+상수. OCR moderation chain(`jailbreak_detector_ocr`)은 Phase 5 본격 cycle 의 binding.
+
+엔드포인트 카탈로그(실 함수 5 + dict helper 2 + register):
+- `handle_list_packs`   GET  /api/emoji/packs                   — 공개+approved(public).
+- `handle_get_pack`     GET  /api/emoji/packs/{slug}            — 단일+item(public).
+- `handle_create_pack`  POST /api/emoji/packs                   — 생성(Bearer).
+- `handle_add_item`     POST /api/emoji/packs/{slug}/items      — 아이템 추가(Bearer).
+- `handle_moderation`   POST /api/emoji/packs/{slug}/moderation — moderation(admin).
+- `_pack_to_dict`/`_item_to_dict`/`register_emoji_routes`.
+
 엔드포인트 5종 (skeleton placeholder, Phase 5 본격 cycle 141~150 본격 binding):
 - GET  /api/emoji/packs                       — 공개 + approved 팩 list
 - GET  /api/emoji/packs/{slug}                — 단일 팩 + item list
