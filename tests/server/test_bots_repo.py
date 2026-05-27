@@ -14,7 +14,7 @@ import pytest
 
 
 def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> MagicMock:
-    # 한글 주석 — acquire + cursor 2단 async context 모킹
+    # acquire + cursor 2단 async context 모킹
     pool = MagicMock()
     cur = MagicMock()
     cur.execute = AsyncMock(return_value=None)
@@ -36,9 +36,9 @@ def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> Mag
 
 
 _TS = datetime(2026, 5, 24, tzinfo=timezone.utc)
-# 한글 주석 — bots SELECT 10-tuple
+# bots SELECT 10-tuple
 _BOT_ROW = (3, 10, "Toona Bot", "toona", "desc", None, 1, 1, "active", _TS)
-# 한글 주석 — authenticate JOIN 11-tuple (+ token_id at [10])
+# authenticate JOIN 11-tuple (+ token_id at [10])
 _AUTH_ROW = (3, 10, "Toona Bot", "toona", "desc", None, 1, 1, "active", _TS, 99)
 
 

@@ -59,7 +59,7 @@ def _make_request(
         app_data[APP_KEY_RATE_GATE] = rate_gate
     req.app = MagicMock()
     req.app.get = MagicMock(side_effect=lambda k, default=None: app_data.get(k, default))
-    # 한글 주석: extract_client_ip + audit metadata 의 의무 attribute
+    # extract_client_ip + audit metadata 수집 필수 attribute
     req.headers = MagicMock()
     req.headers.get = lambda k, default="": default
     req.remote = ""
@@ -450,7 +450,7 @@ class TestHandleBotChat:
         )
         with pytest.raises(web.HTTPBadRequest, match="prompt injection"):
             await handle_bot_chat(req)
-        # 한글 주석: bot_escalations INSERT + user_activity_log INSERT 2 SQL 호출 검증
+        # bot_escalations INSERT + user_activity_log INSERT 2 SQL 호출 검증
         sql_calls = [c.args[0] for c in cursor.execute.call_args_list]
         assert any("INSERT INTO bot_escalations" in s for s in sql_calls)
         assert any("INSERT INTO user_activity_log" in s for s in sql_calls)
@@ -566,7 +566,7 @@ class TestHandleBotChat:
         await handle_bot_chat(req)
         assert len(provider.calls) == 1
         chain = provider.calls[0]
-        # 한글 주석 — cycle 169.587: cycle 169.x system prompt prepend chain (PERSONA LOCK) 추가 정합.
+        # cycle 169.587: cycle 169.x system prompt prepend chain (PERSONA LOCK) 추가 정합.
         # chain[0] = SYSTEM (persona lock), chain[1:] = user/assistant turn 3건.
         assert len(chain) == 4
         assert chain[0].role == BotRole.SYSTEM
