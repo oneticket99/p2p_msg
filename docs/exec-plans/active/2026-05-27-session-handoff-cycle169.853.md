@@ -1,21 +1,22 @@
 ---
-title: "다음 세션 인계 — cycle 169.853 (avatar M1~M7 완결 + 한글 주석 페이즈 M2 완료)"
+title: "다음 세션 인계 — 한글 주석 페이즈 M2+M3 완료 + M4 9/16 (cycle 169.855)"
 owner: oneticket99
 status: active
 created: 2026-05-27
 last_verified: 2026-05-27
 ---
 
-# 다음 세션 인계 — cycle 169.853
+# 다음 세션 인계 — cycle 169.855 (주석 페이즈 M2+M3 완료, M4 진행)
 
 > 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) · 운영: [CLAUDE.md](../../../CLAUDE.md) · 맵: [AGENTS.md](../../../AGENTS.md)
-> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `39c6a01`.
+> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `a06cbbc`.
 
 ---
 
 ## 1. TL;DR (현 상태)
 
-- **HEAD = `39c6a01`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0.
+- **HEAD = `a06cbbc`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0. 주석 페이즈는 기능 diff 0 라 테스트 수 무변동.
+- **한글 주석 페이즈 M4 — app/net 9/16 진행** (cycle 169.855 b1~b3, `645d0f1`·`52c93e4`·`9bb6455`). 완료 9(_ssl_util·group_message·push·folder·message_protocol·reactions·auth·account·sfu_call). 잔여 6 = avatars·call·rooms·friends·messages·signaling. 전수 diff-0 + app pytest 무변경.
 - **avatar 이미지 picker — M1~M7 코드+문서 완결** (`fb13fed` 시점). 잔존 = **G-final 사용자 실 webcam visual ack**(headless 대체 불가, 사용자 직접 — 체크리스트 [avatar Exec Plan §14.1](2026-05-26-avatar-image-picker-upload.md)).
 - **한글 주석 상세화 페이즈 — M2(repo 21/21) + M3(server API handler 19/19) 완료** (`d416d81`·`09b2f78`, cycle 169.854 b1~b8). 진행 중 품질 트랙(기능 diff 0). 카탈로그 컨벤션 정정 다수(rooms 6→7·friends 6→8·auth 5→15·folder 4→5·read 2→3). 런타임 string(streaming HTML·auth register log) 미변경 백로그.
 - **평가 staleness sweep + dereliction 회수 완료** (`160a5ec`·`39c6a01`) — 평가 2종 md+html + current-review HEAD 마커 + token-usage-30d 재산출(staleness hook 해소) + dereliction MEDIUM 2건 회수(평가 §5/§6/§8 full-section sweep + WBS 169.853 16 row backfill). 점수 7.6/8.4 무변동(diff 0).
@@ -83,18 +84,19 @@ last_verified: 2026-05-27
 
 ---
 
-## 7. 주요 commit 참조 (cycle 169.852~853)
+## 7. 주요 commit 참조 (cycle 169.852~855)
 
 | commit | 내용 |
 |---|---|
 | `fb13fed` | avatar M1~M7 완결 (G-final 체크리스트) |
 | `93d77b9` | 주석 페이즈 active + e2e scope + `verify_comment_only.py` |
-| `428f85a`·`4d42059` | M1 본보기 friends.py + reviewer HIGH 회수 |
 | `525f7ff`~`d416d81` | M2 server repository 21/21 (batch 1~9) |
-| `3c2efcc` | 다음 세션 인계 자료 (본 문서) |
-| `160a5ec` | 평가 2종+current-review+token-usage staleness sweep (M2 21/21 반영) |
-| `39c6a01` | 평가 §5/§6/§8 full-section sweep — dereliction MEDIUM-2 회수 + WBS 16 row backfill |
+| `160a5ec`·`39c6a01` | 평가 staleness sweep + dereliction MEDIUM 2 회수 (M2 반영) |
+| `6a9ebbe`~`09b2f78` | **M3 server API handler 19/19** (b1~b8, 카탈로그 정정 rooms 7·friends 8·auth 15) |
+| `70e0479` | 평가 2종+current-review staleness sweep (M3 19/19 반영) |
+| `645d0f1`·`52c93e4`·`9bb6455` | **M4 app/net 9/16** (b1 ssl·group·push / b2 folder·protocol·reactions / b3 auth·account·sfu) |
+| `a06cbbc` | 인계 자료 갱신 (본 문서, M4 9/16 체크포인트) |
 
 ---
 
-마지막 갱신: 2026-05-27 22:20 KST (cycle 169.855 — 주석 페이즈 M4 app/net 9/16 진행(b1~b3). M2 21/21 + M3 19/19 완료 + M4 9/16. HEAD `9bb6455`. 다음 = M4 잔여 6 파일(avatars·call·rooms·friends·messages·signaling) → M5 rtc)
+마지막 갱신: 2026-05-27 22:30 KST (cycle 169.855 — 다음 세션 인계 자료 재작성. 주석 페이즈 M2 21/21 + M3 19/19 완료 + M4 app/net 9/16 진행(b1~b3). HEAD `a06cbbc`. 다음 = M4 잔여 6(avatars·call·rooms·friends·messages·signaling) → M5 rtc → M6 ui → M7 test → G-final)
