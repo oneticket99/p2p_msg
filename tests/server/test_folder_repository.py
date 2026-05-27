@@ -100,7 +100,7 @@ class TestFoldersRepository:
 
     @pytest.mark.asyncio
     async def test_insert_folder_with_chats_rollback_on_exception(self) -> None:
-        # 한글 주석 — 첫 execute call 시점 raise → except Exception 분기 → rollback + raise propagate 검증
+        # 첫 execute call 시점 raise → except Exception 분기 → rollback + raise propagate 검증
         cur = AsyncMock()
         cur.execute = AsyncMock(side_effect=RuntimeError("DB fail"))
         cur.lastrowid = 100

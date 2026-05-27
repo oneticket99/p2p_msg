@@ -132,7 +132,7 @@ def _make_request(
 class TestRequestFriend:
     @pytest.mark.asyncio
     async def test_request_friend_success_audit(self, monkeypatch) -> None:
-        # 한글 주석: FRIEND_REQUEST audit row INSERT 정합 검증.
+        # FRIEND_REQUEST audit row INSERT 정합 검증.
         pool, cursor = _mock_pool()
         req = _make_request(db_pool=pool, user_id=42, body={"user_id": 99})
 
@@ -162,7 +162,7 @@ class TestRequestFriend:
         assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_REQUEST.value
         assert params[2] == 99
-        # 한글 주석: metadata JSON 정합 — friend_id + nickname 보존.
+        # metadata JSON 정합 — friend_id + nickname 보존.
         assert params[5] is not None
         meta = json.loads(params[5])
         assert meta["friend_id"] == 77
@@ -170,14 +170,14 @@ class TestRequestFriend:
 
     @pytest.mark.asyncio
     async def test_request_friend_self_blocked_400(self) -> None:
-        # 한글 주석: 자기 자신 친구 차단 = 400.
+        # 자기 자신 친구 차단 = 400.
         req = _make_request(db_pool=MagicMock(), user_id=42, body={"user_id": 42})
         with pytest.raises(web.HTTPBadRequest, match="자기 자신"):
             await handle_request_friend(req)
 
     @pytest.mark.asyncio
     async def test_request_friend_already_exists_409(self, monkeypatch) -> None:
-        # 한글 주석: 이미 accepted/pending row 가용 시 409.
+        # 이미 accepted/pending row 가용 시 409.
         pool, _ = _mock_pool()
         req = _make_request(db_pool=pool, user_id=42, body={"user_id": 99})
 
@@ -198,7 +198,7 @@ class TestListFriends:
     async def test_list_friends_returns_count_and_rows(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: list_by_user 결과 의 JSON 직렬화 + count 정합.
+        # list_by_user 결과 의 JSON 직렬화 + count 정합.
         pool, _ = _mock_pool()
         req = _make_request(db_pool=pool, user_id=42)
 
@@ -228,7 +228,7 @@ class TestListFriends:
 class TestListPending:
     @pytest.mark.asyncio
     async def test_list_pending_filters_incoming(self, monkeypatch) -> None:
-        # 한글 주석: pending 수신 list — friend_user_id = user_id 의 row.
+        # pending 수신 list — friend_user_id = user_id 의 row.
         pool, _ = _mock_pool()
         req = _make_request(db_pool=pool, user_id=42)
 
@@ -256,7 +256,7 @@ class TestListPending:
 class TestSearchUser:
     @pytest.mark.asyncio
     async def test_search_user_excludes_self(self, monkeypatch) -> None:
-        # 한글 주석: 자기 PK row 의 사전 필터.
+        # 자기 PK row 의 사전 필터.
         pool, _ = _mock_pool()
         req = _make_request(db_pool=pool, user_id=42, query={"q": "ali"})
 
@@ -279,7 +279,7 @@ class TestSearchUser:
 
     @pytest.mark.asyncio
     async def test_search_user_short_keyword_400(self) -> None:
-        # 한글 주석: keyword 1자 = 400.
+        # keyword 1자 = 400.
         req = _make_request(db_pool=MagicMock(), user_id=42, query={"q": "a"})
         with pytest.raises(web.HTTPBadRequest, match="2자 이상"):
             await handle_search_user(req)
@@ -293,7 +293,7 @@ class TestAcceptFriend:
     async def test_accept_friend_inserts_reverse_row_audit(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: accept_friend rowcount=1 + reverse row INSERT + FRIEND_ACCEPT audit.
+        # accept_friend rowcount=1 + reverse row INSERT + FRIEND_ACCEPT audit.
         pool, cursor = _mock_pool()
         req = _make_request(
             db_pool=pool, user_id=42, match_info={"user_id": "99"}
@@ -331,14 +331,14 @@ class TestAcceptFriend:
         assert params[0] == 42
         assert params[1] == ActivityAction.FRIEND_ACCEPT.value
         assert params[2] == 99
-        # 한글 주석: FRIEND_ACCEPT metadata=None 정합 — JSON null serialize 회피.
+        # FRIEND_ACCEPT metadata=None 정합 — JSON null serialize 회피.
         assert params[5] is None
 
     @pytest.mark.asyncio
     async def test_accept_friend_pending_not_found_404(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: pending row 부재 = 404.
+        # pending row 부재 = 404.
         pool, _ = _mock_pool()
         req = _make_request(
             db_pool=pool, user_id=42, match_info={"user_id": "99"}
@@ -361,7 +361,7 @@ class TestRejectFriend:
     async def test_reject_friend_marks_removed_audit(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: pending → removed 갱신 + FRIEND_REJECT audit.
+        # pending → removed 갱신 + FRIEND_REJECT audit.
         pool, cursor = _mock_pool()
         req = _make_request(
             db_pool=pool, user_id=42, match_info={"user_id": "99"}
@@ -396,7 +396,7 @@ class TestBlockFriend:
     async def test_block_friend_inserts_when_none_audit(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: 기존 row 부재 → blocked 신규 INSERT + FRIEND_BLOCK audit.
+        # 기존 row 부재 → blocked 신규 INSERT + FRIEND_BLOCK audit.
         pool, cursor = _mock_pool()
         req = _make_request(
             db_pool=pool, user_id=42, match_info={"user_id": "99"}
@@ -437,7 +437,7 @@ class TestRemoveFriend:
     async def test_remove_friend_marks_removed_both_directions(
         self, monkeypatch
     ) -> None:
-        # 한글 주석: 양방향 update_status removed + FRIEND_REMOVE audit.
+        # 양방향 update_status removed + FRIEND_REMOVE audit.
         pool, cursor = _mock_pool()
         req = _make_request(
             db_pool=pool, user_id=42, match_info={"user_id": "99"}
@@ -473,7 +473,7 @@ class TestRemoveFriend:
 class TestFriendEnumSweep:
     @pytest.mark.asyncio
     async def test_all_five_friend_enums_distinct_values(self) -> None:
-        # 한글 주석: 5 ENUM string value 정합 + 중복 부재.
+        # 5 ENUM string value 정합 + 중복 부재.
         values = {
             ActivityAction.FRIEND_REQUEST.value,
             ActivityAction.FRIEND_ACCEPT.value,

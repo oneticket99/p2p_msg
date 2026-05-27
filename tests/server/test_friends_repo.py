@@ -14,7 +14,7 @@ import pytest
 
 
 def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> MagicMock:
-    # 한글 주석 — acquire + cursor 2단 async context 모킹
+    # acquire + cursor 2단 async context 모킹
     pool = MagicMock()
     cur = MagicMock()
     cur.execute = AsyncMock(return_value=None)
@@ -36,11 +36,11 @@ def _build_pool(*, fetchone=None, fetchall=None, lastrowid=1, rowcount=1) -> Mag
 
 
 _TS = datetime(2026, 5, 24, tzinfo=timezone.utc)
-# 한글 주석 — FriendRow 7-tuple
+# FriendRow 7-tuple
 _FRIEND_ROW = (1, 10, 20, "accepted", "친구별명", _TS, _TS)
-# 한글 주석 — FriendWithProfile 9-tuple (+ username + email_verified)
+# FriendWithProfile 9-tuple (+ username + email_verified)
 _PROFILE_ROW = (1, 10, 20, "pending", None, _TS, None, "peer_user", 1)
-# 한글 주석 — search 5-tuple (id/username/display_name/nickname/email_verified)
+# search 5-tuple (id/username/display_name/nickname/email_verified)
 _SEARCH_ROW = (20, "peer_user", "피어", "별명", 1)
 
 
