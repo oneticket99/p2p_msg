@@ -17,7 +17,7 @@ last_verified: 2026-05-27
 
 - **HEAD = `39c6a01`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0.
 - **avatar 이미지 picker — M1~M7 코드+문서 완결** (`fb13fed` 시점). 잔존 = **G-final 사용자 실 webcam visual ack**(headless 대체 불가, 사용자 직접 — 체크리스트 [avatar Exec Plan §14.1](2026-05-26-avatar-image-picker-upload.md)).
-- **한글 주석 상세화 페이즈 — M2 server repository 21/21 완료** (`d416d81`). 진행 중 품질 트랙(기능 diff 0).
+- **한글 주석 상세화 페이즈 — M2(repo 21/21) + M3(server API handler 19/19) 완료** (`d416d81`·`09b2f78`, cycle 169.854 b1~b8). 진행 중 품질 트랙(기능 diff 0). 카탈로그 컨벤션 정정 다수(rooms 6→7·friends 6→8·auth 5→15·folder 4→5·read 2→3). 런타임 string(streaming HTML·auth register log) 미변경 백로그.
 - **평가 staleness sweep + dereliction 회수 완료** (`160a5ec`·`39c6a01`) — 평가 2종 md+html + current-review HEAD 마커 + token-usage-30d 재산출(staleness hook 해소) + dereliction MEDIUM 2건 회수(평가 §5/§6/§8 full-section sweep + WBS 169.853 16 row backfill). 점수 7.6/8.4 무변동(diff 0).
 - 부수 도구: `tools/verify_comment_only.py`(주석 전용 게이트 — docstring 재귀 제거 후 ast.dump 비교).
 
@@ -25,9 +25,10 @@ last_verified: 2026-05-27
 
 ## 2. 다음 세션 첫 응답 (바로 이것부터)
 
-**한글 주석 상세화 페이즈 M3 — `server/api/*_handlers.py` (19 파일) 주석 보강** 부터 이어간다.
+**한글 주석 상세화 페이즈 M4 — `app/net/*_client.py` (13 파일) 주석 보강** 부터 이어간다.
 
-- blast radius 역순 순서(§5 [comment Exec Plan](2026-05-26-korean-comment-enrichment-phase.md)): M2(완료) → **M3 handler** → M4 net → M5 rtc → M6 ui → M7 test(e2e) → G-final.
+- blast radius 역순 순서(§5 [comment Exec Plan](2026-05-26-korean-comment-enrichment-phase.md)): M2(완료) → M3 handler(완료) → **M4 net** → M5 rtc → M6 ui → M7 test(e2e) → G-final.
+- M4 의 핵심 = client REST/WS 계약 docstring 에 **재시도/타임아웃/SSL 우회 의도 / QThread worker 생명주기 / signal emit 부작용** 명시(T-5).
 - M2 에서 정착시킨 동일 패턴을 그대로 적용:
   1. 영역 batch(2~3 파일) 단위로 module/class/함수 docstring(의도/Parameters/Returns/Raises/부작용) + inline "왜" 보강.
   2. **기능 diff 0 게이트** — `python3 tools/verify_comment_only.py HEAD <파일들>` PASS 의무(주석/docstring 외 동작 라인 변경 0).
@@ -44,8 +45,8 @@ last_verified: 2026-05-27
 |---|---|---|---|
 | M1 | 주석 표준 §4 D-1~D-6 + 본보기 friends.py | 1 + 표준 | ✅ (reviewer PASS, HIGH 회수) |
 | M2 | `server/db/repositories/*.py` | 21 | ✅ **완료** (전수 diff-0 + server 642 무변경) |
-| **M3** | `server/api/*_handlers.py` | **19** | **다음** |
-| M4 | `app/net/*_client.py` | 13 | 큐 |
+| M3 | `server/api/*_handlers.py` | 19 | ✅ **완료** (b1~b8, 전수 diff-0 + server 642 무변경, 카탈로그 정정 다수) |
+| **M4** | `app/net/*_client.py` | **13** | **다음** |
 | M5 | `app/rtc/*.py` | 7 | 큐 |
 | M6 | `app/ui/_*_mixin.py`(22) + `*_dialog.py`(29) | 51 | 큐 (filler `한글 주석` 74 파일 — 의도 기반 전환) |
 | M7 | `tests/app`(155) + `tests/server`(48) + `tests/e2e`(9) | 256 | 큐 (사용자 directive — e2e 포함) |
@@ -95,4 +96,4 @@ last_verified: 2026-05-27
 
 ---
 
-마지막 갱신: 2026-05-27 16:20 KST (cycle 169.853 — avatar M1~M7 완결 + 주석 M2 21/21 완료 + 평가 staleness sweep + dereliction MEDIUM 2 회수(§5/§6/§8 full-sweep + WBS 16 backfill) 인계. HEAD `39c6a01`. 다음 = M3 server API handler 19)
+마지막 갱신: 2026-05-27 20:45 KST (cycle 169.854 — 주석 페이즈 M3 server API handler 19/19 전수 완료(b1~b8). avatar M1~M7 완결 + 주석 M2 21/21 + M3 19/19. HEAD `09b2f78`. 다음 = M4 app/net 13)
