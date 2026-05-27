@@ -1,6 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """avatar 이미지 업로드 + 조회 + 프로필 갱신 REST — cycle 169.852 M2 (Exec Plan §4).
 
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과 후
+진입하며, byte 가공은 본 handler, 디스크 저장/조회는 `avatars` repository, 프로필
+avatar_ref 갱신은 `users` repository 가 분담한다(계층 분리, D-3).
+
+의존성 — aiohttp `web` + Pillow(`PIL.Image`/`ImageOps`, 부재 시 graceful) +
+`avatars` repository(content-addressed 디스크 store/load) + `users` repository
+(`update_avatar_ref`) + `request.app["db_pool"]`(PATCH 경로만).
+
+범위 한계 — 이미지 가공 + 디스크 영속 + 프로필 ref 갱신만. CDN 배포/S3 이전/
+썸네일 다중 사이즈는 본 module 범위 외(현 단계 = 로컬 디스크 단일 512 정사각).
+
 endpoint:
 - POST  /api/avatars            — multipart 업로드 → Pillow 정사각 512 crop + EXIF
                                    strip + sha256 디스크 저장 → avatar_ref 회신 (Bearer).
@@ -28,13 +39,13 @@ from server.db.repositories import users as _users_repo
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — 업로드 제약 상수 (D-4).
+# 업로드 제약 상수 (D-4).
 _MAX_UPLOAD_BYTES: Final[int] = 5 * 1024 * 1024  # 5 MB
 _AVATAR_SIZE_PX: Final[int] = 512
 _ALLOWED_CONTENT_TYPES: Final[frozenset[str]] = frozenset(
     {"image/jpeg", "image/png"}
 )
-# 한글 주석 — Pillow format → 저장 확장자 (magic byte sniff 결과 화이트리스트).
+# Pillow format → 저장 확장자 (magic byte sniff 결과 화이트리스트).
 _FORMAT_EXT: Final[dict[str, str]] = {"JPEG": "jpg", "PNG": "png"}
 
 
@@ -59,9 +70,9 @@ def _process_image(raw: bytes) -> Optional[tuple[bytes, str]]:
         if fmt not in _FORMAT_EXT:
             log.warning("avatar format 화이트리스트 외 — %s", fmt)
             return None
-        # 한글 주석 — EXIF orientation 적용 후 strip (GPS 등 메타 유출 차단)
+        # EXIF orientation 적용 후 strip (GPS 등 메타 유출 차단)
         img = ImageOps.exif_transpose(img)
-        # 한글 주석 — center 정사각 crop → 512 다운스케일
+        # center 정사각 crop → 512 다운스케일
         width, height = img.size
         side = min(width, height)
         left = (width - side) // 2
@@ -77,7 +88,7 @@ def _process_image(raw: bytes) -> Optional[tuple[bytes, str]]:
             img.convert("RGB").save(out, "JPEG", quality=88)
             ext = "jpg"
         return out.getvalue(), ext
-    except Exception as err:  # 한글 주석 — decode/가공 실패 graceful 400
+    except Exception as err:  # decode/가공 실패 graceful 400
         log.warning("avatar 이미지 가공 실패 — %s", err)
         return None
 
@@ -97,7 +108,7 @@ async def handle_upload_avatar(request: web.Request) -> web.Response:
 
     reader = await request.multipart()
     field = await reader.next()
-    # 한글 주석 — field 'file' + content-type allowlist 검증
+    # field 'file' + content-type allowlist 검증
     if field is None or field.name != "file":
         return web.json_response(
             {"error": "NO_FILE", "message": "file field 부재"}, status=400
@@ -109,7 +120,7 @@ async def handle_upload_avatar(request: web.Request) -> web.Response:
             status=415,
         )
 
-    # 한글 주석 — read_chunk 누적 + 5 MB cap (전량 적재 전 차단, DoS 방어)
+    # read_chunk 누적 + 5 MB cap (전량 적재 전 차단, DoS 방어)
     size = 0
     chunks: list[bytes] = []
     while True:
@@ -187,7 +198,7 @@ async def handle_patch_me_avatar(request: web.Request) -> web.Response:
         return web.json_response(
             {"error": "BAD_REF", "message": "avatar_ref string 의무"}, status=400
         )
-    # 한글 주석 — 빈 문자열 = avatar 제거(이니셜 fallback 복귀), 비빈값 = 실재 검증
+    # 빈 문자열 = avatar 제거(이니셜 fallback 복귀), 비빈값 = 실재 검증
     if avatar_ref and not _avatars_repo.avatar_exists(avatar_ref):
         return web.json_response(
             {"error": "REF_NOT_FOUND", "message": "avatar_ref 미실재"}, status=400

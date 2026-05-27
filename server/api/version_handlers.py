@@ -1,8 +1,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """자동 업데이트 endpoint skeleton — Phase 5 cycle 132.
 
-본 module = GET 최신 버전 + POST 신규 버전 등록 (admin only skeleton).
-실 GitHub Release 연동 / CI workflow trigger = 별개 cycle 의 본격 작업.
+역할 — 클라이언트 자동 업데이트가 참조할 플랫폼별 최신 버전 메타를 조회(GET)
+하고, 관리자가 신규 버전을 등록(POST)하는 skeleton. 실 GitHub Release 연동 /
+CI workflow trigger = 별개 cycle 의 본격 작업.
+
+계층 위치 — server API handler 계층(정본 §E). GET 은 public(auth_middleware
+bypass 의도), POST 는 자체 ADMIN_TOKEN Bearer 검증으로 미들웨어와 무관하게 보호.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `app_versions` repository
+(`get_latest_by_platform`/`insert_version` + `AppVersionRow`/`Platform` ENUM).
+admin 토큰은 env ``VERSION_ADMIN_TOKEN`` 주입(실 운영 = secrets manager).
+
+범위 한계 — 버전 메타 조회/등록만. 실 바이너리 다운로드/SHA 검증/바이너리 swap
+은 클라이언트 updater 책임, GitHub Release 발행은 CI 책임(본 module 범위 외).
+
+엔드포인트 카탈로그(실 함수 2 + helper 2 + register):
+- `handle_get_latest`    GET  /api/version/latest   — 최신 버전 메타(public).
+- `handle_post_release`  POST /api/version/release  — 등록(admin Bearer).
+- `_parse_platform` / `_row_to_json` — query→ENUM 변환 + row→JSON 직렬화.
+- `register_version_routes` — server.main 등록 entry.
 
 엔드포인트:
 - GET /api/version/latest?platform=macos-arm64 → 200 최신 버전 메타 / 404 부재
@@ -10,7 +27,7 @@
 
 설계 결정
 ---------
-- GET = public (auth_middleware bypass 의 의도, _PUBLIC_PATHS 추가 의 후속).
+- GET = public (auth_middleware bypass 의도 — _PUBLIC_PATHS 추가 후속 작업).
 - POST = admin only — ADMIN_TOKEN env 의 Bearer 검증 (skeleton 단순화).
 - pool 부재 = graceful 503 (DB_ENABLED=0 dev 정합).
 - platform query 의 ENUM 검증 의무 (Platform.from_str 실패 = 400).
@@ -33,7 +50,7 @@ from server.db.repositories.app_versions import (
 
 log = logging.getLogger(__name__)
 
-# 한글 주석: admin Bearer 토큰 env 키 — 실 운영 = secrets manager 의 주입 의무
+# admin Bearer 토큰 env 키 — 실 운영은 secrets manager 주입(코드 하드코딩 금지)
 _ENV_ADMIN_TOKEN = "VERSION_ADMIN_TOKEN"
 
 
@@ -87,7 +104,7 @@ async def handle_get_latest(req: web.Request) -> web.Response:
 
     pool = req.app.get("db_pool")
     if pool is None:
-        # 한글 주석: pool 부재 graceful — dev 환경 의 DB_ENABLED=0 정합
+        # pool 부재 graceful — dev 환경 DB_ENABLED=0 정합(503 으로 명시 신호)
         return web.json_response({"error": "db unavailable"}, status=503)
 
     try:
@@ -118,7 +135,7 @@ async def handle_post_release(req: web.Request) -> web.Response:
         503: {"error": "db unavailable"} — pool 부재 graceful
     """
 
-    # 한글 주석: admin Bearer 검증 — env token 부재 시 401 fallback (skeleton 안전)
+    # admin Bearer 검증 — env token 미설정 시 401 fallback(미설정=등록 차단이 안전)
     admin_token = os.environ.get(_ENV_ADMIN_TOKEN, "").strip()
     if not admin_token:
         return web.json_response(
@@ -180,10 +197,10 @@ async def handle_post_release(req: web.Request) -> web.Response:
 
 
 def register_version_routes(app: web.Application) -> None:
-    """한글 주석 — server.main entry 의 자동 업데이트 2 endpoint 등록.
+    """server.main entry — 자동 업데이트 2 endpoint 등록.
 
-    GET /api/version/latest = public + DB 의 latest 조회.
-    POST /api/version/release = admin Bearer + DB INSERT (skeleton).
+    GET /api/version/latest = public + DB latest 조회.
+    POST /api/version/release = admin Bearer + DB INSERT(skeleton).
     """
 
     app.router.add_get("/api/version/latest", handle_get_latest)
