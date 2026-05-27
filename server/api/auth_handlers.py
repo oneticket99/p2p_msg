@@ -1,12 +1,37 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""aiohttp REST endpoint — Phase 1 auth 흐름.
+"""aiohttp REST endpoint — Phase 1 auth 흐름 + 프로필/상태/DM resolver.
 
-엔드포인트:
-- POST /api/auth/register — 회원가입 + OTP 발송
-- POST /api/auth/verify — signup OTP 검증
-- POST /api/auth/login — 로그인 + 세션 토큰
-- POST /api/auth/reset/request — 비번 재설정 OTP 발송
-- POST /api/auth/reset/consume — OTP + 비번 갱신
+역할 — 회원가입·OTP 검증·로그인/로그아웃·비번 재설정·아이디 찾기·프로필
+CRUD·이메일 변경·계정 삭제·온라인 상태 조회·DM room resolve 까지 사용자 계정
+도메인의 REST 표면 전부를 담당한다.
+
+계층 위치 — server API handler 계층(정본 §E). register/verify/login/reset 등
+인증 진입 경로는 public(auth_middleware bypass), profile/logout/status/dm 등은
+Bearer 의무. 실 로직은 `server.auth` usecase + repository 에 위임한다.
+
+의존성 — aiohttp `web` + `server.auth`(login 등 usecase) + users/
+email_verification/password_reset/rooms repository + SMTP(OTP 발송) +
+session token 발급/검증 경로.
+
+범위 한계 — 계정 도메인 REST 만. 실 메일 전송 인프라(postfix)·세션 저장 backend·
+E2EE 키 등록은 별개 경로. OTP 평문/세션 토큰은 해시/단방향으로만 보관.
+
+엔드포인트 카탈로그(실 handler 15 + register, paths 는 register_auth_routes):
+- `handle_register`              POST   /api/auth/register        — 가입+OTP.
+- `handle_resend_otp`            POST   /api/auth/resend          — OTP 재발송.
+- `handle_verify`                POST   /api/auth/verify          — signup OTP 검증.
+- `handle_login`                 POST   /api/auth/login           — 로그인+세션.
+- `handle_logout`                POST   /api/auth/logout          — 세션 무효화.
+- `handle_find_email`            POST   /api/auth/find/email      — 아이디 찾기.
+- `handle_reset_request`         POST   /api/auth/reset/request   — 비번 재설정 OTP.
+- `handle_reset_consume`         POST   /api/auth/reset/consume   — OTP+비번 갱신.
+- `handle_profile_update`        PUT    /api/auth/profile         — 프로필 수정.
+- `handle_profile_get`           GET    /api/auth/profile         — 프로필 조회.
+- `handle_email_change_request`  POST   /api/auth/email/request   — 이메일 변경.
+- `handle_account_delete`        DELETE /api/auth/account         — 계정 삭제.
+- `handle_user_status`           GET    /api/auth/users/{id}/status — 온라인 상태.
+- `handle_dm_room_resolve`       GET    /api/auth/dm/{id}/room     — DM room resolve.
+- `handle_bot_room_resolve`      GET    /api/auth/dm/bot/room      — bot DM room.
 """
 
 from __future__ import annotations
@@ -110,7 +135,7 @@ async def _create_session_row(
             )
             return
         except Exception as exc:  # noqa: BLE001
-            # 한글 주석 — MariaDB error code 1213 (Deadlock) + 1020 (Record changed) retry chain.
+            # MariaDB error code 1213 (Deadlock) + 1020 (Record changed) retry chain.
             err_str = str(exc)
             is_retryable = (
                 "1213" in err_str
@@ -158,7 +183,7 @@ async def handle_register(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
     except Exception as exc:  # noqa: BLE001 — concurrent INSERT race 안 IntegrityError 회수
-        # 한글 주석 — pre-check 통과 후 동시 INSERT race 시점 UNIQUE 위배 catch.
+        # pre-check 통과 후 동시 INSERT race 시점 UNIQUE 위배 catch.
         # uq_users_email = EMAIL_DUPLICATE, uq_users_username = USERNAME_DUPLICATE 매핑.
         msg = str(exc)
         if "uq_users_email" in msg:
@@ -179,7 +204,7 @@ async def handle_register(request: web.Request) -> web.Response:
             status=500,
         )
 
-    # cycle 169.67 회수 — reclaim path 의 의 별개 audit + smtp_status response 포함
+    # cycle 169.67 회수 — reclaim path 의 별개 audit + smtp_status response 포함
     user_id = result["user_id"]
     reclaimed = result.get("reclaimed", False)
     smtp_status = result.get("smtp_status", "sent")
@@ -241,7 +266,7 @@ async def handle_verify(request: web.Request) -> web.Response:
     except AuthError as exc:
         return _json_error(exc)
 
-    # 한글 주석 — OTP 검증 PASS = 자동 로그인 chain (회원가입 직후 main UI 진입 정합)
+    # OTP 검증 PASS = 자동 로그인 chain (회원가입 직후 main UI 진입 정합)
     from app.core.security import generate_session_token
     token = generate_session_token()
     request.app["session_store"][token] = user_id
@@ -403,7 +428,7 @@ async def handle_profile_update(request: web.Request) -> web.Response:
         raise web.HTTPUnauthorized(reason="Bearer 인증 의무")
 
     payload = await _read_json(request)
-    # 한글 주석 — accept field whitelist + actual UPDATE
+    # accept field whitelist + actual UPDATE
     update_columns: list[str] = []
     values: list = []
     # cycle 169.400 — display_name editable 회수 (사용자 directive image #166 — password reset 매칭 부재 retain).

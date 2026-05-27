@@ -1,17 +1,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — message persistence + MESSAGE_SEND audit chain (cycle 141).
 
-엔드포인트 5종 (auth_middleware 의 Bearer 검증 의무):
+역할 — 룸 메시지의 적재·구간/페이지 조회·단건 조회·soft delete 를 처리하고,
+발신 시 MESSAGE_SEND audit + (DM) push 알림을 건다. 권한은 룸 owner/활성 peer 로
+판정한다.
 
-- GET    /api/messages                       — 룸 [start_ts, end_ts) 구간 lazy load (사이클 60)
-- POST   /api/rooms/{room_id}/messages       — text message INSERT + MESSAGE_SEND audit
-- GET    /api/rooms/{room_id}/messages       — paginated list (limit + offset)
-- GET    /api/messages/{message_id}          — single message detail
-- DELETE /api/messages/{message_id}          — soft delete (sender 또는 owner 만)
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과
+(`request["user_id"]`) 후 진입하며, 적재/조회는 `messages`/`rooms` repository,
+audit 는 `user_activity`, push 는 device_tokens 경로에 위임한다.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `messages`/`rooms` repository
++ `user_activity`(audit) + push notification 경로 + `activity` 미들웨어.
+
+범위 한계 — 메시지 CRUD + audit + push 트리거만. 실시간 broadcast(signaling/mesh)·
+E2EE 본문 암복호는 별개 경로. delete 는 soft(body NULL tombstone).
+
+엔드포인트 카탈로그(실 함수 5 + helper 7 + register, Bearer 검증 의무):
+
+- `handle_list_messages_in_range`  GET    /api/messages                  — 구간 lazy.
+- `handle_post_message`            POST   /api/rooms/{room_id}/messages   — INSERT+audit.
+- `handle_list_room_messages`      GET    /api/rooms/{room_id}/messages   — paginated.
+- `handle_get_message`             GET    /api/messages/{message_id}      — 단건.
+- `handle_delete_message`          DELETE /api/messages/{message_id}      — soft delete.
+- helper: `_audit_message`/`_fire_push_notification`/`_parse_int_query`/
+  `_ms_to_datetime`/`_parse_path_int`/`_read_json`/`_message_row_to_wire`.
 
 audit hook
 ----------
-- MESSAGE_SEND — POST 의 의무. target_id = message_id +
+- MESSAGE_SEND — POST 시 의무. target_id = message_id +
   metadata = {room_id, kind, sender_id}.
 - pool 부재 = graceful skip + 예외 swallow + log.warning.
 
@@ -153,7 +169,7 @@ def _message_row_to_wire(row: Any) -> Dict[str, Any]:
             ts_ms = 0
     return {
         "id": row.id,
-        "message_id": row.id,  # cycle 169.459 — client 의 의 message_id alias retain
+        "message_id": row.id,  # cycle 169.459 — client message_id alias retain(호환)
         "room_id": row.room_id,
         "sender_id": row.sender_id,
         "kind": row.kind,
@@ -232,7 +248,7 @@ async def _fire_push_notification(
         pool = request.app.get("db_pool")
         if pool is None:
             return
-        # 한글 주석 — DM room 안 sender 외 peer user_id 추출
+        # DM room 안 sender 외 peer user_id 추출
         async with pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
@@ -290,7 +306,7 @@ async def handle_post_message(request: web.Request) -> web.Response:
         if not isinstance(msg_body, str) or not msg_body.strip():
             raise web.HTTPBadRequest(reason="system body 의무")
 
-    # 한글 주석: 룸 존재 + 활성 peer (또는 owner) 검증.
+    # 룸 존재 + 활성 peer (또는 owner) 검증.
     room = await rooms_repo.get_room_by_id(pool, room_id)
     if room is None:
         return web.json_response(
@@ -347,7 +363,7 @@ async def handle_post_message(request: web.Request) -> web.Response:
     except Exception as exc:  # noqa: BLE001
         log.warning("[push.fire] 실패 — %r", exc)
 
-    # 한글 주석: created_at 의 server-side ISO 8601 응답 — client UI timeline 의 source.
+    # created_at 의 server-side ISO 8601 응답 — client UI timeline 의 source.
     inserted = await messages_repo.get_by_id(pool, message_id)
     created_at_iso = (
         inserted.created_at.isoformat()
@@ -404,7 +420,7 @@ async def handle_list_room_messages(request: web.Request) -> web.Response:
     if offset < 0:
         raise web.HTTPBadRequest(reason="offset 음수 불가")
 
-    # 한글 주석: 권한 검증 — 룸 활성 + (owner 또는 활성 peer).
+    # 권한 검증 — 룸 활성 + (owner 또는 활성 peer).
     room = await rooms_repo.get_room_by_id(pool, room_id)
     if room is None:
         return web.json_response(
@@ -454,7 +470,7 @@ async def handle_get_message(request: web.Request) -> web.Response:
             {"error": "message_not_found", "message_id": message_id}, status=404
         )
 
-    # 한글 주석: 권한 — sender 자신 또는 룸 owner 또는 활성 peer.
+    # 권한 — sender 자신 또는 룸 owner 또는 활성 peer.
     room = await rooms_repo.get_room_by_id(pool, msg.room_id)
     if room is None:
         return web.json_response(
@@ -494,7 +510,7 @@ async def handle_delete_message(request: web.Request) -> web.Response:
             {"error": "message_not_found", "message_id": message_id}, status=404
         )
 
-    # 한글 주석: sender 자신 또는 룸 owner 만 삭제 가능.
+    # sender 자신 또는 룸 owner 만 삭제 가능.
     room = await rooms_repo.get_room_by_id(pool, msg.room_id)
     if room is None:
         return web.json_response(
