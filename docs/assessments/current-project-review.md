@@ -1,12 +1,14 @@
 ---
 title: "TooTalk 현재 프로젝트 전면평가"
 owner: oneticket99
-last_verified: 2026-05-26T19:50:00+09:00
+last_verified: 2026-05-27T16:10:00+09:00
 status: active
 ---
 
 # TooTalk 현재 프로젝트 전면평가
 
+> HEAD 동기 (Claude, 2026-05-27 16:10 KST): main HEAD = `3c2efcc` **cycle 169.853**. 본 Codex 전면평가(아래 본문, cycle 169.852 기준) 이후 진행 = avatar 이미지 picker M1~M7 코드+문서 완결(G-final 실 webcam visual ack 만 잔존) + 한글 주석 상세화 페이즈 M2 `server/db/repositories/*.py` 21/21 완료(주석 전용 트랙 — 기능 diff 0, server 642 pytest 무변경). 두 트랙 모두 신규 VERIFIED capability 부재 → readiness 7.6 / 데모 8.4 유지. 다음 = M3 `server/api/*_handlers.py` 19 파일 주석 보강. 본문 분석은 Codex 정본 그대로 보존.
+>
 > 검토 기준: 2026-05-26 19:50 KST main branch HEAD `ac54cf8` cycle 169.852 + avatar 이미지 picker M1/M2 서버 영속 완료 + 다음 session 인계 자료 작성 이후 Codex 전면평가 보정. room broadcast → 통합 ChatView 마이그레이션 M1~M5b 완결, Codex 평가 §8 직접 작업 큐 회수(§8-1 sqlite ResourceWarning 해소 + §8-3 SFU coverage sfu_call_client 14→89% + sfu_room 49→100% + M6 WBS 사용자 ack "재개+backfill" 수령·524 row backfill), avatar 서버 영속 foundation/endpoint 구현, 하드코딩 잔존 개선 큐, 그리고 사용자 직접 빌드 산출물 검증 기반의 **실사용 데모 readiness** 산정 기준을 함께 반영한다.
 > 목적: 다음 작업 세션에서 곧바로 우선순위를 잡을 수 있는 협업용 평가 snapshot.
 > 핵심 판정: 상용 제품화 readiness 는 7.6/10 으로 유지하지만, 본 프로젝트의 현재 목표가 "실사용 가능한 데모"임을 기준으로 보면 데모 readiness 는 8.4/10 이다. 사용자 직접 빌드 산출물 dogfooding 은 결함이 아니라 데모 QA의 핵심 검증 경로다.

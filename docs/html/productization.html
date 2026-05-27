@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.852)</title>
+<title>TooTalk 제품화 가능성 평가 — Snapshot (사이클 169.853)</title>
 <!-- 한글 주석 (M4): 본 HTML 은 docs/assessments/productization.md cycle 169.853 미러.
+     cycle 169.853 marker 동기 — 한글 주석 상세화 페이즈 M2 server repository 21/21 완료 + 다음 세션 인계 자료. blast radius 역순 M2 전수 완료(13/21 → 21/21) — friends 본보기 + 잔여 20 repo. module/class/함수 docstring(§4 D-1~D-6) + 카탈로그 컨벤션(실 심볼명+개수 일치, rooms/friends/bot_escalations 정정) + inline "왜". 전수 기능 diff 0(verify_comment_only AST 동일) + server 642 pytest 무변경 + BPE/대명사/이중조사 0. 인계 자료 = 다음 M3 server API handler 19. 신규 VERIFIED 부재(가독성 품질) — 종합 7.6/10 유지.
      cycle 169.853 marker 동기 — 한글 주석 상세화 페이즈 M2 진행(server repository 13/21). blast radius 역순 — friends 본보기(reviewer PASS) + peers/read_states/password_reset/file_meta/device_tokens/user_contacts/avatars/streaming_oauth_tokens/users/rooms/messages/folders. 매 batch 기능 diff 0(verify_comment_only docstring 제거 후 AST 동일) + pytest 무변경 + BPE/대명사/이중조사 0. 부정확 함수 카탈로그도 실 심볼명 정정. 주석 전용 = 코드 동작 변경 0(ValueError 런타임 string 도 미변경, diff-0 도구 검출). 잔여 repo 8 + M3~M7. 종합 7.6/10 유지.
      cycle 169.852~853 marker 동기 — avatar M1~M7 전 milestone 완결(서버 영속+picker+3 dialog+카메라+표시 전파 6 site+문서, G-final 사용자 webcam ack 잔존) + 한글 주석 상세화 페이즈 착수(사용자 directive "e2e 테스트 파일까지 모두 보강" → active + M7 test scope + verify_comment_only.py diff-0 검증 + M1 본보기 friends.py reviewer PASS + M2 batch-1 peers/read_states/password_reset). 주석 전용 트랙 = 코드 동작 변경 0(verify_comment_only 전 파일 PASS + pytest 무변경). 신규 VERIFIED 부재 — 종합 7.6/10 유지.
      cycle 169.852 marker 동기 — avatar 이미지 picker M6 완결(표시 전파 6 site). T-16 AvatarCache 싱글톤(mem+disk 2단 캐시 + AvatarFetchWorker async fetch dedup + avatar_ready signal + content-addressed 불변 키 + path traversal 방어 + negative-cache) + make_avatar_pixmap thin API → T-17 6 site(group/channel chat-list delegate · member_list · drawer header · profile/my_account · chat sender=이름 label N/A · my_profile picker). 업로드 PASS 시 seed_image 즉시 표시 + drawer 라이브 갱신. 이니셜 fallback 무손상. reviewer T-16 PASS + T-17 PASS(차단 0, MEDIUM 2 비차단). 전체 2605 passed 회귀 0. avatar M1~M6 코드 완결 — M7 문서 + G-final(실 webcam visual ack) 잔존 — 신규 VERIFIED 부재 — 종합 7.6/10 유지.
@@ -22,7 +23,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-05-27T03:30:00+09:00 (사이클 169.853 — 한글 주석 상세화 페이즈 M2 진행 server repository 13/21(friends 본보기 + peers~folders), 매 batch 기능 diff 0(verify_comment_only AST 동일) + pytest 무변경 + 부정확 카탈로그 실 심볼명 정정, 코드 동작 변경 0 — 종합 7.6/10 유지) -->
+     last_verified = 2026-05-27T16:10:00+09:00 (사이클 169.853 — 한글 주석 상세화 페이즈 M2 server repository 21/21 완료 + 다음 세션 인계 자료, 전수 기능 diff 0(verify_comment_only AST 동일) + server 642 pytest 무변경 + 카탈로그 컨벤션 정정, 코드 동작 변경 0, 다음 M3 handler 19 — 종합 7.6/10 유지) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
@@ -95,11 +96,11 @@
 
 <h2 id="sec1">1. 총평 (TL;DR)</h2>
 <p><strong>현재 단계</strong>: 메신저 핵심 기능은 종단 코드가 모두 구현됐다. 1:1 음성·영상 통화, DataChannel 텍스트/이미지/파일 전송, 그룹 텍스트 mesh, 친구/방/폴더/봇/이모지, 원격 데스크탑(M3 wire), auth(이메일 OTP), i18n 5 locale, 자동 재연결(backoff + reJOIN) 까지 모두 결선됐다. 이번 cycle 의 핵심은 <strong>음성·영상 SFU 그룹 통화(9 peer+) 종단 코드 완결</strong>이다 — server(aiortc MediaRelay 기반 sfu_room/sfu_registry + protocol + signaling 라우팅 + main startup) 와 client(SfuCallClient + SignalingClient SFU dispatch + GroupCallDialog 타일 그리드 + SfuCallMixin 배선 + MainWindow "그룹 통화 시작" 메뉴 entry) 가 PR#12 + PR#13 으로 main 에 merge 됐다. publish → SFU MediaRelay forward → producers broadcast → auto subscribe → on_remote_track → 타일 흐름이 reviewer-gate 11 feat 전수 PASS + headless(aiortc E2E forward + offscreen Qt) 검증을 통과했다.</p>
-<p>다만 SFU 는 <strong>IMPLEMENTED 단계이지 VERIFIED 아니다</strong> — 실 OS 미디어 캡처 + 다중 화면 사용자 visual ack 가 끝나야 검증 완료로 본다. 같은 이유로 점수는 7.6/10 으로 유지한다. 테스트는 약 2770 PASS + coverage 약 90% (omit 범위 광범위). 제품화 readiness = <span class="pill">내부 dogfooding 후보, 외부 배포 미진입</span>.</p>
+<p>다만 SFU 는 <strong>IMPLEMENTED 단계이지 VERIFIED 아니다</strong> — 실 OS 미디어 캡처 + 다중 화면 사용자 visual ack 가 끝나야 검증 완료로 본다. avatar/카메라 역시 실 하드웨어 visual ack 전까지 IMPLEMENTED 다. 같은 이유로 점수는 7.6/10 으로 유지한다(주석 보강은 가독성 품질, 외부 readiness 무변동). 테스트는 약 2605 PASS(server 642 + app 1963) + coverage 약 90% (omit 범위 광범위). 제품화 readiness = <span class="pill">내부 dogfooding 후보, 외부 배포 미진입</span>.</p>
 <table>
   <thead><tr><th>항목</th><th>점수 (10점)</th><th>직전 → 현재</th><th>근거</th></tr></thead>
   <tbody>
-    <tr><td>기술 완성도</td><td class="score">8.8 / 10</td><td>유지</td><td>main_window 책임 분리(21 mixin) + server/db/repositories 계층 전수 unit cov + remote_handlers/rotate_key/avatar_palette/_icons 100% + email_verification 97% + repo 계층 75~100%. 약 2770 PASS / cov 약 90%. SFU server+client 종단 코드 + signaling 36 회귀 + SFU 17 PASS. 단, repo unit 은 mock async pool 기반 + dialog/e2e GUI 는 PyQt6 cumulative QWidget retain hang 으로 자동 검증 architecture 한계 (실 MariaDB 통합 / 패키징 / Windows GUI / 실 OS 미디어 캡처 visual QA 별도 검증 의무 retain).</td></tr>
+    <tr><td>기술 완성도</td><td class="score">8.8 / 10</td><td>유지</td><td>main_window 책임 분리(21 mixin) + server/db/repositories 계층 전수 unit cov + remote_handlers/rotate_key/avatar_palette/_icons 100% + email_verification 97% + repo 계층 75~100%. 약 2605 PASS(server 642 + app 1963) / cov 약 90%. SFU server+client 종단 코드 + signaling 36 회귀 + SFU 17 PASS + avatar picker M3~M5 test. 단, repo unit 은 mock async pool 기반 + dialog/e2e GUI 는 PyQt6 cumulative QWidget retain hang 으로 자동 검증 architecture 한계 (실 MariaDB 통합 / 패키징 / Windows GUI / 실 OS 미디어 캡처 visual QA 별도 검증 의무 retain).</td></tr>
     <tr><td>시장 적합성</td><td class="score">5.0 / 10</td><td>유지</td><td>Toonation BI 통합, default 고객센터 봇, chat_list filter, sidebar 단순화, DM resolver 등 방향성은 좋다. 다만 실제 사용자 유지율, 반복 사용, 온보딩 성공률, 장애율 같은 외부 지표가 없다.</td></tr>
     <tr><td>차별화 요소</td><td class="score">7.6 / 10</td><td>유지</td><td>친구간 원격 데스크탑 + 메신저 통합 + bot framework + SFU 그룹 통화 방향은 차별화된다. "production-ready"가 아니라 구현 후보/검증 후보로 표기한다. 원격 제어, E2EE, push, i18n, SFU 는 사용자 시나리오별 회귀 + 실 OS 검증이 끝나야 확정 가능하다.</td></tr>
     <tr><td>사용자 가치</td><td class="score">5.5 / 10</td><td>유지</td><td>1:1 음성·영상 + 텍스트/파일 + 그룹 mesh + 봇 LLM 응답 + 회원가입 안정성 + E2EE + 청각 신호 + push backbone + telegram align UX + default chat 자동 진입 + last_seen + DM history fetch + dialog main center + SFU 그룹 통화 결선. 실 사용자 가치는 dogfooding 후 확정.</td></tr>
@@ -166,7 +167,7 @@
 
 <h3>2.8 QA 인프라</h3>
 <ul>
-  <li>테스트 스위트 + smoke 도구. 현 시점 tests/app+server 약 <strong>2521 PASS</strong> + 전체 약 2574 PASS + skip 24 + coverage 약 88% (omit 범위 광범위, current-project-review 7.6/10 기준). cycle 169.849~851 coverage omit 축소 1차 완결 — sfu_call_client 14→89%(849) + sfu_room 49→100%(850) + i18n dangling 정리(851)</li>
+  <li>테스트 스위트 + smoke 도구. 현 시점 약 <strong>2605 PASS</strong>(server 642 + app 1963) + skip 24 + coverage 약 90% (omit 범위 광범위). 한글 주석 페이즈는 기능 diff 0 라 pytest 무변경. cycle 169.849~851 coverage omit 축소 1차 완결 — sfu_call_client 14→89%(849) + sfu_room 49→100%(850) + i18n dangling 정리(851)</li>
   <li>Playwright E2E (시그널링 WS + HTML 시각 회귀 + zip capture) + voice call + 원격 데스크탑 chain + emoji pack share + bot framework</li>
   <li>integration test + dual chain smoke + signaling e2e + remote coord transform + folder handlers + signaling protocol + dispatcher pipeline + RAG ranking + Embedder cache + dmca + obs websocket + emoji moderation + SFU forward loopback</li>
   <li>mixin isolated batch (ChatSend / FriendStatus / Invite / Tray / FriendSearch / MenuActions / ChatHeader / ChatHelper / DialogCenter / Signaling / RoomGroupChat / FriendProfile / ChatNav) — fixture hang scope 우회. dialog/e2e 실 widget 포팅 은 PyQt6 cumulative QWidget retain hang 한계 retain</li>
@@ -406,7 +407,7 @@
 </ol>
 <h3>6.1 현 batch metric</h3>
 <ul>
-  <li><strong>테스트</strong>: 약 2770 PASS + tests/app/ui skip 24 + coverage 약 90% (omit 범위 광범위)</li>
+  <li><strong>테스트</strong>: 약 2605 PASS(server 642 + app 1963) + tests/app/ui skip 24 + coverage 약 90% (omit 범위 광범위). 한글 주석 페이즈 기능 diff 0 → pytest 무변경</li>
   <li><strong>cov 약진(historical)</strong>: server/db/repositories 계층 dense focus 회수 (file_meta/password_reset/read_states/devices/friends 100% + bots 99%) + SFU/signaling 회귀가 핵심. fixture hang root cure 부재 retain (mock isolation pattern)</li>
   <li><strong>가드레일</strong>: active retain. memory <code>project_streaming_deprioritized.md</code> + <code>project_no_user_distribution.md</code> + <code>feedback_reviewer_gate_all_feat_mandatory.md</code> 정합 운영</li>
   <li><strong>정책</strong>: reviewer-gate-all-feat (headless 구간 포함 모든 feat 의무) + dereliction-detector 자동 + check_assessment_consistency</li>
@@ -488,7 +489,7 @@
     <tr><td>CI 3 workflow 통과율</td><td>100%</td><td>최신 workflow run 기준으로 기록</td></tr>
     <tr><td>doc-lint.sh 5 검사 통과율</td><td>100%</td><td class="good">100%</td></tr>
     <tr><td>reviewer-gate 모든 feat 통과</td><td>100%</td><td class="good">✅ 11 feat 전수 PASS (SFU batch)</td></tr>
-    <tr><td>pytest 최신 PASS</td><td>≥ 500 test 목표</td><td class="good">약 2770 PASS</td></tr>
+    <tr><td>pytest 최신 PASS</td><td>≥ 500 test 목표</td><td class="good">약 2605 PASS</td></tr>
     <tr><td>pytest coverage</td><td>≥ 80%</td><td class="good">약 90% (omit 범위 광범위)</td></tr>
     <tr><td>OTP 발송 → 수신 latency</td><td>≤ 30초</td><td class="good">최신 SMTP smoke 기준으로 기록</td></tr>
     <tr><td>mail-tester score (SMTP)</td><td>≥ 7/10</td><td class="good">Gmail Authentication-Results pass</td></tr>
@@ -519,7 +520,7 @@
 
 <footer>
   정본 문서: <code>docs/assessments/productization.md</code> · 동행 snapshot: <a href="vibe-coding.html">vibe-coding.html</a><br>
-  최신 갱신: 2026-05-27 03:30 KST · cycle 169.853 미러 동기 (한글 주석 상세화 페이즈 M2 진행 — server repository 13/21, 매 batch 기능 diff 0 verify_comment_only AST 동일 + pytest 무변경 + 부정확 카탈로그 실 심볼명 정정, 코드 동작 변경 0) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
+  최신 갱신: 2026-05-27 16:10 KST · cycle 169.853 미러 동기 (한글 주석 상세화 페이즈 M2 server repository 21/21 완료 + 다음 세션 인계 자료 — 전수 기능 diff 0 verify_comment_only AST 동일 + server 642 pytest 무변경 + 카탈로그 컨벤션 정정, 코드 동작 변경 0, 다음 M3 handler 19) · 최신 테스트/CI/시각 검증은 실행 증거 기준으로 기록.
 </footer>
 
 </body>
