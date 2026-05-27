@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ConfirmDialog — in-app overlay 모달 (cycle 169.365 / 169.838).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 + 정적 헬퍼(show_info/warning/critical/ask) —
+앱 전역 40+ 호출 site 가 QMessageBox 대체로 사용하는 공용 얼럿/확인 진입점.
+
 사용자 directive — 모든 dialog 모달 + main center + i18n. QMessageBox.question 등 native
 popup 폐기 chain entry. labels.tr() 우선 lookup.
 cycle 169.838 — 정적 헬퍼(show_info/warning/critical/ask)가 별도 OS 윈도우 .exec() 대신
@@ -49,7 +52,7 @@ class ConfirmDialog(QDialog):
         mode: str = "question",
         raw_text: bool = False,
     ) -> None:
-        # 한글 주석 — telegram align outer wrap + frameless + 420x220 strict
+        # telegram align outer wrap + frameless + 420x220 strict
         super().__init__(parent)
         self._mode = mode if mode in self._MODE_COLORS else "question"
         # raw_text True = 직접 문자열, False = labels.tr() lookup (key 정합)
@@ -75,10 +78,10 @@ class ConfirmDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header (title + close X)
+        # header (title + close X)
         header_row = QHBoxLayout()
         title = QLabel(resolved_title)
-        # 한글 주석 — cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거 — wrap 배경에 blend)
+        # cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거 — wrap 배경에 blend)
         title.setStyleSheet("color: #f3f4f6; font-size: 16px; font-weight: 600; background: transparent;")
         header_row.addWidget(title)
         header_row.addStretch(1)
@@ -86,14 +89,14 @@ class ConfirmDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — message body
+        # message body
         msg_label = QLabel(resolved_msg)
-        # 한글 주석 — cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거)
+        # cycle 169.817 text label 배경 투명 (theme QLabel 배경 박스 제거)
         msg_label.setStyleSheet("color: #e5e7eb; font-size: 14px; background: transparent;")
         msg_label.setWordWrap(True)
         body.addWidget(msg_label, stretch=1)
 
-        # 한글 주석 — mode 별 button row 분기 (cycle 169.412)
+        # mode 별 button row 분기 (cycle 169.412)
         primary_color, hover_color = self._MODE_COLORS[self._mode]
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
@@ -148,7 +151,7 @@ class ConfirmDialog(QDialog):
     @staticmethod
     def ask(parent, title: str, message: str) -> bool:
         """QMessageBox.question swap — Yes 클릭 → True (in-app overlay 모달, cycle 169.838)."""
-        # 한글 주석 — exec_modal 반환 1(accept)/0(reject) 은 DialogCode.Accepted(=1) 비교와 정합.
+        # exec_modal 반환 1(accept)/0(reject) 은 DialogCode.Accepted(=1) 비교와 정합.
         from app.ui._modal_helper import exec_modal
         d = ConfirmDialog(title, message, parent=parent, mode="question", raw_text=True)
         return exec_modal(d, parent) == QDialog.DialogCode.Accepted

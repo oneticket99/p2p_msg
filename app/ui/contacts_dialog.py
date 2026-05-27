@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ContactsDialog — 연락처 modal (cycle 169.317).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — DrawerMixin 이 instantiate(친구 목록 표시 +
+친구 추가 진입). 친구 data 는 caller 주입 + 추가 요청은 signal 회신(서버 호출 caller 책임).
+
 사용자 directive image #84 — drawer 의 "연락처" click → 본 dialog (친구 목록 + 추가).
 """
 
@@ -36,7 +39,7 @@ class ContactsDialog(QDialog):
     contact_added = pyqtSignal(str)  # (user_id_or_email)
 
     def __init__(self, contacts: Optional[list[dict]] = None, parent: Optional[QWidget] = None) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle(_tr("tootalk_연락처"))
         self.setModal(True)
@@ -58,7 +61,7 @@ class ContactsDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header
+        # header
         header_row = QHBoxLayout()
         title = QLabel("연락처")
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
@@ -94,11 +97,11 @@ class ContactsDialog(QDialog):
         by_username_btn.clicked.connect(self._on_open_by_username)  # type: ignore[arg-type]
         add_row.addWidget(by_username_btn, stretch=1)
         body.addLayout(add_row)
-        # 한글 주석 — placeholder retain 이메일/유저 ID 검색 (별 chain 의무 retain)
+        # placeholder retain 이메일/유저 ID 검색 (별 chain 의무 retain)
         self._add_edit = QLineEdit()
-        self._add_edit.setVisible(False)  # cycle 169.450 = telegram align 의 의 dialog chain 의무
+        self._add_edit.setVisible(False)  # cycle 169.450 = telegram align dialog chain 의무로 hidden
 
-        # 한글 주석 — 친구 list
+        # 친구 list
         self._list = QListWidget()
         self._list.setStyleSheet(
             "QListWidget { color: #f3f4f6; background-color: #1F2937;"
@@ -111,7 +114,7 @@ class ContactsDialog(QDialog):
         self._populate(contacts or [])
 
     def _populate(self, contacts: list[dict]) -> None:
-        # 한글 주석 — 외부 친구 list 주입
+        # 외부 친구 list 주입
         for c in contacts:
             name = c.get("name") or c.get("username") or c.get("email", "?")
             item = QListWidgetItem(name)
@@ -122,7 +125,7 @@ class ContactsDialog(QDialog):
             self._list.addItem(empty)
 
     def _on_add(self) -> None:
-        # 한글 주석 — 친구 추가 signal emit
+        # 친구 추가 signal emit
         identifier = self._add_edit.text().strip()
         if identifier:
             self.contact_added.emit(identifier)

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """ChatPickerDialog — 대화방 multiselect modal (cycle 169.370 rewrite).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — FolderMixin 이 instantiate(폴더 포함/제외
+대화 선택) + chats_selected signal 로 선택 entry list 회신. 순수 선택 UI(영속 책임 caller).
+
 사용자 critique image #125 — chat_list entry 등가 list format 의무.
 ChatListItemDelegate 재사용 + frameless + i18n + _exec_dialog_centered chain.
 """
@@ -41,7 +44,7 @@ class ChatPickerDialog(QDialog):
         mode: str = "include",
         parent: Optional[QWidget] = None,
     ) -> None:
-        # 한글 주석 — telegram align outer wrap + frameless + 420x600
+        # telegram align outer wrap + frameless + 420x600
         super().__init__(parent)
         title_key = "포함할_대화방" if mode == "include" else "제외할_대화방"
         self.setWindowTitle(f"TooTalk · {_tr(title_key)}")
@@ -65,7 +68,7 @@ class ChatPickerDialog(QDialog):
         body.setContentsMargins(20, 16, 20, 16)
         body.setSpacing(12)
 
-        # 한글 주석 — header (title + close X)
+        # header (title + close X)
         header_row = QHBoxLayout()
         title = QLabel(_tr(title_key))
         title.setStyleSheet("color: #f3f4f6; font-size: 18px; font-weight: 600;")
@@ -75,7 +78,7 @@ class ChatPickerDialog(QDialog):
         header_row.addWidget(close_btn)
         body.addLayout(header_row)
 
-        # 한글 주석 — 검색 input (SVG icon + padding-left 32)
+        # 검색 input (SVG icon + padding-left 32)
         self._search_edit = QLineEdit()
         self._search_edit.setPlaceholderText(_tr("검색"))
         self._search_edit.setStyleSheet(
@@ -88,7 +91,7 @@ class ChatPickerDialog(QDialog):
         self._search_edit.textChanged.connect(self._on_search_changed)  # type: ignore[arg-type]
         body.addWidget(self._search_edit)
 
-        # 한글 주석 — chat_list entry 등가 list (ChatListItemDelegate 재사용)
+        # chat_list entry 등가 list (ChatListItemDelegate 재사용)
         self._list = QListWidget()
         self._list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         self._list.setStyleSheet(
@@ -106,7 +109,7 @@ class ChatPickerDialog(QDialog):
             self._list.addItem(item)
         body.addWidget(self._list, stretch=1)
 
-        # 한글 주석 — 취소 + 확인 button row
+        # 취소 + 확인 button row
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
         cancel_btn = QPushButton(_tr("취소"))
@@ -128,7 +131,7 @@ class ChatPickerDialog(QDialog):
         body.addLayout(btn_row)
 
     def _on_search_changed(self, text: str) -> None:
-        # 한글 주석 — 검색 input list filter (entry.name lower contains)
+        # 검색 input list filter (entry.name lower contains)
         lower = text.strip().lower()
         for i in range(self._list.count()):
             item = self._list.item(i)
@@ -138,7 +141,7 @@ class ChatPickerDialog(QDialog):
             item.setHidden(not visible)
 
     def _on_ok(self) -> None:
-        # 한글 주석 — selected entry list emit
+        # selected entry list emit
         selected = []
         for item in self._list.selectedItems():
             entry = item.data(Qt.ItemDataRole.UserRole + 2)
