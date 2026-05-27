@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """SfuCallMixin — SFU 그룹 통화 배선 (cycle 169.807 M4b-2b).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). net(SfuCallClient) + UI(GroupCallDialog)
++ signaling SFU 신호를 MainWindow 안에서 라우팅 결선하는 배선 단위(MRO 합성).
+
 server-side SFU + SfuCallClient(net) + GroupCallDialog(UI) 를 MainWindow 에서
 한 곳으로 묶는 mixin. SignalingClient 의 SFU 수신 신호(sfu_answer_received /
 sfu_producers_received)를 SfuCallClient 의 async 핸들러로 라우팅하고,
@@ -44,7 +47,7 @@ class SfuCallMixin:
         from app.net.sfu_call_client import SfuCallClient
         from app.ui.group_call_dialog import GroupCallDialog
 
-        # 한글 주석 — 재진입 시 기존 통화를 먼저 정리 (dialog/client leak 방지)
+        # 재진입 시 기존 통화를 먼저 정리 (dialog/client leak 방지)
         if self._sfu_call_client is not None or self._group_call_dialog is not None:
             self.end_group_call()
 
@@ -52,11 +55,11 @@ class SfuCallMixin:
         self._group_call_dialog = GroupCallDialog(room_id, parent=parent)
 
         async def _send(payload: dict[str, Any]) -> None:
-            # 한글 주석 — SfuCallClient 가 만든 완성 payload 를 signaling 으로 송신
+            # SfuCallClient 가 만든 완성 payload 를 signaling 으로 송신
             await self._signaling_client._send(payload)
 
         def _on_track(producer_id: str, track: Any) -> None:
-            # 한글 주석 — forward track 도달 시 GroupCallDialog 타일 추가
+            # forward track 도달 시 GroupCallDialog 타일 추가
             if self._group_call_dialog is not None:
                 self._group_call_dialog.add_remote_track(producer_id, track)
 

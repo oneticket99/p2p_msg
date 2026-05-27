@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """UpdateLifecycleMixin — auto-update 3 method chain (cycle 169.526 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+자동 업데이트 background task 수명(start/cancel) 관리 — updater 경로 결선 진입점.
+
 codex 2.5 LOW 진입 11차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 132/Phase 5 origin):
@@ -27,7 +30,7 @@ from app.updater.version_check import CURRENT_VERSION
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — main_window 와 동일 default fallback URL (114.207.112.73:8765).
+# main_window 와 동일 default fallback URL (114.207.112.73:8765).
 _DEFAULT_UPDATE_SERVER_URL = DEMO_FALLBACK_API_BASE
 
 
@@ -42,13 +45,13 @@ class UpdateLifecycleMixin:
         graceful skip + log.debug. 정상 환경 에서는 task 가 background 살아 있다.
         """
 
-        # 한글 주석: 환경변수 override — Phase 5 productization 시 .env 정합
+        # 환경변수 override — Phase 5 productization 시 .env 정합
         server_url = (
             os.environ.get("UPDATE_SERVER_URL", "").strip()
             or _DEFAULT_UPDATE_SERVER_URL
         )
 
-        # 한글 주석: running loop 우선 — qasync 통합 환경 의 정상 경로.
+        # running loop 우선 — qasync 통합 환경 의 정상 경로.
         # 부재 시 graceful skip (running loop 부재 = pytest unittest 환경).
         loop: Optional[asyncio.AbstractEventLoop] = None
         try:
@@ -73,7 +76,7 @@ class UpdateLifecycleMixin:
                 server_url,
             )
         except RuntimeError as exc:
-            # 한글 주석: loop closed 등 의 graceful catch
+            # loop closed 등 의 graceful catch
             log.warning(
                 "[main_window] auto-update task 등록 실패 — skip (%r)", exc
             )
@@ -98,9 +101,9 @@ class UpdateLifecycleMixin:
                 current_version=CURRENT_VERSION,
                 latest_info=latest_info,
                 parent=self,
-                on_user_go=None,  # 한글 주석: 실 download chain = Phase 5 본격 cycle
+                on_user_go=None,  # 실 download chain = Phase 5 본격 cycle
             )
-            # 한글 주석: dialog 참조 보관 — gc 회피 + 테스트 가시성
+            # dialog 참조 보관 — gc 회피 + 테스트 가시성
             self._current_update_dialog = dialog
             # cycle 169.838 — 별도 OS 윈도우 .exec() → 메인 레이아웃 안 in-app overlay 모달.
             self._exec_dialog_centered(dialog)

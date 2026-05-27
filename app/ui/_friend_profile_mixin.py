@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FriendProfileMixin — friend 프로필/lookup 6 method chain (cycle 169.527 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+friend 이름 lookup + 프로필 dialog 진입점(self.* attribute MainWindow 보유).
+
 codex 2.5 MED 진입 12차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 144/153.7/154.2 origin):
@@ -24,7 +27,7 @@ from PyQt6.QtCore import QCoreApplication, pyqtSlot
 
 log = logging.getLogger(__name__)
 
-# 한글 주석 — main_window 와 동일 i18n helper.
+# main_window 와 동일 i18n helper.
 _tr = lambda src: QCoreApplication.translate("MainWindow", src)
 
 
@@ -41,7 +44,7 @@ class FriendProfileMixin:
             log.debug("ProfileView import 실패 — %r", exc)
             return
 
-        # 한글 주석 — friend_list 안 row data 조회 (cycle 144 정의 정합)
+        # friend_list 안 row data 조회 (cycle 144 정의 정합)
         friend_data = next(
             (f for f in getattr(self._friend_list, "_friends", []) if getattr(f, "user_id", None) == friend_id),
             None,
