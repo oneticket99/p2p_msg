@@ -9,14 +9,14 @@ last_verified: 2026-05-27
 # 다음 세션 인계 — cycle 169.855 (주석 페이즈 M2+M3 완료, M4 진행)
 
 > 정본: [CLAUDE_HARNESS_IMPORTANT.md](../../../CLAUDE_HARNESS_IMPORTANT.md) · 운영: [CLAUDE.md](../../../CLAUDE.md) · 맵: [AGENTS.md](../../../AGENTS.md)
-> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `abdcada`.
+> 본 문서 = 다음 세션이 **즉시 이어받을** 상태 + 첫 응답 지시 + 잔여 큐. main HEAD = `d010639`.
 
 ---
 
 ## 1. TL;DR (현 상태)
 
-- **HEAD = `abdcada`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0. 주석 페이즈는 기능 diff 0 라 테스트 수 무변동.
-- **한글 주석 페이즈 M4 — app/net 16/16 전수 완료** (cycle 169.855 b1~b6, `645d0f1`~`abdcada`). 16 파일 전수 module 5요소 + filler 전환 + 카탈로그 정정(folder 4→5) + 이중조사·BPE·self-지칭 대명사 정정 + signaling SPDX 추가. 전수 diff-0 + app net 93 passed 무변경.
+- **HEAD = `d010639`**, tree clean, 전 CI/hook 게이트 GREEN. 전체 약 2605 passed(server 642 + app 1963) 회귀 0. 주석 페이즈는 기능 diff 0 라 테스트 수 무변동.
+- **한글 주석 페이즈 M4 app/net 16/16 + M5 app/rtc 8/8 전수 완료** (cycle 169.855, `645d0f1`~`d010639`). M4 = module 5요소 + 카탈로그 정정 + signaling SPDX. M5 = 상태 머신/DataChannel 계약/**메모리 release 의도**(file_sender pending ACK 해제·file_receiver 청크 디스크 즉시 append) 명시. 전수 diff-0 + app(net 93·rtc 135) pytest 무변경.
 - **avatar 이미지 picker — M1~M7 코드+문서 완결** (`fb13fed` 시점). 잔존 = **G-final 사용자 실 webcam visual ack**(headless 대체 불가, 사용자 직접 — 체크리스트 [avatar Exec Plan §14.1](2026-05-26-avatar-image-picker-upload.md)).
 - **한글 주석 상세화 페이즈 — M2(repo 21/21) + M3(server API handler 19/19) 완료** (`d416d81`·`09b2f78`, cycle 169.854 b1~b8). 진행 중 품질 트랙(기능 diff 0). 카탈로그 컨벤션 정정 다수(rooms 6→7·friends 6→8·auth 5→15·folder 4→5·read 2→3). 런타임 string(streaming HTML·auth register log) 미변경 백로그.
 - **평가 staleness sweep + dereliction 회수 완료** (`160a5ec`·`39c6a01`) — 평가 2종 md+html + current-review HEAD 마커 + token-usage-30d 재산출(staleness hook 해소) + dereliction MEDIUM 2건 회수(평가 §5/§6/§8 full-section sweep + WBS 169.853 16 row backfill). 점수 7.6/8.4 무변동(diff 0).
@@ -26,11 +26,12 @@ last_verified: 2026-05-27
 
 ## 2. 다음 세션 첫 응답 (바로 이것부터)
 
-**한글 주석 상세화 페이즈 M5 — `app/rtc/*.py` (7 파일) 주석 보강** 부터 이어간다(M4 16/16 완료, cycle 169.855 b1~b6).
+**한글 주석 상세화 페이즈 M6 — `app/ui/_*_mixin.py`(22) + `*_dialog.py`(29) 51 파일 주석 보강** 부터 이어간다(M5 8/8 완료, cycle 169.855 b1~b3).
 
-- M5 대상 7 = `__init__`(21) · `mesh_manager`(173) · `peer_connection`(176) · `image_processor`(242) · `protocol`(388) · `peer`(435) · `file_sender`(446) · `file_receiver`(515). (실 8 파일 — `__init__` 포함 시 7+1; T-6 = 7 비-trivial)
-- blast radius 역순 순서: M2~M4(완료) → **M5 rtc** → M6 ui → M7 test(e2e) → G-final.
-- M5 의 핵심(T-6) = **상태 머신 전이 / DataChannel 계약 / 메모리 release 의도**(file chunk buffer·pending_acks·objc release 가드레일 정합) 명시. 패턴: module 5요소(역할/계층 §E/의존성/범위/카탈로그) + filler `한글 주석` prefix sed 전환 + 선존 self-지칭 대명사 정정(PostToolUse hook 차단 — 자기/자신 으로) + BPE U+CE21 단독 회피(`쪽`/`편` 대체). batch당 verify_comment_only diff-0 + app pytest 무변경 + commit/push + README/History/Exec Plan/WBS.
+- M6 = app/ui 51 파일(mixin 22 + dialog 29). filler `한글 주석` 74 파일 의 핵심 영역 — 의도 기반 전환 + module 5요소.
+- blast radius 역순 순서: M2~M5(완료) → **M6 ui** → M7 test(e2e) → G-final.
+- M6 핵심(T-7) = UI mixin 책임 분리 + dialog 생명주기 + signal/slot 결선 의도. **offscreen pytest(`QT_QPA_PLATFORM=offscreen`) + skip 기준선 고정 의무(B-4)** — dialog/e2e cumulative QWidget retain hang 차단. 패턴: module 5요소 + filler `한글 주석` prefix sed 전환 + self-지칭 대명사 정정(자기/자신) + BPE U+CE21 단독 회피(`쪽`/`편` 대체). batch당 verify_comment_only diff-0 + app pytest(offscreen) 무변경 + commit/push + README/History/Exec Plan/WBS.
+- 규모 큼(51 파일) — batch 3~4 파일 단위 권장. mixin 먼저(책임 분리 명확) → dialog.
 - M2 에서 정착시킨 동일 패턴을 그대로 적용:
   1. 영역 batch(2~3 파일) 단위로 module/class/함수 docstring(의도/Parameters/Returns/Raises/부작용) + inline "왜" 보강.
   2. **기능 diff 0 게이트** — `python3 tools/verify_comment_only.py HEAD <파일들>` PASS 의무(주석/docstring 외 동작 라인 변경 0).
@@ -48,9 +49,9 @@ last_verified: 2026-05-27
 | M1 | 주석 표준 §4 D-1~D-6 + 본보기 friends.py | 1 + 표준 | ✅ (reviewer PASS, HIGH 회수) |
 | M2 | `server/db/repositories/*.py` | 21 | ✅ **완료** (전수 diff-0 + server 642 무변경) |
 | M3 | `server/api/*_handlers.py` | 19 | ✅ **완료** (b1~b8, 전수 diff-0 + server 642 무변경, 카탈로그 정정 다수) |
-| M4 | `app/net/*.py` | 16 | ✅ **완료** (b1~b6, 전수 diff-0 + app net 93 무변경, signaling SPDX 추가) |
-| **M5** | `app/rtc/*.py` | **7** | **다음** (상태 머신/DataChannel 계약/메모리 release 의도) |
-| M6 | `app/ui/_*_mixin.py`(22) + `*_dialog.py`(29) | 51 | 큐 (filler `한글 주석` 74 파일 — 의도 기반 전환) |
+| M4 | `app/net/*.py` | 16 | ✅ **완료** (b1~b6, signaling SPDX 추가) |
+| M5 | `app/rtc/*.py` | 8 | ✅ **완료** (b1~b3, 메모리 release 의도 명시, app rtc 135 무변경) |
+| **M6** | `app/ui/_*_mixin.py`(22) + `*_dialog.py`(29) | **51** | **다음** (offscreen pytest + skip 기준선 B-4) |
 | M7 | `tests/app`(155) + `tests/server`(48) + `tests/e2e`(9) | 256 | 큐 (사용자 directive — e2e 포함) |
 | G-final | 전 영역 누계 diff-0 + pytest 무변경 + 사용자 ack | — | 큐 |
 
@@ -96,8 +97,10 @@ last_verified: 2026-05-27
 | `70e0479` | 평가 2종+current-review staleness sweep (M3 19/19 반영) |
 | `645d0f1`~`abdcada` | **M4 app/net 16/16** (b1~b6: ssl·group·push / folder·protocol·reactions / auth·account·sfu / bot_directory·devices... avatars·call / rooms·friends / messages·signaling) |
 | `a06cbbc`·`f11e827`·`71c04b3` | 인계 자료 갱신 (체크포인트 + 종합 재작성 + HEAD 동기) |
-| `6ed3a8c` | 평가 2종+current-review staleness sweep (M4 9/16 반영, 점수 7.6/8.4 무변동) |
+| `6ed3a8c`·`df2eded` | 평가 staleness sweep (M4 9/16·16/16 반영, 점수 7.6/8.4 무변동) |
+| `645d0f1`~`abdcada` | M4 app/net 16/16 (b1~b6) |
+| `fc9aa33`·`ccba466`·`d010639` | **M5 app/rtc 8/8** (b1 mesh·peer_conn / b2 image·protocol / b3 peer·file_sender·file_receiver) |
 
 ---
 
-마지막 갱신: 2026-05-28 00:10 KST (cycle 169.855 — 주석 페이즈 M2 21/21 + M3 19/19 + **M4 app/net 16/16 완료**(b1~b6). HEAD `abdcada`, tree clean, 전 게이트 GREEN. 다음 = M5 rtc 7(상태 머신/DataChannel/메모리 release) → M6 ui → M7 test → G-final)
+마지막 갱신: 2026-05-28 01:40 KST (cycle 169.855 — 주석 페이즈 M2~M5 완료(M2 repo 21·M3 handler 19·M4 net 16·M5 rtc 8). HEAD `d010639`, tree clean, 전 게이트 GREEN. 다음 = M6 ui 51(mixin 22+dialog 29, offscreen pytest) → M7 test → G-final)
