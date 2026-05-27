@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FriendStatusMixin — friend last_seen REST fetch (cycle 169.529 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 로
+MainWindow 에 합성된다(self.* attribute 는 MainWindow 가 보유, 본 mixin 은 행위만).
+
 codex 2.5 14차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 169.221 origin):
@@ -49,7 +52,7 @@ class FriendStatusMixin:
                     data = await resp.json()
                     online = data.get("online", False)
                     last_active = data.get("last_active_at")
-            # active chat 의 의 retain 시점만 갱신
+            # active chat 가 해당 friend 일 때만 갱신(다른 chat 로 전환됐으면 stale skip)
             if self._active_chat_kind == "friend" and self._active_chat_target_id == user_id:
                 if online:
                     status = "온라인"

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """SignalingMixin — WebRTC signaling 4 slot chain (cycle 169.520 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). signaling_client 의 pyqtSignal 을
+받는 slot 4종을 MainWindow 에 합성한다 — call_client/CallDialog 결선 진입점.
+
 codex 2.5 HIGH 진입 6차 — main_window.py 책임 분리.
 cavecrew-investigator verdict — 59 line, LOW risk (self-contained WebRTC peer flow).
 
@@ -43,7 +46,7 @@ class SignalingMixin:
             turn_url=turn_url, turn_username=turn_username, turn_credential=turn_credential,
         )
         self._active_call_client = call_client
-        # 한글 주석 — accept_offer fire (background) + CallDialog incoming=True modal
+        # accept_offer fire (background) + CallDialog incoming=True modal
         import asyncio
         asyncio.ensure_future(call_client.accept_offer(remote_sdp=sdp, video=False))
         dialog = CallDialog(peer_name=from_peer, video_enabled=False, incoming=True, parent=self)

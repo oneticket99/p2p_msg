@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """LifecycleEventsMixin — Qt 윈도우 lifecycle event hook 2 method (cycle 169.529 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 로
+MainWindow 에 합성(resizeEvent/closeEvent 가 QMainWindow override 체인 정합).
+
 codex 2.5 14차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 139/169.498~501 origin):
@@ -34,7 +37,7 @@ class LifecycleEventsMixin:
             drawer = getattr(self, "_active_drawer", None)
             if drawer is not None and hasattr(drawer, "isVisible") and drawer.isVisible():
                 sidebar_w = self._sidebar_rail.width() if hasattr(self, "_sidebar_rail") else 96
-                # 한글 주석 — cycle 169.501 — self.height() (full client area) 사용 — central.height() cut 회수
+                # cycle 169.501 — self.height() (full client area) 사용 — central.height() cut 회수
                 drawer.setGeometry(sidebar_w, 0, drawer.width(), self.height())
         except Exception as exc:  # noqa: BLE001
             log.debug("[resize] drawer 동기 실패 — %r", exc)
@@ -46,7 +49,7 @@ class LifecycleEventsMixin:
         cycle 169.498 — close button = hide + tray retain (사용자 directive).
         tray menu "TooTalk 종료" 만 본격 quit chain.
         """
-        # 한글 주석 — tray 가용 + quit 명시 부재 시점 hide + ignore (tray retain)
+        # tray 가용 + quit 명시 부재 시점 hide + ignore (tray retain)
         if (
             not self._tray_quit_requested
             and self._tray_icon is not None
@@ -55,10 +58,10 @@ class LifecycleEventsMixin:
             event.ignore()
             self.hide()
             try:
-                # 한글 주석 — 첫 hide 시점 사용자 안내 balloon (1회만)
+                # 첫 hide 시점 사용자 안내 balloon (1회만)
                 if not getattr(self, "_tray_hint_shown", False):
                     from PyQt6.QtWidgets import QSystemTrayIcon
-                    # 한글 주석 — cycle 169.834 — 트레이 안내 문구 i18n 바인딩 (5언어)
+                    # cycle 169.834 — 트레이 안내 문구 i18n 바인딩 (5언어)
                     from app.i18n import labels as _i18n_labels
                     self._tray_icon.showMessage(
                         "TooTalk",
@@ -71,6 +74,6 @@ class LifecycleEventsMixin:
                 pass
             return
         log.info("MainWindow 종료 — Qt 이벤트 루프 정리 단계 진입")
-        # 한글 주석: auto-update background task 정상 cancel (cycle 139)
+        # auto-update background task 정상 cancel (cycle 139)
         self._cancel_update_task()
         super().closeEvent(event)
