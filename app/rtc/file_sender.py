@@ -20,6 +20,17 @@
 UI 위젯 ``FileProgressWidget`` (role='send') 이 본 3 signal 의 슬롯이다.
 ``progress_sent`` 는 회색 막대(보낸 양), ``progress_acked`` 는 파란
 막대(상대 확인) — 2-stack ProgressBar 시각 표현 정합.
+
+계층 위치 — app/rtc 계층(정본 §E). DataChannel(peer)로 송신하고 protocol 메시지를
+직렬화하며, image_processor 로 썸네일을 생성한다. UI 는 signal slot 으로만 결합.
+
+의존성 — PyQt6 `QObject`/`pyqtSignal` + `protocol`(메시지) + `image_processor`
+(썸네일) + DataChannel(주입). 디스크 IO 는 to_thread 경유(이벤트 루프 비블로킹).
+
+범위 한계 / 메모리 — 청크 스트리밍 + backpressure + ACK 추적만. **pending ACK
+상태는 file 단위로 보관 → 완료/오류 시 해제 의무**(feedback_chat_accumulation_
+memory_release 정합 — unbounded 누적 차단). 전체 파일을 메모리에 적재하지 않고
+청크 단위 read(대용량 안전).
 """
 
 from __future__ import annotations

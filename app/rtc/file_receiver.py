@@ -18,6 +18,16 @@
 - ``progress(file_id, received_bytes, total)`` : 수신 진행률
 - ``completed(file_id, path, hash_match)``      : 수신 종료 (성공/실패 모두)
 - ``error(file_id, message)``                    : 오류
+
+계층 위치 — app/rtc 계층(정본 §E). peer DataChannel handler 로 주입돼 동작하고,
+ACK/DONE 회신은 동일 DataChannel 참조로 송신한다. UI 는 signal slot 결합.
+
+의존성 — PyQt6 `QObject`/`pyqtSignal` + `protocol`(메시지) + 표준 hashlib/tempfile.
+디스크 IO 는 to_thread 경유(이벤트 루프 비블로킹).
+
+범위 한계 / 메모리 — 청크 누적 + ACK + 해시 검증만. **청크는 메모리 buffer 가 아니라
+디스크에 즉시 append → 대용량도 메모리 안전**(feedback_chat_accumulation_memory_
+release 정합 — 전체 적재 차단). 활성 수신 상태(file_id 별)는 완료/오류 시 해제 의무.
 """
 
 from __future__ import annotations

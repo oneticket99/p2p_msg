@@ -24,6 +24,17 @@ Qt 통합 (``QObject`` 상속) 으로 다음 신호를 노출한다.
 - ``text_message_received(str)``         : DataChannel JSON 텍스트 수신
 - ``binary_message_received(bytes)``     : DataChannel 바이너리 수신
 - ``error(str)``                         : 내부 오류 보고
+
+계층 위치 — app/rtc 계층(정본 §E)의 1:1 PeerConnection backbone. signaling_client
+(app/net)와 local_* signal 로 결합하고, file_sender/file_receiver 가 message handler
+를 주입한다. mesh_manager 의 그룹 경로와 별개(1:1 전용).
+
+의존성 — `aiortc`(RTCPeerConnection, graceful) + PyQt6 `QObject`/`pyqtSignal` +
+asyncio/json. UI 직접 의존 부재(signal 경유).
+
+범위 한계 — 1:1 연결 상태 머신 + signal 발행 + DataChannel 송수신만. SDP/ICE 실
+송신은 호출자(signaling 예약), 미디어 track 은 call_client 책임. close 가 연결
+자원 release.
 """
 
 from __future__ import annotations
