@@ -33,7 +33,7 @@ class TestParseHelpers:
 
     def test_default_env_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ENV", raising=False)
-        # 한글 주석: 빈 cwd 가정 — .env 의 부재 시 default = local
+        # 빈 cwd 가정 — .env 의 부재 시 default = local
         cfg = Config(env="local")
         assert cfg.env == "local"
 
@@ -42,7 +42,7 @@ class TestParseHelpers:
     ) -> None:
         monkeypatch.setenv("DB_PORT", "not-a-number")
         cfg = DBConfig.from_env()
-        # 한글 주석: 의 invalid int → default 3306 fallback
+        # DB_PORT invalid int → default 3306 fallback
         assert cfg.port == 3306
 
     def test_bool_env_truthy_values(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -178,7 +178,7 @@ class TestConfigFromEnv:
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
         monkeypatch.delenv("ENV", raising=False)
-        # 한글 주석: tmp_path 의 .env 부재 → ENV = "local" default
+        # tmp_path 의 .env 부재 → ENV = "local" default
         cfg = Config.from_env(project_root=tmp_path)
         assert cfg.env == "local"
         assert cfg.log_level == "INFO"
@@ -189,7 +189,7 @@ class TestConfigFromEnv:
     def test_load_env_files_picks_specific_env(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        # 한글 주석: .env 의 ENV=production + .env.production 의 DB_HOST chain
+        # .env 의 ENV=production + .env.production 의 DB_HOST chain
         # load_dotenv 는 monkeypatch 우회 의 직접 os.environ 변경 — test 후
         # 명시적 cleanup 의무 (production validate 의 cross-test 오염 차단).
         import os
@@ -213,10 +213,10 @@ class TestConfigFromEnv:
 
 
 class TestConfigValidate:
-    """production 환경 의 의무 키 누락 ConfigError 검증."""
+    """production 환경 필수 키 누락 ConfigError 검증."""
 
     def test_local_passes_with_empty(self) -> None:
-        # 한글 주석: local 환경 = validate 즉시 return (production 외)
+        # local 환경 = validate 즉시 return (production 외)
         cfg = Config(env="local", db=DBConfig(password=""))
         cfg.validate()  # no raise
 
