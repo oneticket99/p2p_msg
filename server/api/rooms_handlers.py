@@ -1,15 +1,31 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — 그룹 채팅 룸 (cycle 135).
 
-엔드포인트 6종 (auth_middleware 의 Bearer 검증 의무):
+역할 — 그룹/채널 룸의 생성·조회·가입·탈퇴·초대·추방을 처리한다. owner/member
+권한은 peers row 의 role 로 표현되며, 모든 변경은 audit 로 남긴다.
 
-- POST   /api/rooms                  — 룸 생성 (owner = auth user_id)
-- GET    /api/rooms                  — owner + member 룸 list
-- GET    /api/rooms/{room_id}        — 룸 detail + member list
-- POST   /api/rooms/{room_id}/join   — 룸 가입 (peers row INSERT)
-- POST   /api/rooms/{room_id}/leave  — 룸 탈퇴 (peers row UPDATE left_at)
-- POST   /api/rooms/{room_id}/invite — owner 의 초대 (peers row INSERT)
-- POST   /api/rooms/{room_id}/kick   — owner 의 추방 (peers row UPDATE)
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과
+(`request["user_id"]`) 후 진입하며, SQL 은 본 module 안에서 직접 실행한다(rooms +
+peers 다중 테이블 조율). audit 는 `user_activity`, IP 는 `activity` 미들웨어.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `user_activity`
+(`log_activity`/`ActivityAction`) + `activity`(`extract_client_ip`). room_code 는
+secrets.token_hex 산출.
+
+범위 한계 — 룸 멤버십 CRUD + audit 만. 실 그룹 메시지 broadcast(signaling/mesh)·
+room_code 충돌 재시도는 별개 경로. owner/role 검증은 본 module SQL 분기.
+
+엔드포인트 카탈로그(실 함수 7 + helper 5 + register, Bearer 검증 의무):
+
+- `handle_create_room`  POST   /api/rooms                  — 생성(owner=user_id).
+- `handle_list_rooms`   GET    /api/rooms                  — owner+member 목록.
+- `handle_get_room`     GET    /api/rooms/{room_id}        — detail+member.
+- `handle_join_room`    POST   /api/rooms/{room_id}/join   — 가입(peers INSERT).
+- `handle_leave_room`   POST   /api/rooms/{room_id}/leave  — 탈퇴(peers left_at).
+- `handle_invite_room`  POST   /api/rooms/{room_id}/invite — owner 초대.
+- `handle_kick_room`    POST   /api/rooms/{room_id}/kick   — owner 추방.
+- helper: `_audit_room`/`_read_json`/`_parse_room_id`/`_room_row_to_wire`/
+  `_peer_row_to_wire` + register.
 
 audit hook
 ----------
@@ -146,11 +162,11 @@ async def handle_create_room(request: web.Request) -> web.Response:
     user_id = request["user_id"]
     body = await _read_json(request) if request.content_length else {}
     kind = (body.get("kind") or "group").strip()
-    # 한글 주석 — cycle 169.852: channel 추가(migration 0019, 방송형 room).
+    # cycle 169.852: channel 추가(migration 0019, 방송형 room).
     if kind not in ("direct", "group", "channel"):
         raise web.HTTPBadRequest(reason="kind = direct / group / channel 의무")
 
-    # 한글 주석: cycle 169.852 — group/channel 생성 시 name/description/avatar_ref 수용.
+    # cycle 169.852 — group/channel 생성 시 name/description/avatar_ref 수용.
     name = (body.get("name") or "").strip()[:128]
     description = (body.get("description") or "").strip()[:255]
     avatar_ref = (body.get("avatar_ref") or "").strip()
@@ -162,7 +178,7 @@ async def handle_create_room(request: web.Request) -> web.Response:
     if pool is None:
         raise web.HTTPInternalServerError(reason="db_pool 미활성")
 
-    # 한글 주석: 8자 hex room_code — CHAR(16) column 의 선두 8자 사용.
+    # 8자 hex room_code — CHAR(16) column 의 선두 8자 사용.
     room_code = secrets.token_hex(4)
 
     try:
@@ -176,7 +192,7 @@ async def handle_create_room(request: web.Request) -> web.Response:
         )
         raise web.HTTPInternalServerError(reason="room 생성 실패") from exc
 
-    # 한글 주석: owner 자동 peers row 등록 — role=owner.
+    # owner 자동 peers row 등록 — role=owner.
     try:
         await rooms_repo.insert_peer(
             pool, room_id=room_id, user_id=user_id, role="owner"
@@ -231,7 +247,7 @@ async def handle_list_rooms(request: web.Request) -> web.Response:
         rows.extend(await rooms_repo.list_rooms_by_owner(pool, user_id))
     if scope in ("member", "all"):
         member_rows = await rooms_repo.list_rooms_by_member(pool, user_id)
-        # 한글 주석: owner + member 중복 제거 (set 의 id 기반).
+        # owner + member 중복 제거 (set 의 id 기반).
         seen = {r.id for r in rows}
         rows.extend(r for r in member_rows if r.id not in seen)
 
@@ -262,7 +278,7 @@ async def handle_get_room(request: web.Request) -> web.Response:
             {"error": "room_not_found", "room_id": room_id}, status=404
         )
 
-    # 한글 주석: owner 또는 활성 peer 만 접근 허용.
+    # owner 또는 활성 peer 만 접근 허용.
     peer = await rooms_repo.get_peer(pool, room_id=room_id, user_id=user_id)
     if room.owner_id != user_id and peer is None:
         return web.json_response(

@@ -1,16 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — 친구 관계 CRUD (cycle 144 신설).
 
-엔드포인트 6종 (auth_middleware 의 Bearer 검증 의무):
+역할 — 친구 관계의 조회·검색·요청·수락·거절·차단·제거를 처리한다. 관계는
+단방향 row 모델이며 수락 시 역방향 row 를 동기 생성한다. 모든 변경은 audit.
 
-- GET    /api/friends                  — 친구 list (pending + accepted + blocked)
-- GET    /api/friends/pending          — 수신 pending 요청 list
-- GET    /api/friends/search           — username keyword 검색 (LIKE)
-- POST   /api/friends                  — 친구 요청 발신
-- POST   /api/friends/{user_id}/accept — pending → accepted 수락
-- POST   /api/friends/{user_id}/reject — pending → removed 거절
-- POST   /api/friends/{user_id}/block  — 차단 (status=blocked)
-- DELETE /api/friends/{user_id}        — 친구 관계 제거 (status=removed)
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과
+(`request["user_id"]`) 후 진입하며, SQL 은 본 module 안에서 직접 실행한다. audit
+는 `user_activity`, IP 는 `activity` 미들웨어.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `user_activity`
+(`log_activity`/`ActivityAction`) + `activity`(`extract_client_ip`).
+
+범위 한계 — 친구 관계 CRUD + audit 만. 친구 추천·group/folder 분류·활동 통계는
+별개 영역. self 친구 차단은 본 module 검증 분기.
+
+엔드포인트 카탈로그(실 함수 8 + helper 4 + register, Bearer 검증 의무):
+
+- `handle_list_friends`    GET    /api/friends                  — 전체 관계 목록.
+- `handle_list_pending`    GET    /api/friends/pending          — 수신 pending.
+- `handle_search_user`     GET    /api/friends/search           — username LIKE.
+- `handle_request_friend`  POST   /api/friends                  — 요청 발신.
+- `handle_accept_friend`   POST   /api/friends/{user_id}/accept — 수락(역 row).
+- `handle_reject_friend`   POST   /api/friends/{user_id}/reject — 거절.
+- `handle_block_friend`    POST   /api/friends/{user_id}/block  — 차단.
+- `handle_remove_friend`   DELETE /api/friends/{user_id}        — 제거(양방향).
+- helper: `_audit_friend`/`_read_json`/`_parse_user_id`/`_friend_with_profile_to_wire`.
 
 audit hook
 ----------
@@ -196,7 +210,7 @@ async def handle_search_user(request: web.Request) -> web.Response:
     results = await friends_repo.search_users_by_username(
         pool, keyword=keyword, limit=limit
     )
-    # 한글 주석: 자기 PK 제외 — 자기 자신 친구 차단 의 사전 필터.
+    # 자기 PK 제외 — 자기 자신 친구 차단 의 사전 필터.
     filtered = [r for r in results if r["id"] != user_id]
     return web.json_response(
         {
@@ -233,7 +247,7 @@ async def handle_request_friend(request: web.Request) -> web.Response:
         if not nickname:
             nickname = None
 
-    # 한글 주석: 이미 관계 row 가용 시 409 — caller 의 reconcile 의무.
+    # 이미 관계 row 가용 시 409 — caller 의 reconcile 의무.
     existing = await friends_repo.get_friend(
         pool, user_id=user_id, friend_user_id=target_id
     )
@@ -244,7 +258,7 @@ async def handle_request_friend(request: web.Request) -> web.Response:
 
     try:
         if existing is not None and existing.status == "removed":
-            # 한글 주석: removed → pending 재요청 — UPDATE 경로 + nickname 갱신.
+            # removed → pending 재요청 — UPDATE 경로 + nickname 갱신.
             await friends_repo.update_status(
                 pool,
                 user_id=user_id,
@@ -306,7 +320,7 @@ async def handle_accept_friend(request: web.Request) -> web.Response:
     if pool is None:
         raise web.HTTPInternalServerError(reason="db_pool 미활성")
 
-    # 한글 주석: pending row 의 친구 = (sender_id → user_id). 수락 = user_id row
+    # pending row 의 친구 = (sender_id → user_id). 수락 = user_id row
     # 의 자기 자신 가입 — friends.user_id = user_id, friend_user_id = sender_id.
     # 본 DB schema 의 row = sender → receiver 단방향. 수락 시 receiver → sender
     # row 의 별개 INSERT (accepted 양방향).
@@ -318,7 +332,7 @@ async def handle_accept_friend(request: web.Request) -> web.Response:
             {"error": "pending_not_found", "sender_id": sender_id}, status=404
         )
 
-    # 한글 주석: reverse direction row INSERT — receiver → sender accepted.
+    # reverse direction row INSERT — receiver → sender accepted.
     existing_reverse = await friends_repo.get_friend(
         pool, user_id=user_id, friend_user_id=sender_id
     )
@@ -479,7 +493,7 @@ async def handle_remove_friend(request: web.Request) -> web.Response:
     rowcount = await friends_repo.update_status(
         pool, user_id=user_id, friend_user_id=target_id, new_status="removed"
     )
-    # 한글 주석: 양방향 동시 정리 — peer row 가용 시 removed 갱신.
+    # 양방향 동시 정리 — peer row 가용 시 removed 갱신.
     await friends_repo.update_status(
         pool, user_id=target_id, friend_user_id=user_id, new_status="removed"
     )
