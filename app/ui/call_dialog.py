@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """CallDialog — 음성 / 영상 통화 modal (cycle 169.56 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — ChatHeaderMixin 이 instantiate(1:1 통화).
+CallClient(net) attach 후 SDP/ICE 협상은 client 담당, 본 dialog 는 통화 UI(타이머/버튼) 전용.
+
 WebRTC SDP offer/answer + audio/video constraint scaffolding.
 actual ICE + media stream binding = 별도 cycle 의무.
 """
@@ -63,7 +66,7 @@ class CallDialog(QDialog):
         outer.setContentsMargins(24, 24, 24, 24)
         outer.setSpacing(16)
 
-        # 한글 주석 — cycle 169.58 회수 — video frame area (영상 통화 시 visible)
+        # cycle 169.58 회수 — video frame area (영상 통화 시 visible)
         self._video_frame = QLabel()
         self._video_frame.setFixedSize(360, 200)
         self._video_frame.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -75,7 +78,7 @@ class CallDialog(QDialog):
         self._video_frame.setVisible(video_enabled)
         outer.addWidget(self._video_frame, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — cycle 169.328 chat_list entry 등가 avatar (사용자 directive image #92)
+        # cycle 169.328 chat_list entry 등가 avatar (사용자 directive image #92)
         # palette_solid + initials chain (kind="saved" 시점 data icon 분기)
         self._avatar_widget = QLabel()
         self._avatar_widget.setFixedSize(160, 160)
@@ -98,13 +101,13 @@ class CallDialog(QDialog):
             self._avatar_widget.setPixmap(make_initial_pixmap(peer_name or "?", size=160))
         outer.addWidget(self._avatar_widget, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — peer 사용자명
+        # peer 사용자명
         name_label = QLabel(peer_name)
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700;")
         outer.addWidget(name_label)
 
-        # 한글 주석 — 통화 status + duration
+        # 통화 status + duration
         self._status_label = QLabel("수신 통화…" if incoming else "발신 통화…")
         self._status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._status_label.setStyleSheet("color: #22D3EE; font-size: 14px;")
@@ -112,7 +115,7 @@ class CallDialog(QDialog):
 
         outer.addStretch(1)
 
-        # 한글 주석 — 중앙 control row (mute + video toggle)
+        # 중앙 control row (mute + video toggle)
         control_row = QHBoxLayout()
         control_row.setSpacing(20)
         control_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -130,7 +133,7 @@ class CallDialog(QDialog):
 
         outer.addLayout(control_row)
 
-        # 한글 주석 — 하단 action row (수락 + 거절 / 종료)
+        # 하단 action row (수락 + 거절 / 종료)
         action_row = QHBoxLayout()
         action_row.setSpacing(16)
         action_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -170,12 +173,12 @@ class CallDialog(QDialog):
 
         outer.addLayout(action_row)
 
-        # 한글 주석 — duration timer (1초 tick)
+        # duration timer (1초 tick)
         self._timer = QTimer(self)
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._on_tick)  # type: ignore[arg-type]
 
-        # 한글 주석 — cycle 169.91 — 통화 사운드 player (incoming=ringtone / outgoing=ringback loop)
+        # cycle 169.91 — 통화 사운드 player (incoming=ringtone / outgoing=ringback loop)
         try:
             from app.sound.ringtone import CallSoundPlayer
             self._sound = CallSoundPlayer(volume=0.6)
@@ -216,7 +219,7 @@ class CallDialog(QDialog):
         self.mute_toggled.connect(call_client.toggle_mute)  # type: ignore[arg-type]
         self.video_toggled.connect(call_client.toggle_video)  # type: ignore[arg-type]
 
-        # 한글 주석 — cycle 169.59 회수 — remote video track 수신 시 VideoRenderer start
+        # cycle 169.59 회수 — remote video track 수신 시 VideoRenderer start
         original_on_state = call_client._on_state_change
 
         def _wrapped_state(state: str) -> None:
@@ -247,7 +250,7 @@ class CallDialog(QDialog):
 
     def _handle_accept_with_client(self) -> None:
         """accept 직후 client offer/answer fire — 별도 cycle binding chain."""
-        # 한글 주석 — actual SDP offer/answer + ICE candidate exchange = signaling chain 별도 cycle
+        # actual SDP offer/answer + ICE candidate exchange = signaling chain 별도 cycle
         pass
 
     def _handle_end_with_client(self) -> None:
@@ -265,7 +268,7 @@ class CallDialog(QDialog):
         """수신 통화 수락."""
         self._status_label.setText("연결됨")
         self._timer.start()
-        # 한글 주석 — cycle 169.91 — ring loop stop + connect tone 1회
+        # cycle 169.91 — ring loop stop + connect tone 1회
         if getattr(self, "_sound", None) is not None:
             self._sound.stop_loop()
             self._sound.play_once("connect")
@@ -274,7 +277,7 @@ class CallDialog(QDialog):
     def _on_end(self) -> None:
         """종료 / 거절 — cycle 169.336 end wav play 後 dialog close (사용자 directive 08_call_ended_soft.wav)."""
         self._timer.stop()
-        # 한글 주석 — ring loop stop + end tone 1회 + 1.5s delay 後 reject (wav destroy 회피)
+        # ring loop stop + end tone 1회 + 1.5s delay 後 reject (wav destroy 회피)
         if getattr(self, "_sound", None) is not None:
             self._sound.stop_loop()
             self._sound.play_once("end")

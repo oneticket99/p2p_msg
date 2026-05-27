@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """RemoteCallDialog — 원격 요청/연결 modal (cycle 169.338 사용자 directive).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — ChatHeaderMixin 이 instantiate(원격 데스크탑 요청/수신).
+accepted_signal 로 회신 → caller 가 RemoteSessionRunner(controller/host) 기동. ringback/ringtone wav 재생은 본 dialog.
+
 CallDialog 등가 단순 modal — avatar + 요청자 name + status + 취소/승인/거절 button.
 
 mode:
@@ -48,7 +51,7 @@ class RemoteCallDialog(QDialog):
         outgoing_label: Optional[str] = None,
         incoming_label: Optional[str] = None,
     ) -> None:
-        # 한글 주석 — telegram align outer wrap + 420x600 strict
+        # telegram align outer wrap + 420x600 strict
         super().__init__(parent)
         self.setWindowTitle(_tr("tootalk_원격_요청") if mode == "request" else _tr("tootalk_원격_수신"))
         self.setModal(True)
@@ -73,7 +76,7 @@ class RemoteCallDialog(QDialog):
         body.setContentsMargins(0, 0, 0, 0)
         body.setSpacing(0)
 
-        # 한글 주석 — close button row
+        # close button row
         top = QHBoxLayout()
         top.setContentsMargins(16, 12, 16, 0)
         top.addStretch(1)
@@ -81,20 +84,20 @@ class RemoteCallDialog(QDialog):
         top.addWidget(close_btn)
         body.addLayout(top)
 
-        # 한글 주석 — avatar (chat_list entry 등가 palette_solid + initials)
+        # avatar (chat_list entry 등가 palette_solid + initials)
         avatar_label = QLabel()
         avatar_label.setFixedSize(160, 160)
         avatar_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         avatar_label.setPixmap(self._make_avatar(peer_name, 160))
         body.addWidget(avatar_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # 한글 주석 — peer name
+        # peer name
         name_label = QLabel(peer_name)
         name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label.setStyleSheet("color: #e5e7eb; font-size: 22px; font-weight: 700; padding-top: 16px;")
         body.addWidget(name_label)
 
-        # 한글 주석 — status (cycle 169.424~425 outgoing/incoming label override 정합)
+        # status (cycle 169.424~425 outgoing/incoming label override 정합)
         # incoming_label = 음성통화/원격연결/원격요청 상황별 label override (사용자 directive)
         if mode == "request":
             status_text = outgoing_label or "원격 요청 발신 중…"
@@ -107,7 +110,7 @@ class RemoteCallDialog(QDialog):
 
         body.addStretch(1)
 
-        # 한글 주석 — action button row
+        # action button row
         action_row = QHBoxLayout()
         action_row.setContentsMargins(20, 16, 20, 24)
         action_row.setSpacing(16)
@@ -147,7 +150,7 @@ class RemoteCallDialog(QDialog):
         action_row.addStretch(1)
         body.addLayout(action_row)
 
-        # 한글 주석 — cycle 169.338 ring wav play_loop chain (CallDialog 등가)
+        # cycle 169.338 ring wav play_loop chain (CallDialog 등가)
         self._sound = None
         try:
             from app.sound.ringtone import CallSoundPlayer
@@ -158,7 +161,7 @@ class RemoteCallDialog(QDialog):
             log.warning("[RemoteCallDialog] sound init fail — %r", exc)
 
     def _make_avatar(self, name: str, size: int) -> QPixmap:
-        # 한글 주석 — chat_list entry 등가 (palette_solid bg + initials)
+        # chat_list entry 등가 (palette_solid bg + initials)
         pix = QPixmap(size, size)
         pix.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pix)

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """CameraCaptureDialog — webcam 촬영 in-app 모달 (cycle 169.852 M5, T-14/T-15).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — AvatarPickerButton 이 instantiate(아바타 카메라 촬영).
+QtMultimedia 자원(QCamera 등)은 종료 3경로(accept/reject/closeEvent)에서 _release_camera 로 해제(feedback_objc_memory_release 정합).
+
 avatar picker "카메라에서" 진입점. QtMultimedia(QCamera/QMediaCaptureSession/
 QImageCapture/QVideoWidget) live preview + 촬영 → QImage. FRONTEND.md §16 정합
 (in-app overlay 모달 — `_modal_helper.exec_modal` parent walk → MainWindow
@@ -31,7 +34,7 @@ from PyQt6.QtWidgets import (
 class CameraCaptureDialog(QDialog):
     """webcam live preview + 촬영 in-app 모달 — 촬영 결과 QImage."""
 
-    # 한글 주석 — 촬영 완료 시 QImage emit (picker 가 수신해 avatar 적용)
+    # 촬영 완료 시 QImage emit (picker 가 수신해 avatar 적용)
     image_captured = pyqtSignal(QImage)
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
@@ -62,7 +65,7 @@ class CameraCaptureDialog(QDialog):
         title.setStyleSheet("color: #f3f4f6; font-size: 16px; font-weight: 600;")
         body.addWidget(title)
 
-        # 한글 주석 — preview 영역(카메라 가용 시 QVideoWidget, 부재 시 error label)
+        # preview 영역(카메라 가용 시 QVideoWidget, 부재 시 error label)
         self._status = QLabel("")
         self._status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._status.setStyleSheet("color: #9ca3af; font-size: 13px;")
@@ -109,7 +112,7 @@ class CameraCaptureDialog(QDialog):
 
         device = QMediaDevices.defaultVideoInput()
         if device is None or device.isNull():
-            # 한글 주석 — 연결된 카메라 부재 → graceful(촬영 비활성)
+            # 연결된 카메라 부재 → graceful(촬영 비활성)
             self._show_unavailable("사용 가능한 카메라 부재")
             return
 
@@ -122,7 +125,7 @@ class CameraCaptureDialog(QDialog):
         self._session.setCamera(self._camera)
         self._session.setVideoOutput(video)
         self._session.setImageCapture(self._capture)
-        # 한글 주석 — 촬영 결과 + 오류 핸들러
+        # 촬영 결과 + 오류 핸들러
         self._capture.imageCaptured.connect(self._on_image_captured)
         self._camera.errorOccurred.connect(self._on_camera_error)
         self._camera.start()
@@ -162,7 +165,7 @@ class CameraCaptureDialog(QDialog):
                 self._camera.setActive(False)
             except Exception:  # noqa: BLE001 - 종료 경로 graceful
                 pass
-        # 한글 주석 — QObject 3종 명시 회수 + 참조 차단(dangling 방지)
+        # QObject 3종 명시 회수 + 참조 차단(dangling 방지)
         for attr in ("_capture", "_session", "_camera"):
             obj = getattr(self, attr, None)
             if obj is not None:
@@ -177,7 +180,7 @@ class CameraCaptureDialog(QDialog):
         """촬영 결과 QImage (미촬영 None)."""
         return self._captured
 
-    # 한글 주석 — 닫힘/취소 전 경로에서 카메라 release 보장
+    # 닫힘/취소 전 경로에서 카메라 release 보장
     def reject(self) -> None:  # type: ignore[override]
         self._release_camera()
         super().reject()
