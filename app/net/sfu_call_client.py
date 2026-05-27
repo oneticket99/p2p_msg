@@ -12,6 +12,15 @@ server-side 와 동일하게 publish·subscribe 모두 **client-offer / server-a
 위임하고, 수신 track 은 ``on_remote_track`` 콜백으로 통지한다 (UI 비의존,
 headless 테스트 가능). signaling 수신 dispatch (SFU_ANSWER/SFU_PRODUCERS) 는
 ``handle_sfu_answer`` / ``handle_producers`` 진입점으로 받는다.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `sfu_room.py` 대응부.
+SfuCallMixin(UI 배선)이 본 client 를 생성·signal 결선한다.
+
+의존성 — `aiortc`(RTCPeerConnection/MediaPlayer, 미설치 graceful None bind) +
+주입된 send 콜러블(signaling 송신) + `on_remote_track` 콜백. UI/Qt 직접 의존 부재.
+
+범위 한계 — publish/subscribe PeerConnection 수명 + track forward 수신만. 실
+미디어 캡처 장치 선택·타일 렌더는 UI 책임. STUN/TURN 은 env 주입.
 """
 
 from __future__ import annotations
@@ -29,7 +38,7 @@ try:
     )
     from aiortc.contrib.media import MediaPlayer
 except Exception:  # noqa: BLE001 — aiortc 미설치 환경 guard
-    # 한글 주석 — 미설치 시 사용 심볼 전체를 None 으로 bind (부분 bind 시 NameError 회피)
+    # 미설치 시 사용 심볼 전체를 None 으로 bind (부분 bind 시 NameError 회피)
     RTCConfiguration = None  # type: ignore
     RTCIceServer = None  # type: ignore
     RTCPeerConnection = None  # type: ignore
@@ -56,7 +65,7 @@ class SfuCallClient:
         on_producers: Optional[Callable[[list[str]], None]] = None,
         stun_url: str = "stun:stun.l.google.com:19302",
     ) -> None:
-        # 한글 주석 — room/self 식별자 + 와이어 송신 + 수신 콜백
+        # room/self 식별자 + 와이어 송신 + 수신 콜백
         self._room_id = room_id
         self._peer_id = peer_id
         self._send = send
@@ -107,7 +116,7 @@ class SfuCallClient:
 
         media = player if player is not None else self._build_media_player(video)
         if media is not None:
-            # 한글 주석 — audio/video 플래그가 켜진 track 만 선택 publish
+            # audio/video 플래그가 켜진 track 만 선택 publish
             if audio and getattr(media, "audio", None) is not None:
                 pc.addTrack(media.audio)
             if video and getattr(media, "video", None) is not None:
@@ -127,18 +136,18 @@ class SfuCallClient:
     async def subscribe(self, producer_id: str) -> None:
         """특정 producer 의 미디어를 downstream subscribe (recvonly offer 송신)."""
         if producer_id == self._peer_id or producer_id in self._subscribe_pcs:
-            # 본인 producer 또는 이미 구독 중이면 skip
+            # 자기 producer 또는 이미 구독 중이면 skip
             return
         if RTCPeerConnection is None:
             raise RuntimeError("aiortc 미설치 — SFU 통화 불가")
         pc = RTCPeerConnection(self._config())
-        # 한글 주석 — recvonly transceiver 로 forward track 수신 준비
+        # recvonly transceiver 로 forward track 수신 준비
         pc.addTransceiver("video", direction="recvonly")
         pc.addTransceiver("audio", direction="recvonly")
 
         @pc.on("track")
         def _on_track(track: Any, _pid: str = producer_id) -> None:
-            # 한글 주석 — forward 된 track 을 UI 계층으로 통지
+            # forward 된 track 을 UI 계층으로 통지
             if self._on_remote_track is not None:
                 self._on_remote_track(_pid, track)
 
@@ -156,7 +165,7 @@ class SfuCallClient:
                 }
             )
         except Exception:
-            # 한글 주석 — 송신 실패 시 등록 rollback + pc 정리 (좀비 연결 방지)
+            # 송신 실패 시 등록 rollback + pc 정리 (좀비 연결 방지)
             self._subscribe_pcs.pop(producer_id, None)
             await pc.close()
             raise
@@ -175,7 +184,7 @@ class SfuCallClient:
                 await pc.setRemoteDescription(answer)
 
     async def handle_producers(self, producers: list[str]) -> None:
-        """SFU_PRODUCERS 수신 — 본인 제외 신규 producer 자동 subscribe + 콜백."""
+        """SFU_PRODUCERS 수신 — 자신 제외 신규 producer 자동 subscribe + 콜백."""
         if self._on_producers is not None:
             self._on_producers(producers)
         for producer_id in producers:

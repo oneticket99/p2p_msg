@@ -1,7 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """AccountClient — 내 계정 + 내 프로필 endpoint REST binding (cycle 169.57 신설).
 
-server `/api/auth/profile` PUT (cycle 128 PASS) + email/avatar change endpoint chain.
+역할 — 내 프로필 수정(PUT)·이메일 변경·avatar 등 계정 관리 REST 를 QThread
+background worker 로 호출한다(UI 블로킹 회피, 1회 실행 후 signal emit).
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `auth_handlers.py` 의
+profile/email/account endpoint counterpart. auth_client(진입 인증)와 분리 — 본
+client 는 로그인 후 계정 관리.
+
+의존성 — PyQt6 `QThread`/`pyqtSignal` + 동기 `urllib`(worker 스레드 blocking) +
+`_ssl_util` TLS 정책(demo verify OFF). httpx 미사용(net QThread 컨벤션).
+
+범위 한계 — 계정 REST + signal emit 만. worker 객체 수명(deleteLater)은 호출자
+책임. 재시도 루프 부재. 세션 토큰 갱신/저장은 별개.
+
 QThread + sync urllib pattern (cycle 169.49 `HttpJsonWorker` 정합).
 """
 

@@ -1,6 +1,23 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """TooTalk 서버 auth REST API client — 회원가입 + OTP + 로그인 + 비번 재설정.
 
+역할 — 인증 진입 6 endpoint(register/verify/resend/login/reset request·consume)를
+async aiohttp 로 호출하고 `AuthResult` 단일 dataclass 로 변환한다.
+
+계층 위치 — app/net 클라이언트 계층(정본 §E). server `auth_handlers.py` 의
+진입 경로 counterpart. UI dialog 가 본 client 를 await(qasync loop).
+
+의존성 — `aiohttp`(async) + SSL context(demo self-signed verify OFF). `_post` 가
+매 호출 새 ClientSession 생성·close(cycle 169.34 — cross-loop reuse RuntimeError 차단).
+total 10s timeout(silent hang 차단).
+
+범위 한계 — 인증 REST 호출 + 결과 변환만. 세션 토큰 저장·재발급·프로필 CRUD 는
+별개 client(account_client). 재시도 루프 부재(1회 호출 + network err = AuthResult).
+
+엔드포인트 카탈로그(실 method 6 + helper):
+- `register`/`verify_otp`/`resend_otp`/`login`/`request_reset`/`consume_reset`.
+- `_post`(공통 POST+파싱) / `close`(ClientSession 정리).
+
 aiohttp + qasync 정합 — UI dialog 단 호출 시 GUI freeze 없음.
 """
 
@@ -63,7 +80,7 @@ class AuthClient:
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
         connector = aiohttp.TCPConnector(ssl=ssl_ctx)
-        # 한글 주석 — cycle 169.48 회수 — timeout 10초 (silent hang 차단)
+        # timeout 10초 — silent hang 차단(cycle 169.48 회수)
         timeout = aiohttp.ClientTimeout(total=10)
         try:
             async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
