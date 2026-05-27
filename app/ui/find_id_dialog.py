@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FindIdDialog — username + phone 입력 → masked email 반환 (cycle 169.410).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — LoginDialog 가 instantiate(아이디 찾기 진입).
+서버 POST /api/auth/find/email 호출 + masked email 표시(enumeration 방어는 server 책임).
+
 사용자 directive — 아이디 찾기 미구현 회수.
 endpoint: POST /api/auth/find/email
 보안 — username AND phone 둘 일치 시점만 server 반환 (enumeration 방어).
@@ -54,7 +57,7 @@ class FindIdDialog(QDialog):
         self.setModal(True)
         self.setFixedSize(420, 460)
 
-        # 한글 주석 — outer wrap frame (border + bg 통일)
+        # outer wrap frame (border + bg 통일)
         outer_wrap = QVBoxLayout(self)
         outer_wrap.setContentsMargins(0, 0, 0, 0)
         outer_wrap.setSpacing(0)
@@ -69,7 +72,7 @@ class FindIdDialog(QDialog):
         outer.setContentsMargins(28, 24, 28, 24)
         outer.setSpacing(12)
 
-        # 한글 주석 — header row (title + close)
+        # header row (title + close)
         header_row = QHBoxLayout()
         header_row.setContentsMargins(0, 0, 0, 0)
         title = QLabel(_tr("아이디_찾기"))
@@ -87,7 +90,7 @@ class FindIdDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — username input
+        # username input
         lbl_user = QLabel(_tr("사용자명"))
         lbl_user.setStyleSheet("color: #9ca3af; font-size: 12px;")
         outer.addWidget(lbl_user)
@@ -96,7 +99,7 @@ class FindIdDialog(QDialog):
         self._username_edit.setMinimumHeight(40)
         outer.addWidget(self._username_edit)
 
-        # 한글 주석 — phone input
+        # phone input
         lbl_phone = QLabel(_tr("전화번호"))
         lbl_phone.setStyleSheet("color: #9ca3af; font-size: 12px;")
         outer.addWidget(lbl_phone)
@@ -107,7 +110,7 @@ class FindIdDialog(QDialog):
 
         outer.addSpacing(8)
 
-        # 한글 주석 — result label (응답 영역, 초기 hide)
+        # result label (응답 영역, 초기 hide)
         self._result_label = QLabel("")
         self._result_label.setWordWrap(True)
         self._result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -120,7 +123,7 @@ class FindIdDialog(QDialog):
 
         outer.addStretch(1)
 
-        # 한글 주석 — 찾기 button (primary) + 닫기 (secondary)
+        # 찾기 button (primary) + 닫기 (secondary)
         btn_find = QPushButton(_tr("찾기"))
         btn_find.setProperty("variant", "primary")
         btn_find.setMinimumHeight(44)

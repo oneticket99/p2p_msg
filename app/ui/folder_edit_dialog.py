@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FolderEditDialog — 새 폴더 만들기 modal (cycle 169.75 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — FolderMixin 이 instantiate + folder_saved/
+chat_picker_requested signal 로 결과 회신. ChatPickerDialog 와 협력(포함/제외 대화 선택 위임).
+
 사용자 directive 회수 — telegram desktop image 82 align.
 폴더명 + 포함 대화방 + 제외 대화방 + 색상 7 swatch + 초대 링크 chain.
 """
@@ -28,7 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui._icons import load_icon
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
 from app.i18n import labels as _i18n_labels
 
 

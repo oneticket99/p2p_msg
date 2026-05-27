@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """FolderManageDialog — 폴더 management modal (cycle 169.74 신설).
 
+계층 위치 — app/ui dialog(정본 §E). QDialog 위젯 — FolderMixin/ChatNavigationMixin 이 instantiate +
+folder_create/edit/delete_requested signal 로 결과 회신. FolderEditDialog 진입 트리거(생성/편집 위임).
+
 사용자 directive 회수 — telegram desktop 안 편집 button click → 폴더 관리 dialog.
 folder list + 새 폴더 만들기 + 추천 폴더 + 폴더 태그 표시 + 탭 view 선택.
 """
