@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """RoomGroupChatMixin — 그룹 채팅 chain (cycle 169.521 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+그룹 info/clear/leave/멤버 보기 slot. room/group 송신은 통합 _on_send_clicked 단일 경로.
+
 codex 2.5 HIGH 진입 7차 — main_window.py 책임 분리.
 cavecrew-investigator verdict — 367 line, HIGH risk (tight coupling __init__ state).
 
@@ -35,7 +38,7 @@ log = logging.getLogger(__name__)
 class RoomGroupChatMixin:
     """그룹 채팅 chain mixin (cycle 169.521)."""
 
-    # 한글 주석: 메시지 body 의 client-side 상한 — server _MAX_BODY_LEN (65535) 와 정합
+    # 메시지 body 의 client-side 상한 — server _MAX_BODY_LEN (65535) 와 정합
     _MAX_MESSAGE_BODY_LEN: int = 65535
 
     def _on_group_info(self) -> None:
@@ -102,7 +105,7 @@ class RoomGroupChatMixin:
 
         self_peer = self._state.peer_id or self._config.user_nickname or "나"
         members = [MemberItem(user_id=0, username=self_peer, role="owner", is_online=True)]
-        # 한글 주석 — 동일 방 다른 peer (signaling known_peers) 를 멤버로 추가
+        # 동일 방 다른 peer (signaling known_peers) 를 멤버로 추가
         for idx, peer_id in enumerate(sorted(self._state.known_peers), start=1):
             members.append(
                 MemberItem(user_id=idx, username=peer_id, role="member", is_online=True)

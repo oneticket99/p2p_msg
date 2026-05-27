@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """MenuActionsMixin — 메뉴/페이지 진입 slot 5 method (cycle 169.528 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+메뉴 action → stacked page 토글 + dialog open 진입점(REST chain 은 별개 mixin).
+
 codex 2.5 13차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 139/144/169.106 origin):
@@ -37,8 +40,8 @@ class MenuActionsMixin:
     def _on_open_friend_list(self) -> None:
         """"친구 목록" 메뉴 슬롯 — FriendListWidget page 활성.
 
-        REST 호출 chain (GET /api/friends) 의 actual binding = 별개 cycle 의 의무.
-        본 슬롯 = stacked page 의 토글 + viewer_id 갱신 만.
+        REST 호출 chain (GET /api/friends) 의 actual binding 은 별개 cycle 책임.
+        본 슬롯 = stacked page 토글 + viewer_id 갱신만.
         """
 
         viewer_id = self._current_user_id or 0

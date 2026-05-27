@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """InviteMixin — InviteDialog host + invite_failed slot (cycle 169.529 신설).
 
+계층 위치 — app/ui MainWindow mixin(정본 §E). main_window 책임 분리 단위 — MRO 합성.
+InviteDialog 인스턴스화 + friends_client populate + invite_requested → RestPostMixin 결선.
+
 codex 2.5 14차 — main_window.py 책임 분리 batch.
 
 분리 대상 method (cycle 147 origin):
@@ -20,7 +23,7 @@ from typing import Optional
 
 from PyQt6.QtCore import pyqtSlot
 
-# 한글 주석 — cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
+# cycle 169.834 — user-facing 문구 i18n 바인딩 (5언어 labels)
 from app.i18n import labels as _i18n_labels
 
 log = logging.getLogger(__name__)
@@ -50,7 +53,7 @@ class InviteMixin:
         - 실 exec() 은 caller 책임 — test 의 modal 차단 회피.
         """
 
-        from app.ui.invite_dialog import InviteDialog  # 한글 주석: lazy import (graceful)
+        from app.ui.invite_dialog import InviteDialog  # lazy import (graceful)
 
         target_room_id = room_id if room_id is not None else self._current_room_id
         if target_room_id is None or target_room_id <= 0:
@@ -66,11 +69,11 @@ class InviteMixin:
             room_title=f"Room #{target_room_id}",
             parent=self,
         )
-        # 한글 주석: invite_requested → rooms_client.invite_user REST chain
+        # invite_requested → rooms_client.invite_user REST chain
         dialog.invite_requested.connect(self._on_invite_requested)
         dialog.invite_failed.connect(self._on_invite_failed)
 
-        # 한글 주석: friends_client 가용 시 async populate task 등록 (graceful skip)
+        # friends_client 가용 시 async populate task 등록 (graceful skip)
         if self._friends_client is not None:
             loop: Optional[asyncio.AbstractEventLoop] = None
             try:
