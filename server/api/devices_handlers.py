@@ -1,13 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """aiohttp REST endpoint — multi-device sync (Phase 2 사이클 43).
 
-엔드포인트:
-- POST /api/devices — device 등록 (Authorization Bearer 의무)
-- GET /api/devices — 현재 사용자 의 device list fetch
-- DELETE /api/devices/<device_id> — device revoke (soft-delete)
+역할 — E2EE multi-device 동기를 위해 디바이스 공개 키 번들(identity/signed
+prekey/one-time prekey)을 등록·조회·해지한다. 비밀키는 서버에 저장하지 않는다
+(공개 키만 — Signal Protocol 정합).
 
-사이클 42 의 `app/crypto/device_registry.py` skeleton 의 server-side
-counterpart. wire format = base64 + JSON (한글 UTF-8 보존 ensure_ascii=False).
+계층 위치 — server API handler 계층(정본 §E). auth_middleware Bearer 통과
+(`request["user_id"]`) 후 진입하며, 영속화는 `devices` repository 에 위임한다.
+사이클 42 `app/crypto/device_registry.py` skeleton 의 server-side counterpart.
+
+의존성 — aiohttp `web` + `request.app["db_pool"]` + `devices` repository
+(`insert_device`/`get_devices_by_user`/`revoke_device`) + `user_activity`
+(`log_activity`/`ActivityAction`) + `activity` 미들웨어(`extract_client_ip`).
+wire format = base64 + JSON(한글 UTF-8 보존 ensure_ascii=False).
+
+범위 한계 — 키 번들 CRUD + audit 만. 실 세션 키 교환(X3DH)·메시지 fan-out
+라우팅은 별도 경로. DELETE 는 soft-delete(status=revoked, hard-delete 별개 cycle).
+
+엔드포인트 카탈로그(실 함수 3 + helper 4 + register):
+- `handle_register_device`  POST   /api/devices              — 키 번들 등록.
+- `handle_list_devices`     GET    /api/devices              — active(+revoked opt) 목록.
+- `handle_revoke_device`    DELETE /api/devices/{device_id}  — soft revoke.
+- `_decode_pubkey`/`_encode_pubkey`/`_device_row_to_wire`/`_audit_device`/`_read_json`.
+- `register_devices_routes` — server.main 등록 entry.
 
 설계 결정
 ---------
@@ -123,8 +138,13 @@ async def _read_json(request: web.Request) -> dict:
 async def handle_register_device(request: web.Request) -> web.Response:
     """POST /api/devices — device 등록.
 
-    body = ``{device_id, label?, bundle: {identity_public, signed_prekey_public, one_time_prekey_public?}}``.
-    user_id = middleware 주입 (Bearer 토큰 기반).
+    인증 — Bearer 의무(middleware 주입 user_id). 자신의 device 만 등록.
+    검증 순서 — (1) JSON → (2) device_id 비어있지 않음·≤64 → (3) label ≤128 →
+    (4) bundle=dict → (5) identity/signed prekey base64 32 byte 디코딩(opk 선택).
+    Parameters — body ``{device_id, label?, bundle:{identity_public,
+        signed_prekey_public, one_time_prekey_public?}}``(공개 키 base64).
+    Returns — 201 + ``{ok, id, device_id}``. device_id 중복 시 409.
+    부작용 — `insert_device`(devices INSERT, 공개 키만) + DEVICE_REGISTER audit.
     """
 
     user_id = request["user_id"]
@@ -218,7 +238,14 @@ async def handle_list_devices(request: web.Request) -> web.Response:
 
 
 async def handle_revoke_device(request: web.Request) -> web.Response:
-    """DELETE /api/devices/<device_id> — device revoke (soft-delete)."""
+    """DELETE /api/devices/<device_id> — device revoke (soft-delete).
+
+    인증 — Bearer 의무. 자신 소유 device 만(repository 가 user_id 조건 SQL).
+    Parameters — match_info ``device_id``.
+    Returns — 200 + ``{ok, device_id}``. 미존재/이미 해지 시 404.
+    부작용 — `revoke_device`(status=revoked UPDATE, soft) + DEVICE_REVOKE audit.
+        fan-out 격리 — 해지 device 는 이후 메시지 동기 대상에서 제외.
+    """
 
     user_id = request["user_id"]
     device_id = request.match_info.get("device_id", "").strip()

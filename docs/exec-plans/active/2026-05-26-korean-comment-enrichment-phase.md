@@ -184,7 +184,7 @@ gantt
 | T-1 | M1 | 주석 표준 §4 D-1~D-6 확정 + 카탈로그 컨벤션 + reviewer 승인 | main session | — | 표준 6 항목 + 본보기 정합 | 본 Exec Plan §4 | ✅ |
 | T-2 | M1 | server repository 1 파일(`friends.py`) 에 표준 full 적용 본보기 | main session | T-1 | diff 주석만 + pytest 무변경 + reviewer 정합 | `server/db/repositories/friends.py` | ✅ (reviewer PASS, HIGH 회수) |
 | T-3 | M2 | `server/db/repositories/*.py` 잔여 함수 docstring + SQL 제약 inline | main session | T-2 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `server/db/repositories/*.py` | ✅ (21/21 전수 — verify_comment_only PASS + server 642 무변경) |
-| T-4 | M3 | `server/api/*_handlers.py` endpoint docstring(인증/검증 순서/오류 코드/부작용) | main session | T-3 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `server/api/*_handlers.py` (실 19) | 🔄 9/19 (b1 health·push·read, b2 remote·reactions·contacts, b3 folder·version·avatars) |
+| T-4 | M3 | `server/api/*_handlers.py` endpoint docstring(인증/검증 순서/오류 코드/부작용) | main session | T-3 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `server/api/*_handlers.py` (실 19) | 🔄 11/19 (b1~b3 9 + b4 bot_directory·devices) |
 | T-5 | M4 | `app/net/*_client.py` REST 계약·재시도/타임아웃·SSL 우회 의도 주석 | main session | T-4 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `app/net/*_client.py` (16) | todo |
 | T-6 | M5 | `app/rtc/*.py` 상태 머신 전이·DataChannel 계약·메모리 release 의도 주석 | main session | T-5 | 영역 diff 비주석 0 + pytest 전량 무변경 PASS | `app/rtc/*.py` (6) | todo |
 | T-7 | M6 | `app/ui/_*_mixin.py` filler `한글 주석` 패턴 → 의도 기반 전환 + signal/slot 계약 | main session | T-6 | offscreen pytest 무변경 + filler 카운트 감소 + diff 주석만 | `app/ui/_*_mixin.py` (22) | todo |
