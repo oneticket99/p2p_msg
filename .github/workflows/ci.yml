@@ -304,6 +304,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r app/requirements-dev.txt
           python -m pip install -r server/requirements-dev.txt
+          # 한글 주석: cycle 169.861 webmail aiohttp_session + cryptography (server_webmail/requirements.txt)
+          python -m pip install -r server_webmail/requirements.txt
 
       - name: playwright chromium 설치 (e2e 브라우저 의존성 — 러너 self-provision)
         # cycle 169.838 — self-hosted 러너 chromium 미설치 → e2e step "Executable doesn't exist"
