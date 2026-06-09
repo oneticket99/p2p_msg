@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# webmail backend dependencies — cycle 169.859 M3 skeleton
+# aiohttp = HTTP server (server/ 와 동일 stack 정합)
+# M4 후속 cycle 추가 예정: aiohttp-session, Jinja2, aiohttp-jinja2
+aiohttp>=3.9
