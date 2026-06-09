@@ -168,6 +168,29 @@ services:
     networks:
       - tootalk-edge
 
+  # ─── webmail (aiohttp 웹메일 backend, cycle 169.859 M3 skeleton) ─────────
+  # 한글 주석: webmail.dopa.co.kr 서브도메인 backend. M3 = /healthz + 로그인 placeholder.
+  # M4 후속 cycle = IMAP imaplib LOGIN + 세션. M5 = SMTP 발신.
+  webmail:
+    build:
+      context: ../server_webmail
+      dockerfile: Dockerfile
+    image: tootalk-webmail:latest
+    container_name: tootalk-webmail
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Seoul
+      WEBMAIL_PORT: "8090"
+    expose:
+      - "8090"
+    networks:
+      - tootalk-edge
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8090/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   # ─── nginx (TLS + reverse proxy + rate limit, Item 3 본문) ────────────────
   nginx:
     image: nginx:1.27-alpine
@@ -177,6 +200,8 @@ services:
       web:
         condition: service_started
       ws:
+        condition: service_started
+      webmail:
         condition: service_started
     environment:
       TZ: Asia/Seoul
