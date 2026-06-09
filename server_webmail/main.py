@@ -76,7 +76,7 @@ LOGIN_HTML = """<!DOCTYPE html>
       autocomplete="current-password" required>
     <button type="submit">로그인</button>
     <p class="notice">
-      cycle 169.859 skeleton — IMAP 결선은 M4 후속 cycle 169.860+
+      cycle 169.859 skeleton — IMAP 결선은 M4 후속 cycle 169.861+
     </p>
   </form>
 </body>
@@ -117,7 +117,7 @@ async def handle_login_post(request: web.Request) -> web.Response:
     await request.post()
     return web.Response(
         status=503,
-        text="IMAP 결선 부재 — M4 후속 cycle 169.860 에서 활성 예정",
+        text="IMAP 결선 부재 — M4 후속 cycle 169.861 에서 활성 예정",
         content_type="text/plain",
         charset="utf-8",
     )

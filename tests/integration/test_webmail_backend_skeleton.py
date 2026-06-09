@@ -110,4 +110,7 @@ async def test_login_post_returns_503_placeholder(client: TestClient) -> None:
     )
     assert resp.status == 503
     body = await resp.text()
+    # 한글 주석: M4 안내 or "결선" 키워드 정합 (cycle 번호 변동 무관)
     assert "M4" in body or "결선" in body
+    # 한글 주석: cycle 번호 자체 정합 (169.861 = M4 후속 cycle, cycle 169.860 staleness sweep 이후)
+    assert "169.861" in body
