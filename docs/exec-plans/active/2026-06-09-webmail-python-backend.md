@@ -110,11 +110,14 @@ related_code: ["deploy/nginx/conf.d/webmail.conf", "deploy/docker-compose.yml", 
 - cert path = `/etc/letsencrypt/live/webmail.dopa.co.kr/fullchain.pem`
 - key path = `/etc/letsencrypt/live/webmail.dopa.co.kr/privkey.pem`
 - 발급 명령 (G-final 사용자 SSH 수동):
+
   ```bash
   certbot certonly --standalone --non-interactive --agree-tos \
     --email postmaster@dopa.co.kr -d webmail.dopa.co.kr
   ```
+
 - 또는 webroot 방식 (기존 nginx 무중단):
+
   ```bash
   certbot certonly --webroot -w /var/www/certbot \
     --email postmaster@dopa.co.kr -d webmail.dopa.co.kr
