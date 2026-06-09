@@ -186,7 +186,8 @@ services:
     networks:
       - tootalk-edge
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:8090/healthz || exit 1"]
+      # 한글 주석: python:3.13-slim base 안 wget 부재 → stdlib urllib 사용 (reviewer BLOCKER 회수)
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/healthz')"]
       interval: 30s
       timeout: 5s
       retries: 3
