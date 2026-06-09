@@ -292,3 +292,65 @@ def test_imap_service_connect_raises_on_ssl_error() -> None:
         mock_ssl.side_effect = OSError("test connection refused")
         with pytest.raises(imap_service.IMAPError, match="IMAP 연결 실패"):
             imap_service.connect_and_login("nonexistent.test", 993, "u", "p")
+
+
+# ----------------------------------------------------------------------
+# Test 12: MIME encoded-word header 디코드 (cycle 169.862 회수)
+# ----------------------------------------------------------------------
+
+
+def test_decode_header_utf8_encoded_word() -> None:
+    """`=?UTF-8?B?...?=` MIME encoded-word → 사람 가독 문자열."""
+
+    # 한글 주석: 동적 인코드 (base64 hardcode 회피 — 한글 character 정합 검증)
+    import base64
+    payload = base64.b64encode("황원표".encode("utf-8")).decode("ascii")
+    raw = f"=?UTF-8?B?{payload}?= <user@example.com>"
+    decoded = imap_service._decode_header_value(raw)
+    assert "황원표" in decoded
+    assert "<user@example.com>" in decoded
+
+
+# ----------------------------------------------------------------------
+# Test 13: HTML body → plaintext (cycle 169.862 회수)
+# ----------------------------------------------------------------------
+
+
+def test_html_to_plaintext_strips_tags_and_unescapes() -> None:
+    """HTML body → entity unescape + tag strip 정합 (XSS 우려, M6 안 bleach)."""
+
+    html_src = (
+        "<p>안녕하세요&nbsp;홍원표&nbsp;이사입니다.</p>"
+        "<div>&copy; 2026</div>"
+        "<script>alert('xss')</script>"
+    )
+    text = imap_service._html_to_plaintext(html_src)
+    assert "안녕하세요" in text
+    assert "홍원표" in text
+    # 한글 주석: &copy; → © (html.parser convert_charrefs=True)
+    assert "©" in text
+    # 한글 주석: script tag 안 본문 제외 정합 (XSS 차단)
+    assert "alert" not in text
+
+
+# ----------------------------------------------------------------------
+# Test 14: _parse_header_fields 정합 (FROM/SUBJECT/DATE)
+# ----------------------------------------------------------------------
+
+
+def test_parse_header_fields_extracts_from_subject_date() -> None:
+    """_parse_header_fields 안 BODY[HEADER.FIELDS] payload → MailSummary 정합."""
+
+    header_bytes = (
+        b"From: hongwon <user@example.com>\r\n"
+        b"Subject: test\r\n"
+        b"Date: Tue, 09 Jun 2026 16:38:51 +0900\r\n"
+        b"\r\n"
+    )
+    fetch_data = [(b"123 (BODY[HEADER.FIELDS (FROM SUBJECT DATE)] {N}", header_bytes), b")"]
+    summary = imap_service._parse_header_fields(123, fetch_data)
+    assert summary is not None
+    assert summary.uid == 123
+    assert summary.subject == "test"
+    assert "Tue, 09 Jun 2026" in summary.date
+    assert "user@example.com" in summary.from_addr

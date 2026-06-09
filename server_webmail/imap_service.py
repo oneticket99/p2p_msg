@@ -10,8 +10,11 @@ Exec Plan: docs/exec-plans/active/2026-06-09-webmail-python-backend.md M4
 from __future__ import annotations
 
 import email
+import email.header
 import email.policy
 import email.utils
+import html
+import html.parser
 import imaplib
 import ssl
 from dataclasses import dataclass
@@ -84,9 +87,10 @@ def connect_and_login(
 def list_inbox(
     host: str, port: int, user: str, password: str, limit: int = 50
 ) -> list[MailSummary]:
-    """INBOX 최신 메일 paginate (UID 역순) — ENVELOPE fetch.
+    """INBOX 최신 메일 paginate (UID 역순) — BODY[HEADER.FIELDS] fetch.
 
-    한글 주석: 본문 fetch 회피 (BODY[] 비호출) — list view 의 의무 lite payload.
+    한글 주석: cycle 169.862 회수 — ENVELOPE byte tuple 휴리스틱 → BODY[HEADER.FIELDS] +
+    email.message_from_bytes 정확 parse. From/Subject = MIME encoded-word 디코드 정합.
     """
 
     m = connect_and_login(host, port, user, password)
@@ -103,12 +107,15 @@ def list_inbox(
         out: list[MailSummary] = []
         for raw_uid in target_uids:
             uid = int(raw_uid.decode("ascii"))
+            # 한글 주석: BODY.PEEK = \Seen flag 무변경 (readonly 정합)
             typ, fetch_data = m.uid(
-                "FETCH", raw_uid, "(ENVELOPE)"
+                "FETCH",
+                raw_uid,
+                "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])",
             )
             if typ != "OK" or not fetch_data:
                 continue
-            summary = _parse_envelope(uid, fetch_data)
+            summary = _parse_header_fields(uid, fetch_data)
             if summary is not None:
                 out.append(summary)
         return out
@@ -161,77 +168,153 @@ def _extract_rfc822(fetch_data: list) -> Optional[bytes]:
     return None
 
 
-def _parse_envelope(uid: int, fetch_data: list) -> Optional[MailSummary]:
-    """imaplib ENVELOPE 응답 → MailSummary.
+def _parse_header_fields(uid: int, fetch_data: list) -> Optional[MailSummary]:
+    """imaplib BODY[HEADER.FIELDS] 응답 → MailSummary.
 
-    한글 주석: ENVELOPE 형식 = (date subject (from) ... (to) ...) tuple. imaplib 가 bytes 반환.
-    parse 간소화 = imaplib 의 raw bytes 안 grep 대신 RFC822 header re-fetch 회피하기 위해
-    email.message_from_bytes 안 envelope sub-text 직접 parse.
+    한글 주석: BODY[HEADER.FIELDS (FROM SUBJECT DATE)] = RFC822 header text 만 반환.
+    email.message_from_bytes 정확 parse + MIME encoded-word (=?UTF-8?B?...?=) 디코드.
     """
 
-    # 한글 주석: 안전 fallback = ENVELOPE parse 실패 시 빈 필드 채움
-    raw = b""
-    for item in fetch_data:
-        if isinstance(item, (bytes, bytearray)):
-            raw += bytes(item)
-        elif isinstance(item, tuple):
-            for sub in item:
-                if isinstance(sub, (bytes, bytearray)):
-                    raw += bytes(sub)
-    text = raw.decode("utf-8", errors="replace")
+    raw_header = _extract_rfc822(fetch_data)
+    if raw_header is None:
+        # 한글 주석: 응답 안 bytes payload 부재 → 빈 필드 fallback
+        return MailSummary(uid=uid, from_addr="", subject="", date="")
+    try:
+        msg = email.message_from_bytes(raw_header, policy=email.policy.default)
+    except Exception:
+        return MailSummary(uid=uid, from_addr="", subject="", date="")
     return MailSummary(
         uid=uid,
-        from_addr=_extract_field(text, "From"),
-        subject=_extract_field(text, "Subject"),
-        date=_extract_field(text, "Date"),
+        from_addr=_decode_header_value(msg.get("From", "")),
+        subject=_decode_header_value(msg.get("Subject", "")),
+        date=_decode_header_value(msg.get("Date", "")),
     )
 
 
-def _extract_field(text: str, marker: str) -> str:
-    """ENVELOPE bytes 안 quoted-string lookup — 1차 휴리스틱.
+def _decode_header_value(raw: object) -> str:
+    """MIME encoded-word 헤더 → 사람 가독 문자열.
 
-    한글 주석: imaplib ENVELOPE 정확 parse = 별도 library 필요 (M5 후속 cycle 안 aioimaplib).
-    본 cycle = lite parse — ENVELOPE 안 quoted 1차 후보 반환. 빈 문자열 fallback OK.
+    한글 주석: email.header.decode_header = `[(bytes/str, encoding), ...]` 반환.
+    UTF-8 / EUC-KR / Latin-1 디코드 + concat 정합.
     """
 
-    # 한글 주석: marker 명시 lookup 부재 정합 — raw ENVELOPE 안 quoted text 1차 후보.
-    # 본 함수 = 단순 fallback (ENVELOPE byte tuple 정확 parse 는 M5 후속 cycle).
-    _ = text, marker
-    return ""
+    if raw is None:
+        return ""
+    if not isinstance(raw, str):
+        raw = str(raw)
+    try:
+        parts = email.header.decode_header(raw)
+    except Exception:
+        return raw
+    out: list[str] = []
+    for piece, charset in parts:
+        if isinstance(piece, bytes):
+            try:
+                out.append(piece.decode(charset or "utf-8", errors="replace"))
+            except (LookupError, TypeError):
+                out.append(piece.decode("utf-8", errors="replace"))
+        else:
+            out.append(piece)
+    return "".join(out).strip()
+
+
+class _HTMLToText(html.parser.HTMLParser):
+    """HTML body → plaintext (XSS sanitize + tag strip).
+
+    한글 주석: M5 후속 cycle 안 bleach 도입 시 HTML 그대로 렌더 — 본 cycle = plain 강제.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._parts: list[str] = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, Optional[str]]]) -> None:
+        if tag in ("script", "style"):
+            self._skip_depth += 1
+        elif tag == "br":
+            self._parts.append("\n")
+        elif tag in ("p", "div", "tr", "li"):
+            self._parts.append("\n")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in ("script", "style") and self._skip_depth > 0:
+            self._skip_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth == 0:
+            self._parts.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._parts)
+
+
+def _html_to_plaintext(html_str: str) -> str:
+    """HTML 문자열 → 사람 가독 plaintext (entity unescape + tag strip)."""
+
+    parser = _HTMLToText()
+    try:
+        parser.feed(html_str)
+        parser.close()
+    except Exception:
+        # 한글 주석: parser 실패 → 단순 entity unescape fallback
+        return html.unescape(html_str)
+    return parser.get_text()
 
 
 def _parse_message(msg: email.message.EmailMessage) -> MailBody:
-    """email.message_from_bytes 결과 → MailBody (plaintext 본문 + header)."""
+    """email.message_from_bytes 결과 → MailBody (plaintext 본문 + header).
 
-    body_text = ""
+    한글 주석: cycle 169.862 회수 — text/plain 우선 + 부재 시 text/html → strip tags + unescape.
+    HTML 본문 → entity (&nbsp; 등) 사람 가독 plaintext 변환 (XSS 우려, M6 안 bleach 도입).
+    """
+
+    plain_body = ""
+    html_body = ""
     if msg.is_multipart():
-        # 한글 주석: 첫 text/plain part 만 추출 (HTML 무시 — XSS 우려, M5 안 sanitize 추가)
         for part in msg.walk():
-            if part.get_content_type() == "text/plain":
-                try:
-                    body_text = part.get_content()
-                    break
-                except Exception:
-                    payload = part.get_payload(decode=True)
-                    if isinstance(payload, (bytes, bytearray)):
-                        body_text = payload.decode(
-                            part.get_content_charset() or "utf-8",
-                            errors="replace",
-                        )
-                        break
+            ctype = part.get_content_type()
+            if ctype == "text/plain" and not plain_body:
+                plain_body = _decode_part_body(part)
+            elif ctype == "text/html" and not html_body:
+                html_body = _decode_part_body(part)
+            if plain_body and html_body:
+                break
     else:
-        try:
-            body_text = msg.get_content()
-        except Exception:
-            payload = msg.get_payload(decode=True)
-            if isinstance(payload, (bytes, bytearray)):
-                body_text = payload.decode(
-                    msg.get_content_charset() or "utf-8", errors="replace"
-                )
+        ctype = msg.get_content_type()
+        single = _decode_part_body(msg)
+        if ctype == "text/html":
+            html_body = single
+        else:
+            plain_body = single
+    # 한글 주석: plain 우선 + html.unescape (plain 안 &nbsp; 등 entity 정리)
+    if plain_body:
+        body_text = html.unescape(plain_body)
+    elif html_body:
+        body_text = _html_to_plaintext(html_body)
+    else:
+        body_text = ""
     return MailBody(
-        from_addr=str(msg.get("From", "")),
-        to_addr=str(msg.get("To", "")),
-        subject=str(msg.get("Subject", "")),
-        date=str(msg.get("Date", "")),
-        body_text=body_text or "",
+        from_addr=_decode_header_value(msg.get("From", "")),
+        to_addr=_decode_header_value(msg.get("To", "")),
+        subject=_decode_header_value(msg.get("Subject", "")),
+        date=_decode_header_value(msg.get("Date", "")),
+        body_text=body_text,
     )
+
+
+def _decode_part_body(part: email.message.EmailMessage) -> str:
+    """단일 MIME part body → str (charset 추론 + errors=replace 정합)."""
+
+    try:
+        content = part.get_content()
+        if isinstance(content, str):
+            return content
+    except Exception:
+        pass
+    payload = part.get_payload(decode=True)
+    if isinstance(payload, (bytes, bytearray)):
+        return payload.decode(
+            part.get_content_charset() or "utf-8", errors="replace"
+        )
+    return ""
