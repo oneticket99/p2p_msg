@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# webmail backend dependencies — cycle 169.859 M3 skeleton
+# webmail backend dependencies — cycle 169.861 M4 IMAP 결선
 # aiohttp = HTTP server (server/ 와 동일 stack 정합)
-# M4 후속 cycle 추가 예정: aiohttp-session, Jinja2, aiohttp-jinja2
+# aiohttp-session = secure encrypted cookie 세션 (EncryptedCookieStorage)
+# cryptography = Fernet key (aiohttp-session 의무 dependency)
+# M5 후속 cycle 추가 예정: Jinja2 (현 cycle = inline HTML render), bleach (HTML body sanitize)
 aiohttp>=3.9
+aiohttp-session>=2.12
+cryptography>=42

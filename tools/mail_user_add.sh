@@ -58,8 +58,9 @@ PASSWORD=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-24)
 PWHASH=$(doveadm pw -s SHA512-CRYPT -p "${PASSWORD}")
 
 # ─── 5 passwd-file 추가 ────────────────────────────────────
-# 한글 주석: 형식 = user:hash:uid:gid:gecos:home:shell:extra (Dovecot passwd-file 표준)
-echo "${USER_NAME}:${PWHASH}:${VMAIL_UID}:${VMAIL_GID}::${VMAIL_DOMAIN_DIR}/${USER_NAME}::" \
+# 한글 주석: 형식 = user@domain:hash:uid:gid:gecos:home:shell:extra (Dovecot passwd-file 표준)
+# cycle 169.860 회수 — username_format=%u (full email) 정합. bare name 사용 시 userdb lookup FAIL
+echo "${USER_EMAIL}:${PWHASH}:${VMAIL_UID}:${VMAIL_GID}::${VMAIL_DOMAIN_DIR}/${USER_NAME}::" \
   >> "${DOVECOT_USERS}"
 
 # ─── 6 maildir 생성 ────────────────────────────────────────
@@ -68,6 +69,13 @@ USER_MAILDIR="${VMAIL_DOMAIN_DIR}/${USER_NAME}/Maildir"
 mkdir -p "${USER_MAILDIR}"/{cur,new,tmp}
 chown -R "${VMAIL_USER}:${VMAIL_USER}" "${VMAIL_DOMAIN_DIR}/${USER_NAME}"
 chmod -R 700 "${VMAIL_DOMAIN_DIR}/${USER_NAME}"
+
+# ─── 6.1 SELinux fcontext (Rocky 9 enforcing 정합) ────────
+# 한글 주석: cycle 169.860 회수 — 신규 maildir 디렉토리 fcontext mail_spool_t 적용 의무
+# dovecot_install.sh 가 /var/vmail 전체 fcontext 등록 후 신규 디렉토리도 restorecon 필요
+if command -v restorecon &>/dev/null; then
+  restorecon -R "${VMAIL_DOMAIN_DIR}/${USER_NAME}" 2>/dev/null || true
+fi
 
 # ─── 7 sasldb2 SMTP 자격 ───────────────────────────────────
 # 한글 주석: 발신 (Postfix submission 587) 자격 동시 등록 — IMAP/SMTP 동일 자격 정합
