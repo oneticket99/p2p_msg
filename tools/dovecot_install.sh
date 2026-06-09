@@ -82,6 +82,18 @@ chown -R "${VMAIL_USER}:${VMAIL_USER}" "${VMAIL_HOME}"
 chmod 750 "${VMAIL_HOME}"
 chmod 750 "${VMAIL_DOMAIN_DIR}"
 
+# ─── 3.1 SELinux fcontext (Rocky 9 enforcing 정합) ─────────
+# 한글 주석: cycle 169.860 회수 — /var/vmail SELinux fcontext mail_spool_t 등록 의무
+# 기본 var_t fcontext 시 Dovecot 가 maildir 접근 시 SERVERBUG "ACL/MAC wrong" 차단
+step "3.1 SELinux fcontext mail_spool_t 등록 (semanage + restorecon)"
+if command -v semanage &>/dev/null; then
+  semanage fcontext -a -t mail_spool_t "${VMAIL_HOME}(/.*)?" 2>&1 | tail -3 || \
+    semanage fcontext -m -t mail_spool_t "${VMAIL_HOME}(/.*)?" 2>&1 | tail -3 || true
+  restorecon -Rv "${VMAIL_HOME}" 2>&1 | tail -5
+else
+  echo "  ⚠️ semanage 부재 — policycoreutils-python-utils 설치 권장 (Rocky 9 기본 부재 가능)"
+fi
+
 # ─── 4 Dovecot conf 6 파일 ──────────────────────────────────
 step "4 Dovecot conf 파일 생성 (6 conf — protocols/mail/auth/ssl/master + passwd-file backend)"
 
