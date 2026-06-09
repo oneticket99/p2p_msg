@@ -71,7 +71,8 @@ chmod -R 700 "${VMAIL_DOMAIN_DIR}/${USER_NAME}"
 
 # ─── 7 sasldb2 SMTP 자격 ───────────────────────────────────
 # 한글 주석: 발신 (Postfix submission 587) 자격 동시 등록 — IMAP/SMTP 동일 자격 정합
-echo "${PASSWORD}" | saslpasswd2 -c -u "${DOMAIN}" -p "${USER_NAME}"
+# printf builtin = bash 내장 명령, process listing 노출 차단 (echo 도 builtin 이나 명시적 printf '%s' 패턴 권장)
+printf '%s' "${PASSWORD}" | saslpasswd2 -c -u "${DOMAIN}" -p "${USER_NAME}"
 chown postfix /etc/sasldb2 || true
 chmod 640 /etc/sasldb2 || true
 

@@ -5,11 +5,13 @@
 
 - IMAP CAPABILITY 응답 형식 검증 (실 서버 unreachable 시 graceful skip)
 - SMTP submission 587 auth 강제 검증 (RCPT 거부 확인)
-- LMTP unix socket 경로 검증 (본 머신 부재 — 로직 명시 + skip)
+- LMTP unix socket 경로 정합 grep (dovecot_install.sh 안 일관성)
 - `tools/dovecot_install.sh` syntax check (bash -n, 실 서버 부재 PASS)
 - `tools/mail_user_add.sh` syntax check (bash -n)
 - `tools/mail_user_add.sh` 인자 부재 호출 → exit 1 + usage stdout 검증
+- `tools/mail_user_add.sh` 사용자명 형식 위반 (공백) → exit 1 + ERROR stdout
 
+총 7 test (6 PASS + 1 SKIP — IMAP 993 live unreachable 시 Test 1 skip).
 실 서버 검증 = 사용자 SSH 수동 (Exec Plan §6 G-final).
 본 test = headless 자동 검증 — protocol smoke + 스크립트 syntax + usage.
 """

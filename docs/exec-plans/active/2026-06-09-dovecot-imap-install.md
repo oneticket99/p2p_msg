@@ -237,16 +237,19 @@ bash /root/mail_user_add.sh <user>
 - §9 systemctl reload dovecot postfix
 - §10 stdout 안내 — USER + PASS + IMAP 993 + SMTP 587 5줄
 
-### 4.4 M4 — `tests/integration/test_dovecot_imap_e2e.py` 신설 (90~120 line 예상)
+### 4.4 M4 — `tests/integration/test_dovecot_imap_e2e.py` 신설 (230 line 실측)
 
-산출물: protocol smoke + 실 서버 graceful skip
+산출물: protocol smoke + 실 서버 graceful skip (총 7 test)
 
-- **Test 1**: `test_imap_capability_greeting` — `imaplib.IMAP4_SSL("mail.dopa.co.kr", 993)` 연결 + CAPABILITY 응답 형식 검증 (`SASL-IR LITERAL+ STARTTLS ...`). 연결 실패 시 pytest.skip("Dovecot 미설치 또는 서버 unreachable").
-- **Test 2**: `test_smtp_submission_auth_required` — `smtplib.SMTP("mail.dopa.co.kr", 587)` STARTTLS + login 부재 시 RCPT TO 거부 (`530`, sasl 강제 검증).
-- **Test 3**: `test_lmtp_socket_exists` — 본 머신 부재 (원격 서버) → skip + 검증 로직만 명시 (`os.path.exists("/var/spool/postfix/private/dovecot-lmtp")`).
+- **Test 1**: `test_imap_capability_greeting` — `imaplib.IMAP4_SSL("mail.dopa.co.kr", 993)` 연결 + CAPABILITY 응답 형식 검증 (`IMAP4rev1` 토큰 정합). 연결 실패 시 pytest.skip("Dovecot 미설치 또는 서버 unreachable").
+- **Test 2**: `test_smtp_submission_auth_required` — `smtplib.SMTP("mail.dopa.co.kr", 587)` STARTTLS + login 부재 시 RCPT TO 거부 (`530` 또는 `554`, sasl 강제 검증).
+- **Test 3**: `test_lmtp_socket_path_documented` — `dovecot_install.sh` 안 `private/dovecot-lmtp` socket 경로 일관성 grep (Postfix virtual_transport + Dovecot 10-master.conf 동일 경로).
 - **Test 4**: `test_dovecot_install_script_syntax` — `bash -n tools/dovecot_install.sh` syntax check (실 서버 부재 PASS).
 - **Test 5**: `test_mail_user_add_script_syntax` — `bash -n tools/mail_user_add.sh` syntax check.
-- **Test 6**: `test_mail_user_add_usage_no_args` — `bash tools/mail_user_add.sh` 인자 부재 호출 → exit 1 + usage stdout 검증.
+- **Test 6**: `test_mail_user_add_usage_no_args` — `bash tools/mail_user_add.sh` 인자 부재 호출 → exit 1 + Usage stdout 검증.
+- **Test 7**: `test_mail_user_add_invalid_username_rejected` — 공백 포함 사용자명 호출 → exit 1 + 형식 오류 stdout 검증 (shell injection 방어 검증).
+
+실측 결과 = 6 PASS + 1 SKIP (Test 1 IMAP 993 unreachable expected — Dovecot 미설치 상태). 실 서버 활성 후 7 PASS 전환.
 
 ### 4.5 M5 — README + History + .env.example 갱신 + commit + PR
 

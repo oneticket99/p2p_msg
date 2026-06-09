@@ -78,7 +78,9 @@ step "3 maildir root 생성 (${VMAIL_DOMAIN_DIR})"
 # 도메인 디렉토리 신설 + vmail 권한 — 750 (group dovecot 도 읽기 권한 가능)
 mkdir -p "${VMAIL_DOMAIN_DIR}"
 chown -R "${VMAIL_USER}:${VMAIL_USER}" "${VMAIL_HOME}"
+# 한글 주석: parent + 도메인 root 양쪽 명시 750 (umask 기본값 fallthrough 차단)
 chmod 750 "${VMAIL_HOME}"
+chmod 750 "${VMAIL_DOMAIN_DIR}"
 
 # ─── 4 Dovecot conf 6 파일 ──────────────────────────────────
 step "4 Dovecot conf 파일 생성 (6 conf — protocols/mail/auth/ssl/master + passwd-file backend)"
