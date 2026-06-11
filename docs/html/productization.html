@@ -30,7 +30,7 @@
      SFU module-level hard import(requirements 누락) crash loop 를 try/except graceful optional(AIORTC_AVAILABLE)로 전환.
      502 회수는 기존 기능 복구이므로 신규 VERIFIED capability 부재 — 종합 7.6/10 유지.
      SFU 는 IMPLEMENTED 단계 — 실 OS 미디어 캡처 + 다중 화면 visual ack 전까지 VERIFIED 아님.
-     last_verified = 2026-06-09T16:56:00+09:00 (사이클 169.862 — webmail M4 IMAP 결선 종단 작동 + 헤더/본문 parse 회수 + 자체 loopback PASS, cycle 169.857 Dovecot+IMAP + 169.858 nginx vhost + 169.859 backend skeleton + 169.860 staleness sweep + 169.861 IMAP 결선(imap_service.py 신설 + Dovecot install + SELinux fcontext mail_spool_t + passwd-file %u 정합 + test@dopa.co.kr 자체 loopback) + 169.862(BODY[HEADER.FIELDS] + MIME encoded-word 디코드 + HTML entity unescape + script 차단) + handoff doc 268 line, 6 PR #28~#33 squash merge 누계 + 실 서버 webmail.dopa.co.kr 로그인 + INBOX 정상 표시 — 종합 7.6/10 유지) -->
+     last_verified = 2026-06-11T15:50:00+09:00 (사이클 169.864 — staleness hook 회수 sweep. 169.863 sweep 머지(#34) 이후 신규 feat/코드 변경 부재 — marker bump + token-usage-30d 재산출(sessions=9 · msgs=28066 · cost $29,544) 단독. churu_studio 분리 directive 는 본 저장소 무관 repo 확인 후 사용자 취소(조사 단계 정지 + 원격 무변경). 직전 누계 = webmail M4 IMAP 결선 종단 작동 + parse 회수 + 자체 loopback PASS, 7 PR #28~#34 squash merge + 실 서버 webmail.dopa.co.kr 로그인 + INBOX 정상 표시 — 종합 7.6/10 유지) -->
 <style>
   :root{
     --bg:#fafafa; --fg:#1f2937; --muted:#4b5563;
